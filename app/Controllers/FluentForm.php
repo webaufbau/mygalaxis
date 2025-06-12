@@ -5,6 +5,45 @@ use Random\RandomException;
 
 class FluentForm extends BaseController
 {
+    // aktiv:
+    /**
+     * @throws RandomException
+     */
+    public function handle()
+    {
+        $request = service('request');
+        $vorname = $request->getPost('names');
+        $next_url_action = $request->getGet('next_url_action');
+        $next_url = $request->getGet('service_url');
+        $uuid = $request->getGet('uuid') ?? bin2hex(random_bytes(8));
+
+        log_message('debug', 'Form Submit Handle GET: ' . print_r($this->request->getGet(), true));
+
+        // Speichern (in Session oder Datenbank)
+        session()->set("formdata_$uuid", [
+            'vorname' => $vorname,
+            'next_url_action' => $next_url_action,
+            'next_url' => $next_url,
+        ]);
+
+        return redirect()->to($next_url);
+
+        /*
+        // Ziel-URL bestimmen
+        if ($auswahl === 'Privatumzug') {
+            $redirectUrl = "https://mygalaxis.primeno.ch/form/privat?uid=$uid";
+        } else {
+            $redirectUrl = "https://mygalaxis.primeno.ch/form/firma?uid=$uid";
+        }
+
+        // Anweisung an Fluent Form zum Weiterleiten:
+        return $this->response->setJSON([
+            'redirect_url' => $redirectUrl
+        ]);
+        */
+    }
+
+    // inaktiv:
     public function submit()
     {
         $session = session();
@@ -51,50 +90,5 @@ class FluentForm extends BaseController
         return redirect()->to('https://umzuege.webagentur-forster.ch/#elementor-action:action=popup:open&settings=eyJpZCI6IjE1MCIsInRvZ2dsZSI6ZmFsc2V9');
     }
 
-    /**
-     * @throws RandomException
-     */
-    public function handle()
-    {
-        $request = service('request');
-        $vorname = $request->getPost('names');
-        $next_url_action = $request->getGet('next_url_action');
-        $next_url = $request->getGet('service_url');
-        $uuid = $request->getGet('uuid') ?? bin2hex(random_bytes(8));
 
-        log_message('debug', 'Form Submit Handle GET: ' . print_r($this->request->getGet(), true));
-
-        // Speichern (in Session oder Datenbank)
-        session()->set("formdata_$uuid", [
-            'vorname' => $vorname,
-            'next_url_action' => $next_url_action,
-            'next_url' => $next_url,
-        ]);
-
-        return redirect()->to($next_url);
-
-        /*
-        // Ziel-URL bestimmen
-        if ($auswahl === 'Privatumzug') {
-            $redirectUrl = "https://mygalaxis.primeno.ch/form/privat?uid=$uid";
-        } else {
-            $redirectUrl = "https://mygalaxis.primeno.ch/form/firma?uid=$uid";
-        }
-
-        // Anweisung an Fluent Form zum Weiterleiten:
-        return $this->response->setJSON([
-            'redirect_url' => $redirectUrl
-        ]);
-        */
-    }
-
-
-    public function step2()
-    {
-        $session = session();
-        $step1Data = $session->get('form_step1');
-
-        // Lade Schritt 2 View und gib Daten aus Schritt 1 mit
-        return view('form/step2', ['step1' => $step1Data]);
-    }
 }
