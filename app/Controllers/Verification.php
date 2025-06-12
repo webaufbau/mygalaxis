@@ -34,6 +34,9 @@ class Verification extends Controller
 
     public function webhook()
     {
+        log_message('debug', 'Webhook called!');
+        log_message('debug', 'Webhook POST: ' . print_r($this->request->getPost(), true));
+
         $data = $this->request->getPost(); // Formulardaten
         $headers = array_map(function ($header) {
             return (string)$header->getValueLine();
@@ -51,7 +54,7 @@ class Verification extends Controller
         $db = \Config\Database::connect();
         $builder = $db->table('requests');
 
-        $builder->insert([
+        if(!$builder->insert([
             'form_name'    => $formName,
             'form_fields'  => json_encode($data, JSON_UNESCAPED_UNICODE),
             'headers'      => json_encode(array_map(fn($h) => (string)$h, $headers), JSON_UNESCAPED_UNICODE),
@@ -59,7 +62,9 @@ class Verification extends Controller
             'verified'     => $verified,
             'verify_type'  => $verifyType,
             'created_at'   => date('Y-m-d H:i:s')
-        ]);
+        ])) {
+            log_message('error', 'Insert failed: ' . print_r($db->error(), true));
+        }
 
         return $this->response->setJSON(['success' => true]);
     }

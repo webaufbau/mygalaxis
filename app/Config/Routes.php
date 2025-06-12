@@ -7,6 +7,6 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-$routes->post('verification/sendCode', 'Verification::sendCode');
-$routes->post('verification/checkCode', 'Verification::checkCode');
-$routes->post('verification/webhook', 'Verification::webhook');
+$routes->post('verification/sendCode', '\App\Controllers\Verification::sendCode');
+$routes->post('verification/checkCode', '\App\Controllers\Verification::checkCode');
+$routes->post('verification/webhook', '\App\Controllers\Verification::webhook');
