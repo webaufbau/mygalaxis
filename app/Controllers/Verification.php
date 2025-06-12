@@ -34,29 +34,34 @@ class Verification extends Controller
 
     public function webhook()
     {
-        $data = $this->request->getPost(); // kommt von FluentForm Webhook
+        $data = $this->request->getPost(); // Formulardaten
+        $headers = array_map(function ($header) {
+            return (string)$header->getValueLine();
+        }, $this->request->headers());
+        $referer = $this->request->getServer('HTTP_REFERER');
 
-        // 1. Daten in DB speichern
+        $formName = $data['form_name'] ?? null;
+        unset($data['form_name']);
+
+        // Verifizierungslogik (Beispiel: erwartet 'verified_method' im POST)
+        $verifyType = $data['verified_method'] ?? null;
+        $verified = in_array($verifyType, ['sms', 'phone']) ? 1 : 0;
+        unset($data['verified_method']); // optional aus form_fields entfernen
+
         $db = \Config\Database::connect();
-        $builder = $db->table('requests'); // Tabelle muss existieren
+        $builder = $db->table('requests');
 
         $builder->insert([
-            'name' => $data['name'] ?? '',
-            'email' => $data['email'] ?? '',
-            'phone' => $data['phone'] ?? '',
-            'nachricht' => $data['message'] ?? '',
-            'created_at' => date('Y-m-d H:i:s')
+            'form_name'    => $formName,
+            'form_fields'  => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'headers'      => json_encode(array_map(fn($h) => (string)$h, $headers), JSON_UNESCAPED_UNICODE),
+            'referer'      => $referer,
+            'verified'     => $verified,
+            'verify_type'  => $verifyType,
+            'created_at'   => date('Y-m-d H:i:s')
         ]);
-
-        // 2. E-Mail versenden
-        $email = \Config\Services::email();
-        $email->setTo('info@webagentur-forster.ch');
-        $email->setCC('info@webaufbau.ch');
-        $email->setSubject('Neue Anfrage eingegangen');
-        $email->setMessage(view('emails/anfrage', ['data' => $data])); // E-Mail-Template optional
-
-        $email->send();
 
         return $this->response->setJSON(['success' => true]);
     }
+
 }
