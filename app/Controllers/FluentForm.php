@@ -12,21 +12,32 @@ class FluentForm extends BaseController
     public function handle()
     {
         $request = service('request');
+
+        // POST-Daten
         $vorname = $request->getPost('names');
-        $next_url_action = $request->getGet('next_url_action');
-        $next_url = $request->getGet('service_url');
-        $uuid = $request->getGet('uuid') ?? bin2hex(random_bytes(8));
 
-        log_message('debug', 'Form Submit Handle GET: ' . print_r($this->request->getGet(), true));
+        // GET-Daten
+        $getParams = $request->getGet(); // alle GET-Parameter
+        $next_url = $getParams['service_url'] ?? null;
+        $uuid = $getParams['uuid'] ?? bin2hex(random_bytes(8));
 
-        // Speichern (in Session oder Datenbank)
+        log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
+
+        // Speichern
         session()->set("formdata_$uuid", [
             'vorname' => $vorname,
-            'next_url_action' => $next_url_action,
+            'next_url_action' => $getParams['next_url_action'] ?? '',
             'next_url' => $next_url,
         ]);
 
-        return redirect()->to($next_url);
+        // URL zusammensetzen (alle GET-Parameter anhängen)
+        if ($next_url) {
+            $query = http_build_query($getParams);
+            $redirectUrl = $next_url . (str_contains($next_url, '?') ? '&' : '?') . $query;
+            return redirect()->to($redirectUrl);
+        }
+
+        return redirect()->to('/'); // Fallback, falls next_url fehlt
 
         /*
         // Ziel-URL bestimmen
