@@ -1,8 +1,6 @@
 <?php
 namespace App\Controllers;
 
-use CodeIgniter\Controller;
-
 class FluentForm extends BaseController
 {
     public function submit()
