@@ -11,4 +11,5 @@ $routes->post('verification/sendCode', '\App\Controllers\Verification::sendCode'
 $routes->post('verification/checkCode', '\App\Controllers\Verification::checkCode');
 $routes->post('verification/webhook', '\App\Controllers\Verification::webhook');
 
+$routes->get('form/submit', '\App\Controllers\FluentForm::submit');
 $routes->post('form/submit', '\App\Controllers\FluentForm::submit');
