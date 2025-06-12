@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+use Random\RandomException;
+
 class FluentForm extends BaseController
 {
     public function submit()
@@ -48,6 +50,44 @@ class FluentForm extends BaseController
         // Weiterleiten zu Schritt 2
         return redirect()->to('https://umzuege.webagentur-forster.ch/#elementor-action:action=popup:open&settings=eyJpZCI6IjE1MCIsInRvZ2dsZSI6ZmFsc2V9');
     }
+
+    /**
+     * @throws RandomException
+     */
+    public function handle()
+    {
+        $request = service('request');
+        $vorname = $request->getPost('names');
+        $auswahl = $request->getGet('next_url_action'); // z. B. „Privatumzug“ oder „Firmenumzug“
+
+        log_message('debug', 'Form Submit Handle GET: ' . print_r($this->request->getGet(), true));
+
+        // Eindeutige ID (UUID oder Zufallswert)
+        $uid = bin2hex(random_bytes(8));
+
+        // Speichern (in Session oder Datenbank)
+        session()->set("formdata_$uid", [
+            'vorname' => $vorname,
+            'auswahl' => $auswahl,
+        ]);
+
+        return redirect()->to('https://umzuege.webagentur-forster.ch/#elementor-action:action=popup:open&settings=eyJpZCI6IjE1MCIsInRvZ2dsZSI6ZmFsc2V9&next_url_action='.$auswahl.'&uuid=' . $uid);
+
+        /*
+        // Ziel-URL bestimmen
+        if ($auswahl === 'Privatumzug') {
+            $redirectUrl = "https://mygalaxis.primeno.ch/form/privat?uid=$uid";
+        } else {
+            $redirectUrl = "https://mygalaxis.primeno.ch/form/firma?uid=$uid";
+        }
+
+        // Anweisung an Fluent Form zum Weiterleiten:
+        return $this->response->setJSON([
+            'redirect_url' => $redirectUrl
+        ]);
+        */
+    }
+
 
     public function step2()
     {
