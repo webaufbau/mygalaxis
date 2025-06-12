@@ -15,6 +15,7 @@ class RequestModel extends Model
         'referer',
         'verified',
         'verify_type',
+        'uuid',
         'created_at',
     ];
 

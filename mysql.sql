@@ -6,6 +6,7 @@ CREATE TABLE `requests` (
     `referer` VARCHAR(1024) DEFAULT NULL,
     `verified` TINYINT(1) DEFAULT 0,
     `verify_type` VARCHAR(20) DEFAULT NULL,
+    `uuid` VARCHAR(64) DEFAULT NULL,
     `created_at` DATETIME NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

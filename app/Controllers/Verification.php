@@ -46,6 +46,8 @@ class Verification extends Controller
         $formName = $data['form_name'] ?? null;
         unset($data['form_name']);
 
+        $uuid = $data['uuid'] ?? null;
+
         // Verifizierungslogik (Beispiel: erwartet 'verified_method' im POST)
         $verifyType = $data['verified_method'] ?? null;
         $verified = in_array($verifyType, ['sms', 'phone']) ? 1 : 0;
@@ -61,6 +63,7 @@ class Verification extends Controller
             'referer'      => $referer,
             'verified'     => $verified,
             'verify_type'  => $verifyType,
+            'uuid'         => $uuid,
             'created_at'   => date('Y-m-d H:i:s')
         ])) {
             log_message('error', 'Insert failed: ' . print_r($db->error(), true));

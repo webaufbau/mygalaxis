@@ -58,20 +58,20 @@ class FluentForm extends BaseController
     {
         $request = service('request');
         $vorname = $request->getPost('names');
-        $auswahl = $request->getGet('next_url_action'); // z. B. „Privatumzug“ oder „Firmenumzug“
+        $next_url_action = $request->getGet('next_url_action');
+        $next_url = $request->getGet('service_url');
+        $uuid = $request->getGet('uuid') ?? bin2hex(random_bytes(8));
 
         log_message('debug', 'Form Submit Handle GET: ' . print_r($this->request->getGet(), true));
 
-        // Eindeutige ID (UUID oder Zufallswert)
-        $uid = bin2hex(random_bytes(8));
-
         // Speichern (in Session oder Datenbank)
-        session()->set("formdata_$uid", [
+        session()->set("formdata_$uuid", [
             'vorname' => $vorname,
-            'auswahl' => $auswahl,
+            'next_url_action' => $next_url_action,
+            'next_url' => $next_url,
         ]);
 
-        return redirect()->to('https://umzuege.webagentur-forster.ch/#elementor-action:action=popup:open&settings=eyJpZCI6IjE1MCIsInRvZ2dsZSI6ZmFsc2V9&next_url_action='.$auswahl.'&uuid=' . $uid);
+        return redirect()->to($next_url);
 
         /*
         // Ziel-URL bestimmen
