@@ -19,6 +19,7 @@ class FluentForm extends BaseController
         // GET-Daten
         $getParams = $request->getGet(); // alle GET-Parameter
         $next_url = $getParams['service_url'] ?? null;
+        unset($getParams['service_url']); // entfernen, damit nicht mit übergeben
         $uuid = $getParams['uuid'] ?? bin2hex(random_bytes(8));
 
         log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
