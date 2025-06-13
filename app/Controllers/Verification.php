@@ -5,6 +5,19 @@ namespace App\Controllers;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RedirectResponse;
 
+use Infobip\Configuration;
+use Infobip\ApiException;
+use Infobip\Api\SmsApi;
+use Infobip\Model\CallsSingleBody;
+use Infobip\Model\CallsVoice;
+use Infobip\Model\SmsRequest;
+use Infobip\Model\SmsDestination;
+use Infobip\Model\SmsMessage;
+use Infobip\Model\SmsTextContent;
+
+use Infobip\Api\VoiceApi;
+use Infobip\Model\VoiceSingleTtsRequest;
+
 class Verification extends Controller
 {
     public function index()
@@ -58,7 +71,60 @@ class Verification extends Controller
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
 
-        return redirect()->to('/verification/confirm');
+
+
+        // Infobip Konfiguration
+        $configuration = new Configuration(
+            host: 'https://38yqqm.api.infobip.com', // z.B. https://api.infobip.com
+            apiKey: 'f8952148d96c77ac10fb8996daa081f9-67cf35a8-e9e2-4d8c-8dcb-3ceba684b908'
+        );
+
+        try {
+            if ($method === 'sms') {
+                $smsApi = new SmsApi($configuration);
+
+                $message = new SmsMessage(
+                    destinations: [new SmsDestination(to: number_format($phone, "", "", ""))], // Kein + in Telefonnummer
+                    content: new SmsTextContent(text: "Ihr Verifizierungscode lautet: $verificationCode"),
+                    sender: 'InfoSMS' // muss bei Infobip registriert sein ||| GalaxisGroup
+                );
+
+                $smsRequest = new SmsRequest(messages: [$message]);
+
+                $response = $smsApi->sendSmsMessages($smsRequest);
+
+                log_message('info', "SMS Verifizierungscode an $phone gesendet, Nachricht-ID: " .
+                    ($response->getMessages()[0]->getMessageId() ?? 'unbekannt'));
+
+            } elseif ($method === 'call') {
+                $voiceApi = new VoiceApi($configuration);
+
+                $from = 'InfoCall'; // Bei Infobip registrierter Absender
+
+                $voice = new CallsVoice();
+                $voice->setGender('female');
+                $voice->setName('de-DE');
+
+                $callRequest = new CallsSingleBody(
+                    from: $from,
+                    to: number_format($phone, "", "", ""), // Kein + in Telefonnummer
+                    audioFileUrl: null,
+                    language: 'de-CH',
+                    text: "Ihr Verifizierungscode lautet $verificationCode",
+                    voice: $voice
+                );
+
+                $voiceApi->sendSingleVoiceTts($callRequest);
+
+                log_message('info', "TTS Anruf mit Verifizierungscode an $phone gestartet.");
+            }
+
+            return redirect()->to('/verification/confirm');
+
+        } catch (ApiException $e) {
+            log_message('error', "Infobip API Fehler bei $method an $phone: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Fehler beim Versenden des Verifizierungscodes. Bitte später erneut versuchen.');
+        }
     }
 
     public function confirm()
