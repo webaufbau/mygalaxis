@@ -36,14 +36,27 @@ class Verification extends Controller
         $phone = $request->getPost('phone'); // sollte in prod nicht per form sondern auch wieder über DB gelesen werden, sonst manipulierbar.
         $method = $request->getPost('method');
 
-        if (!$phone || !$method) {
-            return redirect()->back()->with('error', 'Bitte alle Felder ausfüllen.');
+        if (!$phone) {
+            return redirect()->back()->with('error', 'Telefonnummer fehlt.');
+        }
+
+        // Prüfe, ob Mobilnummer
+        $isMobile = $this->isMobileNumber($phone);
+
+        // Wenn kein Mobile, dann nur Anruf zulassen
+        if (!$isMobile && $method !== 'phone') {
+            return redirect()->back()->with('error', 'Bei Festnetznummer ist nur Anruf-Verifizierung möglich.');
+        }
+
+        if (!$method) {
+            return redirect()->back()->with('error', 'Bitte Verifizierungsmethode wählen.');
         }
 
         // Simuliere den Versand des Verifizierungscodes
         $verificationCode = rand(100000, 999999);
         session()->set('verification_code', $verificationCode);
         session()->set('phone', $phone);
+        session()->set('verify_method', $method);
 
         return redirect()->to('/verification/confirm');
     }
@@ -80,4 +93,21 @@ class Verification extends Controller
 
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
     }
+
+    private function isMobileNumber(string $phone): bool
+    {
+        // Schweiz +41 Mobilnummern beginnen mit +4175, +4176, +4177, +4178, +4179
+        // Beispiel: +41781234567
+
+        $mobilePrefixes = ['+4175', '+4176', '+4177', '+4178', '+4179'];
+
+        foreach ($mobilePrefixes as $prefix) {
+            if (str_starts_with($phone, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
