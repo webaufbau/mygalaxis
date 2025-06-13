@@ -50,6 +50,11 @@ class Verification extends Controller
 
     public function confirm()
     {
+        $verificationCode = session('verification_code');
+        if (!$verificationCode || $verificationCode=='') {
+            return redirect()->to('/'); // oder Fehlerseite
+        }
+
         return view('verification_confirm', ['verification_code' => session()->get('verification_code')]);
     }
 
