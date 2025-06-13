@@ -24,7 +24,6 @@ class Verification extends Controller
 
         // form_fields ist JSON, decode es:
         $fields = json_decode($row->form_fields, true);
-        print_r($fields);
         $phone = $fields['phone'] ?? '';
 
         return view('verification_form', ['phone' => $phone]);
