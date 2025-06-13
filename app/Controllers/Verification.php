@@ -72,8 +72,6 @@ class Verification extends Controller
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
 
-
-
         // Infobip Konfiguration
         $infobib_config = new Infobib();
         $host = $infobib_config->api_host;
