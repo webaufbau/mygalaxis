@@ -37,7 +37,7 @@ class FluentForm extends BaseController
         ]);
 
         if($next_url_action == 'nein') {
-            return redirect()->to('verification/sendCode');
+            return redirect()->to('verification/');
         }
 
         // URL zusammensetzen (alle GET-Parameter anhängen)
@@ -64,17 +64,10 @@ class FluentForm extends BaseController
         */
     }
 
-    // inaktiv:
-    public function submit()
+    // Dies wird nach dem Senden der Formulare ausgeführt:
+    public function webhook()
     {
-        $session = session();
-        $postData = $this->request->getPost();
-
-        // Option 1: In Session speichern
-        $session->set('form_step1', $postData);
-
-        // Option 2: Temporär in DB speichern mit Token (falls nötig)
-
+        log_message('debug', 'Webhook called!');
         log_message('debug', 'Webhook POST: ' . print_r($this->request->getPost(), true));
 
         $data = $this->request->getPost(); // Formulardaten
@@ -82,9 +75,12 @@ class FluentForm extends BaseController
             return (string)$header->getValueLine();
         }, $this->request->headers());
         $referer = $this->request->getServer('HTTP_REFERER');
+        log_message('debug', 'Webhook HEADERS: ' . print_r($headers, true));
 
         $formName = $data['form_name'] ?? null;
         unset($data['form_name']);
+
+        $uuid = $data['uuid'] ?? null;
 
         // Verifizierungslogik (Beispiel: erwartet 'verified_method' im POST)
         $verifyType = $data['verified_method'] ?? null;
@@ -101,15 +97,13 @@ class FluentForm extends BaseController
             'referer'      => $referer,
             'verified'     => $verified,
             'verify_type'  => $verifyType,
+            'uuid'         => $uuid,
             'created_at'   => date('Y-m-d H:i:s')
         ])) {
             log_message('error', 'Insert failed: ' . print_r($db->error(), true));
         }
 
-
-        // Weiterleiten zu Schritt 2
-        return redirect()->to('https://umzuege.webagentur-forster.ch/#elementor-action:action=popup:open&settings=eyJpZCI6IjE1MCIsInRvZ2dsZSI6ZmFsc2V9');
+        return $this->response->setJSON(['success' => true]);
     }
-
 
 }

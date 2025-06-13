@@ -8,13 +8,13 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 
 // In Webhook:
-$routes->post('verification/webhook', '\App\Controllers\Verification::webhook');
+$routes->post('verification/webhook', '\App\Controllers\FluentForm::webhook');
 
 // In Custom Url:
 $routes->get('form/handle', '\App\Controllers\FluentForm::handle');
 
-// Noch keinen Zweck:
-$routes->post('verification/sendCode', '\App\Controllers\Verification::sendCode');
-$routes->post('verification/checkCode', '\App\Controllers\Verification::checkCode');
-$routes->get('form/submit', '\App\Controllers\FluentForm::submit');
-$routes->post('form/submit', '\App\Controllers\FluentForm::submit');
+
+$routes->get('/verification', 'Verification::index');
+$routes->post('/verification/send', 'Verification::send');
+$routes->get('/verification/confirm', 'Verification::confirm');
+$routes->post('/verification/verify', 'Verification::verify');
