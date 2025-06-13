@@ -9,7 +9,24 @@ class Verification extends Controller
 {
     public function index()
     {
-        return view('verification_form');
+        $uuid = session()->get('uuid');
+        if (!$uuid) {
+            return redirect()->to('/'); // oder Fehlerseite
+        }
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('requests');
+        $row = $builder->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
+
+        if (!$row) {
+            return redirect()->to('/')->with('error', 'Keine Anfrage gefunden.');
+        }
+
+        // form_fields ist JSON, decode es:
+        $fields = json_decode($row->form_fields, true);
+        $phone = $fields['phone'] ?? '';
+
+        return view('verification_form', ['phone' => $phone]);
     }
 
     public function send()

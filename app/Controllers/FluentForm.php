@@ -30,6 +30,7 @@ class FluentForm extends BaseController
         log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
 
         // Speichern
+        session()->set('uuid', $uuid);
         session()->set("formdata_$uuid", [
             'vorname' => $vorname,
             'next_url_action' => $next_url_action,
@@ -37,7 +38,7 @@ class FluentForm extends BaseController
         ]);
 
         if($next_url_action == 'nein') {
-            return redirect()->to('verification/');
+            return redirect()->to('verification');
         }
 
         // URL zusammensetzen (alle GET-Parameter anhängen)
