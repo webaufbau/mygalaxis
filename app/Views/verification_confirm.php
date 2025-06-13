@@ -22,6 +22,9 @@
         </div>
 
         <button type="submit" class="btn btn-success">Verifizieren</button>
+
+        <p>[Zu Demozwecken Code ist: <?=$verification_code;?>] (wird in der Testphase nicht veröffentlicht)</p>
+
     </form>
 </div>
 </body>

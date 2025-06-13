@@ -33,7 +33,7 @@ class Verification extends Controller
     {
         $request = service('request');
 
-        $phone = $request->getPost('phone');
+        $phone = $request->getPost('phone'); // sollte in prod nicht per form sondern auch wieder über DB gelesen werden, sonst manipulierbar.
         $method = $request->getPost('method');
 
         if (!$phone || !$method) {
@@ -45,7 +45,7 @@ class Verification extends Controller
         session()->set('verification_code', $verificationCode);
         session()->set('phone', $phone);
 
-        return redirect()->to('/verification/confirm');
+        return redirect()->to('/verification/confirm', ['verificationCode' => $verificationCode]);
     }
 
     public function confirm()
