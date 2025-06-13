@@ -5,6 +5,10 @@ use Random\RandomException;
 
 class FluentForm extends BaseController
 {
+
+    // Diese Methode ist die Action von Fluent Form und leitet es gemäss Optionen auf die entsprechende URL weiter.
+    // Wenn die Ziel URL bzw. die next_url_action = 'nein' ist dann muss die Verifikation ausgeführt werden.
+
     // aktiv:
     /**
      * @throws RandomException
@@ -19,6 +23,7 @@ class FluentForm extends BaseController
         // GET-Daten
         $getParams = $request->getGet(); // alle GET-Parameter
         $next_url = $getParams['service_url'] ?? null;
+        $next_url_action = $getParams['next_url_action'] ?? 'nein';
         unset($getParams['service_url']); // entfernen, damit nicht mit übergeben
         $uuid = $getParams['uuid'] ?? bin2hex(random_bytes(8));
 
@@ -27,9 +32,13 @@ class FluentForm extends BaseController
         // Speichern
         session()->set("formdata_$uuid", [
             'vorname' => $vorname,
-            'next_url_action' => $getParams['next_url_action'] ?? '',
+            'next_url_action' => $next_url_action,
             'next_url' => $next_url,
         ]);
+
+        if($next_url_action == 'nein') {
+            return redirect()->to('verification/sendCode');
+        }
 
         // URL zusammensetzen (alle GET-Parameter anhängen)
         if ($next_url) {

@@ -32,6 +32,7 @@ class Verification extends Controller
         return $this->response->setJSON(['success' => $entered == $real]);
     }
 
+    // Dies wird nach dem Senden der Formulare ausgeführt:
     public function webhook()
     {
         log_message('debug', 'Webhook called!');
@@ -42,6 +43,7 @@ class Verification extends Controller
             return (string)$header->getValueLine();
         }, $this->request->headers());
         $referer = $this->request->getServer('HTTP_REFERER');
+        log_message('debug', 'Webhook HEADERS: ' . print_r($headers, true));
 
         $formName = $data['form_name'] ?? null;
         unset($data['form_name']);
