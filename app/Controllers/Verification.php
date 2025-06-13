@@ -70,7 +70,7 @@ class Verification extends Controller
             $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => $this->request->getPost('method')]);
 
             session()->remove('verification_code');
-            return view('verification_success');
+            return view('verification_success', ['next_url' => session()->get('next_url') ?? 'https://umzuege.webagentur-forster.ch/danke-umzug/']);
         }
 
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');

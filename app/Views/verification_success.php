@@ -9,6 +9,8 @@
 <div class="container mt-5">
     <div class="alert alert-success">
         ✅ Deine Telefonnummer wurde erfolgreich verifiziert!
+
+        <a href="<?=$next_url;?>">Weiter</a>
     </div>
 </div>
 </body>

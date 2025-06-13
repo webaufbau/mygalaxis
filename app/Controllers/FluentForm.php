@@ -31,6 +31,7 @@ class FluentForm extends BaseController
 
         // Speichern
         session()->set('uuid', $uuid);
+        session()->set('next_url', $next_url);
         session()->set("formdata_$uuid", [
             'vorname' => $vorname,
             'next_url_action' => $next_url_action,
