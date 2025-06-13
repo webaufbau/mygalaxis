@@ -60,8 +60,15 @@ class Verification extends Controller
         $enteredCode = $request->getPost('code');
         $sessionCode = session()->get('verification_code');
 
-        if ($enteredCode == $sessionCode) {
-            // Markiere als bestätigt, z. B. in der Datenbank
+        $uuid = session()->get('uuid');
+        if ($enteredCode == session()->get('verification_code')) {
+
+            $db = \Config\Database::connect();
+            $builder = $db->table('requests');
+
+            // verified auf 1 setzen für diese uuid
+            $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => $this->request->getPost('method')]);
+
             session()->remove('verification_code');
             return view('verification_success');
         }

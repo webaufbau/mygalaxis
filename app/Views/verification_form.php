@@ -18,7 +18,7 @@
 
         <div class="mb-3">
             <label for="phone" class="form-label">Telefonnummer</label>
-            <input type="text" name="phone" class="form-control" placeholder="+41..." required>
+            <input type="text" name="phone" class="form-control" value="<?= esc($phone) ?>" readonly>
         </div>
 
         <div class="mb-3">
