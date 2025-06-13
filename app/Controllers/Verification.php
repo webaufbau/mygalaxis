@@ -45,12 +45,12 @@ class Verification extends Controller
         session()->set('verification_code', $verificationCode);
         session()->set('phone', $phone);
 
-        return redirect()->to('/verification/confirm', ['verification_code' => $verificationCode]);
+        return redirect()->to('/verification/confirm');
     }
 
     public function confirm()
     {
-        return view('verification_confirm');
+        return view('verification_confirm', ['verification_code' => session()->get('verification_code')]);
     }
 
     public function verify()
