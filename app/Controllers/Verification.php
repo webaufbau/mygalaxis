@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Config\Infobib;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -74,9 +75,12 @@ class Verification extends Controller
 
 
         // Infobip Konfiguration
+        $infobib_config = new Infobib();
+        $host = $infobib_config->api_host;
+        $key  = $infobib_config->api_key;
         $configuration = new Configuration(
-            host: 'https://38yqqm.api.infobip.com', // z.B. https://api.infobip.com
-            apiKey: 'f8952148d96c77ac10fb8996daa081f9-67cf35a8-e9e2-4d8c-8dcb-3ceba684b908'
+            host: $host,
+            apiKey: $key,
         );
 
         try {
