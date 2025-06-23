@@ -41,4 +41,149 @@ class Validation extends BaseConfig
     // --------------------------------------------------------------------
     // Rules
     // --------------------------------------------------------------------
+
+
+    //--------------------------------------------------------------------
+    // Rules For Registration
+    //--------------------------------------------------------------------
+    public $registration = [
+        'company_name' => [
+            'label' => 'Auth.company_name',
+            'rules' => [
+                'required',
+                'max_length[150]',
+                'min_length[1]',
+            ],
+        ],
+        'company_uid' => [
+            'label' => 'Auth.company_uid',
+            'rules' => [
+                'required',
+                'max_length[150]',
+                'min_length[1]',
+            ],
+        ],
+        'company_street' => [
+            'label' => 'Auth.company_street',
+            'rules' => [
+                'required',
+                'max_length[150]',
+                'min_length[1]',
+            ],
+        ],
+        'company_zip' => [
+            'label' => 'Auth.company_zip',
+            'rules' => [
+                'max_length[4]',
+                'min_length[4]',
+            ],
+        ],
+        'company_city' => [
+            'label' => 'Auth.company_city',
+            'rules' => [
+                'required',
+                'max_length[150]',
+                'min_length[1]',
+            ],
+        ],
+        'company_phone' => [
+            'label' => 'Auth.company_phone',
+            'rules' => [
+                'required',
+                'max_length[20]',  // typische maximale Länge für Telefonnummern
+                'min_length[10]',  // minimale Länge für eine gültige Telefonnummer
+                'regex_match[/^\+?[0-9\s\-\(\)]+$/]'  // erlaubt Zahlen, Leerzeichen, Bindestriche, Klammern und ein optionales führendes +
+            ],
+            'errors' => [
+                'regex_match' => 'Das {field}-Feld muss eine gültige Telefonnummer enthalten.'
+            ]
+        ],
+        'company_website' => [
+            'label' => 'Auth.company_website',
+            'rules' => [
+            ],
+        ],
+        'email' => [
+            'label' => 'Auth.email',
+            'rules' => [
+                'required',
+                'max_length[254]',
+                'valid_email',
+                'is_unique[auth_identities.secret]',
+            ],
+            'errors' => [
+                'is_unique' => 'Diese E-Mail-Adresse wird bereits verwendet. Wenn Sie bereits ein Konto haben, melden Sie sich bitte an.',
+            ],
+        ],
+        'password' => [
+            'label' => 'Auth.password',
+            'rules' => 'required|max_byte[72]|strong_password[]',
+            'errors' => [
+                'max_byte' => 'Auth.errorPasswordTooLongBytes'
+            ]
+        ],
+    ];
+
+
+    //--------------------------------------------------------------------
+    // Rules For Login
+    //--------------------------------------------------------------------
+    public $login = [
+        // 'username' => [
+        //     'label' => 'Auth.username',
+        //     'rules' => [
+        //         'required',
+        //         'max_length[30]',
+        //         'min_length[3]',
+        //         'regex_match[/\A[a-zA-Z0-9\.]+\z/]',
+        //     ],
+        // ],
+        'email' => [
+            'label' => 'Auth.email',
+            'rules' => [
+                'required',
+                'max_length[254]',
+                'valid_email'
+            ],
+        ],
+        'password' => [
+            'label' => 'Auth.password',
+            'rules' => [
+                'required',
+                'max_byte[72]',
+            ],
+            'errors' => [
+                'max_byte' => 'Auth.errorPasswordTooLongBytes',
+            ]
+        ],
+    ];
+
+
+    //--------------------------------------------------------------------
+    // Rules For Password
+    //--------------------------------------------------------------------
+    public $password = [
+        'password' => [
+            'label' => 'Auth.password',
+            'rules' => [
+                'required',
+                'max_byte[72]',
+            ],
+            'errors' => [
+                'max_byte' => 'Auth.errorPasswordTooLongBytes',
+            ]
+        ],
+        'password_repeat' => [
+            'label' => 'Auth.password',
+            'rules' => [
+                'required',
+                'max_byte[72]',
+                'matches[password]',
+            ],
+            'errors' => [
+                'max_byte' => 'Auth.errorPasswordTooLongBytes',
+                'matches' => 'Das Feld Passwort stimmt nicht mit dem Feld Passwort wiederholen überein.'
+            ]
+        ],
+    ];
 }
