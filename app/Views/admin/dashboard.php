@@ -86,7 +86,7 @@
 </form>
 
 
-<?php if(isset($offers)) { ?>
+<?php if(isset($offers) && is_array($offers) && count($offers)) { ?>
 <!-- Tabelle -->
 <table id="offersTable" class="table table-bordered table-striped">
     <thead>
