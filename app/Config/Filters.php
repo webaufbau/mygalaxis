@@ -74,7 +74,12 @@ class Filters extends BaseFilters
             // 'honeypot',
             'csrf' => [
                 'except' => [
-                    'form/webhook', // dein Webhook
+                    'form/webhook',
+                    'form/handle',
+                    'verification',
+                    'verification/send',
+                    'verification/confirm',
+                    'verification/verify',
                 ],
             ],
             // 'invalidchars',
