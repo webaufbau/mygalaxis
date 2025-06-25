@@ -52,10 +52,10 @@ class OfferModel extends Model
             $data['data']['zip'] = $fields['auszug_adresse_firma']['zip'] ?? null;
             $data['data']['customer_type'] = isset($fields['firmenname']) ? 'firma' : 'privat';
 
-            $data['data']['firstname'] = $fields['vorname_firma'] ?? null;
-            $data['data']['lastname'] = $fields['nachname_firma'] ?? null;
-            $data['data']['email'] = $fields['email_firma'] ?? null;
-            $data['data']['phone'] = $fields['phone_2'] ?? null;
+            $data['data']['firstname'] = $fields['vorname'] ?? null;
+            $data['data']['lastname'] = $fields['nachname'] ?? null;
+            $data['data']['email'] = $fields['email'] ?? null;
+            $data['data']['phone'] = $fields['phone'] ?? null;
             $data['data']['additional_service'] = $fields['additional_service'] ?? null;
             $data['data']['service_url'] = $fields['service_url'] ?? null;
             $data['data']['uuid'] = $data['data']['uuid'] ?? bin2hex(random_bytes(16));
