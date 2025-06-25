@@ -23,12 +23,16 @@
 
         <div class="mb-3">
             <label class="form-label">Verifizierungsmethode</label><br>
+
+            <?php if ($isMobile): ?>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="method" id="sms" value="sms" checked>
+                    <label class="form-check-label" for="sms">SMS</label>
+                </div>
+            <?php endif; ?>
+
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="method" id="sms" value="sms" checked>
-                <label class="form-check-label" for="sms">SMS</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="method" id="call" value="call">
+                <input class="form-check-input" type="radio" name="method" id="call" value="call" <?= $isMobile ? '' : 'checked' ?>>
                 <label class="form-check-label" for="call">Anruf</label>
             </div>
         </div>

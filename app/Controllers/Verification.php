@@ -40,7 +40,15 @@ class Verification extends Controller
         $fields = json_decode($row->form_fields, true);
         $phone = $fields['phone'] ?? '';
 
-        return view('verification_form', ['phone' => $phone]);
+        $isMobile = false;
+        if (preg_match('/^(\+41|0)(75|76|77|78|79)[0-9]{7}$/', $phone)) {
+            $isMobile = true;
+        }
+
+        return view('verification_form', [
+            'phone' => $phone,
+            'isMobile' => $isMobile,
+        ]);
     }
 
     public function send()
