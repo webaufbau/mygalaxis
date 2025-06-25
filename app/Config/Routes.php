@@ -94,6 +94,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('dashboard', 'Admin\Dashboard::index');
 
+    $routes->get('offer/(:num)', 'Admin\Offer::detail/$1');
+
     // Admin: Credits verwalten
     $routes->group('credits', function ($routes) {
         $routes->get('/', 'Admin\Credit::index');

@@ -57,8 +57,8 @@ class OfferModel extends Model
 
         if (is_array($fields)) {
             $data['data']['type'] = $this->detectType($fields);
-            $data['data']['city'] = $fields['auszug_adresse_firma']['city'] ?? null;
-            $data['data']['zip'] = $fields['auszug_adresse_firma']['zip'] ?? null;
+            $data['data']['city'] = $fields['auszug_adresse']['city'] ?? null;
+            $data['data']['zip'] = $fields['auszug_adresse']['zip'] ?? null;
             $data['data']['customer_type'] = isset($fields['firmenname']) ? 'firma' : 'privat';
 
             $data['data']['firstname'] = $fields['vorname'] ?? $userInputs['vorname'] ?? null;

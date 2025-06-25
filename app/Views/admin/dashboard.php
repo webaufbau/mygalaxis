@@ -97,6 +97,7 @@
         <th>Ort</th>
         <th>Name</th>
         <th>Status</th>
+        <th>Details</th>
     </tr>
     </thead>
     <tbody>
@@ -110,6 +111,11 @@
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td><?= esc(lang('Offers.status.' . $o['status']) ?? $o['status']) ?></td>
+        <td>
+            <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm" target="_blank">
+                Details
+            </a>
+        </td>
     </tr>
     <?php endforeach; ?>
     </tbody>
