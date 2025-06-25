@@ -47,6 +47,10 @@ class OfferModel extends Model
         $fields = json_decode($data['data']['form_fields'] ?? '{}', true);
         $userInputs = $fields['__submission']['user_inputs'] ?? [];
 
+        log_message('debug', 'before Insert fields ' . print_r($fields, true));
+        log_message('debug', 'before Insert userInputs ' . print_r($userInputs, true));
+
+
         if (is_array($fields)) {
             $data['data']['type'] = $this->detectType($fields);
             $data['data']['city'] = $fields['auszug_adresse_firma']['city'] ?? null;
