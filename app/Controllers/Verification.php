@@ -29,7 +29,7 @@ class Verification extends Controller
         }
 
         $db = \Config\Database::connect();
-        $builder = $db->table('requests');
+        $builder = $db->table('offers');
         $row = $builder->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
 
         if (!$row) {
@@ -45,7 +45,7 @@ class Verification extends Controller
 
     public function send()
     {
-        $request = service('request');
+        $request = service('offers');
 
         $phone = $request->getPost('phone'); // sollte in prod nicht per form sondern auch wieder über DB gelesen werden, sonst manipulierbar.
         $method = $request->getPost('method');
