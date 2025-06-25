@@ -41,8 +41,7 @@ class Verification extends Controller
         $phone = $fields['phone'] ?? '';
 
         $isMobile = false;
-        $phone = str_replace(' ', '', $phone);
-        if (preg_match('/^(\+41|0)(75|76|77|78|79)[0-9]{7}$/', $phone)) {
+        if (preg_match('/^(\+41|0)(75|76|77|78|79)[0-9]{7}$/', str_replace(' ', '', $phone))) {
             $isMobile = true;
         }
 
