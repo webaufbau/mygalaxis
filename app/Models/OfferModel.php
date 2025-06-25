@@ -41,6 +41,10 @@ class OfferModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
+
+    protected $allowCallbacks = true;
+    protected $beforeInsert = ['beforeInsert'];
+
     // Optional: vor Insert automatisch Typ erkennen und weitere Felder extrahieren
     protected function beforeInsert(array $data): array
     {
