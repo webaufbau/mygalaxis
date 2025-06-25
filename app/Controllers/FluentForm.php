@@ -25,7 +25,7 @@ class FluentForm extends BaseController
         // GET-Daten
         $getParams = $request->getGet(); // alle GET-Parameter
         $next_url = $getParams['service_url'] ?? null;
-        $additional_service = $getParams['additional_service'] ?? 'nein';
+        $additional_service = $getParams['additional_service'] ?? 'Nein';
         unset($getParams['service_url']); // entfernen, damit nicht mit übergeben
         $uuid = $getParams['uuid'] ?? bin2hex(random_bytes(8));
 
@@ -40,7 +40,7 @@ class FluentForm extends BaseController
             'next_url' => $next_url,
         ]);
 
-        if($additional_service == 'nein') {
+        if($additional_service == 'Nein') {
             return redirect()->to('verification');
         }
 
