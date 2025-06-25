@@ -105,10 +105,10 @@ class FluentForm extends BaseController
                 $moveModel = new \App\Models\OfferMoveModel();
                 $moveModel->insert([
                     'offer_id'        => $offerId,
-                    'room_size'       => $data['auszug_flaeche_firma'] ?? null,
+                    'room_size'       => $data['auszug_flaeche'] ?? null,
                     'move_date'       => isset($data['datetime_1']) ? date('Y-m-d', strtotime(str_replace('/', '.', $data['datetime_1']))) : null,
-                    'from_city'       => $data['auszug_adresse_firma']['city'] ?? null,
-                    'to_city'         => $data['einzug_adresse_firma']['city'] ?? null,
+                    'from_city'       => $data['auszug_adresse']['city'] ?? null,
+                    'to_city'         => $data['einzug_adresse']['city'] ?? null,
                     'has_lift'        => $data['auszug_lift_firma'] ?? null,
                     'customer_type'   => isset($data['firmenname']) ? 'firma' : 'privat',
                 ]);
