@@ -97,7 +97,7 @@ class FluentForm extends BaseController
         }
 
         $offerId = $offerModel->getInsertID();
-        $type = $offerData['type'] ?? 'unknown';
+        $type = $offerData['type'] ?? $this->detectType($data);
 
         // Typ-spezifische Speicherung:
         switch ($type) {
@@ -155,4 +155,16 @@ class FluentForm extends BaseController
         return $this->response->setJSON(['success' => true]);
     }
 
+    protected function detectType(array $fields): string
+    {
+        $source = $fields['service_url'] ?? '';
+
+        if (str_contains($source, 'umzuege')) return 'move';
+        if (str_contains($source, 'reinigung')) return 'cleaning';
+        if (str_contains($source, 'maler')) return 'painter';
+        if (str_contains($source, 'garten')) return 'gardener';
+        if (str_contains($source, 'sanitaer')) return 'plumbing';
+
+        return 'unknown';
+    }
 }
