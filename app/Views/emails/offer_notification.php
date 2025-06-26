@@ -55,7 +55,7 @@
 <body>
 <div class="container">
 
-    <h1>🎉 Anfrage erfolgreich übermittelt!</h1>
+    <h1>🎉 Wir bestätigen Dir deine Anfrage/Offerte</h1>
 
     <p>Hallo <?= esc($data['vorname'] ?? ''); ?> <?= esc($data['nachname'] ?? ''); ?>,</p>
 
