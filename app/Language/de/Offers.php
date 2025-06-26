@@ -33,6 +33,9 @@ return [
         'auszug_flaeche' => 'Auszug Fläche',
         'auszug_object' => 'Auszug Objekt',
         'einzug_object' => 'Einzug Objekt',
+        'rasen_maehen' => 'Rasen mähen',
+        'rasen_maehen_einmalig' => 'Rasen mähen einmalig',
+        'file_upload' => 'Dateien',
 
         // ... beliebig erweiterbar
     ],
