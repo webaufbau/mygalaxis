@@ -216,7 +216,7 @@ class FluentForm extends BaseController
         $email->setFrom('noreply@webaufbau.com', 'Webanfrage');
         $email->setTo($userEmail);            // Kunde als To
         $email->setBCC($bccString);         // Admins als BCC
-        $email->setSubject('Bestätigung Ihrer Anfrage');
+        $email->setSubject('Wir bestätigen Dir deine Anfrage/Offerte');
         $email->setMessage($htmlMessage);
         $email->setMailType('html');
 

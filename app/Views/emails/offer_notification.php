@@ -61,7 +61,7 @@
 
     <div class="highlight">
         <p>Herzlichen Dank für deine Anfrage für <strong><?= esc($formular_page ?? 'eine Dienstleistung') ?></strong>.</p>
-        <p>In Kürze wirst du <strong>bis zu 3 unverbindliche Offerten</strong> von passenden Anbietern aus deiner Region erhalten.</p>
+        <p>In Kürze wirst du <strong>bis zu 3 unverbindliche Offerten</strong> von passenden Anbietern aus deiner Region erhalten. Je nach Saison kann es vorkommen, dass die Firmen für den gewünschten Zeitraum schon ausgebucht sind und daher keine Angebote unterbreiten.</p>
     </div>
 
     <h3>So funktioniert's:</h3>

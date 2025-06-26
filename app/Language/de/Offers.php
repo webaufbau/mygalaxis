@@ -31,6 +31,8 @@ return [
         'sonstige_hinweise' => 'Zusätzliche Hinweise',
         'einzug_flaeche' => 'Einzug Fläche',
         'auszug_flaeche' => 'Auszug Fläche',
+        'auszug_object' => 'Auszug Objekt',
+        'einzug_object' => 'Einzug Objekt',
 
         // ... beliebig erweiterbar
     ],
