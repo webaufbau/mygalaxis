@@ -152,6 +152,10 @@ class FluentForm extends BaseController
         }
 
 
+        $this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType);
+
+
+
         return $this->response->setJSON(['success' => true]);
     }
 
@@ -167,4 +171,60 @@ class FluentForm extends BaseController
 
         return 'unknown';
     }
+
+    protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void
+    {
+        helper('text'); // für esc()
+
+        // Admins
+        $adminEmails = ['support@galaxisgroup.ch', 'logs@webaufbau.com', 'info@webagentur-forster.ch'];
+        $bccString = implode(',', $adminEmails);
+
+        // Formularverfasser
+        $userEmail = $data['email'] ?? null;
+
+        $formular_page = null;
+        if(isset($data['_wp_http_referer'])) {
+            $formular_page = $data['_wp_http_referer'];
+            $formular_page = str_replace('-', ' ', $formular_page);
+            $formular_page = str_replace('/', ' ', $formular_page);
+            $formular_page = ucwords($formular_page);
+            $formular_page = trim($formular_page);
+        }
+
+        // Technische Felder rausfiltern
+        $filteredFields = array_filter($data, function ($key) {
+            return !in_array($key, ['__submission', '__fluent_form_embded_post_id', '_fluentform_3_fluentformnonce', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method']);
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Maildaten für View
+        $emailData = [
+            'formName'       => $formName,
+            'formular_page' => $formular_page,
+            'uuid'           => $uuid,
+            'verifyType'     => $verifyType,
+            'filteredFields' => $filteredFields,
+            'data'           => $data,
+        ];
+
+        // HTML-Ansicht generieren
+        $htmlMessage = view('emails/offer_notification', $emailData);
+
+        // Maildienst starten
+        $email = \Config\Services::email();
+
+        $email->setFrom('noreply@webaufbau.com', 'Webanfrage');
+        $email->setTo($userEmail);            // Kunde als To
+        $email->setBCC($bccString);         // Admins als BCC
+        $email->setSubject('Bestätigung Ihrer Anfrage');
+        $email->setMessage($htmlMessage);
+        $email->setMailType('html');
+
+        if (!$email->send()) {
+            log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+        }
+
+    }
+
+
 }
