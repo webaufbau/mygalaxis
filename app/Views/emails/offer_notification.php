@@ -156,7 +156,7 @@
 
     <div class="footer">
         Diese Nachricht wurde automatisch generiert am <?= date('d.m.Y H:i') ?>.<br>
-        Offerten Schweiz – Powered by <?= base_url() ?>
+        Offerten Schweiz
     </div>
 </div>
 </body>
