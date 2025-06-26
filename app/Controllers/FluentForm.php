@@ -194,7 +194,20 @@ class FluentForm extends BaseController
 
         // Technische Felder rausfiltern
         $filteredFields = array_filter($data, function ($key) {
-            return !in_array($key, ['__submission', '__fluent_form_embded_post_id', '_fluentform_3_fluentformnonce', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method']);
+            // feste Keys ausschließen
+            $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
+
+            // prüfen, ob key in festen Keys ist
+            if (in_array($key, $excludeKeys)) {
+                return false;
+            }
+
+            // dynamische Keys ausschließen, z.B. _fluentform_{id}_fluentformnonce
+            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) {
+                return false;
+            }
+
+            return true;
         }, ARRAY_FILTER_USE_KEY);
 
         // Maildaten für View
