@@ -73,3 +73,13 @@ erstelle im root git_deploy_token.php
 <?php
 // The secret token to add as a GitHub or GitLab secret, or otherwise as https://www.example.com/?token=secret-token
 define("TOKEN", "");
+
+
+# migration : 
+
+UPDATE wpei_ff_scheduled_actions SET `data` = REPLACE(`data`, 'https://mygalaxis.primeno.ch/verification/webhook', 'https://my.offertenschweiz.ch/form/webhook');
+UPDATE wpei_ff_scheduled_actions SET `data` = REPLACE(`data`, 'https://mygalaxis.primeno.ch/form/webhook', 'https://my.offertenschweiz.ch/form/webhook');
+
+
+UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'https:\/\/mygalaxis.primeno.ch\/form\/handle', 'https://my.offertenschweiz.ch\/form\/handle');
+UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'mygalaxis.primeno.ch', 'my.offertenschweiz.ch');

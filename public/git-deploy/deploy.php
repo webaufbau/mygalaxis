@@ -1,5 +1,5 @@
 <?php
-include_once('/home/famajynu/www/my_offertenschweiz_ch_deploy/git_deploy_token.php');
+include_once('/home/famajynu/www/my_offertenschweiz_ch/git_deploy_token.php');
 
 define("REMOTE_REPOSITORY", "git@github.com:webaufbau/mygalaxis.git"); // The SSH URL to your repository
 define("DIR", "/home/famajynu/www/my_offertenschweiz_ch/");                          // The path to your repostiroy; this must begin with a forward slash (/)
@@ -10,4 +10,4 @@ define("MAX_EXECUTION_TIME", 180);                                     // Overri
 define("BEFORE_PULL", "");                                             // A command to execute before pulling
 define("AFTER_PULL", "");                                              // A command to execute after successfully pulling
 
-require_once("/home/famajynu/www/my_offertenschweiz_ch_deploy/public/git-deploy/deployer.php");
+require_once("/home/famajynu/www/my_offertenschweiz_ch/public/git-deploy/deployer.php");
