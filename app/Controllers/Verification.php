@@ -205,7 +205,7 @@ class Verification extends Controller
 
         } catch (ApiException $e) {
             log_message('error', "Infobip API Fehler bei $method an $phone: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Fehler beim Versenden des Verifizierungscodes. Bitte später erneut versuchen.');
+            return redirect()->back()->with('error', 'Fehler beim Versenden des Verifizierungscodes. Bitte versuchen Sie es erneut mit einer anderen Methode.');
         }
     }
 
