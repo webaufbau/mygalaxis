@@ -36,6 +36,8 @@ return [
         'rasen_maehen' => 'Rasen mähen',
         'rasen_maehen_einmalig' => 'Rasen mähen einmalig',
         'file_upload' => 'Dateien',
+        'additional_service' => 'Weitere Dienstleistung',
+
 
         // ... beliebig erweiterbar
     ],

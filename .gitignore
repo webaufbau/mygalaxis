@@ -130,3 +130,5 @@ _modules/*
 
 /results/
 /phpunit*.xml
+
+git_deploy_token.php
