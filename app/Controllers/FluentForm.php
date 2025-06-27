@@ -226,7 +226,7 @@ class FluentForm extends BaseController
         // Maildienst starten
         $email = \Config\Services::email();
 
-        $email->setFrom('noreply@webaufbau.com', 'Webanfrage');
+        $email->setFrom('anfrage@offertenschweiz.ch', 'OffertenSchweiz.ch');
         $email->setTo($userEmail);            // Kunde als To
         $email->setBCC($bccString);         // Admins als BCC
         $email->setSubject('Wir bestätigen Dir deine Anfrage/Offerte');
