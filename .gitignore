@@ -132,3 +132,7 @@ _modules/*
 /phpunit*.xml
 
 git_deploy_token.php
+
+public/.htaccess
+public/adminer.php
+public/git-deploy/.htaccess
