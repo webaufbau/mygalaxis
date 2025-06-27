@@ -87,7 +87,7 @@
             // Übersetzung vorhanden?
             $label = $labels[$key] ?? ucwords(str_replace(['_', '-'], ' ', $key));
 
-            echo $key.'|';
+            //echo $key.'|';
 
 
             // Konvertiere bool-artige Strings
