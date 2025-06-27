@@ -45,7 +45,7 @@ class FluentForm extends BaseController
 
         if($additional_service == 'Nein') {
             log_message('debug', 'Weiterleitung zur Verifikation mit UUID '.$uuid.' ' .  print_r($_SESSION, true));
-            return redirect()->to('verification');
+            return redirect()->to('verarbeitung');
         }
 
         // URL zusammensetzen (alle GET-Parameter anhängen)

@@ -81,6 +81,33 @@ class Verification extends Controller
         ]);
     }
 
+    public function processing()
+    {
+        return view('processing_request');
+    }
+
+    public function checkSession()
+    {
+        $uuid = session()->get('uuid');
+        if (!$uuid) {
+            return $this->response->setJSON(['status' => 'waiting']);
+        }
+
+        // Datenbank prüfen
+        $db = \Config\Database::connect();
+        $row = $db->table('offers')
+            ->where('uuid', $uuid)
+            ->orderBy('created_at', 'DESC')
+            ->get()
+            ->getRow();
+
+        if ($row) {
+            return $this->response->setJSON(['status' => 'ok']);
+        }
+
+        return $this->response->setJSON(['status' => 'waiting']);
+    }
+
     public function send()
     {
         $request = service('offers');

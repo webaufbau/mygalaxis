@@ -33,6 +33,11 @@ $routes->post('/verification/send', 'Verification::send');
 $routes->get('/verification/confirm', 'Verification::confirm');
 $routes->post('/verification/verify', 'Verification::verify');
 
+$routes->get('/verarbeitung', 'Verification::processing'); // oder beliebiger Pfadname
+$routes->get('/verification/check-session', 'Verification::checkSession');
+
+
+
 // Registrierung
 $routes->match(['POST'], 'register', 'RegisterController::registerAction');
 
