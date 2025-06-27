@@ -33,12 +33,12 @@
     $method = session('verify_method');
     ?>
 
-    <h2>Verifizierungscode eingeben</h2>
+    <h2>Bestätigungscode eingeben</h2>
 
     <?php if ($method === 'sms'): ?>
-        <p>Wir haben eine SMS mit Ihrem Verifizierungscode an <strong><?= esc($phone) ?></strong> gesendet.</p>
+        <p>Wir haben eine SMS mit Ihrem Bestätigungscode an <strong><?= esc($phone) ?></strong> gesendet.</p>
     <?php else: ?>
-        <p>Sie erhalten in wenigen Sekunden einen Anruf auf <strong><?= esc($phone) ?></strong> mit Ihrem Verifizierungscode.</p>
+        <p>Sie erhalten in wenigen Sekunden einen Anruf auf <strong><?= esc($phone) ?></strong> mit Ihrem Bestätigungscode.</p>
     <?php endif; ?>
 
     <p>Bitte geben Sie den erhaltenen Code unten ein:</p>
