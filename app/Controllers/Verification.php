@@ -41,7 +41,23 @@ class Verification extends Controller
 
         $db = \Config\Database::connect();
         $builder = $db->table('offers');
-        $row = $builder->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
+
+        $maxWaitTime = 10; // Maximal 10 Sekunden warten
+        $waited = 0;
+        $sleepInterval = 1; // Sekunde
+
+        $row = null;
+
+        while ($waited < $maxWaitTime) {
+            $row = $builder->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
+
+            if ($row) {
+                break;
+            }
+
+            sleep($sleepInterval);
+            $waited += $sleepInterval;
+        }
 
         if (!$row) {
             log_message('debug', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID '.$uuid.': ' .  print_r($_SESSION, true));
