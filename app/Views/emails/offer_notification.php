@@ -55,7 +55,7 @@
 <body>
 <div class="container">
 
-    <h1>🎉 Wir bestätigen Dir deine Anfrage/Offerte</h1>
+    <h2>🎉 Wir bestätigen Dir deine Anfrage/Offerte</h2>
 
     <p>Hallo <?= esc($data['vorname'] ?? ''); ?> <?= esc($data['nachname'] ?? ''); ?>,</p>
 
