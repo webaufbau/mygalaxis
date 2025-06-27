@@ -27,7 +27,7 @@ if (isset($json["checkout_sha"])) {
     $sha = $_GET["sha"];
 }
 
-// write the time to the log
+// write the time to the log!
 date_default_timezone_set("UTC");
 
 fputs($file, date("d-m-Y (H:i:s)", $time) . "\n");
