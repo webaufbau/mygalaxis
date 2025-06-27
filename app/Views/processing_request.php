@@ -29,7 +29,7 @@
 <script>
     async function checkSession() {
         try {
-            const response = await fetch('verification/check-session');
+            const response = await fetch('/verification/check-session');
             const data = await response.json();
 
             if (data.status === 'ok') {
