@@ -83,6 +83,7 @@ class Verification extends Controller
 
     public function processing()
     {
+        log_message('debug', 'Verifizierung processing: Warte auf Datensatz');
         return view('processing_request');
     }
 
@@ -90,6 +91,7 @@ class Verification extends Controller
     {
         $uuid = session()->get('uuid');
         if (!$uuid) {
+            log_message('debug', 'Verifizierung checkSession: waiting');
             return $this->response->setJSON(['status' => 'waiting']);
         }
 
@@ -102,9 +104,11 @@ class Verification extends Controller
             ->getRow();
 
         if ($row) {
+            log_message('debug', 'Verifizierung checkSession: ok: ' . $uuid);
             return $this->response->setJSON(['status' => 'ok']);
         }
 
+        log_message('debug', 'Verifizierung checkSession: waiting: ' . $uuid);
         return $this->response->setJSON(['status' => 'waiting']);
     }
 
@@ -116,6 +120,7 @@ class Verification extends Controller
         $method = $request->getPost('method');
 
         if (!$phone) {
+            log_message('debug', 'Verifizierung gesendet: Verifizierung Telefonnummer fehlt.');
             return redirect()->back()->with('error', 'Telefonnummer fehlt.');
         }
 
@@ -124,18 +129,24 @@ class Verification extends Controller
 
         // Wenn kein Mobile, dann nur Anruf zulassen
         if (!$isMobile && $method !== 'phone') {
+            log_message('debug', 'Verifizierung gesendet: Bei Festnetznummer ist nur Anruf-Verifizierung möglich.');
             return redirect()->back()->with('error', 'Bei Festnetznummer ist nur Anruf-Verifizierung möglich.');
         }
 
         if (!$method) {
+            log_message('debug', 'Verifizierung gesendet: Bitte Verifizierungsmethode wählen.');
             return redirect()->back()->with('error', 'Bitte Verifizierungsmethode wählen.');
         }
+
+        log_message('debug', 'Verifizierung Methode ' . $method);
 
         // Simuliere den Versand des Verifizierungscodes
         $verificationCode = rand(100000, 999999);
         session()->set('verification_code', $verificationCode);
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
+
+        log_message('debug', 'Verifizierung Code ' . $verificationCode);
 
         // Infobip Konfiguration
         $infobib_config = new Infobib();
@@ -198,6 +209,8 @@ class Verification extends Controller
     {
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode=='') {
+            log_message('debug', 'Verifizierung Confirm verificationCode fehlt.');
+
             return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // oder Fehlerseite
         }
 
@@ -221,9 +234,12 @@ class Verification extends Controller
             $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => $this->request->getPost('method')]);
 
             session()->remove('verification_code');
+
+            log_message('debug', 'Verifizierung Abgeschlossen: gehe weiter zur URL: ' . (session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
             return view('verification_success', ['next_url' => session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/']);
         }
 
+        log_message('debug', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
     }
 
