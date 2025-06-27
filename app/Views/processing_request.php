@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Anfrage wird verarbeitet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 <p>Ihre Anfrage wird verarbeitet... Bitte einen Moment Geduld.</p>
