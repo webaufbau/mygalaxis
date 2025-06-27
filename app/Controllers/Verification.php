@@ -77,10 +77,14 @@ class Verification extends Controller
             $isMobile = true;
         }
 
-        return view('verification_form', [
-            'phone' => $phone,
-            'isMobile' => $isMobile,
-        ]);
+        $method = $isMobile ? 'sms' : 'call';
+
+        // In Session schreiben
+        session()->set('phone', $phone);
+        session()->set('verify_method', $method);
+
+        // Weiterleitung zu send(), um direkt Code zu verschicken
+        return redirect()->to('/verification/send');
     }
 
     public function processing()
@@ -118,8 +122,8 @@ class Verification extends Controller
     {
         $request = service('request');
 
-        $phone = $request->getPost('phone'); // sollte in prod nicht per form sondern auch wieder über DB gelesen werden, sonst manipulierbar.
-        $method = $request->getPost('method');
+        $phone = session()->get('phone');
+        $method = session()->get('verify_method');
 
         if (!$phone) {
             log_message('debug', 'Verifizierung gesendet: Verifizierung Telefonnummer fehlt.');
@@ -150,7 +154,7 @@ class Verification extends Controller
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
 
-        log_message('debug', 'Verifizierung Code ' . $verificationCode);
+        log_message('debug', "Verifizierung Code $verificationCode via $method an $phone");
 
         // Infobip Konfiguration
         $infobib_config = new Infobib();
@@ -205,7 +209,7 @@ class Verification extends Controller
 
         } catch (ApiException $e) {
             log_message('error', "Infobip API Fehler bei $method an $phone: " . $e->getMessage());
-            return redirect()->back()->with('error', 'Fehler beim Versenden des Verifizierungscodes. Bitte versuchen Sie es erneut mit einer anderen Methode.');
+            return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
         }
     }
 
