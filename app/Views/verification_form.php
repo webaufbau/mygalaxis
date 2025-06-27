@@ -28,7 +28,9 @@
 </div>
 
 <div class="container mt-5">
-    <h2>Verifizierung anfordern</h2>
+    <h2>Telefonnummer bestätigen</h2>
+
+    <p class="mb-4">Bitte bestätigen Sie Ihre Telefonnummer, um die Offerten sicher und korrekt zu erhalten. Ohne Bestätigung erhalten Sie keine Offerten.</p>
 
     <?php if (session('error')): ?>
         <div class="alert alert-danger"><?= session('error') ?></div>
@@ -58,8 +60,9 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Verifizierung anfordern</button>
+        <button type="submit" class="btn btn-primary">Telefonnummer bestätigen</button>
     </form>
 </div>
+
 </body>
 </html>
