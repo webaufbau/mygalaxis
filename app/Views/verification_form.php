@@ -9,6 +9,9 @@
         .elementor-1384 .elementor-element.elementor-element-67308e5:not(.elementor-motion-effects-element-type-background), .elementor-1384 .elementor-element.elementor-element-67308e5 > .elementor-motion-effects-container > .elementor-motion-effects-layer {
             background-color: #955CE9;
         }
+        .elementor-widget-container {
+            text-align: center;
+        }
     </style>
 </head>
 <body class="bg-light">
