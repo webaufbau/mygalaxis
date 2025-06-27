@@ -33,6 +33,8 @@ class Verification extends Controller
             $waited++;
 
             if ($waited >= $maxWaitTime) {
+                log_message('debug', 'Verifikation kann nicht gemacht werden uuid fehlt nach 5 Sekunden' .  print_r($_SESSION, true));
+
                 return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // Fehlerseite oder Hinweis
             }
         }
@@ -42,6 +44,8 @@ class Verification extends Controller
         $row = $builder->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
 
         if (!$row) {
+            log_message('debug', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID '.$uuid.': ' .  print_r($_SESSION, true));
+
             return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/')->with('error', 'Keine Anfrage gefunden.');
         }
 

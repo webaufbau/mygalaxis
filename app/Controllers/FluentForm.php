@@ -34,6 +34,7 @@ class FluentForm extends BaseController
         // Speichern
         session()->set('uuid', $uuid);
         session()->set('next_url', $next_url);
+        session()->set('additional_service', $additional_service);
         session()->set("formdata_$uuid", [
             'vorname' => $vorname,
             'additional_service' => $additional_service,
@@ -41,6 +42,7 @@ class FluentForm extends BaseController
         ]);
 
         if($additional_service == 'Nein') {
+            log_message('debug', 'Weiterleitung zur Verifikation mit UUID '.$uuid.' ' .  print_r($_SESSION, true));
             return redirect()->to('verification');
         }
 
