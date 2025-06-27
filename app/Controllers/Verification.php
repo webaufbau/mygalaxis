@@ -42,7 +42,7 @@ class Verification extends Controller
         $row = $builder->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
 
         if (!$row) {
-            return redirect()->to('/')->with('error', 'Keine Anfrage gefunden.');
+            return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/')->with('error', 'Keine Anfrage gefunden.');
         }
 
         // form_fields ist JSON, decode es:
@@ -150,7 +150,7 @@ class Verification extends Controller
     {
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode=='') {
-            return redirect()->to('/'); // oder Fehlerseite
+            return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // oder Fehlerseite
         }
 
         return view('verification_confirm', ['verification_code' => session()->get('verification_code')]);
