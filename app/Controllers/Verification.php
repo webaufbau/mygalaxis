@@ -42,7 +42,7 @@ class Verification extends Controller
         $db = \Config\Database::connect();
         $builder = $db->table('offers');
 
-        $maxWaitTime = 10; // Maximal 10 Sekunden warten
+        $maxWaitTime = 15; // Maximal 10 Sekunden warten
         $waited = 0;
         $sleepInterval = 1; // Sekunde
 
