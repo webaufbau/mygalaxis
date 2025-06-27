@@ -41,6 +41,8 @@ class FluentForm extends BaseController
             'next_url' => $next_url,
         ]);
 
+        log_message('debug', 'Session Daten sichern: ' .  print_r($_SESSION, true));
+
         if($additional_service == 'Nein') {
             log_message('debug', 'Weiterleitung zur Verifikation mit UUID '.$uuid.' ' .  print_r($_SESSION, true));
             return redirect()->to('verification');
