@@ -30,6 +30,7 @@ $routes->get('form/handle', '\App\Controllers\FluentForm::handle');
 // Verifizierung
 $routes->get('/verification', 'Verification::index');
 $routes->post('/verification/send', 'Verification::send');
+$routes->get('/verification/send', 'Verification::send');
 $routes->get('/verification/confirm', 'Verification::confirm');
 $routes->post('/verification/verify', 'Verification::verify');
 
