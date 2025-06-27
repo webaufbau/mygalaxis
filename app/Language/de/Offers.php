@@ -35,6 +35,7 @@ return [
         'einzug_object' => 'Einzug Objekt',
         'rasen_maehen' => 'Rasen mähen',
         'rasen_maehen_einmalig' => 'Rasen mähen einmalig',
+        'file-upload' => 'Dateien',
         'file_upload' => 'Dateien',
         'additional_service' => 'Weitere Dienstleistung',
 
