@@ -7,6 +7,8 @@ $token   = false;
 $sha     = false;
 $DIR     = preg_match("/\/$/", DIR) ? DIR : DIR . "/";
 
+file_put_contents('/home/famajynu/www/my_offertenschweiz_ch/git_webhook_payload.log', file_get_contents('php://input'));
+
 // retrieve the token
 if (!$token && isset($_SERVER["HTTP_X_HUB_SIGNATURE"])) {
     list($algo, $token) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE"], 2) + array("", "");
