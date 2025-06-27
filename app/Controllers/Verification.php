@@ -23,9 +23,18 @@ class Verification extends Controller
 {
     public function index()
     {
+        $maxWaitTime = 5; // Sekunden
+        $waited = 0;
+
         $uuid = session()->get('uuid');
-        if (!$uuid) {
-            return redirect()->to('/'); // oder Fehlerseite
+
+        while (!$uuid = session()->get('uuid')) {
+            sleep(1); // 1 Sekunde warten
+            $waited++;
+
+            if ($waited >= $maxWaitTime) {
+                return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // Fehlerseite oder Hinweis
+            }
         }
 
         $db = \Config\Database::connect();
@@ -164,7 +173,7 @@ class Verification extends Controller
             $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => $this->request->getPost('method')]);
 
             session()->remove('verification_code');
-            return view('verification_success', ['next_url' => session()->get('next_url') ?? 'https://umzuege.webagentur-forster.ch/danke-umzug/']);
+            return view('verification_success', ['next_url' => session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/']);
         }
 
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
