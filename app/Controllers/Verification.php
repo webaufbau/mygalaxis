@@ -126,6 +126,8 @@ class Verification extends Controller
             return redirect()->back()->with('error', 'Telefonnummer fehlt.');
         }
 
+        $phone = $this->normalizePhone($phone);
+
         // Prüfe, ob Mobilnummer
         $isMobile = $this->isMobileNumber($phone);
 
@@ -164,7 +166,7 @@ class Verification extends Controller
                 $smsApi = new SmsApi($configuration);
 
                 $message = new SmsMessage(
-                    destinations: [new SmsDestination(to: number_format($phone, "", "", ""))], // Kein + in Telefonnummer
+                    destinations: [new SmsDestination(to: $phone)], // Kein + in Telefonnummer
                     content: new SmsTextContent(text: "Ihr Verifizierungscode lautet: $verificationCode"),
                     sender: 'InfoSMS' // muss bei Infobip registriert sein ||| GalaxisGroup
                 );
@@ -187,7 +189,7 @@ class Verification extends Controller
 
                 $callRequest = new CallsSingleBody(
                     from: $from,
-                    to: number_format($phone, "", "", ""), // Kein + in Telefonnummer
+                    to: $phone, // Kein + in Telefonnummer
                     audioFileUrl: null,
                     language: 'de-CH',
                     text: "Ihr Verifizierungscode lautet $verificationCode",
