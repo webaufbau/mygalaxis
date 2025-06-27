@@ -45,6 +45,7 @@ class Verification extends Controller
 
         if (!$row) {
             log_message('debug', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID '.$uuid.': ' .  print_r($_SESSION, true));
+            log_message('debug', 'Abfrage: ' . $builder->db()->getLastQuery());
 
             return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/')->with('error', 'Keine Anfrage gefunden.');
         }
