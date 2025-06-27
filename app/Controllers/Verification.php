@@ -114,7 +114,7 @@ class Verification extends Controller
 
     public function send()
     {
-        $request = service('offers');
+        $request = service('request');
 
         $phone = $request->getPost('phone'); // sollte in prod nicht per form sondern auch wieder über DB gelesen werden, sonst manipulierbar.
         $method = $request->getPost('method');
@@ -228,7 +228,7 @@ class Verification extends Controller
         if ($enteredCode == session()->get('verification_code')) {
 
             $db = \Config\Database::connect();
-            $builder = $db->table('requests');
+            $builder = $db->table('offers');
 
             // verified auf 1 setzen für diese uuid
             $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => $this->request->getPost('method')]);
