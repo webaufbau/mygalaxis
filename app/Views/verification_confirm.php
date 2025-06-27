@@ -49,7 +49,7 @@
             <label for="code" class="form-label">Bestätigungscode</label>
             <input type="text" name="code" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-success">Verifizieren</button>
+        <button type="submit" class="btn btn-success">Bestätigen</button>
     </form>
 
 </div>

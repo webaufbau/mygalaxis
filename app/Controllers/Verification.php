@@ -149,7 +149,7 @@ class Verification extends Controller
         log_message('debug', 'Verifizierung Methode ' . $method);
 
         // Simuliere den Versand des Verifizierungscodes
-        $verificationCode = rand(100000, 999999);
+        $verificationCode = rand(1000, 9999);
         session()->set('verification_code', $verificationCode);
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
