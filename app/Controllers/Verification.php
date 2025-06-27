@@ -235,7 +235,7 @@ class Verification extends Controller
             $builder = $db->table('offers');
 
             // verified auf 1 setzen für diese uuid
-            $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => $this->request->getPost('method')]);
+            $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => session()->get('verify_method')]);
 
             session()->remove('verification_code');
 
