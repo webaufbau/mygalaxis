@@ -70,6 +70,8 @@ class Verification extends Controller
         $fields = json_decode($row->form_fields, true);
         $phone = $fields['phone'] ?? '';
 
+        $phone = $this->normalizePhone($phone);
+
         $isMobile = false;
         if (preg_match('/^(\+41|0)(75|76|77|78|79)[0-9]{7}$/', str_replace(' ', '', $phone))) {
             $isMobile = true;
@@ -241,6 +243,17 @@ class Verification extends Controller
 
         log_message('debug', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        $phone = preg_replace('/\D+/', '', $phone); // Nur Zahlen
+        if (str_starts_with($phone, '0')) {
+            $phone = '+41' . substr($phone, 1); // 0781234512 → +41781234512
+        } elseif (!str_starts_with($phone, '+')) {
+            $phone = '+' . $phone;
+        }
+        return $phone;
     }
 
     private function isMobileNumber(string $phone): bool
