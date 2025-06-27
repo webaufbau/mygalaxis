@@ -83,3 +83,5 @@ UPDATE wpei_ff_scheduled_actions SET `data` = REPLACE(`data`, 'https://mygalaxis
 
 UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'https:\/\/mygalaxis.primeno.ch\/form\/handle', 'https://my.offertenschweiz.ch\/form\/handle');
 UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'mygalaxis.primeno.ch', 'my.offertenschweiz.ch');
+UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'next_url_action={inputs.next_url_action}&name={inputs.names}&service_url={inputs.service_url}&uuid={inputs.uuid}', 'additional_service={inputs.additional_service}&refurl={wp.site_url}&service_url={inputs.service_url}&uuid={inputs.uuid}');
+
