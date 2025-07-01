@@ -190,6 +190,8 @@ class FluentForm extends BaseController
         $formular_page = null;
         if(isset($data['_wp_http_referer'])) {
             $formular_page = $data['_wp_http_referer'];
+            $formular_page_exploder = explode('?', $formular_page);
+            $formular_page = $formular_page_exploder[0];
             $formular_page = str_replace('-', ' ', $formular_page);
             $formular_page = str_replace('/', ' ', $formular_page);
             $formular_page = ucwords($formular_page);
