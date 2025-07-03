@@ -167,6 +167,7 @@ class FluentForm extends BaseController
     {
         $source = $fields['service_url'] ?? '';
 
+        if (str_contains($source, 'umzug')) return 'move';
         if (str_contains($source, 'umzuege')) return 'move';
         if (str_contains($source, 'reinigung')) return 'cleaning';
         if (str_contains($source, 'maler')) return 'painting';
