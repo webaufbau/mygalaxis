@@ -128,7 +128,9 @@
 
         ?>
     <tr>
-        <td><?= date('d.m.Y', strtotime($o['created_at'])) ?></td>
+        <td data-order="<?= date('Y-m-d', strtotime($o['created_at'])) ?>">
+            <?= date('d.m.Y', strtotime($o['created_at'])) ?>
+        </td>
         <td><?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?></td>
         <td><?= esc($o['zip']) ?></td>
         <td><?= esc($o['city']) ?></td>
