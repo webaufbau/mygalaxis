@@ -127,18 +127,18 @@ class FluentForm extends BaseController
                 ]);
                 break;
 
-            case 'painter':
-                $painterModel = new \App\Models\OfferPaintingModel();
-                $painterModel->insert([
+            case 'painting':
+                $paintingModel = new \App\Models\OfferPaintingModel();
+                $paintingModel->insert([
                     'offer_id'       => $offerId,
                     'area'           => $data['malerflaeche'] ?? null,
                     'indoor_outdoor' => $data['malerart'] ?? null,
                 ]);
                 break;
 
-            case 'gardener':
-                $gardenerModel = new \App\Models\OfferGardeningModel();
-                $gardenerModel->insert([
+            case 'gardening':
+                $gardeningModel = new \App\Models\OfferGardeningModel();
+                $gardeningModel->insert([
                     'offer_id'       => $offerId,
                     'garden_size'    => $data['gartenflaeche'] ?? null,
                     'work_type'      => $data['gartenarbeit'] ?? null,
@@ -169,8 +169,8 @@ class FluentForm extends BaseController
 
         if (str_contains($source, 'umzuege')) return 'move';
         if (str_contains($source, 'reinigung')) return 'cleaning';
-        if (str_contains($source, 'maler')) return 'painter';
-        if (str_contains($source, 'garten')) return 'gardener';
+        if (str_contains($source, 'maler')) return 'painting';
+        if (str_contains($source, 'garten')) return 'gardening';
         if (str_contains($source, 'sanitaer')) return 'plumbing';
 
         return 'unknown';
