@@ -81,6 +81,14 @@ class FluentForm extends BaseController
         $verified = in_array($verifyType, ['sms', 'phone']) ? 1 : 0;
         unset($data['verified_method']);
 
+        $isCampaign = 0;
+        foreach (['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as $utmKey) {
+            if (!empty($data[$utmKey])) {
+                $isCampaign = 1;
+                break;
+            }
+        }
+
         $offerModel = new OfferModel();
 
         if (!$offerModel->insert([
@@ -96,6 +104,7 @@ class FluentForm extends BaseController
             'price'        => 0.00,
             'buyers'       => 0,
             'bought_by'    => json_encode([]),
+            'from_campaign' => $isCampaign,
         ])) {
             log_message('error', 'Offer insert failed: ' . print_r($offerModel->errors(), true));
         }

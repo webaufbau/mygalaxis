@@ -97,6 +97,7 @@
         <th>Ort</th>
         <th>Name</th>
         <th>Status</th>
+        <th>Kampagne</th>
         <th>Verifiziert</th>
         <th>Details</th>
     </tr>
@@ -115,6 +116,16 @@
             $verified = 'Noch nicht';
             $verified = '<div class="badge bg-danger">' . $verified . '</div>';
         }
+
+
+        $formFields = json_decode($o['form_fields'] ?? '{}', true);
+        $utm = array_filter($formFields, function ($key) {
+            return in_array($key, ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']);
+        }, ARRAY_FILTER_USE_KEY);
+
+        $utmStatus = count($utm) > 0 ? '<div class="badge bg-info">Ja</div>' : '<div class="badge bg-secondary">Nein</div>';
+
+
         ?>
     <tr>
         <td><?= date('d.m.Y', strtotime($o['created_at'])) ?></td>
@@ -123,6 +134,7 @@
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td><?= esc(lang('Offers.status.' . $o['status']) ?? $o['status']) ?></td>
+        <td><?= $utmStatus ?></td>
         <td><?=$verified;?></td>
         <td>
             <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm" target="_blank">

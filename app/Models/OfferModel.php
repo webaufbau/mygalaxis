@@ -33,6 +33,7 @@ class OfferModel extends Model
         'referer',
         'verified',
         'verify_type',
+        'from_campaign',
         'created_at',
         'updated_at',
     ];
