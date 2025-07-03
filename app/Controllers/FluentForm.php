@@ -109,11 +109,11 @@ class FluentForm extends BaseController
                 $moveModel = new \App\Models\OfferMoveModel();
                 $moveModel->insert([
                     'offer_id'        => $offerId,
-                    'room_size'       => $data['auszug_flaeche'] ?? null,
+                    'room_size'       => $data['auszug_flaeche'] ?? $data['auszug_flaeche_firma'] ?? null,
                     'move_date'       => isset($data['datetime_1']) ? date('Y-m-d', strtotime(str_replace('/', '.', $data['datetime_1']))) : null,
-                    'from_city'       => $data['auszug_adresse']['city'] ?? null,
-                    'to_city'         => $data['einzug_adresse']['city'] ?? null,
-                    'has_lift'        => $data['auszug_lift_firma'] ?? null,
+                    'from_city'       => $data['auszug_adresse']['city'] ?? $data['auszug_adresse_firma']['city'] ?? null,
+                    'to_city'         => $data['einzug_adresse']['city'] ?? $data['einzug_adresse_firma']['city'] ?? null,
+                    'has_lift'        => $data['auszug_lift'] ?? $data['auszug_lift_firma'] ?? null,
                     'customer_type'   => isset($data['firmenname']) ? 'firma' : 'privat',
                 ]);
                 break;
@@ -122,7 +122,7 @@ class FluentForm extends BaseController
                 $cleaningModel = new \App\Models\OfferCleaningModel();
                 $cleaningModel->insert([
                     'offer_id'       => $offerId,
-                    'object_size'    => $data['objektgroesse'] ?? null,
+                    'object_size'    => $data['wohnung_groesse'] ?? null,
                     'cleaning_type'  => $data['reinigungsart'] ?? null,
                 ]);
                 break;
@@ -131,7 +131,7 @@ class FluentForm extends BaseController
                 $paintingModel = new \App\Models\OfferPaintingModel();
                 $paintingModel->insert([
                     'offer_id'       => $offerId,
-                    'area'           => $data['malerflaeche'] ?? null,
+                    'area'           => $data['wand_gesamtflaeche'] ?? null,
                     'indoor_outdoor' => $data['malerart'] ?? null,
                 ]);
                 break;
@@ -140,8 +140,8 @@ class FluentForm extends BaseController
                 $gardeningModel = new \App\Models\OfferGardeningModel();
                 $gardeningModel->insert([
                     'offer_id'       => $offerId,
-                    'garden_size'    => $data['gartenflaeche'] ?? null,
-                    'work_type'      => $data['gartenarbeit'] ?? null,
+                    'garden_size'    => $data['bodenplatten_haus_flaeche'] ?? null,
+                    'work_type'      => $data['bodenplatten_vorplatz'] ?? null,
                 ]);
                 break;
 
