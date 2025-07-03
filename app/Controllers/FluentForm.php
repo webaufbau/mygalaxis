@@ -181,7 +181,7 @@ class FluentForm extends BaseController
         helper('text'); // für esc()
 
         // Admins
-        $adminEmails = ['support@galaxisgroup.ch', 'info@webaufbau.ch', 'info@webagentur-forster.ch'];
+        $adminEmails = ['anfrage@offertenschweiz.ch', 'info@webaufbau.ch', 'info@webagentur-forster.ch'];
         $bccString = implode(',', $adminEmails);
 
         // Formularverfasser
@@ -200,20 +200,16 @@ class FluentForm extends BaseController
 
         // Technische Felder rausfiltern
         $filteredFields = array_filter($data, function ($key) {
-            // feste Keys ausschließen
             $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
-
-            // prüfen, ob key in festen Keys ist
-            if (in_array($key, $excludeKeys)) {
-                return false;
-            }
-
-            // dynamische Keys ausschließen, z.B. _fluentform_{id}_fluentformnonce
-            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) {
-                return false;
-            }
-
+            if (in_array($key, $excludeKeys)) return false;
+            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
             return true;
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Tracking-Felder entfernen
+        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
+        $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
+            return !in_array($key, $utmKeys);
         }, ARRAY_FILTER_USE_KEY);
 
         // Maildaten für View
