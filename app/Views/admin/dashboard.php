@@ -138,8 +138,12 @@
 
         ?>
     <tr>
-        <td data-order="<?= date('Y-m-d-H-i-s', strtotime($o['created_at'])) ?>">
-            <?= date('d.m.Y H:i', strtotime($o['created_at'])) ?>
+        <?php
+        $date = new DateTime($o['created_at'], new DateTimeZone('UTC')); // oder ohne 2. Parameter, wenn CI4 es als UTC liefert
+        $date->setTimezone(new DateTimeZone('Europe/Zurich'));
+        ?>
+        <td data-order="<?= $date->format('Y-m-d-H-i-s') ?>">
+            <?= $date->format('d.m.Y H:i') ?>
         </td>
         <td><?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?></td>
         <td><?= esc($o['zip']) ?></td>
