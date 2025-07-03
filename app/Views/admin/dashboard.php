@@ -119,9 +119,17 @@
 
 
         $formFields = json_decode($o['form_fields'] ?? '{}', true);
-        $utm = array_filter($formFields, function ($key) {
-            return in_array($key, ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']);
-        }, ARRAY_FILTER_USE_KEY);
+
+        // Prüfen, ob mindestens ein UTM-Feld einen Wert hat
+        $hasUtmValue = false;
+        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+
+        foreach ($utmKeys as $utmKey) {
+            if (!empty($formFields[$utmKey])) {
+                $hasUtmValue = true;
+                break;
+            }
+        }
 
         $utmStatus = count($utm) > 0 ? '<div class="badge bg-info">Ja</div>' : '<div class="badge bg-secondary">Nein</div>';
 
