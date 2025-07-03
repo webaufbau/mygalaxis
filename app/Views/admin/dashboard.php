@@ -97,13 +97,25 @@
         <th>Ort</th>
         <th>Name</th>
         <th>Status</th>
+        <th>Verifiziert</th>
         <th>Details</th>
     </tr>
     </thead>
     <tbody>
     <?php
 
-    foreach ($offers as $o): ?>
+    foreach ($offers as $o):
+        if(isset($o['verified']) && $o['verified']=='1') {
+            $verified = 'Verifiziert';
+            if(isset($o['verify_type'])) {
+                $verified .= ' ' . $o['verify_type'];
+            }
+            $verified = '<div class="badge bg-success">' . $verified . '</div>';
+        } else {
+            $verified = 'Noch nicht';
+            $verified = '<div class="badge bg-danger">' . $verified . '</div>';
+        }
+        ?>
     <tr>
         <td><?= date('d.m.Y', strtotime($o['created_at'])) ?></td>
         <td><?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?></td>
@@ -111,6 +123,7 @@
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td><?= esc(lang('Offers.status.' . $o['status']) ?? $o['status']) ?></td>
+        <td><?=$verified;?></td>
         <td>
             <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm" target="_blank">
                 Details
