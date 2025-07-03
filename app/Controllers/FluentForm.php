@@ -181,7 +181,7 @@ class FluentForm extends BaseController
         helper('text'); // für esc()
 
         // Admins
-        $adminEmails = ['anfrage@offertenschweiz.ch', 'info@webaufbau.ch', 'info@webagentur-forster.ch'];
+        $adminEmails = ['anfrage@offertenschweiz.ch'];
         $bccString = implode(',', $adminEmails);
 
         // Formularverfasser
