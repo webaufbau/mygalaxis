@@ -131,7 +131,9 @@
             }
         }
 
-        $utmStatus = count($utm) > 0 ? '<div class="badge bg-info">Ja</div>' : '<div class="badge bg-secondary">Nein</div>';
+        $utmStatus = $hasUtmValue
+            ? '<div class="badge bg-info">Ja</div>'
+            : '<div class="badge bg-secondary">Nein</div>';
 
 
         ?>
