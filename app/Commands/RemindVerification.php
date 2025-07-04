@@ -19,10 +19,11 @@ class RemindVerification extends BaseCommand
     public function run(array $params)
     {
         $offerModel = new OfferModel();
+        $twoMinutesAgo = date('Y-m-d H:i:s', strtotime('-2 minutes'));
         $offers = $offerModel
             ->where('verified', 0)
-            //->where('created_at <=', date('Y-m-d H:i:s', strtotime('-10 minutes')))
             ->where('reminder_sent_at IS NULL')
+            ->where('created_at <=', $twoMinutesAgo)
             ->findAll(100);
 
         if (!$offers) {
