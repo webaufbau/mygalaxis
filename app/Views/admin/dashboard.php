@@ -121,19 +121,25 @@
         $formFields = json_decode($o['form_fields'] ?? '{}', true);
 
         // Prüfen, ob mindestens ein UTM-Feld einen Wert hat
-        $hasUtmValue = false;
-        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+        $utmSource = $formFields['utm_source'] ?? null;
 
-        foreach ($utmKeys as $utmKey) {
-            if (!empty($formFields[$utmKey])) {
-                $hasUtmValue = true;
-                break;
+        if (!empty($utmSource)) {
+            $utmStatus = '<div class="badge bg-info">' . ucwords($utmSource) . '</div>';
+        } else {
+            // Fallback prüfen, ob andere UTM-Felder gesetzt sind
+            $hasOtherUtm = false;
+            foreach (['utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as $utmKey) {
+                if (!empty($formFields[$utmKey])) {
+                    $hasOtherUtm = true;
+                    break;
+                }
             }
+
+            $utmStatus = $hasOtherUtm
+                ? '<div class="badge bg-info">Ja</div>'
+                : '<div class="badge bg-secondary">Nein</div>';
         }
 
-        $utmStatus = $hasUtmValue
-            ? '<div class="badge bg-info">Ja</div>'
-            : '<div class="badge bg-secondary">Nein</div>';
 
 
         ?>
