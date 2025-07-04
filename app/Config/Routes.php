@@ -36,6 +36,7 @@ $routes->post('/verification/verify', 'Verification::verify');
 
 $routes->get('/verarbeitung', 'Verification::processing'); // oder beliebiger Pfadname
 $routes->get('/verification/check-session', 'Verification::checkSession');
+$routes->get('/verification/verify-offer/(:num)/(:any)', 'Verification::verifyOffer/$1/$2');
 
 
 

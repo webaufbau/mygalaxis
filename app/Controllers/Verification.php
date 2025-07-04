@@ -251,6 +251,41 @@ class Verification extends Controller
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
     }
 
+    // sending with mail after inserted and not verified:
+    public function verifyOffer($offerId = null, $token = null)
+    {
+        if (!$offerId || !$token) {
+            return redirect()->to('/')->with('error', 'Ungültiger Verifizierungslink.');
+        }
+
+        $offerModel = new \App\Models\OfferModel();
+        $offer = $offerModel->find($offerId);
+
+        if (!$offer || $offer['verification_token'] !== $token) {
+            return redirect()->to('/')->with('error', 'Ungültiger oder abgelaufener Verifizierungslink.');
+        }
+
+        if ((int)$offer['verified'] === 1) {
+            return redirect()->to('/')->with('message', 'Angebot bereits verifiziert.');
+        }
+
+        $fields = json_decode($offer['form_fields'], true);
+        $phone = $fields['phone'] ?? '';
+        $phone = $this->normalizePhone($phone);
+
+        $isMobile = $this->isMobileNumber($phone);
+        $method = $isMobile ? 'sms' : 'phone';
+
+        session()->set('uuid', $offer['uuid']);
+        session()->set('phone', $phone);
+        session()->set('verify_method', $method);
+        session()->set('next_url', 'https://offertenschweiz.ch/dankesseite-umzug/'); // fix immer danke seite
+
+        return redirect()->to('/verification/send');
+    }
+
+
+
     private function normalizePhone(string $phone): string
     {
         $phone = preg_replace('/\D+/', '', $phone); // Nur Zahlen

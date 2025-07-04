@@ -37,6 +37,8 @@ class OfferModel extends Model
         'created_at',
         'updated_at',
         'checked_at',
+        'reminder_sent_at',
+        'verification_token',
     ];
 
     protected $useTimestamps = true;
@@ -61,6 +63,10 @@ class OfferModel extends Model
                 $data['data'],
                 $this->enrichDataFromFormFields($fields, $data['data'])
             );
+        }
+
+        if (empty($data['data']['verification_token'])) {
+            $data['data']['verification_token'] = bin2hex(random_bytes(32)); // 64 Zeichen Hex
         }
 
         return $data;
