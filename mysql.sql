@@ -480,3 +480,7 @@ CREATE TABLE `offer_purchases` (
    CONSTRAINT `fk_offer_purchases_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
    CONSTRAINT `offer_purchases_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `offers`
+    ADD `checked_at` datetime NULL AFTER `from_campaign`,
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;

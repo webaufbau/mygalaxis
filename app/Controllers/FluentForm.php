@@ -59,6 +59,11 @@ class FluentForm extends BaseController
     }
 
     // Dies wird nach dem Senden der Formulare ausgeführt:
+
+    /**
+     * @throws RandomException
+     * @throws \ReflectionException
+     */
     public function webhook()
     {
         log_message('debug', 'Webhook called!');
@@ -90,100 +95,71 @@ class FluentForm extends BaseController
         }
 
         $offerModel = new OfferModel();
+        $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
-        if (!$offerModel->insert([
-            'form_name'    => $formName,
-            'form_fields'  => json_encode($data, JSON_UNESCAPED_UNICODE),
-            'headers'      => json_encode($headers, JSON_UNESCAPED_UNICODE),
-            'referer'      => $referer,
-            'verified'     => $verified,
-            'verify_type'  => $verifyType,
-            'uuid'         => $uuid,
-            'created_at'   => date('Y-m-d H:i:s'),
-            'status'       => 'new',
-            'price'        => 0.00,
-            'buyers'       => 0,
-            'bought_by'    => json_encode([]),
+        $insertData = array_merge([
+            'form_name'     => $formName,
+            'form_fields'   => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'headers'       => json_encode($headers, JSON_UNESCAPED_UNICODE),
+            'referer'       => $referer,
+            'verified'      => $verified,
+            'verify_type'   => $verifyType,
+            'uuid'          => $uuid,
+            'created_at'    => date('Y-m-d H:i:s'),
+            'status'        => 'new',
+            'price'         => 0.00,
+            'buyers'        => 0,
+            'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
-        ])) {
+        ], $enriched);
+
+        // Speichern
+        if (!$offerModel->insert($insertData)) {
             log_message('error', 'Offer insert failed: ' . print_r($offerModel->errors(), true));
         }
 
         $offerId = $offerModel->getInsertID();
-        $type = $offerData['type'] ?? $this->detectType($data);
+        $formFields = $data;
+        $type = $enriched['type'] ?? 'unknown';
 
         // Typ-spezifische Speicherung:
-        switch ($type) {
-            case 'move':
-                $moveModel = new \App\Models\OfferMoveModel();
-                $moveModel->insert([
-                    'offer_id'        => $offerId,
-                    'room_size'       => $data['auszug_flaeche'] ?? $data['auszug_flaeche_firma'] ?? null,
-                    'move_date'       => isset($data['datetime_1']) ? date('Y-m-d', strtotime(str_replace('/', '.', $data['datetime_1']))) : null,
-                    'from_city'       => $data['auszug_adresse']['city'] ?? $data['auszug_adresse_firma']['city'] ?? null,
-                    'to_city'         => $data['einzug_adresse']['city'] ?? $data['einzug_adresse_firma']['city'] ?? null,
-                    'has_lift'        => $data['auszug_lift'] ?? $data['auszug_lift_firma'] ?? null,
-                    'customer_type'   => isset($data['firmenname']) ? 'firma' : 'privat',
-                ]);
-                break;
+        $typeModelMap = [
+            'move'      => \App\Models\OfferMoveModel::class,
+            'cleaning'  => \App\Models\OfferCleaningModel::class,
+            'painting'  => \App\Models\OfferPaintingModel::class,
+            'gardening' => \App\Models\OfferGardeningModel::class,
+            'plumbing'  => \App\Models\OfferPlumbingModel::class,
+        ];
 
-            case 'cleaning':
-                $cleaningModel = new \App\Models\OfferCleaningModel();
-                $cleaningModel->insert([
-                    'offer_id'       => $offerId,
-                    'object_size'    => $data['wohnung_groesse'] ?? null,
-                    'cleaning_type'  => $data['reinigungsart'] ?? null,
-                ]);
-                break;
+        $typeExtractorMap = [
+            'move'      => 'extractMoveFields',
+            'cleaning'  => 'extractCleaningFields',
+            'painting'  => 'extractPaintingFields',
+            'gardening' => 'extractGardeningFields',
+            'plumbing'  => 'extractPlumbingFields',
+        ];
 
-            case 'painting':
-                $paintingModel = new \App\Models\OfferPaintingModel();
-                $paintingModel->insert([
-                    'offer_id'       => $offerId,
-                    'area'           => $data['wand_gesamtflaeche'] ?? null,
-                    'indoor_outdoor' => $data['malerart'] ?? null,
-                ]);
-                break;
+        if (isset($typeModelMap[$type], $typeExtractorMap[$type])) {
+            $modelClass = $typeModelMap[$type];
+            $extractMethod = $typeExtractorMap[$type];
 
-            case 'gardening':
-                $gardeningModel = new \App\Models\OfferGardeningModel();
-                $gardeningModel->insert([
-                    'offer_id'       => $offerId,
-                    'garden_size'    => $data['bodenplatten_haus_flaeche'] ?? null,
-                    'work_type'      => $data['bodenplatten_vorplatz'] ?? null,
-                ]);
-                break;
+            $typeModel = new $modelClass();
+            $typeData = $offerModel->$extractMethod($formFields);
+            $typeData['offer_id'] = $offerId;
 
-            case 'plumbing':
-                $plumbingModel = new \App\Models\OfferPlumbingModel();
-                $plumbingModel->insert([
-                    'offer_id'       => $offerId,
-                    'problem_type'   => $data['sanitaer_typ'] ?? null,
-                    'urgency'        => $data['dringlichkeit'] ?? null,
-                ]);
-                break;
+            // Arrays zu Strings konvertieren
+            foreach ($typeData as $key => $val) {
+                if (is_array($val)) {
+                    $typeData[$key] = implode(', ', $val);
+                }
+            }
+
+            $typeModel->insert($typeData);
         }
-
 
         $this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType);
 
-
-
         return $this->response->setJSON(['success' => true]);
-    }
-
-    protected function detectType(array $fields): string
-    {
-        $source = $fields['service_url'] ?? '';
-
-        if (str_contains($source, 'umzug')) return 'move';
-        if (str_contains($source, 'umzuege')) return 'move';
-        if (str_contains($source, 'reinigung')) return 'cleaning';
-        if (str_contains($source, 'maler')) return 'painting';
-        if (str_contains($source, 'garten')) return 'gardening';
-        if (str_contains($source, 'sanitaer')) return 'plumbing';
-
-        return 'unknown';
     }
 
     protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void

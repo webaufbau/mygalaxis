@@ -36,6 +36,7 @@ class OfferModel extends Model
         'from_campaign',
         'created_at',
         'updated_at',
+        'checked_at',
     ];
 
     protected $useTimestamps = true;
@@ -55,20 +56,39 @@ class OfferModel extends Model
         log_message('debug', 'before Insert fields ' . print_r($fields, true));
         log_message('debug', 'before Insert userInputs ' . print_r($userInputs, true));
 
-
         if (is_array($fields)) {
-            $data['data']['type'] = $this->detectType($fields);
-            $data['data']['city'] = $fields['auszug_adresse']['city'] ?? null;
-            $data['data']['zip'] = $fields['auszug_adresse']['zip'] ?? null;
-            $data['data']['customer_type'] = isset($fields['firmenname']) ? 'firma' : 'privat';
+            $data['data'] = array_merge(
+                $data['data'],
+                $this->enrichDataFromFormFields($fields, $data['data'])
+            );
+        }
 
-            $data['data']['firstname'] = $fields['vorname'] ?? $userInputs['vorname'] ?? null;
-            $data['data']['lastname'] = $fields['nachname'] ?? $userInputs['nachname'] ?? null;
-            $data['data']['email'] = $fields['email'] ?? $userInputs['email'] ?? null;
-            $data['data']['phone'] = $fields['phone'] ?? $userInputs['phone'] ?? null;
-            $data['data']['additional_service'] = $fields['additional_service'] ?? null;
-            $data['data']['service_url'] = $fields['service_url'] ?? null;
-            $data['data']['uuid'] = $data['data']['uuid'] ?? bin2hex(random_bytes(16));
+        return $data;
+    }
+
+    public function enrichDataFromFormFields(array $formFields, array $original = []): array
+    {
+        $userInputs = $formFields['__submission']['user_inputs'] ?? [];
+
+        // Adresse extrahieren
+        $address = $this->extractAddressData($formFields);
+
+        $data = [];
+
+        $data['type'] = $this->detectType($formFields);
+        $data['city'] = $address['city'];
+        $data['zip'] = $address['zip'];
+        $data['customer_type'] = isset($formFields['firmenname']) ? 'firma' : 'privat';
+
+        $data['firstname'] = $formFields['vorname'] ?? $userInputs['vorname'] ?? null;
+        $data['lastname'] = $formFields['nachname'] ?? $userInputs['nachname'] ?? null;
+        $data['email'] = $formFields['email'] ?? $userInputs['email'] ?? null;
+        $data['phone'] = $formFields['phone'] ?? $userInputs['phone'] ?? null;
+        $data['additional_service'] = $formFields['additional_service'] ?? null;
+        $data['service_url'] = $formFields['service_url'] ?? null;
+
+        if (empty($original['uuid'])) {
+            $data['uuid'] = bin2hex(random_bytes(16));
         }
 
         return $data;
@@ -76,14 +96,108 @@ class OfferModel extends Model
 
     protected function detectType(array $fields): string
     {
-        $source = $fields['service_url'] ?? '';
+        $source =
+            $fields['_wp_http_referer']
+            ?? $fields['__submission']['source_url']
+            ?? $fields['service_url']
+            ?? '';
 
+        if (str_contains($source, 'umzug')) return 'move';
         if (str_contains($source, 'umzuege')) return 'move';
         if (str_contains($source, 'reinigung')) return 'cleaning';
-        if (str_contains($source, 'maler')) return 'painter';
-        if (str_contains($source, 'garten')) return 'gardener';
+        if (str_contains($source, 'maler')) return 'painting';
+        if (str_contains($source, 'garten')) return 'gardening';
         if (str_contains($source, 'sanitaer')) return 'plumbing';
 
         return 'unknown';
     }
+
+    protected function extractAddressData(array $fields): array
+    {
+        $candidates = [
+            $fields['auszug_adresse'] ?? null,
+            $fields['address'] ?? null,
+            $fields['auszug_adresse_firma'] ?? null,
+            $fields['einzug_adresse'] ?? null,
+            $fields['einzug_adresse_firma'] ?? null,
+        ];
+
+        foreach ($candidates as $address) {
+            if (is_array($address) && !empty($address['city']) && !empty($address['zip'])) {
+                return [
+                    'city' => $address['city'],
+                    'zip' => $address['zip'],
+                ];
+            }
+        }
+
+        return [
+            'city' => null,
+            'zip' => null,
+        ];
+    }
+
+    public function extractFieldsByType(string $type, array $formFields): array
+    {
+        return match ($type) {
+            'move'      => $this->extractMoveFields($formFields),
+            'cleaning'  => $this->extractCleaningFields($formFields),
+            'painting'  => $this->extractPaintingFields($formFields),
+            'gardening' => $this->extractGardeningFields($formFields),
+            'plumbing'  => $this->extractPlumbingFields($formFields),
+            default     => [],
+        };
+    }
+
+    public function extractMoveFields(array $formFields): array
+    {
+        $getCity = fn($block) => is_array($block) ? ($block['city'] ?? null) : null;
+
+        $fromCity = $getCity($formFields['auszug_adresse'] ?? $formFields['auszug_adresse_firma'] ?? null);
+        $toCity = $getCity($formFields['einzug_adresse'] ?? $formFields['einzug_adresse_firma'] ?? null);
+
+        return [
+            'room_size'     => $formFields['auszug_flaeche'] ?? $formFields['auszug_flaeche_firma'] ?? null,
+            'move_date'     => isset($formFields['datetime_1']) ? date('Y-m-d', strtotime(str_replace('/', '.', $formFields['datetime_1']))) : null,
+            'from_city'     => $fromCity,
+            'to_city'       => $toCity,
+            'has_lift'      => $formFields['auszug_lift'] ?? $formFields['auszug_lift_firma'] ?? null,
+            'customer_type' => isset($formFields['firmenname']) ? 'firma' : 'privat',
+        ];
+    }
+
+    public function extractCleaningFields(array $formFields): array
+    {
+        return [
+            'object_size'   => $formFields['wohnung_groesse'] ?? null,
+            'cleaning_type' => $formFields['reinigungsart'] ?? null,
+        ];
+    }
+
+    public function extractPaintingFields(array $formFields): array
+    {
+        return [
+            'area'           => $formFields['wand_gesamtflaeche'] ?? null,
+            'indoor_outdoor' => $formFields['malerart'] ?? null,
+        ];
+    }
+
+    public function extractGardeningFields(array $formFields): array
+    {
+        return [
+            'garden_size' => $formFields['bodenplatten_haus_flaeche'] ?? null,
+            'work_type'   => $formFields['bodenplatten_vorplatz'] ?? null,
+        ];
+    }
+
+    public function extractPlumbingFields(array $formFields): array
+    {
+        return [
+            'problem_type' => $formFields['sanitaer_typ'] ?? null,
+            'urgency'      => $formFields['dringlichkeit'] ?? null,
+        ];
+    }
+
+
+
 }
