@@ -32,8 +32,8 @@ class RemindVerification extends BaseCommand
 
         foreach ($offers as $offer) {
             $formFields = json_decode($offer['form_fields'], true);
-            $email = $formFields['email'] ?? null;
-            $vorname = $formFields['firstname'] ?? 'Nutzer';
+            $email = $formFields['email'] ?? $offer['email'] ?? null;
+            $vorname = $formFields['firstname'] ?? $offer['firstname'] ?? 'Nutzer';
 
             if (!$email) {
                 CLI::write("Überspringe Offer-ID {$offer['id']} – E-Mail fehlt.", 'red');
