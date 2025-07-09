@@ -16,13 +16,14 @@ class CreateUser extends BaseCommand
     protected $name        = 'shield:create-user';
     protected $description = 'Erstellt einen neuen Benutzer mit email/password Identity und optionaler Gruppe.';
 
-    protected $usage = 'shield:create-user [email] [passwort] [--group=gruppe]';
+    protected $usage = 'shield:create-user [email] [passwort] [gruppe]';
 
     public function run(array $params)
     {
-        $email    = $params[0] ?? CLI::prompt('E-Mail');
+        $email    = $params[0] ?? CLI::prompt('E-Mail', null, 'required');
         $password = $params[1] ?? CLI::prompt('Passwort', null, 'required');
-        $groupArg = CLI::getOption('group'); // z. B. --group=admin
+        // Gruppe als 3. Parameter (optional)
+        $groupArg = $params[2] ?? CLI::prompt('Passwort') ?? null;
 
         $userModel     = new UserModel();
         $identityModel = new UserIdentityModel();
