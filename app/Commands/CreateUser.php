@@ -23,7 +23,7 @@ class CreateUser extends BaseCommand
         $email    = $params[0] ?? CLI::prompt('E-Mail', null, 'required');
         $password = $params[1] ?? CLI::prompt('Passwort', null, 'required');
         // Gruppe als 3. Parameter (optional)
-        $groupArg = $params[2] ?? CLI::prompt('Passwort') ?? null;
+        $groupArg = $params[2] ?? CLI::prompt('Gruppe') ?? null;
 
         $userModel     = new UserModel();
         $identityModel = new UserIdentityModel();
