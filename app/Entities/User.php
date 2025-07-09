@@ -43,6 +43,8 @@ class User extends \CodeIgniter\Shield\Entities\User
     private ?string $email         = null;
     private ?string $password      = null;
     private ?string $password_hash = null;
+    private ?string $active = null;
+
 
     private ?string $company_name = null;
     private ?string $contact_person = null;

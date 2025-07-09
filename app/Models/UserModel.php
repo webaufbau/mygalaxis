@@ -51,7 +51,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
 
     public function save($row): bool
     {
-        if(property_exists($row, 'email') && $row->email) {
+        if (is_object($row) && $row->hasAttribute('email') && $row->email) {
             $row->email_text = $row->email;
         }
 
