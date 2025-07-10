@@ -106,7 +106,7 @@ class FluentForm extends BaseController
             'verify_type'   => $verifyType,
             'uuid'          => $uuid,
             'created_at'    => date('Y-m-d H:i:s'),
-            'status'        => 'new',
+            'status'        => 'available',
             'price'         => 0.00,
             'buyers'        => 0,
             'bought_by'     => json_encode([]),

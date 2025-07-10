@@ -488,3 +488,14 @@ ALTER TABLE `offers`
 ALTER TABLE offers
     ADD COLUMN reminder_sent_at DATETIME NULL DEFAULT NULL AFTER checked_at,
     ADD COLUMN verification_token VARCHAR(64) NULL DEFAULT NULL AFTER reminder_sent_at;
+
+ALTER TABLE users
+    ADD COLUMN stripe_customer_id VARCHAR(255) NULL,
+    ADD COLUMN payrexx_customer_id VARCHAR(255) NULL AFTER stripe_customer_id;
+
+ALTER TABLE `offers`
+    ADD `title` varchar(200) COLLATE 'utf8mb4_unicode_ci' NOT NULL AFTER `type`,
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;
+
+ALTER TABLE `bookings`
+    CHANGE `type` `type` enum('purchase','offer_purchase','topup','credit','subscription') COLLATE 'utf8mb4_general_ci' NOT NULL AFTER `user_id`;

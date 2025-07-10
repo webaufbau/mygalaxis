@@ -60,6 +60,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('offers/update/(:num)', 'Offers::update/$1');
     $routes->post('offers/delete/(:num)', 'Offers::delete/$1');
     $routes->get('offers/buy/(:num)', 'Offers::buy/$1', ['filter' => 'auth']);
+    $routes->get('offers/mine', 'Offers::mine');
 
     $routes->group('finance', ['filter' => 'auth'], function($routes) {
         $routes->get('', 'Finance::index');

@@ -117,8 +117,9 @@ class Dashboard extends Controller
 
 
     public function index_user() {
-        exit(); // deaktiviert aktuell
-
+        if(!isset($_SERVER['DDEV_PROJECT'])) {
+            exit(); // deaktiviert aktuell
+        }
         $user = auth()->user();
 
         $purchasedOfferModel = new OfferPurchaseModel();

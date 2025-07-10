@@ -12,7 +12,7 @@
 <?php endif ?>
 
 <div class="p-4 border rounded-2 bg-light">
-    <h2 class="mb-4">Registrieren</h2>
+    <h2 class="my-4">Registrieren</h2>
     <form method="post" action="/register" class="needs-validation" novalidate>
         <?= csrf_field() ?>
         <!--<input type="hidden" name="username" value="user_<?php echo uniqid(); ?>">-->

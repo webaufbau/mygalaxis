@@ -1,0 +1,130 @@
+<?php
+$formFields = json_decode($offer['form_fields'] ?? '', true);
+
+// Diese Keys werden NICHT angezeigt
+$excludeKeys = [
+    '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+    'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+    'vorname', 'nachname', 'email', 'phone', 'additional_service', 'referrer',
+];
+
+$utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
+
+// Felder filtern
+$formFields = array_filter($formFields, function ($key) use ($excludeKeys, $utmKeys) {
+    if (in_array($key, $excludeKeys)) return false;
+    if (in_array($key, $utmKeys)) return false;
+    if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
+    if (preg_match('/adresse|address/i', $key)) return false;
+    return true;
+}, ARRAY_FILTER_USE_KEY);
+
+// Lade Labels aus Sprachdatei
+$fieldLabels = lang('Offers.labels');
+
+if (!empty($full)) {
+    $formFields = json_decode($offer['form_fields'] ?? '', true);
+
+    $excludeKeys = [
+        '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+        'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+        'additional_service', 'referrer',
+    ];
+    $formFields = array_filter($formFields, function ($key) use ($excludeKeys) {
+        if (in_array($key, $excludeKeys)) return false;
+        if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
+        return true;
+    }, ARRAY_FILTER_USE_KEY);
+}
+
+if(!empty($admin)) {
+    $formFields = json_decode($offer['form_fields'] ?? '', true);
+
+}
+
+?>
+
+<?php if (!empty($formFields)): ?>
+    <table class="table table-striped table-sm">
+        <thead>
+        </thead>
+        <tbody>
+        <?php foreach ($formFields as $key => $value): ?>
+            <?php
+            // Skip "nein", false, null, leere Strings
+            $cleanValue = is_string($value) ? trim(strtolower($value)) : $value;
+            if ($cleanValue === 'nein' || $cleanValue === false || $cleanValue === null || $cleanValue === '') continue;
+
+            // Label
+            $label = $fieldLabels[$key] ?? ucwords(str_replace(['_', '-'], ' ', $key));
+
+            // Ausgabe vorbereiten
+            $display = '';
+
+            if (is_array($value)) {
+                $display = implode(', ', array_map('esc', $value));
+            } elseif (is_string($value)) {
+                $decoded = json_decode($value, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $display = implode(', ', array_map('esc', array_filter($decoded, fn($v) => !in_array(strtolower((string)$v), ['nein', '', null], true))));
+                } else {
+                    $display = esc($value);
+
+                    // Datumsformatierung
+                    if (preg_match('#^\d{2}/\d{2}/\d{4}$#', $value)) {
+                        $ts = DateTime::createFromFormat('d/m/Y', $value);
+                        if ($ts) $display = $ts->format('d.m.Y');
+                    } elseif (preg_match('#^\d{4}-\d{2}-\d{2}$#', $value)) {
+                        $ts = DateTime::createFromFormat('Y-m-d', $value);
+                        if ($ts) $display = $ts->format('d.m.Y');
+                    }
+                }
+            } else {
+                $display = esc((string)$value);
+
+                if (is_string($value)) {
+                    if (preg_match('#^\d{2}/\d{2}/\d{4}$#', $value)) {
+                        $ts = DateTime::createFromFormat('d/m/Y', $value);
+                        if ($ts) $display = $ts->format('d.m.Y');
+                    } elseif (preg_match('#^\d{4}-\d{2}-\d{2}$#', $value)) {
+                        $ts = DateTime::createFromFormat('Y-m-d', $value);
+                        if ($ts) $display = $ts->format('d.m.Y');
+                    }
+                }
+            }
+            ?>
+
+            <tr>
+                <td><?= esc($label) ?></td>
+                <td>
+
+
+                    <?php
+                    if (in_array($key, ['file-upload', 'file_upload', 'upload_file'])) {
+                        // Einzelner String oder Array?
+                        $urls = is_array($value) ? $value : [$value];
+                        foreach ($urls as $url) {
+                            if (is_string($url) && preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $url)) {
+                                echo '<br><img src="' . esc($url) . '" alt="Upload" style="max-width: 100%; height: auto; border:1px solid #ccc; padding: 5px;">';
+                            } elseif (filter_var($url, FILTER_VALIDATE_URL)) {
+                                echo '<br><a href="' . esc($url) . '" target="_blank">' . esc(basename($url)) . '</a>';
+                            } else {
+                                echo esc($url);
+                            }
+                        }
+                    } else {
+                        echo esc($display);
+                    }
+                    ?>
+
+
+
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php else: ?>
+    <p><em>Keine Angaben verfügbar.</em></p>
+<?php endif; ?>
+

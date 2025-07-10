@@ -1,7 +1,7 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2 class="mb-4"><?= esc($title) ?></h2>
+<h2 class="my-4"><?= esc($title) ?></h2>
 
 <?php if (!empty($success)) : ?>
     <div class="alert alert-success"><?= esc($success) ?></div>

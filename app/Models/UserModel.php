@@ -45,6 +45,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'account_balance',
             'auto_purchase',
             'email_text',
+            'stripe_customer_id',
         ];
     }
 

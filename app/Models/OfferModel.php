@@ -14,6 +14,7 @@ class OfferModel extends Model
 
     protected $allowedFields = [
         'type',
+        'title',
         'status',
         'price',
         'buyers',
@@ -203,6 +204,22 @@ class OfferModel extends Model
             'urgency'      => $formFields['dringlichkeit'] ?? null,
         ];
     }
+
+
+    // z. B. in OfferModel:
+    public function getOffersWithBookingPrice(int $userId = null)
+    {
+        $builder = $this->db->table('offers o')
+            ->select('o.*, b.amount AS booking_price')
+            ->join('bookings b', 'b.reference_id = o.id AND b.type = "offer_purchase"', 'left');
+
+        if ($userId !== null) {
+            $builder->where('b.user_id', $userId);
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
 
 
 

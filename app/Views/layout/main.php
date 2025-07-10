@@ -66,9 +66,17 @@
                     <li class="nav-item">
                         <a class="nav-link <?= $segment1 === 'filter' ? 'active' : '' ?>" href="/filter">Filter</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?= $segment1 === 'offers' ? 'active' : '' ?>" href="/offers">Angebote</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?= $segment1 === 'offers' ? 'active' : '' ?>" href="#" id="offersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Anfragen
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="offersDropdown">
+                            <li><a class="dropdown-item" href="/offers">Offene Anfragen</a></li>
+                            <li><a class="dropdown-item" href="/offers/mine">Gekaufte Anfragen</a></li>
+                        </ul>
                     </li>
+
+
                     <li class="nav-item">
                         <a class="nav-link <?= $segment1 === 'finance' ? 'active' : '' ?>" href="/finance">Finanzen</a>
                     </li>

@@ -62,6 +62,7 @@ class User extends \CodeIgniter\Shield\Entities\User
     private ?string $account_balance = null;
     private ?string $auto_purchase = null;
     private ?string $email_text = null;
+    private ?string $stripe_customer_id = null;
 
     /**
      * @var string[]

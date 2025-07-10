@@ -1,7 +1,7 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2 class="mb-4">Filter einstellen</h2>
+<h2 class="my-4">Filter einstellen</h2>
 <form method="post" action="/filter/save" class="needs-validation" novalidate>
     <?= csrf_field() ?>
 

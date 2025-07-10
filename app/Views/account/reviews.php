@@ -1,7 +1,7 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2 class="mb-4">Bewertungen</h2>
+<h2 class="my-4">Bewertungen</h2>
 
 <!-- Zusammenfassung -->
 <div class="mb-4">

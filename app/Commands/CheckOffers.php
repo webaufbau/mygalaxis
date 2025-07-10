@@ -70,10 +70,21 @@ class CheckOffers extends BaseCommand
                 }
             }
 
+            $translatedType = lang('Offers.type.' . $detectedType);
+
+            // Titel setzen, falls leer
+            if (empty($offer['title']) && $translatedType !== 'Offers.type.' . $detectedType && !empty($enriched['city'])) {
+                $city = ucwords($enriched['city']);
+                $title = "{$translatedType} in {$city}";
+                $updateData['title'] = $title;
+                CLI::write("Titel für Angebot {$offer['id']} gesetzt: {$title}", 'cyan');
+            }
+
             if (!empty($updateData)) {
                 CLI::write("Daten aktualisiert " . print_r($updateData, true), 'yellow');
                 $offerModel->update($offer['id'], $updateData);
             }
+
         }
 
         CLI::write("Prüfung abgeschlossen.", 'cyan');

@@ -3,30 +3,6 @@
 
 <h2 class="my-4"><?= esc($title ?? 'Angebote') ?></h2>
 
-<form method="get" class="row mb-4 g-3 align-items-center">
-    <div class="col-auto">
-        <input
-                type="search"
-                name="search"
-                value="<?= esc($search) ?>"
-                class="form-control"
-                placeholder="Suchen..."
-                aria-label="Suche"
-        >
-    </div>
-    <div class="col-auto">
-        <select name="filter" class="form-select">
-            <option value="">Alle Status</option>
-            <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>>Zum Kauf</option>
-            <option value="sold" <?= ($filter === 'sold') ? 'selected' : '' ?>>Erledigt</option>
-            <option value="out_of_stock" <?= ($filter === 'out_of_stock') ? 'selected' : '' ?>>Ausverkauft</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Filtern</button>
-    </div>
-</form>
-
 <?php if (empty($offers)): ?>
     <div class="alert alert-info">Keine Angebote gefunden.</div>
 <?php else: ?>
@@ -58,7 +34,7 @@
                                 <?= esc($offer['title']) ?>
 
                         </span>
-                        <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
+                        <small class="text-muted">Gekauft am <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
                         <br>
 
                         <?php if($status == 'available') { ?>
@@ -74,47 +50,54 @@
 
                     <div class="text-end" style="min-width: 150px;">
                         <?php
-                        $createdDate = new DateTime($offer['created_at']);
-                        $now = new DateTime();
-                        $diffDays = $now->diff($createdDate)->days;
+                        // Prüfen, ob gekauft (purchased_price vorhanden)
+                        if (isset($offer['purchased_price'])) {
+                            // Ermittlung, ob Original- oder reduzierter Preis gekauft wurde
+                            $originalPrice = $offer['price'];
+                            $discountedPrice = $originalPrice / 2;
 
-                        $displayPrice = $offer['price'];
-                        $priceWasDiscounted = false;
-                        if ($diffDays > 3) {
-                            $displayPrice = $offer['price'] / 2;
-                            $priceWasDiscounted = true;
-                        }
-                        ?>
-                        <div class="small">
-                            <?php if ($priceWasDiscounted): ?>
-                                <span class="text-decoration-line-through text-muted me-2">
-                <?= number_format($offer['price'], 2) ?> CHF
-            </span>
-                                <span class="text-">
-                <?= number_format($displayPrice, 2) ?> CHF
-            </span>
-                            <?php else: ?>
-                                <?= number_format($displayPrice, 2) ?> CHF
-                            <?php endif; ?>
-                        </div>
+                            if ($offer['purchased_price'] == $originalPrice) {
+                                echo '<div class="small  ">Normal</div>';
+                            } elseif ($offer['purchased_price'] == $discountedPrice) {
+                                echo '<div class="small  ">Reduziert</div>';
+                            } else {
+                                echo '<div class="small  ">Gekauft</div>';
+                            }
 
-                        <?php if ($status === 'available'): ?>
-                            <a href="<?= site_url('offers/buy/' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2">
-                                Kaufen
-                            </a>
-                        <?php else: ?>
-                            <button type="button" class="btn <?= $btnClass ?> btn-sm mt-2" disabled>
-                                <?= $btnText ?>
-                            </button>
-                        <?php endif; ?>
+                        } else {
+                            // Noch nicht gekauft — zeige regulären Preis mit ggf. Rabatt
+                            $createdDate = new DateTime($offer['created_at']);
+                            $now = new DateTime();
+                            $diffDays = $now->diff($createdDate)->days;
 
+                            $displayPrice = $offer['price'];
+                            $priceWasDiscounted = false;
+                            if ($diffDays > 3) {
+                                $displayPrice = $offer['price'] / 2;
+                                $priceWasDiscounted = true;
+                            }
+                            ?>
+                            <div class="small">
+                                <?php if ($priceWasDiscounted): ?>
+                                    <span class="text-decoration-line-through text-muted me-2">
+                    <?= number_format($offer['price'], 2) ?> CHF
+                </span>
+                                    <span class="text-">
+                    <?= number_format($displayPrice, 2) ?> CHF
+                </span>
+                                <?php else: ?>
+                                    <?= number_format($displayPrice, 2) ?> CHF
+                                <?php endif; ?>
+                            </div>
+                        <?php } ?>
                     </div>
+
                 </div>
 
                 <!-- Collapsible Details -->
                 <div class="collapse mt-3" id="details-<?= $offer['id'] ?>">
                     <div class="card card-body bg-light">
-                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => false]) ?>
+                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => $isOwnView ?? false]) ?>
                     </div>
                 </div>
 

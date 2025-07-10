@@ -42,6 +42,126 @@ return [
         'additional_service' => 'Weitere Dienstleistung',
 
 
+        // Nutzer & Wohnung
+        'benutzer' => 'Wer ist der Nutzer?',
+        'reinigung_komplett' => 'Was soll gereinigt werden?',
+        'wohnung_groesse' => 'Wohnungsgrösse',
+        'stockwerk' => 'Stockwerk',
+        'moebliert' => 'Möbliert',
+
+        // Keller & Räume
+        'keller_1' => 'Keller vorhanden',
+        'hobbyraum' => 'Hobbyraum',
+        'dachboden' => 'Dachboden',
+        'lift' => 'Lift vorhanden',
+        'umzug_reinigung' => 'Umzugsreinigung',
+        'abnahmegarantie' => 'Abnahmegarantie',
+
+        // Reinigungstyp
+        'reinigungsart_wiederkehrend' => 'Reinigungsart',
+        'bodenreinigung' => 'Bodenreinigung gewünscht',
+        'bodenbelaege' => 'Bodenbeläge',
+        'bodenbelaege_parkett_masse' => 'Parkett vorhanden',
+        'bodenbelaege_parkett_flaeche' => 'Parkettfläche (m²)',
+        'bodenbelaege_keramik_masse' => 'Keramik vorhanden',
+        'bodenbelaege_keramik_flaeche' => 'Keramikfläche (m²)',
+        'bodenbelaege_reinigungsart_staubsaugen_zimmer' => 'Zimmer zum Staubsaugen',
+        'bodenbelaege_reinigungsart_feucht_zimmer' => 'Zimmer zum feucht Wischen',
+        'bodenbelaege_sonstiges' => 'Sonstige Bodenbeläge',
+        'bodenbelaege_hinweise' => 'Hinweise zu Bodenbelägen',
+
+        // Badezimmer
+        'badezimmer' => 'Badezimmer vorhanden',
+        'badezimmer_anzahl' => 'Anzahl Badezimmer',
+        'badezimmer_wc_anzahl' => 'Anzahl separater WCs',
+        'badezimmer_lavabo' => 'Lavabo vorhanden',
+        'badezimmer_lavabo_anzahl' => 'Anzahl Lavabos',
+        'badezimmer_doppellavabo' => 'Doppellavabo vorhanden',
+        'badezimmer_spiegelschrank' => 'Spiegelschrank vorhanden',
+        'badezimmer_spiegelschrank_anzahl' => 'Anzahl Spiegelschränke',
+        'badezimmer_untermoebel' => 'Untermöbel vorhanden',
+        'badezimmer_untermoebel_anzahl' => 'Anzahl Untermöbel',
+        'badezimmer_spiegel' => 'Einzelspiegel vorhanden',
+        'badezimmer_wcs' => 'WCs vorhanden',
+        'badezimmer_wcs_anzahl' => 'Anzahl WCs',
+        'badezimmer_bidet' => 'Bidet vorhanden',
+        'badezimmer_badewanne' => 'Badewanne vorhanden',
+        'badezimmer_badewanne_anzahl' => 'Anzahl Badewannen',
+        'badezimmer_dusche' => 'Dusche vorhanden',
+        'badezimmer_dusche_anzahl' => 'Anzahl Duschen',
+        'badezimmer_waschmaschine' => 'Waschmaschine vorhanden',
+        'badezimmer_waschmaschine_anzahl' => 'Anzahl Waschmaschinen',
+        'badezimmer_trockner' => 'Trockner vorhanden',
+        'badezimmer_trockner_anzahl' => 'Anzahl Trockner',
+        'badezimmer_verschmutzung' => 'Verschmutzungsgrad Badezimmer',
+        'badezimmer_hinweis' => 'Hinweise zum Badezimmer',
+
+        // Fenster
+        'fensterreinigung' => 'Fensterreinigung gewünscht',
+        'fensterart_1' => 'Fenstertyp 1 (Nein)',
+        'fensterart_2' => 'Fenstertyp 2 (Nein)',
+        'fensterart_3' => 'Fenstertyp 3 (Ja)',
+        'fensterart3_anzahl' => 'Anzahl Fenster Typ 3',
+        'fensterart3_reinigen' => 'Reinigungsart Fenster Typ 3',
+        'fensterart_4' => 'Fenstertyp 4',
+        'fensterart_5' => 'Fenstertyp 5',
+        'fensterart_6' => 'Fenstertyp 6',
+        'fensterart_7' => 'Fenstertyp 7',
+        'fensterart_8' => 'Fenstertyp 8 (Ja)',
+        'fensterart8_anzahl' => 'Anzahl Fenster Typ 8',
+        'fensterart8_reinigen' => 'Reinigungsart Fenster Typ 8',
+        'fensterart_9' => 'Fenstertyp 9',
+        'fensterart10' => 'Fenstertyp 10',
+        'fenster_verschmutzung' => 'Verschmutzungsgrad Fenster',
+        'fenster_hinweis' => 'Hinweise zu Fenstern',
+
+        // Rollläden / Storen
+        'rollaeden' => 'Rollläden oder Storen vorhanden',
+        'rollaeden_rollaeden' => 'Rollläden vorhanden',
+        'rollaeden_storen' => 'Storen vorhanden',
+        'rollaeden_storen_anzahl' => 'Anzahl Storen',
+        'rollaeden_verschmutzung' => 'Verschmutzungsgrad Storen',
+        'rollaeden_hinweise' => 'Hinweise zu Storen',
+
+        // Heizung
+        'heizkoerper' => 'Heizkörper vorhanden',
+
+        // Küche
+        'kuechen' => 'Küche vorhanden',
+        'kuechen_01' => 'Oberschränke vorhanden',
+        'kuechen_02' => 'Unterschränke vorhanden',
+        'kuechen_03' => 'Spülbecken vorhanden',
+        'kuechen_04' => 'Arbeitsflächen vorhanden',
+        'kuechen_05' => 'Schubladen vorhanden',
+        'kuechen_06' => 'Dunstabzugshaube vorhanden',
+        'kuechen_07' => 'Küchenwand vorhanden',
+        'kuechen_08' => 'Küchengeräte vorhanden',
+        'kuechen_09' => 'Sonstiges Küchenelement',
+        'kuechen_backofen' => 'Backofen vorhanden',
+        'kuechen_backofen_schmutz' => 'Verschmutzungsgrad Backofen',
+        'kuechen_kochherd' => 'Kochherd vorhanden',
+        'kuechen_gasherd' => 'Gasherd vorhanden',
+        'kuechen_elplattenherd' => 'Elektroplattenherd vorhanden',
+        'kuechen_keramik' => 'Keramikfeld vorhanden',
+        'kuechen_keramik_schmutz' => 'Verschmutzungsgrad Keramik',
+        'kuechen_mikrowelle' => 'Mikrowelle vorhanden',
+        'kuechen_kuehlschrank' => 'Kühlschrank vorhanden',
+        'kuechen_kuehlschrank_schmutz' => 'Verschmutzungsgrad Kühlschrank',
+        'kuechen_spuehlmaschine' => 'Spülmaschine vorhanden',
+        'kuechen_spuehlmaschine_schmutz' => 'Verschmutzungsgrad Spülmaschine',
+        'kuechen_dampfabzug' => 'Dampfabzug vorhanden',
+        'kuechen_dampfabzug_wechseln' => 'Filterwechsel Dampfabzug notwendig',
+        'kuechen_dampfabzug_reinigen' => 'Dampfabzug reinigen',
+        'kuechen_hinweise' => 'Hinweise zur Küche',
+
+        // Außenbereich
+        'aussenfassade' => 'Aussenfassade reinigen',
+        'sonstige_reinigungsarbeiten' => 'Sonstige Reinigungsarbeiten',
+        'details_hinweise' => 'Zusätzliche Hinweise',
+
+        // Wohnungsgröße aus Label
+        'wand_teil_anzahl_1' => 'Wohnfläche (m²)',
+
         // ... beliebig erweiterbar
     ],
 ];

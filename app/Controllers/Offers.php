@@ -25,6 +25,8 @@ class Offers extends Controller
             $builder->where('status', $filter);
         }
 
+        $builder->where('verified', 1);
+
         $offers = $builder->orderBy('created_at', 'DESC')->get()->getResultArray();
 
         return view('offers/index', [
@@ -32,6 +34,62 @@ class Offers extends Controller
             'search' => $search,
             'filter' => $filter,
             'title' => 'Angebote'
+        ]);
+    }
+
+    public function mine()
+    {
+        helper('auth');
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->to('/login')->with('error', 'Bitte einloggen, um Ihre Anfragen zu sehen.');
+        }
+
+        $bookingModel = new \App\Models\BookingModel();
+        $bookings = $bookingModel
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->findAll();
+
+        // Buchung nach offer_id indexieren
+        $bookingsByOfferId = [];
+        foreach ($bookings as $booking) {
+            $bookingsByOfferId[$booking['reference_id']] = $booking;
+        }
+
+        $offerIds = array_keys($bookingsByOfferId);
+
+        $offerModel = new \App\Models\OfferModel();
+        $offers = [];
+
+        if (!empty($offerIds)) {
+            $offers = $offerModel
+                ->whereIn('id', $offerIds)
+                ->findAll();
+
+            foreach ($offers as &$offer) {
+                if (isset($bookingsByOfferId[$offer['id']])) {
+                    $booking = $bookingsByOfferId[$offer['id']];
+                    $offer['purchased_price'] = abs($booking['amount']);
+                    $offer['purchased_at'] = $booking['created_at']; // für Sortierung
+                }
+            }
+            unset($offer);
+
+            // Sortieren nach Kaufdatum (neueste zuerst)
+            usort($offers, function ($a, $b) {
+                return strtotime($b['purchased_at']) <=> strtotime($a['purchased_at']);
+            });
+
+        }
+
+        return view('offers/mine', [
+            'offers' => $offers,
+            'search' => null,
+            'filter' => null,
+            'title' => 'Meine gekauften Anfragen',
+            'isOwnView' => true,
         ]);
     }
 
@@ -47,7 +105,7 @@ class Offers extends Controller
             return redirect()->to('/offers')->with('error', 'Dieses Angebot kann nicht gekauft werden.');
         }
 
-        // Preis ermitteln (mit evtl. Rabatt)
+        // Preis berechnen (Rabatt nach 3 Tagen)
         $created = new \DateTime($offer['created_at']);
         $now = new \DateTime();
         $days = $now->diff($created)->days;
@@ -56,29 +114,78 @@ class Offers extends Controller
             $price = $price / 2;
         }
 
-        // Hier kannst du Guthaben prüfen oder zur Zahlungsabwicklung weiterleiten
-        // Optional: gleich buchen, z.B.:
+        // Aktuelles Guthaben prüfen
+        $bookingModel = new \App\Models\BookingModel();
+        $balance = $bookingModel->getUserBalance($user->id);
+
+        if ($balance >= $price) {
+            // Aus Guthaben bezahlen
+            $this->finalizePurchase($user, $offer, $price);
+            return redirect()->to('/offers/mine')->with('message', 'Anfrage erfolgreich gekauft (per Guthaben)!');
+        }
+
+        // Prüfen, ob Kreditkarte vorhanden
+        $stripeService = new \App\Libraries\StripeService();
+        if ($stripeService->hasCardOnFile($user)) {
+            try {
+                // Direktzahlung per Stripe versuchen
+                $stripeService->charge($user, $price, 'Anfrage #' . $id);
+
+                // Buchung erfassen (nicht über Guthaben, sondern via Stripe)
+                $bookingModel->insert([
+                    'user_id' => $user->id,
+                    'type' => 'offer_purchase',
+                    'description' => "Anfrage gekauft: #" . $offer['id'],
+                    'reference_id' => $offer['id'],
+                    'amount' => -$price,
+                    'created_at' => date('Y-m-d H:i:s'),
+                ]);
+
+                $this->finalizePurchase($user, $offer, $price);
+                return redirect()->to('/offers/mine')->with('message', 'Anfrage erfolgreich gekauft (per Kreditkarte)!');
+            } catch (\Exception $e) {
+                log_message('error', 'Stripe-Zahlung fehlgeschlagen: ' . $e->getMessage());
+            }
+        }
+
+        // Keine Zahlungsmöglichkeit
+        return redirect()->to('/finance/topup')->with('error', 'Nicht genügend Guthaben. Bitte laden Sie Ihr Konto auf oder hinterlegen Sie eine Kreditkarte.');
+    }
+
+
+    /**
+     * Finalisiert den Kaufprozess
+     */
+    private function finalizePurchase($user, $offer, $price)
+    {
+        // Anfrage buchen
         $bookingModel = new \App\Models\BookingModel();
         $bookingModel->insert([
             'user_id' => $user->id,
             'type' => 'offer_purchase',
-            'description' => "Anfrage gekauft: #" . $id,
+            'description' => "Anfrage gekauft: #" . $offer['id'],
+            'reference_id' => $offer['id'],
             'amount' => -$price,
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        // Status aktualisieren
-        $offerModel->update($id, ['status' => 'sold']);
+        // Prüfen, wie viele Firmen bereits gekauft haben
+        $bookingModel = new \App\Models\BookingModel();
+        $salesCount = $bookingModel
+            ->where('type', 'offer_purchase')
+            ->where('reference_id', $offer['id'])
+            ->countAllResults();
 
-        // E-Mail an Anfrage-Ersteller senden
-        service('email')->sendOfferPurchaseMail($offer, $user); // Beispiel-Service
+        // Anfrage als verkauft markieren
+        if ($salesCount >= 3) {
+            $offerModel = new \App\Models\OfferModel();
+            $offerModel->update($offer['id'], ['status' => 'sold']);
+        }
 
-        // E-Mail an Anfragesteller
+
+        // Benachrichtigungen senden
         $mailer = new \App\Libraries\OfferMailer();
         $mailer->sendOfferPurchasedToRequester($offer, (array)$user);
-
-
-        return redirect()->to('/offers')->with('message', 'Anfrage erfolgreich gekauft!');
     }
 
     public function confirm($id)
