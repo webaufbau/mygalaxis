@@ -192,6 +192,7 @@
             },
             // Optional: Standard-Sortierung, Seitenlänge etc. kannst du hier anpassen
             pageLength: 10,
+            stateSave: true,
             order: [[0, 'desc']] // z.B. nach Datum absteigend sortieren
         });
     });

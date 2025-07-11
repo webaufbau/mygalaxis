@@ -94,6 +94,36 @@ class FluentForm extends BaseController
             }
         }
 
+        // save for groups
+        $groupId = null;
+        if(isset($data['additional_service'])) {
+            if ($data['additional_service'] !== 'Nein') {
+                session()->set('group_email', $data['email'] ?? null);
+                session()->set('group_uuid', $data['uuid'] ?? null);
+                session()->set('group_additional_service', $data['additional_service'] ?? null);
+                session()->set('group_date', time());
+            } else {
+                // Nein
+                $offerModel = new OfferModel();
+                $matchingOffers = $offerModel
+                    ->where('email', $data['email'] ?? session()->get('group_email'))
+                    ->where('uuid', session()->get('group_uuid') ?? $uuid)
+                    ->where('group_id IS NULL') // noch nicht gruppiert
+                    //->where('created_at >=', date('Y-m-d H:i:s', strtotime('-15 minutes')))
+                    ->orderBy('created_at', 'DESC')
+                    ->findAll(1); // nur das letzte holen
+
+                if (!empty($matchingOffers)) {
+                    $groupId = bin2hex(random_bytes(6));
+
+                    // Update vorheriges Angebot mit group_id
+                    $offerModel->update($matchingOffers[0]['id'], ['group_id' => $groupId]);
+                }
+
+            }
+        }
+
+
         $offerModel = new OfferModel();
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
@@ -111,6 +141,7 @@ class FluentForm extends BaseController
             'buyers'        => 0,
             'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
+            'group_id'      => $groupId,
         ], $enriched);
 
         // Speichern

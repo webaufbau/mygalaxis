@@ -27,6 +27,7 @@
     </div>
 </div>
 
+
 <div class="container mt-5">
     <?php
     $phone = session('phone');
@@ -41,17 +42,24 @@
         <p>Sie erhalten in wenigen Sekunden einen Anruf auf <strong><?= esc($phone) ?></strong> mit Ihrem Bestätigungscode.</p>
     <?php endif; ?>
 
-    <p>Bitte geben Sie den erhaltenen Code unten ein:</p>
+    <p>Falls das nicht Ihre Telefonnummer ist oder Sie keinen Code erhalten haben, geben Sie bitte Ihre Telefonnummer erneut ein. Achten Sie auf die korrekte Eingabe:</p>
 
     <form method="post" action="<?= site_url('/verification/verify') ?>">
         <?= csrf_field() ?>
+
         <div class="mb-3">
             <label for="code" class="form-label">Bestätigungscode</label>
-            <input type="text" name="code" class="form-control" required>
+            <input type="text" name="code" id="code" class="form-control" required>
         </div>
+
+        <div class="mb-3">
+            <label for="phone" class="form-label">Telefonnummer</label>
+            <input type="tel" name="phone" id="phone" class="form-control" value="<?= esc($phone) ?>">
+        </div>
+
         <button type="submit" class="btn btn-success">Bestätigen</button>
     </form>
-
 </div>
+
 </body>
 </html>
