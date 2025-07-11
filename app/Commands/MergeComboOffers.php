@@ -66,6 +66,7 @@ class MergeComboOffers extends BaseCommand
             $offerModel->update($kept['id'], [
                 'type' => 'move_cleaning',
                 'title' => 'Umzug + Reinigung in ' . $kept['city'],
+                'price' => 39,
                 'form_fields' => json_encode($mergedFormFields, JSON_UNESCAPED_UNICODE),
                 'form_fields_combo' => json_encode($formFieldsCombo, JSON_UNESCAPED_UNICODE),
             ]);

@@ -154,7 +154,7 @@ class FluentForm extends BaseController
             'uuid'          => $uuid,
             'created_at'    => date('Y-m-d H:i:s'),
             'status'        => 'available',
-            'price'         => 0.00,
+            'price'         => '29',
             'buyers'        => 0,
             'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
@@ -180,6 +180,7 @@ class FluentForm extends BaseController
                 // Neuen Typ setzen
                 $type = 'move_cleaning';
                 $insertData['type'] = $type;
+                $insertData['price'] = '39';
                 $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
 
                 // vorige Anfrage $matchingOffers löschen
