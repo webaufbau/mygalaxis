@@ -6,32 +6,17 @@
     <?= csrf_field() ?>
 
     <div class="mb-4">
-        <label for="filter_address" class="form-label">Adresse / Ort</label>
-        <input type="text" name="filter_address" id="filter_address" class="form-control">
-    </div>
-
-    <div class="mb-4">
         <label class="form-label">Kategorien</label>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="Umzug" id="cat_umzug">
-            <label class="form-check-label" for="cat_umzug">Umzug</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="Umzug+Reinigung" id="cat_umzug_reinigung">
-            <label class="form-check-label" for="cat_umzug_reinigung">Umzug + Reinigung</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="Reinigung" id="cat_reinigung">
-            <label class="form-check-label" for="cat_reinigung">Reinigung</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="Maler" id="cat_maler">
-            <label class="form-check-label" for="cat_maler">Maler</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="Gärtner" id="cat_gaertner">
-            <label class="form-check-label" for="cat_gaertner">Gärtner</label>
-        </div>
+        <?php foreach ($types as $type_id=>$cat): ?>
+            <?php
+            $id = 'cat_' . strtolower(str_replace([' ', '+'], ['_', 'plus'], $cat));
+            $checked = in_array($type_id, $user_filters['filter_categories'] ?? []) ? 'checked' : '';
+            ?>
+            <div class="form-check">
+                <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="<?= esc($type_id) ?>" id="<?= esc($id) ?>" <?= $checked ?>>
+                <label class="form-check-label" for="<?= esc($id) ?>"><?= esc($cat) ?></label>
+            </div>
+        <?php endforeach; ?>
     </div>
 
     <div class="mb-4">
@@ -49,6 +34,7 @@
                                 name="cantons[]"
                                 id="canton-<?= esc($canton['code']) ?>"
                                 value="<?= esc($cantonName) ?>"
+                                <?= in_array($cantonName, $user_filters['filter_cantons'] ?? []) ? 'checked' : '' ?>
                         >
                         <label class="form-check-label fw-bold" for="canton-<?= esc($canton['code']) ?>">
                             <?= esc($cantonName) ?> (<?= esc($canton['code']) ?>)
@@ -66,6 +52,7 @@
                                             name="regions[]"
                                             id="region-<?= md5($cantonName . $regionName) ?>"
                                             value="<?= esc($regionName) ?>"
+                                            <?= in_array($regionName, $user_filters['filter_regions'] ?? []) ? 'checked' : '' ?>
                                     >
                                     <label
                                             class="form-check-label"
@@ -85,16 +72,38 @@
         </div>
     </div>
 
-
     <script>
-        $(document).ready(function() {
-            $('[title]').tooltip({'placement':'bottom'});
+        $(document).ready(function () {
+            // Tooltips aktivieren
+            $('[title]').tooltip({'placement': 'bottom'});
 
+            // Wenn ein Kanton aktiviert/deaktiviert wird
+            $('input[name="cantons[]"]').on('change', function () {
+                const cantonBox = $(this).closest('.kanton-box');
+                const isChecked = $(this).is(':checked');
+
+                // Alle Regionen in dieser Box aktivieren/deaktivieren
+                cantonBox.find('input[name="regions[]"]').prop('checked', isChecked);
+            });
+
+            // Wenn eine Region abgewählt wird, Kanton sofort abwählen
+            $('input[name="regions[]"]').on('change', function () {
+                const cantonBox = $(this).closest('.kanton-box');
+                const isChecked = $(this).is(':checked');
+
+                if (!isChecked) {
+                    // Eine Region wurde deaktiviert → Kanton auch deaktivieren
+                    cantonBox.find('input[name="cantons[]"]').prop('checked', false);
+                }
+            });
         });
-
     </script>
 
 
+
+
+
+<!--
     <div class="mb-4">
         <label class="form-label">Sprachen</label>
         <div class="form-check">
@@ -114,35 +123,11 @@
             <label class="form-check-label" for="lang_it">Italienisch</label>
         </div>
     </div>
-
-    <div class="mb-4">
-        <label class="form-label">Services</label>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_absences[]" value="Hausrat einpacken" id="service1">
-            <label class="form-check-label" for="service1">Hausrat einpacken</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_absences[]" value="Hausrat anpacken" id="service2">
-            <label class="form-check-label" for="service2">Hausrat anpacken</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_absences[]" value="Möbel Aufbau" id="service3">
-            <label class="form-check-label" for="service3">Möbel Aufbau</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input p-0" type="checkbox" name="filter_absences[]" value="Lampen demontieren" id="service4">
-            <label class="form-check-label" for="service4">Lampen demontieren</label>
-        </div>
-    </div>
-
-    <div class="mb-4">
-        <label for="min_rooms" class="form-label">Objekte ab X Zimmer</label>
-        <input type="number" name="min_rooms" id="min_rooms" class="form-control" min="1">
-    </div>
+-->
 
     <div class="mb-4">
         <label for="custom_zip" class="form-label">Individuelle PLZ</label>
-        <input type="text" name="custom_zip" id="custom_zip" class="form-control" placeholder="z.B. 3000, 3012">
+        <input type="text" name="custom_zip" id="custom_zip" class="form-control" placeholder="z.B. 3000, 3012" value="<?php echo $user_filters['filter_custom_zip']; ?>" >
     </div>
 
     <button type="submit" class="btn btn-primary">Filter speichern</button>

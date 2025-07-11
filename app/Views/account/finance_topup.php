@@ -3,10 +3,6 @@
 
 <h2>Guthaben aufladen</h2>
 
-<?php if(session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-<?php endif; ?>
-
 <?php if(session()->getFlashdata('message')): ?>
     <div class="alert alert-success"><?= session()->getFlashdata('message') ?></div>
 <?php endif; ?>
@@ -15,7 +11,7 @@
 
     <div class="mb-3">
         <label for="amount" class="form-label">Betrag (CHF)</label>
-        <input type="number" step="0.01" min="0" name="amount" id="amount" class="form-control" required />
+        <input type="number" step="0.01" min="20" name="amount" id="amount" class="form-control" required />
     </div>
 
     <fieldset class="mb-3">

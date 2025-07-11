@@ -23,11 +23,11 @@
         <label class="form-label">Typ</label>
         <select name="type" id="typeSelect" class="form-select">
             <option value="">Alle</option>
-            <option value="move" <?= $filter_type == 'move' ? 'selected' : '' ?>>Umzug</option>
-            <option value="cleaning" <?= $filter_type == 'cleaning' ? 'selected' : '' ?>>Reinigung</option>
-            <option value="painting" <?= $filter_type == 'painting' ? 'selected' : '' ?>>Maler</option>
-            <option value="gardening" <?= $filter_type == 'gardening' ? 'selected' : '' ?>>Gartenpflege</option>
-            <option value="plumbing" <?= $filter_type == 'plumbing' ? 'selected' : '' ?>>Sanitär</option>
+            <?php foreach ($types as $typeValue => $typeLabel): ?>
+                <option value="<?= esc($typeValue) ?>" <?= (isset($filter_type) && $filter_type === $typeValue) ? 'selected' : '' ?>>
+                    <?= esc($typeLabel) ?>
+                </option>
+            <?php endforeach; ?>
         </select>
     </div>
 
@@ -99,7 +99,7 @@
         <th>Status</th>
         <th>Kampagne</th>
         <th>Verifiziert</th>
-        <th>Details</th>
+        <th></th>
     </tr>
     </thead>
     <tbody>
@@ -161,6 +161,9 @@
         <td>
             <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm" target="_blank">
                 Details
+            </a>
+            <a href="<?= site_url('/dashboard?delete=' . $o['id']) ?>" onclick="return confirm('<?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?> <?= esc($o['firstname'] . ' ' . $o['lastname']) ?> <?= esc($o['city']) ?> - Wirklich löschen?');" class="btn btn-warning btn-sm del">
+                Löschen
             </a>
         </td>
     </tr>

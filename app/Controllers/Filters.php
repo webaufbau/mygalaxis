@@ -9,7 +9,7 @@ class Filters extends Controller
     public function index()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('/login231');
+            return redirect()->to('/auth');
         }
 
         $db = \Config\Database::connect();
@@ -56,12 +56,55 @@ class Filters extends Controller
             }
         }
 
+        $user = auth()->user();
+
+        $filterOptions = new \App\Config\FilterOptions();
+
         $data = [
             'cantons' => $cantons,
-            // weitere Daten
+            'categories' => $filterOptions->categories,
+            'types' => $filterOptions->types,
+            'languages' => $filterOptions->languages,
+            'services' => $filterOptions->services,
+            'user_filters' => [
+                'filter_categories' => explode(',', $user->filter_categories ?? []),
+                'filter_cantons' => explode(',', $user->filter_cantons ?? []),
+                'filter_regions' => explode(',', $user->filter_regions ?? []),
+                'min_rooms' => $user->min_rooms,
+                'filter_custom_zip' => $user->filter_custom_zip,
+            ]
         ];
 
         return view('account/filter', $data);
+    }
+
+    public function save()
+    {
+        if (!auth()->loggedIn()) {
+            return redirect()->to('/auth');
+        }
+
+        $user = auth()->user();
+        $userId = $user->id;
+
+        $postData = $this->request->getPost();
+
+        $userModel = new \App\Models\UserModel();
+
+        // Nur Daten, die in allowedFields definiert sind
+        $data = [
+            'id' => $userId,
+            'filter_categories' => isset($postData['filter_categories']) ? implode(',', $postData['filter_categories']) : '',
+            'filter_cantons' => isset($postData['cantons']) ? implode(',', $postData['cantons']) : '',
+            'filter_regions' => isset($postData['regions']) ? implode(',', $postData['regions']) : '',
+            //'min_rooms' => $postData['min_rooms'] ?? '',
+            'filter_custom_zip' => $postData['custom_zip'] ?? '',
+            // Weitere Felder kannst du hier auch hinzufügen...
+        ];
+
+        $userModel->save($data);
+
+        return redirect()->to('/filter')->with('message', 'Filter wurden gespeichert.');
     }
 
 }

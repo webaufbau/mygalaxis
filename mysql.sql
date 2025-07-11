@@ -499,3 +499,15 @@ ALTER TABLE `offers`
 
 ALTER TABLE `bookings`
     CHANGE `type` `type` enum('purchase','offer_purchase','topup','credit','subscription') COLLATE 'utf8mb4_general_ci' NOT NULL AFTER `user_id`;
+
+ALTER TABLE `users`
+    CHANGE `updated_at` `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`,
+    ADD `filter_regions` longtext COLLATE 'utf8mb4_bin' NOT NULL AFTER `filter_cantons`;
+
+ALTER TABLE `users`
+    CHANGE `updated_at` `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`,
+    ADD `filter_custom_zip` longtext COLLATE 'utf8mb4_bin' NOT NULL AFTER `filter_absences`;
+
+ALTER TABLE `users`
+    CHANGE `updated_at` `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`,
+    CHANGE `filter_address` `filter_categories` longtext COLLATE 'utf8mb4_general_ci' NULL AFTER `company_phone`;

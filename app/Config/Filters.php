@@ -81,6 +81,7 @@ class Filters extends BaseFilters
                     'verification/send',
                     'verification/confirm',
                     'verification/verify',
+                    'finance/topup'
                 ],
             ],
             // 'invalidchars',

@@ -8,33 +8,117 @@ class Offers extends Controller
 {
     public function index()
     {
-        $model = new OfferModel();
+        $user = auth()->user();
+        $userId = $user->id ?? null;
 
-        // Optional: Filter & Suche via GET-Parameter
-        $search = $this->request->getGet('search');
-        $filter = $this->request->getGet('filter'); // z.B. Statusfilter
+        $userCantons = $user->filter_cantons ?? [];
+        $userRegions = $user->filter_regions ?? [];
+        $userCategories = $user->filter_categories ?? [];
+        $userLanguages = $user->filter_languages ?? [];
+        $userAbsences = $user->filter_absences ?? [];
+        $userCustomZips = $user->filter_custom_zip ?? '';
 
-        $builder = $model->builder();
-
-        if ($search) {
-            $builder->like('form_name', $search);
-            // Hier kannst du weitere Felder durchsuchen, z.B. 'form_fields'
+        if (is_string($userCantons)) {
+            $userCantons = array_filter(array_map('trim', explode(',', $userCantons)));
+        }
+        if (is_string($userRegions)) {
+            $userRegions = array_filter(array_map('trim', explode(',', $userRegions)));
+        }
+        if (is_string($userCategories)) {
+            $userCategories = array_filter(array_map('trim', explode(',', $userCategories)));
+        }
+        if (is_string($userLanguages)) {
+            // JSON decode if JSON, else explode comma
+            $decoded = json_decode($userLanguages, true);
+            $userLanguages = is_array($decoded) ? $decoded : array_filter(array_map('trim', explode(',', $userLanguages)));
+        }
+        if (is_string($userAbsences)) {
+            $decoded = json_decode($userAbsences, true);
+            $userAbsences = is_array($decoded) ? $decoded : array_filter(array_map('trim', explode(',', $userAbsences)));
         }
 
+        $userCustomZips = array_filter(array_map('trim', explode(',', $userCustomZips)));
+
+
+        $offerModel = new \App\Models\OfferModel();
+        $builder = $offerModel->builder();
+        $builder->where('verified', 1);
+
+        // PLZ aus Kantonen & Regionen
+        $zipcodeService = new \App\Libraries\ZipcodeService();
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($userCantons, $userRegions);
+
+        $allZips = array_merge($relevantZips, $userCustomZips);
+        $allZips = array_unique($allZips);
+
+        if (!empty($allZips)) {
+            $builder->groupStart();
+            $builder->whereIn('zip', $allZips);
+            $builder->groupEnd();
+        }
+
+        // Kategorien: entspricht dem Feld 'type' in Offers (z.B. 'move', 'gardening')
+        if (!empty($userCategories)) {
+            $builder->groupStart();
+            foreach ($userCategories as $category) {
+                $builder->orWhere('type', $category);
+            }
+            $builder->groupEnd();
+        }
+
+        // Sprachfilter, wenn Feld 'language' oder ähnliches in offers existiert
+        if (!empty($userLanguages)) {
+            // Beispiel, wenn 'language' ein CSV-Feld ist, dann:
+            foreach ($userLanguages as $lang) {
+                $builder->like('language', $lang);
+            }
+        }
+
+        // Services (filter_absences) - je nach DB-Struktur anpassen
+        // Beispiel: wenn 'services' JSON in offers:
+        if (!empty($userAbsences)) {
+            foreach ($userAbsences as $service) {
+                $builder->like('services', $service);
+            }
+        }
+
+        // Suche & Status (optional)
+        $search = $this->request->getGet('search');
+        if ($search) {
+            $builder->groupStart();
+            $builder->like('title', $search);
+            $builder->orLike('form_fields', $search);
+            $builder->groupEnd();
+        }
+
+        $filter = $this->request->getGet('filter');
         if ($filter) {
             $builder->where('status', $filter);
         }
 
-        $builder->where('verified', 1);
-
         $offers = $builder->orderBy('created_at', 'DESC')->get()->getResultArray();
+
+        $purchasedOfferIds = [];
+
+        if ($userId) {
+            $bookingModel = new \App\Models\BookingModel();
+            $bookings = $bookingModel
+                ->where('user_id', $userId)
+                ->where('type', 'offer_purchase')
+                ->whereIn('reference_id', array_column($offers, 'id'))
+                ->findAll();
+
+            $purchasedOfferIds = array_column($bookings, 'reference_id');
+        }
 
         return view('offers/index', [
             'offers' => $offers,
+            'purchasedOfferIds' => $purchasedOfferIds,
             'search' => $search,
             'filter' => $filter,
             'title' => 'Angebote'
         ]);
+
     }
 
     public function mine()
@@ -121,7 +205,7 @@ class Offers extends Controller
         if ($balance >= $price) {
             // Aus Guthaben bezahlen
             $this->finalizePurchase($user, $offer, $price);
-            return redirect()->to('/offers/mine')->with('message', 'Anfrage erfolgreich gekauft (per Guthaben)!');
+            return redirect()->to('/offers/mine#detailsview-' . $offer['id'])->with('message', 'Anfrage erfolgreich gekauft (per Guthaben)!');
         }
 
         // Prüfen, ob Kreditkarte vorhanden
@@ -142,7 +226,7 @@ class Offers extends Controller
                 ]);
 
                 $this->finalizePurchase($user, $offer, $price);
-                return redirect()->to('/offers/mine')->with('message', 'Anfrage erfolgreich gekauft (per Kreditkarte)!');
+                return redirect()->to('/offers/mine#detailsview-' . $offer['id'])->with('message', 'Anfrage erfolgreich gekauft (per Kreditkarte)!');
             } catch (\Exception $e) {
                 log_message('error', 'Stripe-Zahlung fehlgeschlagen: ' . $e->getMessage());
             }

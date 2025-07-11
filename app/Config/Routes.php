@@ -50,6 +50,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('dashboard', 'Dashboard::index');
 
     $routes->get('filter', 'Filters::index');
+    $routes->post('filter/save', 'Filters::save');
 
     // Offerten
     $routes->get('offers', 'Offers::index');

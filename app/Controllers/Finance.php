@@ -78,7 +78,7 @@ class Finance extends BaseController
             }
         }
 
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'POST') {
             $post = $this->request->getPost();
             $amount = floatval($post['amount'] ?? 0);
             $paymentMethod = $post['payment_method'] ?? '';
@@ -90,8 +90,6 @@ class Finance extends BaseController
             if (!in_array($paymentMethod, array_column($paymentMethods, 'code'))) {
                 return redirect()->back()->with('error', 'Bitte wählen Sie eine gültige Zahlungsmethode.');
             }
-
-            // TODO: Payment abwickeln (z.B. Stripe, PayPal, TWINT)
 
             $bookingModel = new BookingModel();
             $bookingModel->insert([

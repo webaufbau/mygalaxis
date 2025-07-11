@@ -39,7 +39,7 @@
 
                         <?php if($status == 'available') { ?>
                         <!-- Toggle-Link für Details -->
-                            <a class=" " data-bs-toggle="collapse" href="#details-<?= $offer['id'] ?>" role="button" aria-expanded="false" aria-controls="details-<?= $offer['id'] ?>" data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
+                            <a class=" " id="detailsview-<?= $offer['id'] ?>" data-bs-toggle="collapse" href="#details-<?= $offer['id'] ?>" role="button" aria-expanded="false" aria-controls="details-<?= $offer['id'] ?>" data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
                                 <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i> Anfragedetails anzeigen
                             </a>
 
@@ -125,6 +125,36 @@
             icon.classList.add('bi-chevron-right');
         });
     });
+
+
+    $(document).ready(function () {
+        // Prüfen ob Hash in URL vorhanden
+        const hash = window.location.hash;
+
+        if (hash && hash.startsWith('#detailsview-')) {
+            // ID des Toggles aus dem Hash
+            const toggleLink = $(hash);
+            if (toggleLink.length) {
+                // Ziel-Collapse ermitteln (href-Attribut des Links)
+                const targetSelector = toggleLink.attr('href');
+                const targetCollapse = $(targetSelector);
+
+                // Collapse mit Bootstrap öffnen
+                if (targetCollapse.length) {
+                    // Bootstrap Collapse über JS öffnen (wenn Bootstrap 5)
+                    const collapseInstance = bootstrap.Collapse.getOrCreateInstance(targetCollapse[0]);
+                    collapseInstance.show();
+
+                    // Scrollen zum Toggle-Link (optional mit Offset wegen fixiertem Header)
+                    const offset = 70; // anpassen falls nötig
+                    const pos = toggleLink.offset().top - offset;
+
+                    $('html, body').animate({ scrollTop: pos }, 500);
+                }
+            }
+        }
+    });
+
 
 </script>
 

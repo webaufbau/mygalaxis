@@ -28,6 +28,36 @@ class Dashboard extends Controller
     {
         $request = service('request');
         $offerModel = new \App\Models\OfferModel();
+
+
+        // Prüfen ob 'delete' Parameter gesetzt ist und User Admin ist
+        $deleteId = $request->getGet('delete');
+        $user = auth()->user();
+
+        if ($deleteId && $user && in_array('admin', $user->groups ?? [])) {
+            // Sicherstellen, dass $deleteId integer ist
+            $deleteId = (int)$deleteId;
+
+            // Optional: Check ob das Angebot existiert
+            $offer = $offerModel->find($deleteId);
+            if ($offer) {
+                // Loggen wer gelöscht hat
+                log_message('info', sprintf(
+                    'Offer ID %d wurde gelöscht von User ID %d (Username: %s)',
+                    $deleteId,
+                    $user->id,
+                    $user->username
+                ));
+
+                $offerModel->delete($deleteId);
+
+                return redirect()->to('/dashboard')->with('success', 'Angebot wurde gelöscht.');
+            } else {
+                return redirect()->to('/dashboard')->with('error', 'Angebot nicht gefunden.');
+            }
+        }
+
+
         $builder = $offerModel->builder()->select('offers.*');
 
         // Basisfilter
@@ -103,9 +133,10 @@ class Dashboard extends Controller
 
         $offers = $builder->orderBy('offers.created_at', 'desc')->get()->getResultArray();
 
-
+        $filterOptions = new \App\Config\FilterOptions();
 
         return view('admin/dashboard', [
+            'types' => $filterOptions->types,
             'title' => 'Anfragen-Statistik',
             'offers' => $offers,
             'filter_type' => $type,
