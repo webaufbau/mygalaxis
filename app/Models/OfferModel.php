@@ -40,6 +40,8 @@ class OfferModel extends Model
         'checked_at',
         'reminder_sent_at',
         'verification_token',
+        'group_id',
+        'form_fields_combo'
     ];
 
     protected $useTimestamps = true;
@@ -59,13 +61,6 @@ class OfferModel extends Model
         log_message('debug', 'before Insert fields ' . print_r($fields, true));
         log_message('debug', 'before Insert userInputs ' . print_r($userInputs, true));
 
-        if (is_array($fields)) {
-            $data['data'] = array_merge(
-                $data['data'],
-                $this->enrichDataFromFormFields($fields, $data['data'])
-            );
-        }
-
         if (empty($data['data']['verification_token'])) {
             $data['data']['verification_token'] = bin2hex(random_bytes(32)); // 64 Zeichen Hex
         }
@@ -81,8 +76,9 @@ class OfferModel extends Model
         $address = $this->extractAddressData($formFields);
 
         $data = [];
-
-        $data['type'] = $this->detectType($formFields);
+        if(!$original || !isset($original['type']) || !str_contains($original['type'], '_')) {
+            $data['type'] = $this->detectType($formFields);
+        }
         $data['city'] = $address['city'];
         $data['zip'] = $address['zip'];
         $data['customer_type'] = isset($formFields['firmenname']) ? 'firma' : 'privat';
@@ -219,6 +215,33 @@ class OfferModel extends Model
 
         return $builder->get()->getResultArray();
     }
+
+    public function getGroupedOffers(?int $userId = null): array
+    {
+        $builder = $this->db->table('offers')
+            ->select('
+            MIN(id) as id,
+            group_id,
+            GROUP_CONCAT(DISTINCT type SEPARATOR " + ") as type,
+            GROUP_CONCAT(form_fields SEPARATOR "||SEP||") as form_fields_combined,
+            MIN(title) as title,
+            MIN(status) as status,
+            MIN(price) as price,
+            MIN(created_at) as created_at
+        ')
+            ->groupStart()
+            ->whereNotIn('status', ['deleted'])
+            ->groupEnd()
+            ->groupBy('group_id');
+
+        if ($userId !== null) {
+            $builder->join('bookings', 'bookings.reference_id = offers.id AND bookings.type = "offer_purchase"', 'left');
+            $builder->where('bookings.user_id', $userId);
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
 
 
 

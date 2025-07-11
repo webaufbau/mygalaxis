@@ -15,6 +15,7 @@ class FilterOptions extends BaseConfig
     public array $types = [
         'move' => 'Umzug',
         'cleaning' => 'Reinigung',
+        'move_cleaning' => 'Umzug + Reinigung',
         'painting' => 'Maler',
         'gardening' => 'Gartenpflege',
         'plumbing' => 'Sanitär',

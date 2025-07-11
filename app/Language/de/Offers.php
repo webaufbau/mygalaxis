@@ -4,6 +4,7 @@ return [
     'type' => [
         'move' => 'Umzug',
         'cleaning' => 'Reinigung',
+        'move_cleaning' => 'Umzug + Reinigung',
         'painting' => 'Malerarbeiten',
         'painter' => 'Malerarbeiten',
         'gardening' => 'Gartenpflege',

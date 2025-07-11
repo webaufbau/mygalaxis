@@ -101,15 +101,19 @@ class Offers extends Controller
         $purchasedOfferIds = [];
 
         if ($userId) {
-            $bookingModel = new \App\Models\BookingModel();
-            $bookings = $bookingModel
-                ->where('user_id', $userId)
-                ->where('type', 'offer_purchase')
-                ->whereIn('reference_id', array_column($offers, 'id'))
-                ->findAll();
+            $offerIds = array_column($offers, 'id');
+            if (!empty($offerIds)) {
+                $bookingModel = new \App\Models\BookingModel();
+                $bookings = $bookingModel
+                    ->where('user_id', $userId)
+                    ->where('type', 'offer_purchase')
+                    ->whereIn('reference_id', $offerIds)
+                    ->findAll();
 
-            $purchasedOfferIds = array_column($bookings, 'reference_id');
+                $purchasedOfferIds = array_column($bookings, 'reference_id');
+            }
         }
+
 
         return view('offers/index', [
             'offers' => $offers,

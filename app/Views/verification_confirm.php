@@ -29,6 +29,20 @@
 
 
 <div class="container mt-5">
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= esc(session()->getFlashdata('success')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= esc(session()->getFlashdata('error')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+
+
     <?php
     $phone = session('phone');
     $method = session('verify_method');
@@ -42,14 +56,17 @@
         <p>Sie erhalten in wenigen Sekunden einen Anruf auf <strong><?= esc($phone) ?></strong> mit Ihrem Bestätigungscode.</p>
     <?php endif; ?>
 
-    <p>Falls das nicht Ihre Telefonnummer ist oder Sie keinen Code erhalten haben, geben Sie bitte Ihre Telefonnummer erneut ein. Achten Sie auf die korrekte Eingabe:</p>
+    <p>
+        Sollte die angezeigte Telefonnummer nicht korrekt sein oder Sie keinen Code erhalten haben, geben Sie bitte Ihre richtige Telefonnummer in das untenstehende Feld ein, lassen Sie das Feld für den Bestätigungscode leer und senden Sie das Formular erneut ab.
+        So wird Ihnen ein neuer Code an die korrekte Nummer gesendet.
+    </p>
 
     <form method="post" action="<?= site_url('/verification/verify') ?>">
         <?= csrf_field() ?>
 
         <div class="mb-3">
             <label for="code" class="form-label">Bestätigungscode</label>
-            <input type="text" name="code" id="code" class="form-control" required>
+            <input type="text" name="code" id="code" class="form-control">
         </div>
 
         <div class="mb-3">

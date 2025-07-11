@@ -511,3 +511,13 @@ ALTER TABLE `users`
 ALTER TABLE `users`
     CHANGE `updated_at` `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`,
     CHANGE `filter_address` `filter_categories` longtext COLLATE 'utf8mb4_general_ci' NULL AFTER `company_phone`;
+
+ALTER TABLE `offers`
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`,
+    ADD `group_id` int(11) NULL;
+
+ALTER TABLE offers ADD COLUMN group_id VARCHAR(36) DEFAULT NULL;
+
+ALTER TABLE `offers`
+    ADD `form_fields_combo` longtext COLLATE 'utf8mb4_bin' NULL AFTER `form_fields`,
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;

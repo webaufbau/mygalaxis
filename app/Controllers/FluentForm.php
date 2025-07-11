@@ -70,6 +70,8 @@ class FluentForm extends BaseController
         log_message('debug', 'Webhook POST: ' . print_r($this->request->getPost(), true));
 
         $data = $this->request->getPost();
+        $data = trim_recursive($data);
+
         $headers = array_map(function ($header) {
             return (string)$header->getValueLine();
         }, $this->request->headers());
@@ -97,24 +99,38 @@ class FluentForm extends BaseController
         // save for groups
         $groupId = null;
         if(isset($data['additional_service'])) {
+            log_message('debug', 'matching additional_service|'.$data['additional_service'].'|');
+
             if ($data['additional_service'] !== 'Nein') {
                 session()->set('group_email', $data['email'] ?? null);
                 session()->set('group_uuid', $data['uuid'] ?? null);
                 session()->set('group_additional_service', $data['additional_service'] ?? null);
                 session()->set('group_date', time());
+
+                log_message('debug', 'additional_service group_email ' . session()->get('group_email'));
+                log_message('debug', 'additional_service group_uuid ' . session()->get('group_uuid'));
+                log_message('debug', 'additional_service group_additional_service ' . session()->get('group_additional_service'));
+                log_message('debug', 'additional_service group_date ' . session()->get('group_date'));
+
             } else {
+                log_message('debug', 'matching Nein');
+
                 // Nein
                 $offerModel = new OfferModel();
                 $matchingOffers = $offerModel
                     ->where('email', $data['email'] ?? session()->get('group_email'))
-                    ->where('uuid', session()->get('group_uuid') ?? $uuid)
+                    // ->where('uuid', session()->get('group_uuid'))
                     ->where('group_id IS NULL') // noch nicht gruppiert
                     //->where('created_at >=', date('Y-m-d H:i:s', strtotime('-15 minutes')))
                     ->orderBy('created_at', 'DESC')
                     ->findAll(1); // nur das letzte holen
+                log_message('debug', 'matching query ' . $offerModel->db->getLastQuery());
 
                 if (!empty($matchingOffers)) {
+                    log_message('debug', 'matching offers ' . print_r($matchingOffers, true));
+
                     $groupId = bin2hex(random_bytes(6));
+                    log_message('debug', 'matching groupId ' . $groupId);
 
                     // Update vorheriges Angebot mit group_id
                     $offerModel->update($matchingOffers[0]['id'], ['group_id' => $groupId]);
@@ -127,6 +143,7 @@ class FluentForm extends BaseController
         $offerModel = new OfferModel();
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
+        $type = $enriched['type'] ?? 'unknown';
         $insertData = array_merge([
             'form_name'     => $formName,
             'form_fields'   => json_encode($data, JSON_UNESCAPED_UNICODE),
@@ -142,7 +159,36 @@ class FluentForm extends BaseController
             'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
             'group_id'      => $groupId,
+            'type'          => $type,
         ], $enriched);
+
+        if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
+            $other_type_has_to_be = $enriched['type'] == 'move' ? 'cleaning' : 'move';
+            $userEmail = $data['email'] ?? null;
+            $offerFindModel = new OfferModel();
+            $matchingOffers = $offerFindModel
+                ->where('email', $data['email'] ?? $userEmail)
+                ->where('type', $other_type_has_to_be)
+                //->where('created_at >=', date('Y-m-d H:i:s', strtotime('-15 minutes')))
+                ->orderBy('created_at', 'DESC')
+                ->findAll(1); // nur das letzte holen
+
+            if (!empty($matchingOffers)) {
+                $previousOffer = $matchingOffers[0];
+                $previousFormFields = json_decode($previousOffer['form_fields'], true) ?? [];
+
+                // Neuen Typ setzen
+                $type = 'move_cleaning';
+                $insertData['type'] = $type;
+                $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
+
+                // vorige Anfrage $matchingOffers löschen
+                $offerModel->delete($previousOffer['id']);
+            }
+        }
+
+        log_message('debug', 'insertdata: ' . print_r($insertData, true));
+
 
         // Speichern
         if (!$offerModel->insert($insertData)) {
@@ -151,12 +197,13 @@ class FluentForm extends BaseController
 
         $offerId = $offerModel->getInsertID();
         $formFields = $data;
-        $type = $enriched['type'] ?? 'unknown';
+
 
         // Typ-spezifische Speicherung:
         $typeModelMap = [
             'move'      => \App\Models\OfferMoveModel::class,
             'cleaning'  => \App\Models\OfferCleaningModel::class,
+            'move_cleaning'  => \App\Models\OfferMoveCleaningModel::class,
             'painting'  => \App\Models\OfferPaintingModel::class,
             'gardening' => \App\Models\OfferGardeningModel::class,
             'plumbing'  => \App\Models\OfferPlumbingModel::class,

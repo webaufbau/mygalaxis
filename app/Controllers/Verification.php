@@ -229,27 +229,100 @@ class Verification extends Controller
     {
         $request = service('request');
 
+        $uuid = session()->get('uuid');
+        $newPhone = $request->getPost('phone');
         $enteredCode = $request->getPost('code');
         $sessionCode = session()->get('verification_code');
 
-        $uuid = session()->get('uuid');
-        if ($enteredCode == session()->get('verification_code')) {
+        // Wenn eine neue Telefonnummer angegeben wurde:
+        if (!empty($newPhone) && $newPhone !== session()->get('phone')) {
+            $normalizedPhone = $this->normalizePhone($newPhone);
+            $method = session()->get('verify_method') ?? 'sms';
 
+            // neue Nummer in Session speichern
+            session()->set('phone', $normalizedPhone);
+
+            // neuen Code erzeugen und speichern
+            $verificationCode = rand(1000, 9999);
+            session()->set('verification_code', $verificationCode);
+
+            // Nummer auch in der Datenbank speichern
+            $db = \Config\Database::connect();
+            $builder = $db->table('offers');
+            $builder->where('uuid', $uuid)->update(['phone' => $normalizedPhone]);
+
+            // Code via Infobip senden
+            try {
+                $infobib_config = new \App\Config\Infobib();
+                $configuration = new \Infobip\Configuration(
+                    host: $infobib_config->api_host,
+                    apiKey: $infobib_config->api_key,
+                );
+
+                if ($method === 'sms') {
+                    $smsApi = new \Infobip\Api\SmsApi($configuration);
+
+                    $message = new \Infobip\Model\SmsMessage(
+                        destinations: [new \Infobip\Model\SmsDestination(to: $normalizedPhone)],
+                        content: new \Infobip\Model\SmsTextContent(text: "Ihr Verifizierungscode lautet: $verificationCode"),
+                        sender: 'InfoSMS'
+                    );
+
+                    $smsRequest = new \Infobip\Model\SmsRequest(messages: [$message]);
+                    $smsApi->sendSmsMessages($smsRequest);
+
+                    log_message('info', "Neuer SMS-Code an $normalizedPhone gesendet.");
+                } elseif ($method === 'call') {
+                    $voiceApi = new \Infobip\Api\VoiceApi($configuration);
+
+                    $voice = new \Infobip\Model\CallsVoice();
+                    $voice->setGender('female');
+                    $voice->setName('de-DE');
+
+                    $callRequest = new \Infobip\Model\CallsSingleBody(
+                        from: 'InfoCall',
+                        to: $normalizedPhone,
+                        language: 'de-CH',
+                        text: "Ihr Verifizierungscode lautet $verificationCode",
+                        voice: $voice
+                    );
+
+                    $voiceApi->sendSingleVoiceTts($callRequest);
+
+                    log_message('info', "Neuer Anruf-Code an $normalizedPhone gestartet.");
+                }
+
+                return redirect()->to('/verification/confirm')->with('success', 'Neuer Code wurde an Ihre angegebene Nummer gesendet.');
+
+            } catch (\Infobip\ApiException $e) {
+                log_message('error', "Fehler beim Senden an neue Nummer $normalizedPhone: " . $e->getMessage());
+                return redirect()->back()->with('error', 'Fehler beim Versenden des neuen Codes.');
+            }
+        }
+
+        // Wenn Code korrekt ist
+        if ($enteredCode == $sessionCode) {
             $db = \Config\Database::connect();
             $builder = $db->table('offers');
 
-            // verified auf 1 setzen für diese uuid
-            $builder->where('uuid', $uuid)->update(['verified' => 1, 'verify_type' => session()->get('verify_method')]);
+            $builder->where('uuid', $uuid)->update([
+                'verified'     => 1,
+                'verify_type'  => session()->get('verify_method')
+            ]);
 
             session()->remove('verification_code');
 
-            log_message('debug', 'Verifizierung Abgeschlossen: gehe weiter zur URL: ' . (session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
-            return view('verification_success', ['next_url' => session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/']);
+            log_message('debug', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
+            return view('verification_success', [
+                'next_url' => session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'
+            ]);
         }
 
+        // Falscher Code
         log_message('debug', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
     }
+
 
     // sending with mail after inserted and not verified:
     public function verifyOffer($offerId = null, $token = null)

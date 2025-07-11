@@ -1,5 +1,6 @@
 <?php
-$formFields = json_decode($offer['form_fields'] ?? '', true);
+$formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
+$formFields += json_decode($offer['form_fields_combo'] ?? '', true) ?? [];
 
 // Diese Keys werden NICHT angezeigt
 $excludeKeys = [

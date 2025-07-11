@@ -29,6 +29,7 @@ class CheckOffers extends BaseCommand
         $modelClassMap = [
             'move'      => \App\Models\OfferMoveModel::class,
             'cleaning'  => \App\Models\OfferCleaningModel::class,
+            'move_cleaning'  => \App\Models\OfferMoveCleaningModel::class,
             'painting'  => \App\Models\OfferPaintingModel::class,
             'gardening' => \App\Models\OfferGardeningModel::class,
             'plumbing'  => \App\Models\OfferPlumbingModel::class,
@@ -37,7 +38,7 @@ class CheckOffers extends BaseCommand
         foreach ($offers as $offer) {
             $formFields = json_decode($offer['form_fields'], true);
             $enriched = $offerModel->enrichDataFromFormFields($formFields, $offer);
-            $detectedType = $enriched['type'] ?? $offerModel->detectType($formFields);
+            $detectedType = $enriched['type'] ?? $offer['type'];
 
             if (isset($modelClassMap[$detectedType])) {
                 $modelClass = $modelClassMap[$detectedType];
@@ -84,6 +85,7 @@ class CheckOffers extends BaseCommand
                 CLI::write("Daten aktualisiert " . print_r($updateData, true), 'yellow');
                 $offerModel->update($offer['id'], $updateData);
             }
+
 
         }
 
