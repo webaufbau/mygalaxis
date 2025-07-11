@@ -162,6 +162,7 @@ table.table {
 table.table th,
 table.table td {
     vertical-align: middle;
+    font-size: 10pt;
 }
 
 /* =======================
