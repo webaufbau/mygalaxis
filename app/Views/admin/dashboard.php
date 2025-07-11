@@ -97,6 +97,7 @@
         <th>Ort</th>
         <th>Name</th>
         <th>Status</th>
+        <th>Käufe</th>
         <th>Kampagne</th>
         <th>Verifiziert</th>
         <th></th>
@@ -156,6 +157,7 @@
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td><?= esc(lang('Offers.status.' . $o['status']) ?? $o['status']) ?></td>
+        <td><?= esc($o['buyers']) ?></td>
         <td><?= $utmStatus ?></td>
         <td><?=$verified;?></td>
         <td>
