@@ -123,7 +123,7 @@
 
         <div class="mb-3">
             <label for="company_website" class="form-label">Website</label>
-            <input type="url" name="company_website" id="company_website" class="form-control">
+            <input type="text" name="company_website" id="company_website" class="form-control">
             <div class="invalid-feedback">
                 Bitte geben Sie eine gültige URL ein.
             </div>

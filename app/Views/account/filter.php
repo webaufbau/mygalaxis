@@ -75,7 +75,11 @@
     <script>
         $(document).ready(function () {
             // Tooltips aktivieren
-            $('[title]').tooltip({'placement': 'bottom'});
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new bootstrap.Tooltip(el, {
+                    placement: 'bottom'
+                });
+            });
 
             // Wenn ein Kanton aktiviert/deaktiviert wird
             $('input[name="cantons[]"]').on('change', function () {

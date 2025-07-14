@@ -147,63 +147,63 @@ class Dashboard extends Controller
 
 
 
-    public function index_user() {
-        if(!isset($_SERVER['DDEV_PROJECT'])) {
+    public function index_user()
+    {
+        if (!isset($_SERVER['DDEV_PROJECT'])) {
             exit(); // deaktiviert aktuell
         }
+
         $user = auth()->user();
 
-        $purchasedOfferModel = new OfferPurchaseModel();
-        $offerModel = new OfferModel();
+        $bookingModel = new \App\Models\BookingModel();
+        $offerModel = new \App\Models\OfferModel();
 
-// Gekaufte Angebote
-        $purchasedOffers = $purchasedOfferModel
+        // Gekaufte Angebote via Buchungen
+        $bookings = $bookingModel
             ->where('user_id', $user->id)
-            ->join('offers', 'offers.id = offer_purchases.offer_id')
-            ->select('offer_purchases.*, offers.form_name, offers.status as offer_status')
+            ->where('type', 'offer_purchase')
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-// Statistik berechnen
-        $totalPurchased = count($purchasedOffers);
-        $totalSpent = array_sum(array_column($purchasedOffers, 'price_paid'));
+        // IDs der gekauften Angebote
+        $purchasedOfferIds = array_column($bookings, 'reference_id');
 
-// Alle Angebote, die potenziell gekauft werden konnten
-        $allOffers = (new OfferModel())
-            ->orderBy('created_at', 'DESC')
-            ->findAll();
-
-// IDs der gekauften Angebote durch diesen User
-        $purchasedOfferIds = array_column($purchasedOffers, 'offer_id');
-
-// Verpasste = Angebote, die der User hätte kaufen können, aber nicht gekauft hat
-        $missedOffers = array_filter($allOffers, function ($offer) use ($user, $purchasedOfferIds) {
-            // Wenn bereits gekauft → nicht verpasst
-            if (in_array($offer['id'], $purchasedOfferIds)) return false;
-
-            // Wenn 'buyers' leer oder enthält User-ID → Angebot war für User sichtbar
-            $buyers = json_decode($offer['buyers'], true);
-            if (is_array($buyers) && in_array($user->id, $buyers)) {
-                return true;
+        // Gekaufte Angebote mit Offer-Infos
+        $purchasedOffers = [];
+        foreach ($purchasedOfferIds as $offerId) {
+            $offer = $offerModel->find($offerId);
+            if ($offer) {
+                $offer['price_paid'] = $bookingModel
+                    ->where('user_id', $user->id)
+                    ->where('reference_id', $offerId)
+                    ->where('type', 'offer_purchase')
+                    ->orderBy('created_at', 'DESC')
+                    ->first()['amount'] ?? 0;
+                $purchasedOffers[] = $offer;
             }
+        }
 
-            return false;
-        });
+        $totalPurchased = count($purchasedOffers);
 
-        $totalMissed = count($missedOffers);
-        $totalMissedCHF = array_sum(array_column($missedOffers, 'price'));
+        // Alle verifizierten Offerten (die man hätte kaufen können)
+        $allOffers = $offerModel->where('verified', 1)->findAll();
+
+        $totalMissed = count($allOffers) - $totalPurchased;
+        if ($totalMissed < 0) {
+            $totalMissed = 0; // Sicherheitskorrektur
+        }
 
         $data = [
             'title' => 'Dashboard',
             'user' => $user,
             'purchasedOffers' => $purchasedOffers,
+            'totalSpent' => 0,
             'totalPurchased' => $totalPurchased,
-            'totalSpent' => $totalSpent,
             'totalMissed' => $totalMissed,
-            'totalMissedCHF' => $totalMissedCHF,
         ];
-
 
         return view('account/dashboard', $data);
     }
+
+
 }

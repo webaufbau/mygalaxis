@@ -144,6 +144,11 @@ class FluentForm extends BaseController
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
         $type = $enriched['type'] ?? 'unknown';
+
+        $categoryManager = new \App\Libraries\CategoryManager();
+        $categories = $categoryManager->getAll();
+        $category_option = $categories[$type] ?? null;
+
         $insertData = array_merge([
             'form_name'     => $formName,
             'form_fields'   => json_encode($data, JSON_UNESCAPED_UNICODE),
@@ -154,7 +159,7 @@ class FluentForm extends BaseController
             'uuid'          => $uuid,
             'created_at'    => date('Y-m-d H:i:s'),
             'status'        => 'available',
-            'price'         => '29',
+            'price'         => $category_option['price'] ?? 0,
             'buyers'        => 0,
             'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
@@ -179,8 +184,13 @@ class FluentForm extends BaseController
 
                 // Neuen Typ setzen
                 $type = 'move_cleaning';
+
+                $categoryManager = new \App\Libraries\CategoryManager();
+                $categories = $categoryManager->getAll();
+                $category_option = $categories[$type] ?? null;
+
                 $insertData['type'] = $type;
-                $insertData['price'] = '39';
+                $insertData['price'] = $category_option['price'] ?? 0;
                 $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
 
                 // vorige Anfrage $matchingOffers löschen

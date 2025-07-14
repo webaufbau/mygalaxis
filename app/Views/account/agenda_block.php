@@ -20,6 +20,11 @@
 
 <script>
     $(function (e) {
+        window.CSRF = {
+            name: '<?= csrf_token() ?>',
+            value: '<?= csrf_hash() ?>'
+        };
+
         var today = new Date();
         var events = [];
         var calendar;
@@ -38,7 +43,11 @@
             },
             events: events,
             onclickDate: function (e, data) {
+                console.log('data', data);
+                toggleDate(data.datejs);
             }
+
+
         });
 
         function alertPopup(message, type) {
@@ -89,10 +98,8 @@
                             date: value['date'],
                             eventName: value['eventName'],
                             className: value['className'],
-                            dateColor: value['dateColor'],
-                            onclick(e, data) {
+                            dateColor: value['dateColor']
 
-                            },
                         });
                     });
                 },
@@ -140,6 +147,34 @@
                 }
             });
         }
+
+        function toggleDate(inputDate) {
+            const date = (inputDate instanceof Date) ? inputDate : new Date(inputDate);
+
+            const dateStr = date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0');
+
+            $.ajax({
+                url: '<?= base_url('agenda/toggle') ?>',
+                method: 'POST',
+                data: {
+                    date: dateStr,
+                    [window.CSRF.name]: window.CSRF.value
+                },
+                dataType: 'json',
+                success: function (res) {
+                    load_events(date);
+                    if (res.csrf) {
+                        window.CSRF.value = res.csrf;
+                    }
+                },
+                error: function () {
+                    alert('Fehler beim Speichern.');
+                }
+            });
+        }
+
 
 
         load_events(new Date());

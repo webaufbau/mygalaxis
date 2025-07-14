@@ -175,6 +175,29 @@ class RegisterController extends ShieldRegister {
             // To get the complete user object with ID, we need to get from the database
             $user = $users->findById($users->getInsertID());
 
+            $db = \Config\Database::connect();
+            $zip = $this->request->getPost('company_zip');
+
+            // PLZ-Region suchen
+            $zipResult = $db->table('zipcodes')
+                ->where('country_code', 'CH')
+                ->where('zipcode', $zip)
+                ->get()
+                ->getRow();
+
+            if ($zipResult) {
+                $region = $zipResult->province;
+                $canton = $zipResult->canton;
+
+                // Filter speichern
+                $userModel = new \App\Models\UserModel();
+                $userModel->save([
+                    'id' => $user->id,
+                    'filter_regions' => $region,
+                    'filter_cantons' => $canton,
+                ]);
+            }
+
             // Add to default group
             $users->addToDefaultGroup($user);
 

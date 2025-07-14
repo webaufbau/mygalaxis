@@ -17,28 +17,29 @@
                 <h5 class="card-title">Gekaufte Anfragen</h5>
                 <p class="card-text">
                     Anzahl: <strong><?= $totalPurchased ?></strong><br>
-                    Gesamtbetrag: <strong><?= number_format($totalSpent, 2) ?> CHF</strong>
                 </p>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card border-danger">
-            <div class="card-body">
-                <h5 class="card-title">Verpasste Anfragen</h5>
-                <p class="card-text">
-                    Anzahl: <strong><?= $totalMissed ?></strong><br>
-                    Verpasster Wert: <strong><?= number_format($totalMissedCHF, 2) ?> CHF</strong>
-                </p>
+
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Verpasste Anfragen</h5>
+                    <p class="card-text">
+                        Anzahl: <strong><?= $totalMissed ?></strong><br>
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
+
+
 </div>
 
 <!-- Hinweis auf automatische Käufe -->
 <div class="alert alert-info">
     <i class="bi bi-info-circle"></i>
-    Um keine Anfragen mehr zu verpassen, kannst du in deinem <a href="/account/profile" class="alert-link">Profil</a> die Option <strong>„automatisch kaufen“</strong> aktivieren.
+    Um keine Anfragen mehr zu verpassen, kannst du in deinem <a href="/profile" class="alert-link">Profil</a> die Option <strong>„automatisch kaufen“</strong> aktivieren.
 </div>
 
 
@@ -60,16 +61,6 @@
                 <div>
                     <strong><?= esc($offer['form_name']) ?></strong><br>
                     Kaufdatum: <?= date('d.m.Y', strtotime($offer['created_at'])) ?><br>
-                    Status:
-                    <?php
-                    switch($offer['status']) {
-                        case 'pending': echo 'In Bearbeitung'; break;
-                        case 'paid': echo 'Bezahlt'; break;
-                        case 'cancelled': echo 'Storniert'; break;
-                        case 'refunded': echo 'Erstattet'; break;
-                        default: echo 'Unbekannt';
-                    }
-                    ?>
                 </div>
                 <span class="badge bg-primary rounded-pill"><?= number_format($offer['price_paid'], 2) ?> CHF</span>
             </li>

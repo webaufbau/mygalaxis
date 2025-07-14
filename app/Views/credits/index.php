@@ -14,7 +14,7 @@
         <tr>
             <td><?= esc($t['created_at']) ?></td>
             <td><?= number_format($t['amount'], 2) ?></td>
-            <td><?= esc($t['type']) ?></td>
+            <td><?= Lang('Offers.credit_type.'.$t['type']) ?></td>
             <td><?= esc($t['description']) ?></td>
         </tr>
     <?php endforeach; ?>

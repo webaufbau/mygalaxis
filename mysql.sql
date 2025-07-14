@@ -521,3 +521,70 @@ ALTER TABLE offers ADD COLUMN group_id VARCHAR(36) DEFAULT NULL;
 ALTER TABLE `offers`
     ADD `form_fields_combo` longtext COLLATE 'utf8mb4_bin' NULL AFTER `form_fields`,
     CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;
+
+
+
+DROP TABLE IF EXISTS `reviews`;
+CREATE TABLE `reviews` (
+                           `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                           `recipient_id` int(11) NOT NULL,
+                           `offer_id` int(11) NOT NULL,
+                           `hash` varchar(255) NOT NULL,
+                           `reviewer_firstname` varchar(100) DEFAULT NULL,
+                           `reviewer_lastname` varchar(100) DEFAULT NULL,
+                           `created_by` int(11) NOT NULL,
+                           `rating` tinyint(4) NOT NULL,
+                           `comment` text DEFAULT NULL,
+                           `created_at` datetime DEFAULT current_timestamp(),
+                           PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `reviews` (`id`, `recipient_id`, `offer_id`, `hash`, `reviewer_firstname`, `reviewer_lastname`, `created_by`, `rating`, `comment`, `created_at`) VALUES
+     (1,	11,	0,	'',	NULL,	NULL,	1,	5,	'Sehr professionell und zuverlässig!',	'2024-01-10 00:00:00'),
+     (2,	11,	0,	'',	NULL,	NULL,	2,	4,	'Schnell geantwortet, gerne wieder.',	'2024-01-15 00:00:00'),
+     (3,	11,	0,	'',	NULL,	NULL,	3,	5,	'Top Arbeit. Jederzeit wieder.',	'2024-02-01 00:00:00'),
+     (4,	11,	0,	'',	NULL,	NULL,	4,	3,	'War ok, aber hätte besser sein können.',	'2024-02-10 00:00:00'),
+     (5,	11,	0,	'',	NULL,	NULL,	5,	4,	'Solide Leistung und pünktlich.',	'2024-03-01 00:00:00'),
+     (6,	11,	0,	'',	NULL,	NULL,	6,	2,	'Leider verspätet angekommen.',	'2024-03-15 00:00:00'),
+     (7,	11,	0,	'',	NULL,	NULL,	7,	5,	'Perfekte Abwicklung!',	'2024-04-01 00:00:00'),
+     (8,	11,	0,	'',	NULL,	NULL,	8,	5,	'Alles bestens. Klare Weiterempfehlung.',	'2024-04-10 00:00:00'),
+     (9,	11,	0,	'',	NULL,	NULL,	9,	4,	'Gute Kommunikation und Ergebnis.',	'2024-04-20 00:00:00'),
+     (10,	11,	0,	'',	NULL,	NULL,	10,	5,	'Exzellent und freundlich.',	'2024-05-01 00:00:00'),
+     (11,	11,	0,	'',	NULL,	NULL,	11,	4,	'Schneller Service. Danke!',	'2024-05-10 00:00:00'),
+     (12,	11,	0,	'',	NULL,	NULL,	12,	3,	'In Ordnung, aber Luft nach oben.',	'2024-05-15 00:00:00'),
+     (13,	11,	0,	'',	NULL,	NULL,	13,	5,	'Super sauber gearbeitet!',	'2024-05-20 00:00:00'),
+     (14,	11,	0,	'',	NULL,	NULL,	14,	5,	'Zuverlässig wie immer.',	'2024-06-01 00:00:00'),
+     (15,	11,	0,	'',	NULL,	NULL,	15,	4,	'Kleine Verzögerung, aber gute Arbeit.',	'2024-06-05 00:00:00'),
+     (16,	11,	0,	'',	NULL,	NULL,	16,	5,	'Alles wie abgesprochen.',	'2024-06-10 00:00:00'),
+     (17,	11,	0,	'',	NULL,	NULL,	17,	5,	'Sehr freundlich und effizient.',	'2024-06-15 00:00:00'),
+     (18,	11,	0,	'',	NULL,	NULL,	18,	3,	'Neutral, kann besser sein.',	'2024-06-16 00:00:00'),
+     (19,	11,	0,	'',	NULL,	NULL,	19,	4,	'Termingerecht geliefert.',	'2024-06-17 00:00:00'),
+     (20,	11,	0,	'',	NULL,	NULL,	20,	5,	'Ausgezeichnete Dienstleistung!',	'2024-06-18 00:00:00');
+
+-- 2025-07-14 12:57:51
+
+ALTER TABLE bookings
+    ADD COLUMN review_reminder_sent_at DATETIME NULL AFTER created_at;
+
+ALTER TABLE `reviews`
+    ADD `recipient_name` varchar(200) NOT NULL AFTER `recipient_id`;
+
+
+DROP TABLE IF EXISTS `categories`;
+CREATE TABLE `categories` (
+                              `category_id` int(11) NOT NULL AUTO_INCREMENT,
+                              `created_at` date NOT NULL,
+                              `updated_at` date NOT NULL,
+                              `deleted_at` date NOT NULL,
+                              `category_type` varchar(100) NOT NULL,
+                              `category_name` varchar(200) NOT NULL,
+                              `category_price` double(10,2) NOT NULL,
+                              PRIMARY KEY (`category_id`),
+                              UNIQUE KEY `category_name` (`category_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `categories` (`category_id`, `created_at`, `updated_at`, `deleted_at`, `category_type`, `category_name`, `category_price`) VALUES
+   (1,	'2025-07-14',	'2025-07-14',	'0000-00-00',	'',	'Umzug',	19.00),
+   (2,	'2025-07-14',	'2025-07-14',	'0000-00-00',	'',	'Umzug + Reinigung',	29.00),
+   (3,	'2025-07-14',	'2025-07-14',	'0000-00-00',	'',	'Reinigung',	19.00),
+   (4,	'2025-07-14',	'2025-07-14',	'0000-00-00',	'',	'Maler',	19.00);

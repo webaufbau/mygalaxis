@@ -55,7 +55,7 @@ class User extends \CodeIgniter\Shield\Entities\User
     private ?string $company_website = null;
     private ?string $company_email = null;
     private ?string $company_phone = null;
-    private ?string $filter_address = null;
+    private ?string $filter_categories = null;
     private ?string $filter_cantons = null;
     private ?string $filter_languages = null;
     private ?string $filter_absences = null;

@@ -71,6 +71,14 @@ class CheckOffers extends BaseCommand
                 }
             }
 
+            // Preis setzen falls 0
+            $categoryManager = new \App\Libraries\CategoryManager();
+            $categoryPrices = $categoryManager->getAll();
+            if ((empty($offer['price']) || $offer['price']<=0) && isset($categoryPrices[$detectedType]['price']) && $categoryPrices[$detectedType]['price'] > 0) {
+                $updateData['price'] = $categoryPrices[$detectedType]['price'];
+                CLI::write("Preis für Angebot {$offer['id']} automatisch gesetzt: {$updateData['price']} CHF", 'light_green');
+            }
+
             $translatedType = lang('Offers.type.' . $detectedType);
 
             // Titel setzen, falls leer

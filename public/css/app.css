@@ -180,3 +180,34 @@ table.table td {
     outline: none !important;
 }
 
+
+
+.group-user {
+    background: #e3e3e3;
+    color: #5f5f5f;
+}
+
+.group-service {
+    background: #fdeddd;
+    color: #f9a756;
+}
+
+.group-editor {
+    background: #fdeddd;
+    color: #f9a756;
+}
+
+.group-admin {
+    background: #cbf0eb;
+    color: #2ab69b;
+}
+
+.group-developer {
+    background: #f1d4ff;
+    color: #ba29ff;
+}
+
+.group-superadmin {
+    background: #e0d4fb;
+    color: #6226ef;
+}

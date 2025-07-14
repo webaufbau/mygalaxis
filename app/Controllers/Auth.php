@@ -33,7 +33,7 @@ class Auth extends Controller
         helper(['form', 'url']);
         $session = session();
 
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'POST') {
             $email = $this->request->getPost('email');
 
             // Einfaches Validieren der E-Mail

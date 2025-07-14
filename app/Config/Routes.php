@@ -71,6 +71,13 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('userpaymentmethods/delete/(:num)', 'Finance::deleteUserPaymentMethod/$1');
     });
 
+    $routes->get('finance/startAddPaymentMethod', 'Finance::startAddPaymentMethod');
+    $routes->get('finance/paymentSuccess', 'Finance::paymentSuccess');
+    $routes->get('finance/paymentCancel', function () {
+        return redirect()->to('/finance/userpaymentmethods')->with('error', 'Zahlung wurde abgebrochen.');
+    });
+
+
     // Credits / Guthaben
     $routes->group('credits', function ($routes) {
         $routes->get('/', 'Credit::index');
@@ -81,11 +88,6 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('agenda', 'AgendaBlock::index', ['filter' => 'auth']);
     $routes->post('agenda/toggle', 'AgendaBlock::toggle', ['filter' => 'auth']);
     $routes->get('agenda/blocked_events', 'AgendaBlock::blocked_events', ['filter' => 'auth']);
-
-    $routes->get('paymentmethods', 'PaymentMethods::index', ['filter' => 'auth']);
-    $routes->match(['GET','POST'], 'paymentmethods/create', 'PaymentMethods::create', ['filter' => 'auth']);
-    $routes->match(['GET','POST'], 'paymentmethods/edit/(:num)', 'PaymentMethods::edit/$1', ['filter' => 'auth']);
-    $routes->get('paymentmethods/delete/(:num)', 'PaymentMethods::delete/$1', ['filter' => 'auth']);
 
     $routes->get('prices', 'Prices::index', ['filter' => 'auth']);
 
@@ -112,11 +114,35 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
         $routes->post('store', 'Admin\Credit::store');
     });
 
-    // Admin: Firmen verwalten
-    $routes->get('companies', 'Admin\Company::index');
-    $routes->get('companies/create', 'Admin\Company::create');
-    $routes->post('companies/store', 'Admin\Company::store');
-    $routes->get('companies/edit/(:num)', 'Admin\Company::edit/$1');
-    $routes->post('companies/update/(:num)', 'Admin\Company::update/$1');
-    $routes->post('companies/delete/(:num)', 'Admin\Company::delete/$1');
+
+    $routes->get('user', 'Admin\User::index');
+    $routes->match(['GET', 'POST'], 'user/form', 'Admin\User::form');
+    $routes->match(['GET', 'POST'], 'user/form/(:num)', 'Admin\User::form/$1');
+    $routes->match(['GET', 'POST'], 'user/copy/(:num)', 'Admin\User::copy/$1');
+    $routes->match(['GET', 'POST'], 'user/delete/(:num)', 'Admin\User::delete/$1');
+    $routes->get('user/json', 'Admin\User::json');
+
+    $routes->match(['GET', 'POST'], 'category', 'Admin\Category::index');
+    $routes->match(['GET', 'POST'], 'category/form', 'Admin\Category::form');
+    $routes->match(['GET', 'POST'], 'category/form/(:num)', 'Admin\Category::form/$1');
+    $routes->match(['GET', 'POST'], 'category/copy/(:num)', 'Admin\Category::copy/$1');
+    $routes->match(['GET', 'POST'], 'category/delete/(:num)', 'Admin\Category::delete/$1');
+
+    $routes->match(['GET', 'POST'], 'review', 'Admin\Review::index');
+    $routes->match(['GET', 'POST'], 'review/form', 'Admin\Review::form');
+    $routes->match(['GET', 'POST'], 'review/form/(:num)', 'Admin\Review::form/$1');
+    $routes->match(['GET', 'POST'], 'review/copy/(:num)', 'Admin\Review::copy/$1');
+    $routes->match(['GET', 'POST'], 'review/approve/(:num)', 'Admin\Review::approve/$1');
+    $routes->match(['GET', 'POST'], 'review/disapprove/(:num)', 'Admin\Review::disapprove/$1');
+    $routes->match(['GET', 'POST'], 'review/delete/(:num)', 'Admin\Review::delete/$1');
+
+    $routes->match(['GET', 'POST'], 'settings', 'Admin\Settings::index');
+    $routes->match(['GET', 'POST'], 'settings/form', 'Admin\Settings::form');
+    $routes->match(['GET', 'POST'], 'settings/form/(:num)', 'Admin\Settings::form/$1');
+
+    $routes->match(['GET','POST'], 'paymentmethods', 'Admin\PaymentMethods::index', ['filter' => 'auth']);
+    $routes->match(['GET','POST'], 'paymentmethods/create', 'Admin\PaymentMethods::create', ['filter' => 'auth']);
+    $routes->match(['GET','POST'], 'paymentmethods/edit/(:num)', 'Admin\PaymentMethods::edit/$1', ['filter' => 'auth']);
+    $routes->match(['GET','POST'], 'paymentmethods/delete/(:num)', 'Admin\PaymentMethods::delete/$1', ['filter' => 'auth']);
+
 });

@@ -186,60 +186,16 @@ class Offers extends Controller
         helper('auth');
         $user = auth()->user();
 
-        $offerModel = new \App\Models\OfferModel();
-        $offer = $offerModel->find($id);
+        $purchaseService = new \App\Services\OfferPurchaseService();
 
-        if (!$offer || $offer['status'] !== 'available') {
-            return redirect()->to('/offers')->with('error', 'Dieses Angebot kann nicht gekauft werden.');
+        $success = $purchaseService->purchase($user, $id);
+
+        if ($success) {
+            return redirect()->to('/offers/mine#detailsview-' . $id)->with('message', 'Anfrage erfolgreich gekauft!');
         }
 
-        // Preis berechnen (Rabatt nach 3 Tagen)
-        $created = new \DateTime($offer['created_at']);
-        $now = new \DateTime();
-        $days = $now->diff($created)->days;
-        $price = $offer['price'];
-        if ($days > 3) {
-            $price = $price / 2;
-        }
-
-        // Aktuelles Guthaben prüfen
-        $bookingModel = new \App\Models\BookingModel();
-        $balance = $bookingModel->getUserBalance($user->id);
-
-        if ($balance >= $price) {
-            // Aus Guthaben bezahlen
-            $this->finalizePurchase($user, $offer, $price);
-            return redirect()->to('/offers/mine#detailsview-' . $offer['id'])->with('message', 'Anfrage erfolgreich gekauft (per Guthaben)!');
-        }
-
-        // Prüfen, ob Kreditkarte vorhanden
-        $stripeService = new \App\Libraries\StripeService();
-        if ($stripeService->hasCardOnFile($user)) {
-            try {
-                // Direktzahlung per Stripe versuchen
-                $stripeService->charge($user, $price, 'Anfrage #' . $id);
-
-                // Buchung erfassen (nicht über Guthaben, sondern via Stripe)
-                $bookingModel->insert([
-                    'user_id' => $user->id,
-                    'type' => 'offer_purchase',
-                    'description' => "Anfrage gekauft: #" . $offer['id'],
-                    'reference_id' => $offer['id'],
-                    'amount' => -$price,
-                    'created_at' => date('Y-m-d H:i:s'),
-                ]);
-
-                $this->finalizePurchase($user, $offer, $price);
-                return redirect()->to('/offers/mine#detailsview-' . $offer['id'])->with('message', 'Anfrage erfolgreich gekauft (per Kreditkarte)!');
-            } catch (\Exception $e) {
-                log_message('error', 'Stripe-Zahlung fehlgeschlagen: ' . $e->getMessage());
-            }
-        }
-
-        // Keine Zahlungsmöglichkeit
-        return redirect()->to('/finance/topup')->with('error', 'Nicht genügend Guthaben. Bitte laden Sie Ihr Konto auf oder hinterlegen Sie eine Kreditkarte.');
+        return redirect()->to('/finance/topup')->with('error', 'Nicht genügend Guthaben oder keine gültige Kreditkarte.');
     }
-
 
     /**
      * Finalisiert den Kaufprozess

@@ -62,11 +62,15 @@ class MergeComboOffers extends BaseCommand
             $mergedFormFields = $formFieldsPrimary;
             $formFieldsCombo = $formFieldsSecondary;
 
+            $categoryManager = new \App\Libraries\CategoryManager();
+            $categories = $categoryManager->getAll();
+            $moveCleaning = $categories['move_cleaning'] ?? null;
+
             // Neuen Typ setzen
             $offerModel->update($kept['id'], [
                 'type' => 'move_cleaning',
-                'title' => 'Umzug + Reinigung in ' . $kept['city'],
-                'price' => 39,
+                'title' => $moveCleaning['name'] .' in ' . $kept['city'],
+                'price' => $moveCleaning['price'],
                 'form_fields' => json_encode($mergedFormFields, JSON_UNESCAPED_UNICODE),
                 'form_fields_combo' => json_encode($formFieldsCombo, JSON_UNESCAPED_UNICODE),
             ]);

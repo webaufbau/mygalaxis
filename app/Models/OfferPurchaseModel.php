@@ -15,7 +15,7 @@ class OfferPurchaseModel extends Model
         'price',
         'price_paid',
         'payment_method',
-        'rating',       // neu
+        'review',       // neu
         'review',       // neu
         'status',
         'created_at'

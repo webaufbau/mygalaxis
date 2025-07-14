@@ -26,7 +26,7 @@ class PaymentMethods extends BaseController
 
     public function create()
     {
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'POST') {
             $data = [
                 'code' => strtolower(trim($this->request->getPost('code'))),
                 'name' => trim($this->request->getPost('name')),
@@ -34,9 +34,9 @@ class PaymentMethods extends BaseController
             ];
 
             // Validierung
-            if (empty($data['code']) || empty($data['name'])) {
+            /* if (empty($data['code']) || empty($data['name'])) {
                 return redirect()->back()->with('error', 'Code und Name sind Pflichtfelder')->withInput();
-            }
+            } */
 
             // Check unique code
             if ($this->paymentMethodModel->where('code', $data['code'])->first()) {
@@ -60,16 +60,16 @@ class PaymentMethods extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'POST') {
             $data = [
                 'code' => strtolower(trim($this->request->getPost('code'))),
                 'name' => trim($this->request->getPost('name')),
                 'active' => $this->request->getPost('active') ? 1 : 0,
             ];
 
-            if (empty($data['code']) || empty($data['name'])) {
+            /* if (empty($data['code']) || empty($data['name'])) {
                 return redirect()->back()->with('error', 'Code und Name sind Pflichtfelder')->withInput();
-            }
+            } */
 
             // Prüfen auf doppelten Code außer bei aktueller ID
             $existing = $this->paymentMethodModel->where('code', $data['code'])->first();

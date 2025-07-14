@@ -99,8 +99,30 @@
 
 
 
-                <!-- Logout Right -->
                 <ul class="navbar-nav ms-auto">
+                    <?php if(auth()->user()->inGroup('admin')) { ?>
+                    <li class="nav-item">
+                        <a class="nav-link text-normal" href="/admin/user">
+                            <i class="bi bi-buildings me-1"></i> Firmen
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-normal" href="/admin/review">
+                            <i class="bi bi-star me-1"></i> Bewertungen
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-normal" href="/admin/category">
+                            <i class="bi bi-list me-1"></i> Kategorien
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-normal" href="/admin/paymentmethods">
+                            <i class="bi bi-credit-card me-1"></i> Zahlungsarten
+                        </a>
+                    </li>
+                    <?php } ?>
+                    <!-- Logout Right -->
                     <li class="nav-item">
                         <a class="nav-link text-danger" href="/logout">
                             <i class="bi bi-box-arrow-right me-1"></i> Abmelden
@@ -137,6 +159,28 @@
     </div>
 </footer>
 
+
+<script type="text/javascript">
+
+    $(".del").click(function(){
+        if (!confirm("Wirklich löschen?")){
+            return false;
+        }
+    });
+
+    $(".cancel").click(function(){
+        if (!confirm("Wirklich abbrechen?")){
+            return false;
+        }
+    });
+
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+        new bootstrap.Tooltip(el, {
+            placement: 'bottom'
+        });
+    });
+
+</script>
 
 </body>
 </html>

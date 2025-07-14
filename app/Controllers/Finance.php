@@ -125,7 +125,7 @@ class Finance extends BaseController
         $userId = auth()->user()->id;
         $model = new UserPaymentMethodModel();
 
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === 'POST') {
             $data = [
                 'user_id' => $userId,
                 'payment_method_code' => $this->request->getPost('payment_method_code'),
@@ -141,6 +141,44 @@ class Finance extends BaseController
         $paymentMethods = $paymentMethodModel->where('active', 1)->findAll();
 
         return view('finance/add_user_payment_method', ['paymentMethods' => $paymentMethods]);
+    }
+
+    public function startAddPaymentMethod()
+    {
+        $user = auth()->user();
+        $payrexx = new \App\Libraries\PayrexxService();
+
+        $successUrl = site_url('finance/paymentSuccess');
+        $cancelUrl  = site_url('finance/paymentCancel');
+
+        $response = $payrexx->createTokenCheckout($user, $successUrl, $cancelUrl);
+
+        if (is_array($response) && !empty($response['data']['link'])) {
+            return redirect()->to($response['data']['link']);
+        }
+
+        return redirect()->back()->with('error', 'Zahlungsseite konnte nicht erstellt werden.');
+    }
+
+    public function paymentSuccess()
+    {
+        $user = auth()->user();
+        $reference = $this->request->getGet('reference');
+
+        $payrexx = new \App\Libraries\PayrexxService();
+        $response = $payrexx->request('Transaction', ['referenceId' => $reference]);
+
+        if (!isset($response['data'][0]['token'])) {
+            return redirect()->to('/finance/userpaymentmethods')->with('error', 'Kein Token erhalten.');
+        }
+
+        $token = $response['data'][0]['token'];
+
+        // Speichern (verschlüsselt)
+        $model = new \App\Models\UserPaymentMethodModel();
+        $model->saveEncryptedToken($user->id, 'creditcard', $token);
+
+        return redirect()->to('/finance/userpaymentmethods')->with('message', 'Zahlungsmethode gespeichert.');
     }
 
     public function deleteUserPaymentMethod($id)

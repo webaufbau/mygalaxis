@@ -51,11 +51,20 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
         ];
     }
 
+    public function getPrimaryKeyField() {
+        return $this->primaryKey;
+    }
+
+    public function getTitle() {
+        return $this->title;
+    }
+
 
     public function save($row): bool
     {
-        if (is_object($row) && $row->hasAttribute('email') && $row->email) {
+        if (is_object($row) && $row->email) {
             $row->email_text = $row->email;
+            $row->username = $row->email;
         }
 
         return parent::save($row);
@@ -89,6 +98,489 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
         }
 
         return $data;
+    }
+
+
+
+    public function getTotalEntries() {
+        return $this->countAllResults(false);
+    }
+
+    public function getTableHeader()
+    {
+        return [
+            'ID',
+            'Aktiv',
+            'Gruppen',
+            'Ansprechsperson',
+            'Firma',
+            'Ort (Firma)',
+            'E-Mail',
+            'Autom. Kauf',
+            'Letzter Login',
+        ];
+    }
+
+    public function getTableFields($entity)
+    {
+        $last_login_date = '-';
+        if ($entity->lastLogin()) {
+            $last_login_date = $entity->lastLogin()->date->toLocalizedString('dd.MM.YYYY');
+        }
+
+        $groups = '';
+        foreach($entity->groups as $group_id=>$group) {
+            $groups .= '<span class="badge group group-' . $group . '">' . lang('Wa.group_' . $group) . '</span>';
+        }
+
+        return [
+            $entity->id,
+            $entity->active ? '<i class="bi bi-check text-success"></i>' : '<i class="bi bi-x text-danger"></i>',
+            $groups,
+            esc(($entity->contact_person ?? '-')),
+            esc($entity->company_name ?? '-'),
+            esc(($entity->company_zip ?? '') . ' ' . ($entity->company_city ?? '')),
+            esc($entity->getEmail() ?? '-'),
+            $entity->auto_purchase ? 'Ja' : 'Nein',
+            '<span class="text-nowrap">' . $last_login_date . '</span>',
+        ];
+    }
+
+
+    public function getEntryActions($entity) {
+        return '';
+    }
+
+    public function getDefaultOrderField() {
+        return $this->default_order_field;
+    }
+
+    public function getDefaultOrderDirection() {
+        return $this->default_order_direction;
+    }
+
+    public function getDefaultOrderColumn() {
+        return $this->default_order_column;
+    }
+
+    public function useFilter(): bool
+    {
+        return $this->use_filter;
+    }
+
+    public function getEntity() {
+        $entity = $this->returnType;
+        return new $entity();
+    }
+
+    public function getEntry($uid) {
+        return $this->asObject($this->returnType)
+            ->where([$this->primaryKey => $uid])
+            ->first();
+    }
+
+    public function getEntries($limit=100, $offset=0)
+    {
+        return $this->orderBy($this->getPrimaryKeyField(), 'DESC')->findAll($limit, $offset);
+    }
+
+    public function getFormConfiguration($entity=null, $request=null)
+    {
+        if(!$entity) {
+            $entity = $this->getEntity();
+        }
+        if(!$request) {
+            $request = service('request');
+        }
+
+        // Benutzer Gruppen
+        $user_group_options = [];
+        $groupsConfig = new \Config\AuthGroups();
+        foreach($groupsConfig->groups as $group=>$group_description) {
+            $user_group_options[$group] = $group_description['title'].' ('.$group_description['description'].')';
+        }
+
+        // auth_permissions_users
+        $user_permission_options = [];
+        foreach($groupsConfig->permissions as $permission=>$permission_description) {
+            $user_permission_options[$permission] = ''.$permission_description.'';
+        }
+
+
+// Angenommen, $entity ist ein \CodeIgniter\Shield\Entities\User
+        $permissions = $entity->getPermissions(); // Berechtigungen des Benutzers als Array von Strings
+
+// Lade die Berechtigungs- und Gruppenkonfiguration
+        $authConfig = config('AuthGroups');
+
+// Initialisiere ein Array für die gruppierten Berechtigungen
+        $groupedPermissions = [];
+
+        $auth_config_permissions = $authConfig->permissions;
+
+// Gehe durch jede Gruppe in der Konfiguration
+        foreach ($authConfig->groups as $groupName => $group) {
+            $groupedPermissions[$groupName] = [
+                'title'       => $group['title'],
+                'description' => $group['description'],
+                'permissions' => [], // Hier werden die Berechtigungen dieser Gruppe gespeichert
+            ];
+
+            // Überprüfe, ob die Gruppe Berechtigungen in der Matrix hat
+
+            if (isset($authConfig->matrix[$groupName])) {
+                foreach ($authConfig->matrix[$groupName] as $permission) {
+                    // Überprüfe, ob der Benutzer die Berechtigung hat
+                    if (in_array($permission, $permissions)) {
+                        // Füge die Berechtigung der Gruppe hinzu
+
+                    }
+
+                    $groupedPermissions[$groupName]['permissions'][$permission] = $auth_config_permissions[$permission];
+                }
+            }
+        }
+
+        // Konvertiere das gruppierte Array in JSON
+        //$jsonPermissions = json_encode($groupedPermissions);
+
+        $user_permission_options = [];
+        foreach($groupedPermissions as $group=>$permissions) {
+            foreach ($permissions['permissions'] as $permission => $permission_description) {
+                $user_permission_options[$group][$permission] = '' . $permission_description . '';
+            }
+        }
+
+
+
+
+        $form_data = [
+            'tabs' => [
+                'general' => 'Allgemein',
+            ],
+            'fields' => [
+                'general' => [
+                    'id' => [
+                        'type' => 'hidden',
+                    ],
+                    'company_name' => [
+                        'type' => 'text',
+                        'label' => 'Firmenname',
+                    ],
+                    'contact_person' => [
+                        'type' => 'text',
+                        'label' => 'Ansprechperson',
+                    ],
+                    'company_uid' => [
+                        'type' => 'text',
+                        'label' => 'UID',
+                    ],
+                    'company_street' => [
+                        'type' => 'text',
+                        'label' => 'Strasse',
+                    ],
+                    'company_zip' => [
+                        'type' => 'text',
+                        'label' => 'PLZ',
+                    ],
+                    'company_city' => [
+                        'type' => 'text',
+                        'label' => 'Ort',
+                    ],
+                    'company_website' => [
+                        'type' => 'text',
+                        'label' => 'Website',
+                    ],
+                    'company_email' => [
+                        'type' => 'email',
+                        'label' => 'E-Mail (Firma)',
+                    ],
+                    'company_phone' => [
+                        'type' => 'text',
+                        'label' => 'Telefon',
+                    ],
+                    /*'country' => [
+                        'type' => 'dropdown_model',
+                        'label' => lang('Auth.country'),
+                        'required' => 'required',
+                        'model' => 'CountryModel',
+                    ],*/
+                    'auto_purchase' => [
+                        'type' => 'dropdown',
+                        'label' => 'Automatischer Kauf von passenden Angeboten aktivieren',
+                        'options' => [
+                            '1' => 'Ja',
+                            '0' => 'Nein',
+                        ],
+                    ],
+                    'active' => [
+                        'type' => 'dropdown',
+                        'label' => 'Aktiv',
+                        'required' => 'required',
+                        'options' => [
+                            '1' => 'Ja',
+                            '0' => 'Nein',
+                        ]
+                    ],
+                    'email' => [
+                        'type' => 'email',
+                        'label' => 'E-Mail-Adresse',
+                        'required' => 'required',
+                        'value' => $entity->id ? $entity->getEmail() : '',
+                    ],
+                    'user_group' => [
+                        'type' => 'multiple',
+                        'label' => 'Benutzer-Gruppen (mehrere möglich)',
+                        'required' => 'required',
+                        'options' => $user_group_options,
+                        'value' => $entity->getGroups(),
+                    ],
+                    'user_permissions' => [
+                        'type' => 'checkboxes_grouped',
+                        'label' => 'Zusätzliche Berechtigungen zur Gruppe',
+                        'options' => $user_permission_options,
+                        'value' => json_encode($entity->getPermissions()),
+                    ],
+                    'users_organizations' => [
+                        'type' => 'variants',
+                        'label' => 'Organisationen',
+                        'model_filename' => 'usersorganization',
+                        'model_name' => 'Usersorganization',
+                        'model_primary_key' => 'user_id',
+                        'user_id' => $entity->id,
+                        'params' => '&user_id=' . $entity->id,
+                    ],
+                    /*'photo' => [
+                        'label' => 'Neues Profilbild',
+                        'type' => 'file',
+                        'accept' => '.jpg,.jpeg,.png',
+                        'name' => 'userfile',
+                        'public_path' => 'image/profile/thumb_',
+                        'preview' => true,
+                        'info' => 'Mindestens 100x100',
+                    ],
+                    'photo_crop' => [
+                        'label' => 'Profilbild Ausschnitt',
+                        'type' => 'dropdown',
+                        'options' => [
+                            'top-left'     => 'Bildausschnitt: Oben Links',
+                            'top'          => 'Bildausschnitt: Oben',
+                            'top-right'    => 'Bildausschnitt: Oben Rechts',
+                            'left'         => 'Bildausschnitt: Links',
+                            'center'       => 'Bildausschnitt: Mitte',
+                            'right'        => 'Bildausschnitt: Rechts',
+                            'bottom-left'  => 'Bildausschnitt: Unten Links',
+                            'bottom'       => 'Bildausschnitt: Unten',
+                            'bottom-right' => 'Bildausschnitt: Unten Rechts',
+                        ],
+                        'value' => 'center',
+                    ],*/
+                    'email_activate_code' => [
+                        'type' => 'message',
+                        'message' => 'Benutzer aktiviert',
+                    ],
+
+                ],
+            ],
+            'config' => [
+                'first_tab' => 'general',
+                'translation' => true,
+                'row_fields' => [
+                    'general' => [
+                        ['company_name', 'contact_person'],
+                        ['company_uid'],
+                        ['company_street'],
+                        ['company_zip', 'company_city'],
+                        ['company_email', 'company_phone'],
+                        ['company_website'],
+                        ['auto_purchase'],
+                        ['active'],
+                        ['email'],
+                        ['user_group'],
+                        //['user_permissions'],
+                        ['email_activate_code']
+                    ]
+                ],
+            ]
+        ];
+
+        if($entity->id > 0) {
+            $form_data['fields']['general']['password'] = [
+                'type' => 'text',
+                'label' => 'Neues Passwort',
+                'name' => 'password',
+            ];
+
+            $form_data['config']['row_fields']['general'][] = ['password'];
+        } else {
+            $form_data['fields']['general']['password'] = [
+                'type' => 'text',
+                'label' => 'Neues Passwort',
+                'required' => 'required',
+                'name' => 'password',
+            ];
+
+            $form_data['config']['row_fields']['general'][] = ['password'];
+        }
+
+        // has email activation code?
+        $authIdentityModel = new AuthIdentityModel();
+        if($authIdentityModel->where('type','email_activate')->where('user_id', $entity->id)->first()) {
+            $authIdentity = $authIdentityModel->where('type','email_activate')->where('user_id', $entity->id)->first();
+            $form_data['fields']['general']['email_activate_code']['message'] = 'E-Mail-Aktivierungscode: ' . $authIdentity->secret;
+        } else {
+            unset($form_data['fields']['general']['email_activate_code']);
+            unset($form_data['config']['row_fields']['general']['email_activate_code']);
+        }
+
+
+        return $form_data;
+    }
+
+    public function getModelShortname(): string
+    {
+        return strtolower(preg_replace('#App\\\\Models\\\\([A-Za-z]*)Model#', '$1', get_class($this)));
+    }
+
+    protected function indexAfterInsert(array $data)
+    {
+        $this->indexContent($this->getInsertID(), $data['data']);
+        return $data;
+    }
+
+    protected function indexAfterUpdate(array $data)
+    {
+        $this->indexContent($data['id'][0], $data['data']);
+        return $data;
+    }
+
+    protected function indexContent($id, $data)
+    {
+        $modelType = get_class($this);
+        $title = $data["firstname"] ?? null;
+        $link = $this->generateLink($id);
+        $content = $this->generateContent($data);
+        $table = $this->table;
+        $id_field = $this->getPrimaryKeyField();
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('search_index');
+
+        // Prüfen, ob der Datensatz bereits existiert
+        $existing = $builder->where('model_type', $modelType)->where('model_id', $id)->get()->getRowArray();
+
+        $existing_entity = model($modelType)->find($id);
+        if($existing_entity) {
+            $title = $existing_entity->getTitle();
+            $content = $existing_entity->getRawContent();
+        }
+
+        $content = str_replace("><", "> <", $content);
+        $content = strip_tags($content);
+        $content = str_replace("\n", " ", $content);
+
+        $indexData = [
+            'user_id' => $data['user_id'] ?? $existing_entity->user_id,
+            'organization_id' => $data['organization_id'] ?? $existing_entity->organization_id,
+            'model_type' => $modelType,
+            'model_id' => $id,
+            'model_table' => $table,
+            'model_id_field' => $id_field,
+            'title' => $title,
+            'link' => $link,
+            'content' => $content,
+            'additional_data' => json_encode($data),
+        ];
+
+        if ($existing) {
+            // Update existing record
+            $builder->where('id', $existing['id'])->update($indexData);
+        } else {
+            // Insert new record
+            $builder->insert($indexData);
+        }
+    }
+
+    protected function generateLink($id)
+    {
+        return site_url("admin/user/form/{$id}");
+    }
+
+    protected function generateContent($data)
+    {
+        // Kombiniere relevante Felder, um den durchsuchbaren Inhalt zu erstellen
+        return implode(' ', $data);
+    }
+
+    public function entitiesWithParent($parent_id) {
+        if(!in_array('pid', $this->allowedFields)) {
+            return [];
+        }
+        return $this->where('pid', $parent_id)->findAll();
+    }
+
+    public function getFilterConfiguration($entity=null, $request=null)
+    {
+        if(!$entity) {
+            $entity = $this->getEntity();
+        }
+        if(!$request) {
+            $request = service('request');
+        }
+
+        $filter_data = [
+            'fields' => [
+                'query' => [
+                    'type' => 'search',
+                    'name' => 'query',
+                    'like' => [
+                        'company_name' => '%value%',
+                        'contact_person' => '%value%',
+                        'company_uid' => '%value%',
+                        'company_street' => '%value%',
+                        'company_zip' => '%value%',
+                        'company_city' => '%value%',
+                        'company_website' => '%value%',
+                        'company_email' => '%value%',
+                        'company_phone' => '%value%',
+                        'filter_categories' => '%value%',
+                        'filter_cantons' => '%value%',
+                        'filter_regions' => '%value%',
+                        'filter_languages' => '%value%',
+                        'filter_absences' => '%value%',
+                        'filter_custom_zip' => '%value%',
+                        'account_balance' => '%value%',
+                        'auto_purchase' => '%value%',
+                        'email_text' => '%value%',
+                        'stripe_customer_id' => '%value%',
+                    ],
+                    'operator' => 'OR',
+                    'onchange' => 'this.form.submit()',
+                ],
+                'status' => [
+                    'type' => 'dropdown',
+                    'options' => [''=>'Alle', '0'=>'Inaktiv', '1'=>'Aktiv'],
+                    'name' => 'status',
+                    'where' => '( active = \'%value%\' )',
+                    'onchange' => 'this.form.submit()',
+                ],
+            ],
+
+        ];
+
+        return $filter_data;
+    }
+
+    public function getSortableFields() {
+        /*$fields = $this->allowedFields;
+
+        $headers = [];
+        foreach ($fields as $field) {
+            $headers[$field] = $field;
+        }
+
+        return $headers;*/
+        return null;
     }
 
 }

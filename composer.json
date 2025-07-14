@@ -14,7 +14,8 @@
         "codeigniter4/framework": "^4.0",
         "codeigniter4/shield": "^1.1",
         "infobip/infobip-api-php-client": "^6.2",
-        "stripe/stripe-php": "^17.4"
+        "stripe/stripe-php": "^17.4",
+      "ext-curl": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",

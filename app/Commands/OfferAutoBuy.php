@@ -20,7 +20,7 @@ class OfferAutoBuy extends BaseCommand
         $blockedTable = $db->table('blocked_days');
 
         $users = $userTable
-            ->select('id, firstname, lastname, email')
+            ->select('id, email_text')
             ->where('auto_offer_buy', 1)
             ->get()
             ->getResult();
@@ -50,15 +50,77 @@ class OfferAutoBuy extends BaseCommand
 
     protected function handleAutoBuy($user)
     {
-        // Beispiel: Hier kannst du deinen Offerten-Kauf-Code einfügen
-        // z. B. neue Offerte suchen, prüfen, kaufen, etc.
+        $offerModel = new \App\Models\OfferModel();
+        $bookingModel = new \App\Models\BookingModel();
+        $purchaseService = new \App\Services\OfferPurchaseService();
 
-        // Dummy-Ausgabe zur Veranschaulichung:
-        $this->log("✅  Auto-Kauf ausgeführt für Benutzer #{$user->id} ({$user->email})", 'green');
+        // Hole gefilterte Offerten
+        $offers = $this->getFilteredOffersForUser($user);
 
-        // Hier könnte dein Service/Modell den eigentlichen Kauf abwickeln.
-        // z. B.:
-        // $this->offerService->autoBuyForUser($user->id);
+        foreach ($offers as $offer) {
+            $alreadyPurchased = $bookingModel
+                ->where('user_id', $user->id)
+                ->where('type', 'offer_purchase')
+                ->where('reference_id', $offer['id'])
+                ->countAllResults();
+
+            if ($alreadyPurchased > 0) {
+                continue;
+            }
+
+            if ($purchaseService->purchase($user, $offer['id'], true)) {
+                $this->log("✅ Auto-Kauf erfolgreich für Angebot #{$offer['id']} (Benutzer #{$user->id})", 'green');
+            } else {
+                $this->log("❌ Auto-Kauf NICHT möglich für Angebot #{$offer['id']} (Benutzer #{$user->id})", 'red');
+            }
+        }
+    }
+
+    protected function getFilteredOffersForUser($user): array
+    {
+        $offerModel = new \App\Models\OfferModel();
+        $builder = $offerModel->builder();
+        $builder->where('verified', 1);
+
+        $cantons = is_string($user->filter_cantons) ? explode(',', $user->filter_cantons) : $user->filter_cantons ?? [];
+        $regions = is_string($user->filter_regions) ? explode(',', $user->filter_regions) : $user->filter_regions ?? [];
+        $categories = is_string($user->filter_categories) ? explode(',', $user->filter_categories) : $user->filter_categories ?? [];
+        $languages = is_string($user->filter_languages) ? json_decode($user->filter_languages, true) ?? [] : $user->filter_languages ?? [];
+        $services = is_string($user->filter_absences) ? json_decode($user->filter_absences, true) ?? [] : $user->filter_absences ?? [];
+        $customZips = is_string($user->filter_custom_zip) ? explode(',', $user->filter_custom_zip) : [];
+
+        $zipcodeService = new \App\Libraries\ZipcodeService();
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($cantons, $regions);
+        $allZips = array_unique(array_merge($relevantZips, $customZips));
+
+        if (!empty($allZips)) {
+            $builder->groupStart();
+            $builder->whereIn('zip', $allZips);
+            $builder->groupEnd();
+        }
+
+        if (!empty($categories)) {
+            $builder->groupStart();
+            foreach ($categories as $type) {
+                $builder->orWhere('type', trim($type));
+            }
+            $builder->groupEnd();
+        }
+
+        if (!empty($languages)) {
+            foreach ($languages as $lang) {
+                $builder->like('language', trim($lang));
+            }
+        }
+
+        if (!empty($services)) {
+            foreach ($services as $service) {
+                $builder->like('services', trim($service));
+            }
+        }
+
+        // Noch nicht gekaufte (optional hier oder im Aufrufer prüfen)
+        return $builder->orderBy('created_at', 'DESC')->get()->getResultArray();
     }
 
     protected function log(string $message, string $color = 'white')

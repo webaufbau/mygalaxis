@@ -14,6 +14,13 @@ return [
         'other' => 'Sonstiges',
     ],
 
+    'credit_type' => [
+        'credit' => 'Kreditkarte',
+        'subscription' => 'Abo',
+        'topup' => 'Guthaben',
+        'offer_purchase' => 'Angebot gekauft',
+    ],
+
     'status' => [
         'new' => 'Neu',
         'available' => 'Verfügbar',

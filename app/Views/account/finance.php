@@ -48,7 +48,7 @@
             <?php foreach ($bookings as $entry): ?>
                 <tr>
                     <td><?= date('d.m.Y', strtotime($entry['created_at'])) ?></td>
-                    <td><?= ucfirst($entry['type']) ?></td>
+                    <td><?= Lang('Offers.credit_type.'.$entry['type']) ?></td>
                     <td><?= esc($entry['description']) ?></td>
                     <td class="text-end <?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
                         <?= number_format($entry['amount'], 2) ?> CHF
@@ -61,7 +61,7 @@
 
     <!-- Pagination -->
     <div class="mt-3">
-        <?= $pager->links('default', 'bootstrap') ?>
+        <?= $pager->links('default', 'bootstrap5') ?>
     </div>
 <?php endif; ?>
 

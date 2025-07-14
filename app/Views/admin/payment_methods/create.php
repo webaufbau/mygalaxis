@@ -1,10 +1,12 @@
-<h1><?= esc($title) ?></h1>
+<?= $this->extend('layout/main') ?>
 
-<?php if(session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-<?php endif; ?>
+<?= $this->section('content') ?>
+
+<h1 class="my-3"><?= esc($title) ?></h1>
 
 <form action="<?= site_url('/admin/paymentmethods/create') ?>" method="post">
+    <?= csrf_field() ?>
+
     <div class="mb-3">
         <label for="code" class="form-label">Code (eindeutig)</label>
         <input type="text" name="code" id="code" class="form-control" value="<?= old('code') ?>" required>
@@ -23,3 +25,6 @@
     <button type="submit" class="btn btn-primary">Speichern</button>
     <a href="<?= site_url('/admin/paymentmethods') ?>" class="btn btn-secondary">Abbrechen</a>
 </form>
+
+
+<?= $this->endSection() ?>

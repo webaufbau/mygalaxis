@@ -27,15 +27,46 @@ class Reviews extends BaseController {
             ->paginate($perPage, 'default', $page);
 
         $totalReviews = $reviewModel->where('recipient_id', $user->id)->countAllResults();
-        $avgRating = $reviewModel->where('recipient_id', $user->id)->selectAvg('rating')->first()['rating'];
 
-        $totalPurchased = $offerPurchaseModel->where('user_id', $user->id)->countAllResults();
+        $avgReviewEntity = $reviewModel->where('recipient_id', $user->id)->selectAvg('rating')->first();
+        $avgReview = $avgReviewEntity ? $avgReviewEntity->rating : null;
+
+
+        $bookingModel = new \App\Models\BookingModel();
+        $offerModel = new \App\Models\OfferModel();
+
+        // Gekaufte Angebote via Buchungen
+        $bookings = $bookingModel
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        // IDs der gekauften Angebote
+        $purchasedOfferIds = array_column($bookings, 'reference_id');
+
+        // Gekaufte Angebote mit Offer-Infos
+        $purchasedOffers = [];
+        foreach ($purchasedOfferIds as $offerId) {
+            $offer = $offerModel->find($offerId);
+            if ($offer) {
+                $offer['price_paid'] = $bookingModel
+                    ->where('user_id', $user->id)
+                    ->where('reference_id', $offerId)
+                    ->where('type', 'offer_purchase')
+                    ->orderBy('created_at', 'DESC')
+                    ->first()['amount'] ?? 0;
+                $purchasedOffers[] = $offer;
+            }
+        }
+
+        $totalPurchased = count($purchasedOffers);
 
         return view('account/reviews', [
             'title' => 'Bewertungen',
             'reviews' => $reviews,
             'pager' => $reviewModel->pager,
-            'avgRating' => $avgRating,
+            'avgReview' => $avgReview,
             'totalReviews' => $totalReviews,
             'totalPurchased' => $totalPurchased,
         ]);

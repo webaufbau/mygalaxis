@@ -67,9 +67,9 @@ class Filters extends Controller
             'languages' => $filterOptions->languages,
             'services' => $filterOptions->services,
             'user_filters' => [
-                'filter_categories' => explode(',', $user->filter_categories ?? []),
-                'filter_cantons' => explode(',', $user->filter_cantons ?? []),
-                'filter_regions' => explode(',', $user->filter_regions ?? []),
+                'filter_categories' => explode(',', $user->filter_categories ?? ''),
+                'filter_cantons' => explode(',', $user->filter_cantons ?? ''),
+                'filter_regions' => explode(',', $user->filter_regions ?? ''),
                 'min_rooms' => $user->min_rooms,
                 'filter_custom_zip' => $user->filter_custom_zip,
             ]

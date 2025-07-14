@@ -35,7 +35,8 @@ class AgendaBlock extends BaseController
             $model->add($userId, $date);
         }
 
-        return $this->response->setJSON(['success' => true]);
+        return $this->response->setJSON(['success' => true,
+            'csrf' => csrf_hash(),]);
     }
 
     public function blocked_events()
@@ -72,7 +73,9 @@ class AgendaBlock extends BaseController
         return $this->response->setJSON([
             'segment_month' => date('F Y', strtotime($date)),
             'styles' => '', // optional, falls du Styles dynamisch setzen willst
-            'events' => $events
+            'events' => $events,
+
+            'csrf' => csrf_hash(),
         ]);
     }
 

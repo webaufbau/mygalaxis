@@ -3,21 +3,7 @@
 
 <h2 class="my-4"><?= esc($title) ?></h2>
 
-<?php if (!empty($success)) : ?>
-    <div class="alert alert-success"><?= esc($success) ?></div>
-<?php endif ?>
-
-<?php if (!empty($errors)) : ?>
-    <div class="alert alert-danger">
-        <ul>
-            <?php foreach ($errors as $error) : ?>
-                <li><?= esc($error) ?></li>
-            <?php endforeach ?>
-        </ul>
-    </div>
-<?php endif ?>
-
-<form method="post" action="/profile">
+<form method="post" action="/profile/update">
     <?= csrf_field() ?>
 
     <div class="form-check form-switch mb-4">
@@ -66,7 +52,6 @@
     </div>
 
     <h5 class="mt-4">Vorschau Standort (Google Maps)</h5>
-    <div id="map" style="width: 100%; height: 300px;" class="mb-3 border"></div>
 
     <script>
         function initMap() {
@@ -76,7 +61,7 @@
                 document.querySelector('input[name="company_city"]').value,
                 'Schweiz'
             ].join(', ');
-
+console.log('address', address);
             const geocoder = new google.maps.Geocoder();
             geocoder.geocode({ 'address': address }, function(results, status) {
                 if (status === 'OK') {
@@ -94,19 +79,42 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            initMap();
+        function updateIframeMap() {
+            const street = encodeURIComponent(document.querySelector('input[name="company_street"]').value);
+            const zip = encodeURIComponent(document.querySelector('input[name="company_zip"]').value);
+            const city = encodeURIComponent(document.querySelector('input[name="company_city"]').value);
+            const country = encodeURIComponent('Schweiz');
 
-            // Map bei Adressänderung aktualisieren
+            const address = [street, zip, city, country].filter(Boolean).join('%20');
+
+            const iframeSrc = `https://maps.google.com/maps?width=100%25&height=600&hl=de&q=${address}&t=&z=14&ie=UTF8&iwloc=B&output=embed`;
+
+            document.getElementById('iframe-map').src = iframeSrc;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateIframeMap();
+
             ['company_street', 'company_zip', 'company_city'].forEach(id => {
-                document.getElementById(id).addEventListener('change', initMap);
+                document.querySelector(`input[name="${id}"]`).addEventListener('change', updateIframeMap);
             });
         });
+
     </script>
 
-    <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=DEIN_API_KEY&callback=initMap">
-    </script>
+    <div id="iframe-map-container" style="width: 100%; height: 600px;" class="mb-3 border">
+        <iframe
+                id="iframe-map"
+                width="100%"
+                height="100%"
+                frameborder="0"
+                scrolling="no"
+                marginheight="0"
+                marginwidth="0"
+                src=""
+                allowfullscreen
+        ></iframe>
+    </div>
 
 
     <div class="mb-3">
