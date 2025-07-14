@@ -196,6 +196,7 @@ class Dashboard extends Controller
         $data = [
             'title' => 'Dashboard',
             'user' => $user,
+            'bookings' => $bookings,
             'purchasedOffers' => $purchasedOffers,
             'totalSpent' => 0,
             'totalPurchased' => $totalPurchased,

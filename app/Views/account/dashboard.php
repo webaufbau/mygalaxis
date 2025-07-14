@@ -52,17 +52,17 @@
 
 <h2>Gekaufte Angebote</h2>
 
-<?php if(empty($purchasedOffers)): ?>
+<?php if(empty($bookings)): ?>
     <p>Du hast noch keine Angebote gekauft.</p>
 <?php else: ?>
     <ul class="list-group">
-        <?php foreach($purchasedOffers as $offer): ?>
+        <?php foreach($bookings as $booking): ?>
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                    <strong><?= esc($offer['form_name']) ?></strong><br>
-                    Kaufdatum: <?= date('d.m.Y', strtotime($offer['created_at'])) ?><br>
+                    <strong><?= esc($booking['description']) ?></strong><br>
+                    Kaufdatum: <?= date('d.m.Y', strtotime($booking['created_at'])) ?><br>
                 </div>
-                <span class="badge bg-primary rounded-pill"><?= number_format($offer['price_paid'], 2) ?> CHF</span>
+                <span class="badge bg-primary rounded-pill"><?= number_format($booking['amount'], 2) ?> CHF</span>
             </li>
         <?php endforeach; ?>
     </ul>
