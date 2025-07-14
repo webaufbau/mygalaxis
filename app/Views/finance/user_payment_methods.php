@@ -7,11 +7,7 @@
     <div class="alert alert-success"><?= session()->getFlashdata('message') ?></div>
 <?php endif; ?>
 
-<?php if(session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-<?php endif; ?>
-
-<a href="<?= site_url('finance/userpaymentmethods/add') ?>" class="btn btn-primary mb-3">Neue Zahlungsmethode hinzufügen</a>
+<a href="<?= site_url('finance/userpaymentmethods/add') ?>" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#paymentModal">Neue Zahlungsmethode hinzufügen</a>
 
 <table class="table table-bordered">
     <thead>
@@ -44,7 +40,7 @@
 
             </td>
             <td>
-                <a href="<?= site_url('finance/delete_user_payment_method/'.$method['id']) ?>"
+                <a href="<?= site_url('finance/userpaymentmethods/delete/'.$method['id']) ?>"
                    class="btn btn-danger btn-sm"
                    onclick="return confirm('Wirklich löschen?');">
                     Löschen
@@ -54,6 +50,20 @@
     <?php endforeach; ?>
     </tbody>
 </table>
+
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Zahlungsmethode hinzufügen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+                <?php echo view('finance/add_user_payment_method'); ?>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <?= $this->endSection() ?>

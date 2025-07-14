@@ -1,5 +1,3 @@
-<?= $this->extend('layout/main') ?>
-<?= $this->section('content') ?>
 
 <h2>Zahlungsmethode hinzufügen</h2>
 
@@ -16,13 +14,7 @@
         </select>
     </div>
 
-    <!-- Beispiel für provider_data (kann man noch anpassen, je nach Methode) -->
-    <div class="mb-3">
-        <label for="provider_data[email]" class="form-label">PayPal E-Mail (nur bei PayPal)</label>
-        <input type="email" name="provider_data[email]" id="provider_data[email]" class="form-control" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Speichern</button>
+    <button type="submit" class="btn btn-primary">hinzufügen</button>
 </form>
 
 <script>
@@ -37,6 +29,3 @@
     });
 </script>
 
-
-
-<?= $this->endSection() ?>

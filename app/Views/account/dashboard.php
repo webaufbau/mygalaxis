@@ -8,6 +8,13 @@
 
 <p>Status: <strong><?= $user->active ? 'Aktiv' : 'Inaktiv' ?></strong></p>
 <p>Kontostand: <strong><?= number_format($user->account_balance, 2) ?> CHF</strong></p>
+<!-- Guthaben aufladen -->
+<div class="mb-4">
+    <a href="/finance/topup" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-plus-circle"></i> Guthaben aufladen
+    </a>
+</div>
+
 
 <!-- Statistik -->
 <div class="row mb-4">
@@ -42,13 +49,6 @@
     Um keine Anfragen mehr zu verpassen, kannst du in deinem <a href="/profile" class="alert-link">Profil</a> die Option <strong>„automatisch kaufen“</strong> aktivieren.
 </div>
 
-
-<!-- Guthaben aufladen -->
-<div class="mb-4">
-    <a href="/finance/topup" class="btn btn-sm btn-outline-primary">
-        <i class="bi bi-plus-circle"></i> Guthaben aufladen
-    </a>
-</div>
 
 <h2>Gekaufte Angebote</h2>
 

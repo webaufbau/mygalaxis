@@ -65,11 +65,11 @@ class Finance extends BaseController
         $userMethods = $userPaymentMethodModel->where('user_id', $user->id)->findAll();
 
         // Optional: Namen & Details aus payment_methods ergänzen
-        $paymentMethods = [];
+        $myPaymentMethods = [];
         foreach ($userMethods as $method) {
             $baseMethod = $paymentMethodModel->where('code', $method['payment_method_code'])->first();
             if ($baseMethod) {
-                $paymentMethods[] = [
+                $myPaymentMethods[] = [
                     'id' => $method['id'],
                     'code' => $method['payment_method_code'],
                     'name' => $baseMethod['name'],
@@ -87,7 +87,7 @@ class Finance extends BaseController
             if ($amount <= 0) {
                 return redirect()->back()->with('error', 'Bitte geben Sie einen gültigen Betrag ein.');
             }
-            if (!in_array($paymentMethod, array_column($paymentMethods, 'code'))) {
+            if (!in_array($paymentMethod, array_column($myPaymentMethods, 'code'))) {
                 return redirect()->back()->with('error', 'Bitte wählen Sie eine gültige Zahlungsmethode.');
             }
 
@@ -103,7 +103,13 @@ class Finance extends BaseController
             return redirect()->to('/finance/topup')->with('message', 'Zahlung erfolgreich verarbeitet.');
         }
 
+
+        $paymentMethodModel = new PaymentMethodModel();
+        $paymentMethods = $paymentMethodModel->where('active', 1)->findAll();
+
+
         return view('account/finance_topup', [
+            'myPaymentMethods' => $myPaymentMethods,
             'paymentMethods' => $paymentMethods,
             'session' => session(),
         ]);
@@ -117,7 +123,13 @@ class Finance extends BaseController
         $model = new UserPaymentMethodModel();
         $methods = $model->where('user_id', $userId)->findAll();
 
-        return view('finance/user_payment_methods', ['methods' => $methods]);
+
+        $paymentMethodModel = new PaymentMethodModel();
+        $paymentMethods = $paymentMethodModel->where('active', 1)->findAll();
+
+
+        return view('finance/user_payment_methods', ['methods' => $methods,
+            'paymentMethods' => $paymentMethods,]);
     }
 
     public function addUserPaymentMethod()
@@ -186,7 +198,7 @@ class Finance extends BaseController
         $model = new UserPaymentMethodModel();
         $method = $model->find($id);
 
-        if ($method && $method['user_id'] === auth()->user()->id) {
+        if ($method && $method['user_id'] == auth()->user()->id) {
             $model->delete($id);
             return redirect()->back()->with('message', 'Zahlungsmethode gelöscht.');
         }
