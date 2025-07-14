@@ -66,6 +66,9 @@ writable/session/*
 writable/uploads/*
 !writable/uploads/index.html
 
+writable/config/*
+!writable/config/index.html
+
 writable/debugbar/*
 !writable/debugbar/.gitkeep
 
