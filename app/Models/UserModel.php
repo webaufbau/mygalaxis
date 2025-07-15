@@ -324,7 +324,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                     ],
                     'email' => [
                         'type' => 'email',
-                        'label' => 'E-Mail-Adresse',
+                        'label' => 'E-Mail-Adresse (Login)',
                         'required' => 'required',
                         'value' => $entity->id ? $entity->getEmail() : '',
                     ],
@@ -415,7 +415,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
         } else {
             $form_data['fields']['general']['password'] = [
                 'type' => 'text',
-                'label' => 'Neues Passwort',
+                'label' => 'Neues Passwort (Login)',
                 'required' => 'required',
                 'name' => 'password',
             ];

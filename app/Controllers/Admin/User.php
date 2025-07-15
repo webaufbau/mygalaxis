@@ -6,6 +6,7 @@ use App\Controllers\Crud;
 use App\Models\AuthIdentityModel;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Shield\Exceptions\ValidationException;
 use Psr\Log\LoggerInterface;
 
 class User extends Crud {
@@ -140,79 +141,111 @@ class User extends Crud {
             return redirect()->to('/');
         }
 
-        if($id<=0 && isset($posted_values['email'])) {
+        // E-Mail schon vorhanden bei Neuanlage prüfen
+        if ($id <= 0 && isset($posted_values['email'])) {
             $authIdentityModel = new AuthIdentityModel();
             $email_exists = $authIdentityModel->where('secret', $posted_values['email'])->first();
-            if($email_exists) {
+            if ($email_exists) {
                 $this->setFlash('Die eingegebene E-Mail-Adresse existiert bereits bei einem anderen Account.', 'error');
                 return redirect()->to('/admin/user');
             }
         }
 
-        $return = parent::formSubmitAction($id, $posted_values, true);
-        if($id > 0 || ($return > 0)) {
-            if($return > 0) {
-                $id = $return;
-                $return = redirect()->to($this->url_prefix.$this->app_controller . '/form/'.$id.'?model='.$this->model_name);
+        $userModel = new \App\Models\UserModel();
+
+        // Neues Entity befüllen & speichern
+        if ($id <= 0) {
+            $allowedPostFields = array_keys($this->getValidationRules());
+            $user = new \App\Entities\User();
+            //$user->fill(array_intersect_key($posted_values, array_flip($allowedPostFields)));
+            $user->fill($this->request->getPost('data'));
+
+            // Weitere erlaubte Felder manuell setzen (wenn im POST vorhanden)
+            $extraFields = ['active', 'filter_regions', 'filter_languages', 'filter_cantons'];
+
+            if (isset($posted_values['email'])) {
+                $user->setAttribute('email', $posted_values['email']);
+                $user->setEmail($posted_values['email']);
+                $user->setAttribute('username', $posted_values['email']);
             }
-
-            $existing_user_data = $this->model_class->find($id);
-
-
-            $user_model = new \App\Models\UserModel();
-            //$user_model->saveGroups(['id' => [$id]]);
-            $request = service('request');
-            $posted_data = $request->getPost('data');
-            if(isset($posted_data['user_group']) && is_array($posted_data['user_group'])) {
-                $user = $user_model->find($id);
-                $user->syncGroups(...$posted_data['user_group']);
-                $user_model->save($user);
+            try {
+                $userModel->save($user);
+                $id = $userModel->getInsertID();
+                $user = $userModel->find($id);
+            } catch (ValidationException $e) {
+                $this->setFlash('Fehler beim Speichern: ' . implode(', ', $userModel->errors()), 'error');
+                return redirect()->back()->withInput();
             }
-
-            //$user_model->savePermissions(['id' => [$id]]);
-            $request = service('request');
-            $posted_data = $request->getPost('data');
-            if($id) {
-                $user = $user_model->find($id);
-                if (isset($posted_data['user_permissions']) && is_array($posted_data['user_permissions'])) {
-                    $user->syncPermissions(...array_keys($posted_data['user_permissions']));
-                } else {
-                    $user->removePermission(...$user->getPermissions());
-                }
-                $user_model->save($user);
+        } else {
+            // Update
+            $user = $userModel->find($id);
+            if (!$user) {
+                $this->setFlash('Benutzer nicht gefunden.', 'error');
+                return redirect()->back();
             }
-
-
-
-            $this->setFlash('Eintrag gespeichert.', 'success');
-
-            /*
-            $user_photo = $this->upload_avatar($id);
-            if($user_photo !== false) {
-                $this->model_class->update($id, ['photo' => $user_photo]);
-                $this->setFlash('Eintrag gespeichert.', 'success');
-            }*/
-
-
-            if($existing_user_data->getEmail() != $posted_values['email']) {
-                $authIdentityModel = new AuthIdentityModel();
-                $authIdentityModel->where('user_id', $id)->set(['secret' => $posted_values['email']])->update();
-                $this->setFlash('Eintrag gespeichert.', 'success');
+            $user->fill($posted_values);
+            try {
+                $userModel->save($user);
+            } catch (ValidationException $e) {
+                $this->setFlash('Fehler beim Speichern: ' . implode(', ', $userModel->errors()), 'error');
+                return redirect()->back()->withInput();
             }
-
-            if(isset($_POST['password']) && !empty($_POST['password'])) {
-                $authIdentityModel = new AuthIdentityModel();
-                $passwords = service('passwords');
-                $hashed_password = $passwords->hash($_POST['password']);
-                $authIdentityModel->where('user_id', $id)->set(['secret2' => $hashed_password])->update();
-                $this->setFlash('Eintrag gespeichert.', 'success');
-            }
-
-
-
         }
 
-        return $return;
+        // Gruppen synchronisieren, nur wenn User gültig
+        if ($user && $user->id !== null) {
+            $request = service('request');
+            $posted_data = $request->getPost('data');
+            if (isset($posted_data['user_group']) && is_array($posted_data['user_group'])) {
+                $user->syncGroups(...$posted_data['user_group']);
+                $userModel->save($user);
+            }
+            if (isset($posted_data['user_permissions']) && is_array($posted_data['user_permissions'])) {
+                $user->syncPermissions(...array_keys($posted_data['user_permissions']));
+            } else {
+                $user->removePermission(...$user->getPermissions());
+            }
+            $userModel->save($user);
+        }
+
+        $this->setFlash('Eintrag gespeichert.', 'success');
+
+        // E-Mail in AuthIdentity updaten wenn geändert
+        if ($user->getEmail() != $posted_values['email']) {
+            $authIdentityModel = new AuthIdentityModel();
+            $authIdentityModel->where('user_id', $id)->set(['secret' => $posted_values['email']])->update();
+        }
+
+        // Passwort setzen wenn übergeben
+        if (isset($_POST['password']) && !empty($_POST['password'])) {
+            $authIdentityModel = new AuthIdentityModel();
+            $passwords = service('passwords');
+            $hashed_password = $passwords->hash($_POST['password']);
+            $authIdentityModel->where('user_id', $id)->set(['secret2' => $hashed_password])->update();
+        }
+
+        // Redirect oder ID zurückgeben
+        if ($return_id) {
+            return $id;
+        }
+
+        return redirect()->to($this->url_prefix . $this->app_controller . '/form/' . $id . '?model=' . $this->model_name);
+    }
+
+    /**
+     * Returns the rules that should be used for validation.
+     *
+     * @return array<string, array<string, list<string>|string>>
+     */
+    protected function getValidationRules(): array {
+        /*$rules = new ValidationRules();
+
+        return $rules->getRegistrationRules();*/
+
+        $config = config('Validation');
+        $rules = $config->registration;
+
+        return $rules;
     }
 
     protected function upload_avatar($user_id)
