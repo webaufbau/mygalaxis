@@ -62,6 +62,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
 
     public function save($row): bool
     {
+
         if (is_object($row) && $row->email) {
             $row->email_text = $row->email;
             $row->username = $row->email;
@@ -71,13 +72,15 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
     }
 
     protected function saveGroups(array $data): array {
+
         $request = service('request');
 
         $posted_data = $request->getPost('data');
-        if(isset($posted_data['user_group']) && is_array($posted_data['user_group'])) {
+
+        if(isset($data['id'][0]) && isset($posted_data['user_group']) && is_array($posted_data['user_group'])) {
             $user = $this->find($data['id'][0]);
             $user->syncGroups(...$posted_data['user_group']);
-            $this->save($user);
+            //$this->save($user);
         }
 
         return $data;
@@ -85,20 +88,21 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
 
     protected function savePermissions(array $data): array {
         $request = service('request');
-
         $posted_data = $request->getPost('data');
-        if(isset($data['id'][0])) {
+
+        if (isset($data['id'][0])) {
             $user = $this->find($data['id'][0]);
+
             if (isset($posted_data['user_permissions']) && is_array($posted_data['user_permissions'])) {
                 $user->syncPermissions(...array_keys($posted_data['user_permissions']));
             } else {
                 $user->removePermission(...$user->getPermissions());
             }
-            $this->save($user);
         }
 
         return $data;
     }
+
 
 
 

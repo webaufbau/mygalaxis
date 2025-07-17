@@ -1,78 +1,96 @@
 <?php
 namespace App\Libraries;
 
-use Config\Payrexx;
+use Payrexx\Models\Request\Gateway;
+use Payrexx\Models\Request\Transaction;
+use Payrexx\PayrexxException;
 
 class PayrexxService
 {
-    protected $config;
+    protected \Payrexx\Payrexx $payrexx;
+    protected \Config\Payrexx $config;
 
+    /**
+     * @throws PayrexxException
+     */
     public function __construct()
     {
-        $this->config = new Payrexx();
+        $this->config = new \Config\Payrexx();
+        $this->payrexx = new \Payrexx\Payrexx(
+            $this->config->instance,
+            $this->config->apiKey
+        );
+        $paymentProvider = new \Payrexx\Models\Request\PaymentProvider();
+
+        try {
+            $response = $this->payrexx->getAll($paymentProvider);
+        } catch (\Payrexx\PayrexxException $e) {
+            print $e->getMessage();
+        }
     }
 
-    public function request($endpoint, $data): ?array
+    /**
+     * Erstellt einen Tokenization-Gateway (preAuthorization)
+     * @throws PayrexxException
+     */
+    public function createTokenCheckout($user, string $successUrl, string $cancelUrl): ?string
     {
-        $ch = curl_init("https://{$this->config->instance}.payrexx.com/api/v1/{$endpoint}");
+        $userId       = is_object($user) ? $user->id : $user['id'];
+        $userEmail    = is_object($user) ? $user->email : $user['email'];
+        $userFirstname = is_object($user) ? $user->first_name : ($user['first_name'] ?? '');
+        $userLastname  = is_object($user) ? $user->last_name : ($user['last_name'] ?? '');
 
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query($data),
-            CURLOPT_HTTPHEADER => [
-                "Authorization: Bearer {$this->config->apiKey}",
-            ],
-        ]);
+        $payrexx = new \Payrexx\Payrexx($this->config->instance, $this->config->apiKey);
 
-        $response = curl_exec($ch);
-        log_message('debug', 'Payrexx Roh-Antwort: ' . $response);
+        $gateway = new Gateway();
+        $gateway->setAmount(0); // 0 = keine Sofortzahlung
+        $gateway->setCurrency($this->config->currency);
+        $gateway->setPreAuthorization(true); // aktiviert Tokenization
+        $gateway->setReferenceId('user-' . $userId);
 
-        if ($response === false) {
-            log_message('error', 'Payrexx API Fehler: ' . curl_error($ch));
-            curl_close($ch);
+        $gateway->setPsp([]);
+
+        $gateway->setSuccessRedirectUrl($successUrl);
+        $gateway->setCancelRedirectUrl($cancelUrl);
+        $gateway->setFailedRedirectUrl($cancelUrl);
+
+        $gateway->addField('forename', $userFirstname);
+        $gateway->addField('surname', $userLastname);
+        $gateway->addField('email', $userEmail);
+        $gateway->addField('terms', '');
+        $gateway->addField('privacy_policy', '');
+
+        try {
+            $response = $payrexx->create($gateway);
+            return $response->getLink(); // z.B. Weiterleitung zu Payrexx UI
+        } catch (\Payrexx\PayrexxException $e) {
+            log_message('error', 'Payrexx Token-Gateway Fehler: ' . $e->getMessage());
             return null;
         }
+    }
 
-        log_message('debug', 'Payrexx Roh-Antwort: ' . $response);
+    /**
+     * Belastet eine autorisierte Transaktion (nach Tokenisierung)
+     *
+     * @param int $transactionId Die transaction.id aus dem Webhook oder getGateway
+     * @param int $amount Betrag in Rappen (z. B. 1000 für CHF 10.00)
+     * @param string $description Beschreibung auf der Abrechnung
+     * @return array|null
+     */
+    public function chargeAuthorizedTransaction(int $transactionId, int $amount, string $description = ''): ?array
+    {
+        $transaction = new Transaction();
+        $transaction->setId($transactionId); // WICHTIG!
+        $transaction->setAmount($amount);
+        $transaction->setCurrency($this->config->currency);
+        $transaction->setPurpose($description);
 
-        curl_close($ch);
-        $decoded = json_decode($response, true);
-
-        // Logge Fehler falls vorhanden
-        if (!isset($decoded['data'])) {
-            log_message('error', 'Ungültige Antwort von Payrexx: ' . $response);
+        try {
+            $response = $this->payrexx->create($transaction);
+            return $response->toArray();
+        } catch (\Exception $e) {
+            log_message('error', 'Payrexx Charge Error: ' . $e->getMessage());
             return null;
         }
-
-        return $decoded;
     }
-
-    public function createTokenCheckout($user, string $successUrl, string $cancelUrl): ?array
-    {
-        $userId = is_object($user) ? $user->id : $user['id'];
-        $userEmail = is_object($user) ? $user->email : $user['email'];
-
-        return $this->request('Payment', [
-            'amount' => 0,
-            'currency' => $this->config->currency,
-            'referenceId' => 'user-' . $userId,
-            'generateToken' => true,
-            'fields[email]' => $userEmail,
-            'successUrl' => $successUrl,
-            'cancelUrl' => $cancelUrl,
-        ]);
-    }
-
-    public function chargeWithToken(string $token, int $amount, string $description = ''): array
-    {
-        return $this->request('Payment', [
-            'amount' => $amount,
-            'currency' => $this->config->currency,
-            'token' => $token,
-            'referenceId' => 'charge-' . time(),
-            'description' => $description,
-        ]);
-    }
-
 }

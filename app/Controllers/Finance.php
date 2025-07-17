@@ -158,6 +158,7 @@ class Finance extends BaseController
     public function startAddPaymentMethod()
     {
         $user = auth()->user();
+
         $payrexx = new \App\Libraries\PayrexxService();
 
         $successUrl = site_url('finance/paymentSuccess');
