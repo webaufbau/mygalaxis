@@ -42,13 +42,30 @@ class PayrexxService
 
         $payrexx = new \Payrexx\Payrexx($this->config->instance, $this->config->apiKey);
 
+        // Payment methods
+        $paymentMethod = new \Payrexx\Models\Request\PaymentMethod();
+        $paymentMethod->setFilterCurrency('CHF');
+        $paymentMethod->setFilterPaymentType('one-time');
+
+        // default
+        $payrexx_payment_methods = ['mastercard', 'visa'];
+
+        try {
+            $payrexx_payment_methods = $payrexx->getAll($paymentMethod);
+            print_r($payrexx_payment_methods);
+            exit();
+        } catch (PayrexxException $e) {
+            print $e->getMessage();
+        }
+
+
         $gateway = new Gateway();
         $gateway->setAmount(0); // 0 = keine Sofortzahlung
-        $gateway->setCurrency($this->config->currency);
+        $gateway->setCurrency('CHF');
         $gateway->setPreAuthorization(true); // aktiviert Tokenization
         $gateway->setReferenceId('user-' . $userId);
-
-        $gateway->setPsp([]);
+        $gateway->setPm($payrexx_payment_methods);
+        $gateway->setPsp([44, 36]);
 
         $gateway->setSuccessRedirectUrl($successUrl);
         $gateway->setCancelRedirectUrl($cancelUrl);
@@ -57,8 +74,6 @@ class PayrexxService
         $gateway->addField('forename', $userFirstname);
         $gateway->addField('surname', $userLastname);
         $gateway->addField('email', $userEmail);
-        $gateway->addField('terms', '');
-        $gateway->addField('privacy_policy', '');
 
         try {
             $response = $payrexx->create($gateway);

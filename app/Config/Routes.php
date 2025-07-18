@@ -39,6 +39,10 @@ $routes->get('/verification/check-session', 'Verification::checkSession');
 $routes->get('/verification/verify-offer/(:num)/(:any)', 'Verification::verifyOffer/$1/$2');
 
 
+// Web Hooks
+$routes->post('webhooks/payrexx', 'WebhookController::payrexx');
+
+
 
 // Registrierung
 $routes->match(['POST'], 'register', 'RegisterController::registerAction');
@@ -68,6 +72,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->match(['GET', 'POST'], 'topup', 'Finance::topup');
         $routes->get('userpaymentmethods', 'Finance::userPaymentMethods');
         $routes->match(['GET', 'POST'], 'userpaymentmethods/add', 'Finance::addUserPaymentMethod');
+        $routes->match(['GET', 'POST'], 'startAddPaymentMethodAjax', 'Finance::startAddPaymentMethodAjax');
         $routes->get('userpaymentmethods/delete/(:num)', 'Finance::deleteUserPaymentMethod/$1');
     });
 

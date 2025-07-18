@@ -4,105 +4,76 @@ namespace App\Libraries;
 
 use Stripe\Stripe;
 use Stripe\Customer;
+use Stripe\SetupIntent;
 use Stripe\PaymentIntent;
-use Stripe\PaymentMethod;
-use App\Models\UserModel;
+use Stripe\Exception\ApiErrorException;
 
 class StripeService
 {
+    protected \Config\Stripe $config;
+
     public function __construct()
     {
-        Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+        $this->config = new \Config\Stripe();
+        Stripe::setApiKey($this->config->secretKey);
     }
 
     /**
-     * Erstellt oder lädt einen Stripe-Customer für den Nutzer
+     * Erstellt einen SetupIntent, um die Zahlungsmethode zu speichern
+     * @param array|object $user
+     * @return string|null client_secret für Stripe.js
      */
-    public function getOrCreateCustomer($user)
+    public function createTokenCheckout($user): ?string
     {
-        if ($user->stripe_customer_id) {
-            return Customer::retrieve($user->stripe_customer_id);
+        $userId    = is_object($user) ? $user->id : $user['id'];
+        $userEmail = is_object($user) ? $user->email : $user['email'];
+
+        try {
+            // Customer erstellen oder holen
+            $customer = Customer::create([
+                'email' => $userEmail,
+                'metadata' => ['user_id' => $userId],
+            ]);
+
+            // SetupIntent erstellen
+            $setupIntent = SetupIntent::create([
+                'customer' => $customer->id,
+                'payment_method_types' => ['card'],
+            ]);
+
+            return $setupIntent->client_secret;
+        } catch (ApiErrorException $e) {
+            log_message('error', 'Stripe SetupIntent Fehler: ' . $e->getMessage());
+            return null;
         }
-
-        // Neuer Kunde
-        $customer = Customer::create([
-            'email' => $user->email,
-            'name' => $user->first_name . ' ' . $user->last_name,
-            'metadata' => [
-                'user_id' => $user->id,
-            ],
-        ]);
-
-        // Speichern in der DB
-        $userModel = new UserModel();
-        $userModel->update($user->id, [
-            'stripe_customer_id' => $customer->id,
-        ]);
-
-        return $customer;
     }
 
     /**
-     * Prüft, ob der Nutzer eine gespeicherte Karte hat
+     * Führt eine Zahlung mit einer gespeicherten Zahlungsmethode aus
+     *
+     * @param string $customerId
+     * @param string $paymentMethodId (z. B. aus SetupIntent)
+     * @param int $amountInCents (z. B. 1000 = 10.00 CHF)
+     * @param string $description
+     * @return array|null
      */
-    public function hasCardOnFile($user): bool
+    public function chargeAuthorizedTransaction(string $customerId, string $paymentMethodId, int $amountInCents, string $description = ''): ?array
     {
-        if (!$user->stripe_customer_id) {
-            return false;
+        try {
+            $paymentIntent = PaymentIntent::create([
+                'customer' => $customerId,
+                'payment_method' => $paymentMethodId,
+                'amount' => $amountInCents,
+                'currency' => $this->config->currency,
+                'description' => $description,
+                'off_session' => true,
+                'confirm' => true,
+            ]);
+
+            return $paymentIntent->toArray();
+        } catch (ApiErrorException $e) {
+            log_message('error', 'Stripe PaymentIntent Fehler: ' . $e->getMessage());
+            return null;
         }
-
-        $methods = PaymentMethod::all([
-            'customer' => $user->stripe_customer_id,
-            'type' => 'card',
-        ]);
-
-        return count($methods->data) > 0;
-    }
-
-    /**
-     * Belastet den Kunden mit dem angegebenen Betrag (in CHF)
-     */
-    public function charge($user, float $amountCHF, string $description = ''): string
-    {
-        $customer = $this->getOrCreateCustomer($user);
-
-        // Betrag in Rappen (Stripe erwartet Cent)
-        $amount = intval($amountCHF * 100);
-
-        // Aktuelle Zahlungsmethode holen
-        $paymentMethods = PaymentMethod::all([
-            'customer' => $customer->id,
-            'type' => 'card',
-        ]);
-
-        if (empty($paymentMethods->data)) {
-            throw new \Exception('Keine gespeicherte Zahlungsmethode gefunden.');
-        }
-
-        $paymentMethodId = $paymentMethods->data[0]->id;
-
-        $intent = PaymentIntent::create([
-            'amount' => $amount,
-            'currency' => 'chf',
-            'customer' => $customer->id,
-            'payment_method' => $paymentMethodId,
-            'off_session' => true,
-            'confirm' => true,
-            'description' => $description,
-        ]);
-
-        return $intent->id; // Stripe PaymentIntent-ID zur Referenz
-    }
-
-    /**
-     * Speichert eine neue Kreditkarte über einen Stripe Setup Intent (Frontend erforderlich)
-     */
-    public function createSetupIntent($user)
-    {
-        $customer = $this->getOrCreateCustomer($user);
-
-        return \Stripe\SetupIntent::create([
-            'customer' => $customer->id,
-        ]);
     }
 }

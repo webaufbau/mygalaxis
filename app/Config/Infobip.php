@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Config;
+namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
 
@@ -9,7 +9,7 @@ use CodeIgniter\Config\BaseConfig;
  *
  * Hier werden API-Host und API-Key für Infobip definiert.
  */
-class Infobib extends BaseConfig
+class Infobip extends BaseConfig
 {
     /**
      * Basis-URL des Infobip API-Servers.
@@ -28,4 +28,7 @@ class Infobib extends BaseConfig
      * @var string
      */
     public string $api_key = '';
+
+
+    public string $sender   = 'InfoSMS'; // Absender-Name (muss registriert sein)
 }

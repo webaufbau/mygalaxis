@@ -2,22 +2,8 @@
 
 namespace App\Controllers;
 
-use App\Config\Infobib;
+use App\Libraries\TwilioService;
 use CodeIgniter\Controller;
-use CodeIgniter\HTTP\RedirectResponse;
-
-use Infobip\Configuration;
-use Infobip\ApiException;
-use Infobip\Api\SmsApi;
-use Infobip\Model\CallsSingleBody;
-use Infobip\Model\CallsVoice;
-use Infobip\Model\SmsRequest;
-use Infobip\Model\SmsDestination;
-use Infobip\Model\SmsMessage;
-use Infobip\Model\SmsTextContent;
-
-use Infobip\Api\VoiceApi;
-use Infobip\Model\VoiceSingleTtsRequest;
 
 class Verification extends Controller
 {
@@ -26,6 +12,8 @@ class Verification extends Controller
         $maxWaitTime = 5; // Sekunden
         $waited = 0;
 
+        // session()->set('uuid', '640e8804-e219-43d8-b529-faf247c606b3');
+
         $uuid = session()->get('uuid');
 
         while (!$uuid = session()->get('uuid')) {
@@ -33,7 +21,7 @@ class Verification extends Controller
             $waited++;
 
             if ($waited >= $maxWaitTime) {
-                log_message('debug', 'Verifikation kann nicht gemacht werden uuid fehlt nach 5 Sekunden' .  print_r($_SESSION, true));
+                log_message('info', 'Verifikation kann nicht gemacht werden uuid fehlt nach 5 Sekunden' .  print_r($_SESSION, true));
 
                 return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // Fehlerseite oder Hinweis
             }
@@ -60,8 +48,8 @@ class Verification extends Controller
         }
 
         if (!$row) {
-            log_message('debug', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID '.$uuid.': ' .  print_r($_SESSION, true));
-            log_message('debug', 'Abfrage: ' . $builder->db()->getLastQuery());
+            log_message('info', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID '.$uuid.': ' .  print_r($_SESSION, true));
+            log_message('info', 'Abfrage: ' . $builder->db()->getLastQuery());
 
             return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/')->with('error', 'Keine Anfrage gefunden.');
         }
@@ -89,7 +77,7 @@ class Verification extends Controller
 
     public function processing()
     {
-        log_message('debug', 'Verifizierung processing: Warte auf Datensatz');
+        log_message('info', 'Verifizierung processing: Warte auf Datensatz');
         return view('processing_request');
     }
 
@@ -97,7 +85,7 @@ class Verification extends Controller
     {
         $uuid = session()->get('uuid');
         if (!$uuid) {
-            log_message('debug', 'Verifizierung checkSession: waiting');
+            log_message('info', 'Verifizierung checkSession: waiting');
             return $this->response->setJSON(['status' => 'waiting']);
         }
 
@@ -110,11 +98,11 @@ class Verification extends Controller
             ->getRow();
 
         if ($row) {
-            log_message('debug', 'Verifizierung checkSession: ok: ' . $uuid);
+            log_message('info', 'Verifizierung checkSession: ok: ' . $uuid);
             return $this->response->setJSON(['status' => 'ok']);
         }
 
-        log_message('debug', 'Verifizierung checkSession: waiting: ' . $uuid);
+        log_message('info', 'Verifizierung checkSession: waiting: ' . $uuid);
         return $this->response->setJSON(['status' => 'waiting']);
     }
 
@@ -126,7 +114,7 @@ class Verification extends Controller
         $method = session()->get('verify_method');
 
         if (!$phone) {
-            log_message('debug', 'Verifizierung gesendet: Verifizierung Telefonnummer fehlt.');
+            log_message('info', 'Verifizierung gesendet: Verifizierung Telefonnummer fehlt.');
             return redirect()->back()->with('error', 'Telefonnummer fehlt.');
         }
 
@@ -136,88 +124,66 @@ class Verification extends Controller
         $isMobile = $this->isMobileNumber($phone);
 
         // Wenn kein Mobile, dann nur Anruf zulassen
-        if (!$isMobile && $method !== 'phone') {
-            log_message('debug', 'Verifizierung gesendet: Bei Festnetznummer ist nur Anruf-Verifizierung möglich.');
-            return redirect()->back()->with('error', 'Bei Festnetznummer ist nur Anruf-Verifizierung möglich.');
+        if (!$isMobile && $method !== 'call') {
+            return redirect()->back()->with('error', 'Festnetznummer: nur Anruf-Verifizierung möglich.');
         }
 
         if (!$method) {
-            log_message('debug', 'Verifizierung gesendet: Bitte Verifizierungsmethode wählen.');
             return redirect()->back()->with('error', 'Bitte Verifizierungsmethode wählen.');
         }
 
-        log_message('debug', 'Verifizierung Methode ' . $method);
-
-        // Simuliere den Versand des Verifizierungscodes
         $verificationCode = rand(1000, 9999);
         session()->set('verification_code', $verificationCode);
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
 
-        log_message('debug', "Verifizierung Code $verificationCode via $method an $phone");
+        log_message('info', "Verifizierungscode $verificationCode via $method an $phone");
 
-        // Infobip Konfiguration
-        $infobib_config = new Infobib();
-        $host = $infobib_config->api_host;
-        $key  = $infobib_config->api_key;
-        $configuration = new Configuration(
-            host: $host,
-            apiKey: $key,
-        );
+        $twilio = new TwilioService();
+        $success = false;
 
-        try {
-            if ($method === 'sms') {
-                $smsApi = new SmsApi($configuration);
+        if ($method === 'sms') {
+            $success = $twilio->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                $message = new SmsMessage(
-                    destinations: [new SmsDestination(to: $phone)], // Kein + in Telefonnummer
-                    content: new SmsTextContent(text: "Ihr Verifizierungscode lautet: $verificationCode"),
-                    sender: 'InfoSMS' // muss bei Infobip registriert sein ||| GalaxisGroup
-                );
+            if ($success) {
+                log_message('info', "SMS-Code an $phone gesendet.");
+            } else {
+                log_message('error', "Twilio SMS Fehler an $phone.");
 
-                $smsRequest = new SmsRequest(messages: [$message]);
+                // Fallback: Infobip versuchen
+                $infobip = new \App\Libraries\InfobipService();
+                $fallbackSuccess = $infobip->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                $response = $smsApi->sendSmsMessages($smsRequest);
-
-                log_message('info', "SMS Verifizierungscode an $phone gesendet, Nachricht-ID: " .
-                    ($response->getMessages()[0]->getMessageId() ?? 'unbekannt'));
-
-            } elseif ($method === 'call') {
-                $voiceApi = new VoiceApi($configuration);
-
-                $from = 'InfoCall'; // Bei Infobip registrierter Absender
-
-                $voice = new CallsVoice();
-                $voice->setGender('female');
-                $voice->setName('de-DE');
-
-                $callRequest = new CallsSingleBody(
-                    from: $from,
-                    to: $phone, // Kein + in Telefonnummer
-                    audioFileUrl: null,
-                    language: 'de-CH',
-                    text: "Ihr Verifizierungscode lautet $verificationCode",
-                    voice: $voice
-                );
-
-                $voiceApi->sendSingleVoiceTts($callRequest);
-
-                log_message('info', "TTS Anruf mit Verifizierungscode an $phone gestartet.");
+                if ($fallbackSuccess) {
+                    log_message('info', "SMS-Code an $phone über Infobip gesendet (Fallback).");
+                    return redirect()->to('/verification/confirm');
+                } else {
+                    log_message('error', "Infobip SMS Fehler an $phone.");
+                }
             }
+        } elseif ($method === 'call') {
+            $success = $twilio->sendCall($phone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-            return redirect()->to('/verification/confirm');
-
-        } catch (ApiException $e) {
-            log_message('error', "Infobip API Fehler bei $method an $phone: " . $e->getMessage());
-            return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
+            if ($success) {
+                log_message('info', "Anruf-Code an $phone gestartet.");
+            } else {
+                log_message('error', "Twilio Call Fehler an $phone.");
+            }
         }
+
+        if ($success) {
+            return redirect()->to('/verification/confirm');
+        }
+
+        return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
+
     }
 
     public function confirm()
     {
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode=='') {
-            log_message('debug', 'Verifizierung Confirm verificationCode fehlt.');
+            log_message('info', 'Verifizierung Confirm verificationCode fehlt.');
 
             return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // oder Fehlerseite
         }
@@ -251,53 +217,47 @@ class Verification extends Controller
             $builder = $db->table('offers');
             $builder->where('uuid', $uuid)->update(['phone' => $normalizedPhone]);
 
-            // Code via Infobip senden
-            try {
-                $infobib_config = new \App\Config\Infobib();
-                $configuration = new \Infobip\Configuration(
-                    host: $infobib_config->api_host,
-                    apiKey: $infobib_config->api_key,
-                );
 
-                if ($method === 'sms') {
-                    $smsApi = new \Infobip\Api\SmsApi($configuration);
 
-                    $message = new \Infobip\Model\SmsMessage(
-                        destinations: [new \Infobip\Model\SmsDestination(to: $normalizedPhone)],
-                        content: new \Infobip\Model\SmsTextContent(text: "Ihr Verifizierungscode lautet: $verificationCode"),
-                        sender: 'InfoSMS'
-                    );
+            $twilio = new TwilioService();
+            $success = false;
 
-                    $smsRequest = new \Infobip\Model\SmsRequest(messages: [$message]);
-                    $smsApi->sendSmsMessages($smsRequest);
+            if ($method === 'sms') {
+                $success = $twilio->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                    log_message('info', "Neuer SMS-Code an $normalizedPhone gesendet.");
-                } elseif ($method === 'call') {
-                    $voiceApi = new \Infobip\Api\VoiceApi($configuration);
+                if ($success) {
+                    log_message('info', "SMS-Code an $normalizedPhone gesendet.");
+                } else {
+                    log_message('error', "Twilio SMS Fehler an $normalizedPhone.");
 
-                    $voice = new \Infobip\Model\CallsVoice();
-                    $voice->setGender('female');
-                    $voice->setName('de-DE');
+                    // Fallback: Infobip versuchen
+                    $infobip = new \App\Libraries\InfobipService();
+                    $fallbackSuccess = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                    $callRequest = new \Infobip\Model\CallsSingleBody(
-                        from: 'InfoCall',
-                        to: $normalizedPhone,
-                        language: 'de-CH',
-                        text: "Ihr Verifizierungscode lautet $verificationCode",
-                        voice: $voice
-                    );
-
-                    $voiceApi->sendSingleVoiceTts($callRequest);
-
-                    log_message('info', "Neuer Anruf-Code an $normalizedPhone gestartet.");
+                    if ($fallbackSuccess) {
+                        log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
+                        return redirect()->to('/verification/confirm');
+                    } else {
+                        log_message('error', "Infobip SMS Fehler an $normalizedPhone.");
+                    }
                 }
+            } elseif ($method === 'call') {
+                $success = $twilio->sendCall($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                return redirect()->to('/verification/confirm')->with('success', 'Neuer Code wurde an Ihre angegebene Nummer gesendet.');
-
-            } catch (\Infobip\ApiException $e) {
-                log_message('error', "Fehler beim Senden an neue Nummer $normalizedPhone: " . $e->getMessage());
-                return redirect()->back()->with('error', 'Fehler beim Versenden des neuen Codes.');
+                if ($success) {
+                    log_message('info', "Anruf-Code an $normalizedPhone gestartet.");
+                } else {
+                    log_message('error', "Twilio Call Fehler an $normalizedPhone.");
+                }
             }
+
+            if ($success) {
+                return redirect()->to('/verification/confirm');
+            }
+
+            return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
+
+
         }
 
         // Wenn Code korrekt ist
@@ -312,14 +272,14 @@ class Verification extends Controller
 
             session()->remove('verification_code');
 
-            log_message('debug', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
+            log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
             return view('verification_success', [
                 'next_url' => session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'
             ]);
         }
 
         // Falscher Code
-        log_message('debug', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
+        log_message('info', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
     }
 
