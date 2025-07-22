@@ -35,7 +35,7 @@
     <div class="mb-3">
         <label class="form-label">
             Firmen-UID
-            <a href="https://www.zefix.ch/de/search/entity/welcome" target="_blank">Zefix</a>
+            <a id="zefix-link" href="https://www.zefix.ch/de/search/entity/welcome" target="_blank">Zefix</a>
         </label>
         <input type="text" name="company_uid" class="form-control"
                value="<?= esc($user->company_uid) ?>"
@@ -132,7 +132,7 @@ console.log('address', address);
 
     <div class="mb-3">
         <label class="form-label">Website</label>
-        <input type="url" name="company_website" class="form-control" value="<?= esc($user->company_website) ?>">
+        <input type="text" name="company_website" class="form-control" value="<?= esc($user->company_website) ?>">
     </div>
 
     <div class="mb-3">
@@ -148,5 +148,19 @@ console.log('address', address);
 
     <button type="submit" class="btn btn-primary">Speichern</button>
 </form>
+
+<script>
+    document.getElementById('company-name').addEventListener('input', function () {
+        const name = encodeURIComponent(this.value.trim());
+        const link = document.getElementById('zefix-link');
+
+        if (name) {
+            link.href = `https://www.zefix.ch/de/search/entity/list?mainSearch=${name}`;
+        } else {
+            link.href = 'https://www.zefix.ch/de/search/entity/welcome';
+        }
+    });
+</script>
+
 
 <?= $this->endSection() ?>
