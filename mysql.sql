@@ -588,3 +588,21 @@ INSERT INTO `categories` (`category_id`, `created_at`, `updated_at`, `deleted_at
    (2,	'2025-07-14',	'2025-07-14',	'0000-00-00',	'',	'Umzug + Reinigung',	29.00),
    (3,	'2025-07-14',	'2025-07-14',	'0000-00-00',	'',	'Reinigung',	19.00),
    (4,	'2025-07-14',	'2025-07-14',	'0000-00-00',	'',	'Maler',	19.00);
+
+
+
+
+CREATE TABLE `saferpay_transactions` (
+     `id` int(11) NOT NULL,
+     `user_id` int(11) DEFAULT NULL,
+     `refno` varchar(255) NOT NULL,
+     `token` varchar(255) NOT NULL,
+     `created_at` datetime DEFAULT current_timestamp(),
+     `transaction_id` varchar(100) DEFAULT NULL,
+     `status` varchar(50) DEFAULT NULL,
+     `amount` int(11) DEFAULT NULL,
+     `currency` varchar(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `saferpay_transactions`
+    ADD `transaction_data` text COLLATE 'utf8mb4_general_ci' NULL;

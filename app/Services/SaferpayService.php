@@ -163,15 +163,21 @@ class SaferpayService
         return $this->sendRequest($url, $data);
     }
 
-
-
     public function storeToken(string $refno, string $token)
     {
         $db = \Config\Database::connect();
         $db->table('saferpay_transactions')->insert([
-            'refno' => $refno,
-            'token' => $token
+            'user_id'        => auth()->user()->id,
+            'refno'          => $refno,
+            'token'          => $token,
+            'created_at'     => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    public function updateTransaction(string $token, array $data)
+    {
+        $db = \Config\Database::connect();
+        $db->table('saferpay_transactions')->where('token', $token)->update($data);
     }
 
     public function getTokenByRefno(string $refno): ?string

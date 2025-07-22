@@ -121,7 +121,7 @@ class Finance extends BaseController
                 // 3. Guthaben gutschreiben (eigene Logik)
                 // Guthaben gutschreiben
                 $bookingModel = new BookingModel();
-                $bookingModel->insert([
+                $booking_id = $bookingModel->insert([
                     'user_id' => $user->id,
                     'type' => 'topup',
                     'description' => "Guthabenaufladung via " . ($response['Transaction']['AcquirerName'] ?? 'Online-Zahlung'),
@@ -130,7 +130,6 @@ class Finance extends BaseController
                 ]);
 
                 // 4. Alias sichern, falls vorhanden
-
                 if (isset($response['Transaction']['PaymentMeans']['Alias'])) {
                     $aliasId = $response['Transaction']['PaymentMeans']['Alias']['Id'];
                     $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
@@ -142,6 +141,30 @@ class Finance extends BaseController
                         'updated_at' => date('Y-m-d H:i:s'),
                     ]);
                 }
+
+                // 5. Transaktion updaten
+                if (isset($response['Transaction'])) {
+                    $transaction = $response['Transaction'];
+
+                    $transaction_data = [
+                        'transaction_id' => $transaction['Id'] ?? 0,
+                        'status'         => $transaction['Status'] ?? '',
+                        'amount'         => $transaction['Amount']['Value'] ?? '',
+                        'currency'       => $transaction['Amount']['CurrencyCode'] ?? '',
+                    ];
+
+                    // Alle weiteren Daten als JSON
+                    $extra_data = $transaction;
+                    unset($extra_data['Id'], $extra_data['Status'], $extra_data['Amount']); // diese sind bereits einzeln gespeichert
+
+                    $transaction_data['transaction_data'] = json_encode($extra_data);
+
+                    // Transaktion speichern
+                    $this->saferpay->updateTransaction($token, $transaction_data);
+                }
+
+
+
 
                 return redirect()->to('/finance')->with('message', 'Zahlung erfolgreich.');
             }
