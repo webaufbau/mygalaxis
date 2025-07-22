@@ -12,7 +12,7 @@
     <?php if (!empty($myPaymentMethods)): ?>
     <div class="mb-3">
         <label for="amount" class="form-label">Betrag (CHF)</label>
-        <input type="number" step="0.01" min="20" name="amount" id="amount" class="form-control" required />
+        <input type="number" step="0.01" min="20" name="amount" id="amount" class="form-control" value="100" required />
     </div>
 
     <fieldset class="mb-3">
