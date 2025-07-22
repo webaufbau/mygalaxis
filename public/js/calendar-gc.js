@@ -72,7 +72,7 @@ var gcObject = {
     if (this.eventAnimate == "none") {
       calendar.hide().addClass("slide-in-left").show();
     } else if (this.eventAnimate == "prev") {
-      calendar
+      /*calendar
           .hide()
           .addClass("slide-out-right")
           .show()
@@ -80,7 +80,7 @@ var gcObject = {
           .hide()
           .removeClass("slide-out-right")
           .addClass("slide-in-left")
-          .show();
+          .show();*/
     } else {
       calendar
           .hide()

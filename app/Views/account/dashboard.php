@@ -2,68 +2,40 @@
 
 <?= $this->section('content') ?>
 
-<h1>Willkommen</h1>
+<h1 class="mb-4">Willkommen, <?= esc($user->contact_person ?? 'Nutzer') ?>!</h1>
 
-<br>
+<p>Status:
+    <?php if ($user->active): ?>
+        <span class="badge bg-success">Aktiv</span>
+    <?php else: ?>
+        <span class="badge bg-secondary">Inaktiv</span>
+    <?php endif; ?>
+</p>
 
-<p>Status: <strong><?= $user->active ? 'Aktiv' : 'Inaktiv' ?></strong></p>
-<p>Kontostand: <strong><?= number_format($user->account_balance, 2) ?> CHF</strong></p>
-<!-- Guthaben aufladen -->
-<div class="mb-4">
-    <a href="/finance/topup" class="btn btn-sm btn-outline-primary">
-        <i class="bi bi-plus-circle"></i> Guthaben aufladen
-    </a>
-</div>
-
-
-<!-- Statistik -->
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card border-success">
-            <div class="card-body">
-                <h5 class="card-title">Gekaufte Anfragen</h5>
-                <p class="card-text">
-                    Anzahl: <strong><?= $totalPurchased ?></strong><br>
-                </p>
-            </div>
-        </div>
+<!-- Hinweis auf automatische Käufe
+<div class="alert alert-info mt-4 d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-info-circle fs-4"></i>
+    <div>
+        Um keine Anfragen mehr zu verpassen, kannst du in deinem
+        <a href="/profile" class="alert-link">Profil</a> die Option <strong>„automatisch kaufen“</strong> aktivieren.
     </div>
-
-        <div class="col-md-6">
-            <div class="card border-danger">
-                <div class="card-body">
-                    <h5 class="card-title">Verpasste Anfragen</h5>
-                    <p class="card-text">
-                        Anzahl: <strong><?= $totalMissed ?></strong><br>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-
 </div>
+ -->
 
-<!-- Hinweis auf automatische Käufe -->
-<div class="alert alert-info">
-    <i class="bi bi-info-circle"></i>
-    Um keine Anfragen mehr zu verpassen, kannst du in deinem <a href="/profile" class="alert-link">Profil</a> die Option <strong>„automatisch kaufen“</strong> aktivieren.
-</div>
-
-
-<h2>Gekaufte Angebote</h2>
+<h2 class="mt-5 mb-3">Gekaufte Angebote</h2>
 
 <?php if(empty($bookings)): ?>
-    <p>Du hast noch keine Angebote gekauft.</p>
+    <p class="text-muted">Du hast noch keine Angebote gekauft.</p>
 <?php else: ?>
-    <ul class="list-group">
+    <ul class="list-group mb-5">
+
         <?php foreach($bookings as $booking): ?>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="list-group-item p-2"><a href="<?=site_url('/offers/mine#detailsview-' . $booking['reference_id']);?>" class="d-flex justify-content-between align-items-center text-decoration-none w-100">
                 <div>
                     <strong><?= esc($booking['description']) ?></strong><br>
-                    Kaufdatum: <?= date('d.m.Y', strtotime($booking['created_at'])) ?><br>
+                    <small class="text-muted">Kaufdatum: <?= date('d.m.Y', strtotime($booking['created_at'])) ?></small>
                 </div>
-                <span class="badge bg-primary rounded-pill"><?= number_format($booking['amount'], 2) ?> CHF</span>
-            </li>
+                <span class="badge bg-primary rounded-pill"><?= number_format($booking['amount'], 2) ?> CHF</span></a></li>
         <?php endforeach; ?>
     </ul>
 <?php endif; ?>

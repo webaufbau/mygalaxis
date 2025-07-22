@@ -309,14 +309,14 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                         'required' => 'required',
                         'model' => 'CountryModel',
                     ],*/
-                    'auto_purchase' => [
+                    /*'auto_purchase' => [
                         'type' => 'dropdown',
                         'label' => 'Automatischer Kauf von passenden Angeboten aktivieren',
                         'options' => [
                             '1' => 'Ja',
                             '0' => 'Nein',
                         ],
-                    ],
+                    ],*/
                     'active' => [
                         'type' => 'dropdown',
                         'label' => 'Aktiv',

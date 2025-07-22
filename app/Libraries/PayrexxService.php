@@ -52,8 +52,6 @@ class PayrexxService
 
         try {
             $payrexx_payment_methods = $payrexx->getAll($paymentMethod);
-            print_r($payrexx_payment_methods);
-            exit();
         } catch (PayrexxException $e) {
             print $e->getMessage();
         }

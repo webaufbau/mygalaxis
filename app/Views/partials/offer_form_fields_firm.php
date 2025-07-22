@@ -43,6 +43,11 @@ if(!empty($admin)) {
 
 }
 
+$fieldConfig = new \Config\FormFieldOptions();
+$fieldsWithImages = $fieldConfig->fieldsWithImages;
+$imageBaseUrl = $fieldConfig->imageBaseUrl;
+
+
 ?>
 
 <?php if (!empty($formFields)): ?>
@@ -96,7 +101,14 @@ if(!empty($admin)) {
             ?>
 
             <tr>
-                <td><?= esc($label) ?></td>
+                <td><?= esc($label) ?>
+                    <?php
+                    if (in_array($key, $fieldsWithImages)) {
+                        $imageUrl = $imageBaseUrl . $key . '.jpg';
+                        echo '<div><img src="' . esc($imageUrl) . '" alt="Bild für ' . esc($label) . '" style="max-width:100%; border:1px solid #ccc; margin-top: 10px;"></div>';
+                    }
+                    ?>
+                </td>
                 <td>
 
 

@@ -4,9 +4,20 @@ namespace App\Controllers;
 use App\Models\BookingModel;
 use App\Models\PaymentMethodModel;
 use App\Models\UserPaymentMethodModel;
+use App\Services\DatatransService;
+use App\Services\SaferpayService;
 
 class Finance extends BaseController
 {
+    protected $datatrans;
+    protected SaferpayService $saferpay;
+
+    public function __construct()
+    {
+        $this->datatrans = new DatatransService();
+        $this->saferpay = new \App\Services\SaferpayService();
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -55,6 +66,144 @@ class Finance extends BaseController
 
 
     public function topup()
+    {
+        $amount = (int)(floatval($this->request->getPost('amount') ?? 20) * 100); // CHF → Rappen
+        $refno = uniqid('topup_');
+
+        $successUrl = site_url("finance/topupSuccess?refno=$refno");
+        $failUrl    = site_url("finance/topupFail");
+
+        try {
+            $response = $this->saferpay->initTransactionWithAlias($successUrl, $failUrl, $amount, $refno);
+            return redirect()->to($response['RedirectUrl']);
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setBody("Zahlung fehlgeschlagen: " . $e->getMessage());
+        }
+    }
+
+    public function topupSuccess()
+    {
+        $refno = $this->request->getGet('refno');
+        $user = auth()->user();
+
+        // 1. Token anhand refno holen (aus DB oder Speicher)
+        $token = $this->saferpay->getTokenByRefno($refno);  // Du brauchst diese Methode, um den Token zu laden
+
+        if (!$token) {
+            return redirect()->to('/finance/topupFail')->with('error', 'Transaktion nicht gefunden.');
+        }
+
+        try {
+            $saferpay = new \App\Services\SaferpayService();
+            $response = $saferpay->assertTransaction($token);
+
+            // 2. Prüfen, ob die Transaktion autorisiert ist
+            if (isset($response['Transaction']) && $response['Transaction']['Status'] === 'AUTHORIZED') {
+                $amount = $response['Transaction']['Amount']['Value']; // in Rappen
+                $currency = $response['Transaction']['Amount']['CurrencyCode'];
+
+                // 3. Guthaben gutschreiben (eigene Logik)
+                // Guthaben gutschreiben
+                $bookingModel = new BookingModel();
+                $bookingModel->insert([
+                    'user_id' => $user->id,
+                    'type' => 'topup',
+                    'description' => "Guthabenaufladung via " . ($response['Transaction']['AcquirerName'] ?? 'Online-Zahlung'),
+                    'amount' => $amount / 100,
+                    'created_at' => date('Y-m-d H:i:s'),
+                ]);
+
+                // 4. Alias sichern, falls vorhanden
+
+                if (isset($response['Transaction']['PaymentMeans']['Alias'])) {
+                    $aliasId = $response['Transaction']['PaymentMeans']['Alias']['Id'];
+                    $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
+                    $paymentMethodModel->save([
+                        'user_id' => $user->id,
+                        'payment_method_code' => 'saferpay',
+                        'provider_data' => json_encode(['alias_id' => $aliasId]),
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+
+                return redirect()->to('/finance')->with('message', 'Zahlung erfolgreich.');
+            }
+
+            return redirect()->to('/finance/topupFail')->with('error', 'Zahlung nicht autorisiert.');
+        } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+
+            // Loggen
+            log_message('error', 'Saferpay API Fehler: ' . $errorMessage);
+
+            // Benutzerfreundliche Meldung mit genauer Erklärung
+            $userMessage = 'Fehler bei der Zahlungsprüfung. ';
+
+            if (strpos($errorMessage, 'AUTHORIZATION_AMOUNT_EXCEEDED') !== false) {
+                $userMessage .= 'Die Zahlung wurde abgelehnt, da das verfügbare Guthaben oder Kreditlimit nicht ausreicht.';
+            } else {
+                $userMessage .= 'Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support.';
+            }
+
+            // Weiterleitung mit Flash-Message (wenn dein Framework das unterstützt)
+            return redirect()->to('/finance/topupFail')->with('error', $userMessage);
+        }
+    }
+
+
+    public function topupFail()
+    {
+        return view('finance/topup_fail'); // oder redirect mit Fehlermeldung
+    }
+
+
+
+
+    /**
+     * Startet den Redirect zu Datatrans mit Tokenization
+     */
+    /*public function topup()
+    {
+        $amount = (int)(floatval($this->request->getPost('amount')) * 100);
+        $refno = uniqid('topup_');
+
+        // URLs für Redirect
+        $successUrl = site_url("finance/topupSuccess?refno=$refno");
+        $cancelUrl  = site_url('finance/topupCancel');
+        $errorUrl   = site_url('finance/topupError');
+
+        try {
+            $response = $this->datatrans->initTransactionWithAlias($successUrl, $cancelUrl, $errorUrl, $amount, $refno);
+            $redirectUrl = str_replace('{transactionId}', $response['transactionId'], $this->datatrans->config->redirectUrlTemplate);
+
+            return redirect()->to($redirectUrl);
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setBody("Fehler beim Starten der Zahlung: " . $e->getMessage());
+        }
+    }*/
+
+
+    /**
+     * Zahlung mit gespeichertem Token ausführen
+     */
+    public function chargeAlias()
+    {
+        $alias = 'AAABcH0Bq92s3kgAESIAAbGj5NIsAHWC'; // Aus Datenbank laden!
+        $amount = (int)(floatval($this->request->getPost('amount')) * 100);
+        $refno = uniqid('charge_');
+
+        try {
+            $response = $this->datatrans->authorizeWithAlias($alias, $amount, $refno, 12, 2025); // expiryMonth/Year ggf. aus DB holen
+            return "Alias-Zahlung erfolgreich!";
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setBody("Alias-Zahlung fehlgeschlagen: " . $e->getMessage());
+        }
+    }
+
+
+
+    /*public function topup()
     {
         $user = auth()->user();
 
@@ -113,7 +262,7 @@ class Finance extends BaseController
             'paymentMethods' => $paymentMethods,
             'session' => session(),
         ]);
-    }
+    }*/
 
 
 
@@ -168,6 +317,8 @@ class Finance extends BaseController
 
         if (is_array($response) && !empty($response['data']['link'])) {
             return redirect()->to($response['data']['link']);
+        } elseif (filter_var($response, FILTER_VALIDATE_URL)) {
+            return redirect()->to($response);
         }
 
         return redirect()->back()->with('error', 'Zahlungsseite konnte nicht erstellt werden.');
