@@ -149,9 +149,9 @@ class Dashboard extends Controller
 
     public function index_user()
     {
-        if (!isset($_SERVER['DDEV_PROJECT'])) {
+        /*if (!isset($_SERVER['DDEV_PROJECT'])) {
             exit(); // deaktiviert aktuell
-        }
+        }*/
 
         $user = auth()->user();
 
