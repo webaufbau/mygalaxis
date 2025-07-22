@@ -77,9 +77,11 @@ class SaferpayService
     {
         $url = $this->config->apiBaseUrl . '/Payment/v1/Transaction/AuthorizeDirect';
 
+        $user = auth()->user();
+
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.10",
+                "SpecVersion" => "1.35", // wichtig: 1.35, nicht 1.10
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid(),
                 "RetryIndicator" => 0
@@ -95,6 +97,20 @@ class SaferpayService
             ],
             "Alias" => [
                 "Id" => $aliasId
+            ],
+            "Payer" => [
+                "LanguageCode" => "de-CH",
+                "Email" => $user->getEmail(),
+                "IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+                "FirstName" => $user->contact_person ?? '',
+                "LastName" => $user->company_name ?? '',
+                "Phone" => $user->company_phone ?? '',
+                "BillingAddress" => [
+                    "Street" => $user->company_street ?? '',
+                    "Zip" => $user->company_zip ?? '',
+                    "City" => $user->company_city ?? '',
+                    "CountryCode" => 'CH'
+                ],
             ]
         ];
 
