@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\OfferModel;
 use App\Models\BookingModel;
-use App\Libraries\StripeService;
+use App\Services\SaferpayService;
 use DateTime;
 
 class OfferPurchaseService
@@ -39,15 +39,19 @@ class OfferPurchaseService
             return true;
         }
 
-        // Stripe Fallback
-        $stripeService = new StripeService();
-        if ($stripeService->hasCardOnFile($user)) {
+        // Fallback: Saferpay Alias verwenden
+        $saferpayService = new SaferpayService();
+
+        // z.B. gespeichertes Alias aus DB holen
+        $aliasId = $user->saferpay_alias_id ?? null;
+        if ($aliasId) {
             try {
-                $stripeService->charge($user, $price, 'Anfrage #' . $offerId);
-                $this->finalize($user, $offer, $price, 'stripe');
+                $refno = 'offer_' . uniqid(); // oder offer_$offerId
+                $saferpayService->authorizeWithAlias($aliasId, $price * 100, $refno); // Saferpay erwartet Rappen
+                $this->finalize($user, $offer, $price, 'saferpay_alias');
                 return true;
             } catch (\Exception $e) {
-                log_message('error', 'Stripe-Zahlung fehlgeschlagen: ' . $e->getMessage());
+                log_message('error', 'Saferpay-Zahlung fehlgeschlagen: ' . $e->getMessage());
             }
         }
 
