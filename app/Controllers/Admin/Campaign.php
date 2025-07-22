@@ -313,20 +313,19 @@ class Campaign extends Crud {
         return redirect()->back()->with('success', 'Kampagne als beantwortet markiert.');
     }
 
-    public function delete($id)
-    {
+    public function delete($entity_id=0) {
         // Berechtigungen prüfen
         if (!auth()->user()->can('my.campaign_admin')) {
             return redirect()->to('/')->with('error', 'Keine Berechtigung');
         }
 
-        $campaign = $this->model_class->find($id);
+        $campaign = $this->model_class->find($entity_id);
         if (!$campaign) {
             return redirect()->back()->with('error', 'Kampagne nicht gefunden');
         }
 
         // Datensatz löschen
-        $this->model_class->delete($id);
+        $this->model_class->delete($entity_id);
 
         return redirect()->back()->with('success', 'Kampagne erfolgreich gelöscht');
     }
