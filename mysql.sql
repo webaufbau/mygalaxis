@@ -609,28 +609,27 @@ ALTER TABLE `saferpay_transactions`
 
 
 
-CREATE TABLE campaigns (
-   id INT AUTO_INCREMENT PRIMARY KEY,
-   company_name VARCHAR(255) NOT NULL,
-   company_email VARCHAR(255),
-   company_contact_person VARCHAR(255),
-   company_address TEXT,
-   company_zip VARCHAR(10),
-   company_city VARCHAR(100),
-   company_canton VARCHAR(10),
-   company_phone VARCHAR(50),
-   company_website VARCHAR(255),
-   company_industry VARCHAR(255),
-   company_categories VARCHAR(255),
-   company_languages VARCHAR(255),
-   company_notes TEXT,
-
-   subject VARCHAR(255) NOT NULL,
-   message TEXT,
-   status ENUM('pending','sent','responded','error') DEFAULT 'pending',
-   sent_at DATETIME NULL,
-   response_at DATETIME NULL,
-
-   created_at DATETIME,
-   updated_at DATETIME
-);
+CREATE TABLE `campaigns` (
+     `id` int(11) NOT NULL AUTO_INCREMENT,
+     `company_name` varchar(255) DEFAULT NULL,
+     `company_email` varchar(255) DEFAULT NULL,
+     `company_contact_person` varchar(255) DEFAULT NULL,
+     `company_address` text DEFAULT NULL,
+     `company_zip` varchar(10) DEFAULT NULL,
+     `company_city` varchar(100) DEFAULT NULL,
+     `company_canton` varchar(10) DEFAULT NULL,
+     `company_phone` varchar(50) DEFAULT NULL,
+     `company_website` varchar(255) DEFAULT NULL,
+     `company_industry` varchar(255) DEFAULT NULL,
+     `company_categories` varchar(255) DEFAULT NULL,
+     `company_languages` varchar(255) DEFAULT NULL,
+     `company_notes` text DEFAULT NULL,
+     `subject` varchar(255) DEFAULT NULL,
+     `message` text DEFAULT NULL,
+     `status` enum('pending','sent','responded','error') DEFAULT 'pending',
+     `sent_at` datetime DEFAULT NULL,
+     `response_at` datetime DEFAULT NULL,
+     `created_at` datetime DEFAULT NULL,
+     `updated_at` datetime DEFAULT NULL,
+     PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -293,8 +293,7 @@ class Campaign extends Crud {
         return $actions;
     }
 
-    public function markResponded($id)
-    {
+    public function markResponded($id) {
         if (!auth()->user()->can('my.' . $this->app_controller . '_admin')) {
             return redirect()->to('/')->with('error', 'Keine Berechtigung.');
         }
@@ -313,6 +312,25 @@ class Campaign extends Crud {
 
         return redirect()->back()->with('success', 'Kampagne als beantwortet markiert.');
     }
+
+    public function delete($id)
+    {
+        // Berechtigungen prüfen
+        if (!auth()->user()->can('my.campaign_admin')) {
+            return redirect()->to('/')->with('error', 'Keine Berechtigung');
+        }
+
+        $campaign = $this->model_class->find($id);
+        if (!$campaign) {
+            return redirect()->back()->with('error', 'Kampagne nicht gefunden');
+        }
+
+        // Datensatz löschen
+        $this->model_class->delete($id);
+
+        return redirect()->back()->with('success', 'Kampagne erfolgreich gelöscht');
+    }
+
 
 
 }

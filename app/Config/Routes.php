@@ -161,6 +161,7 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
 // Campaign Formular (neu / edit) (GET + POST)
     $routes->match(['GET', 'POST'], 'campaign/form', 'Admin\Campaign::form', ['filter' => 'auth']);
     $routes->match(['GET', 'POST'], 'campaign/form/(:num)', 'Admin\Campaign::form/$1', ['filter' => 'auth']);
+    $routes->match(['GET', 'POST'], 'campaign/delete/(:num)', 'Admin\Campaign::delete/$1', ['filter' => 'auth']);
 
 // CSV Vorlage herunterladen
     $routes->get('campaign/download-sample-csv', 'Admin\Campaign::downloadCompanySampleCsv', ['filter' => 'auth']);
