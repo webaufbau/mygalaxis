@@ -318,12 +318,11 @@ use ReflectionClass;
 
             $form_data = $entity_entity->getFields();
 
-
-
             /*if($this->seo_model->where(['module' => $this->model_name, 'module_uid' => $id, 'sid' => 1])->first() !== null) {
                 $form_data['seo'] = (array)$this->seo_model->where(['module' => $this->model_name, 'module_uid' => $id, 'sid' => 1])->first()->getFields();
             }*/
         } else {
+            $entity_entity = $this->model_class->getEntity();
             $this->template->set('entity', $entity_entity);
             $form_data = $entity_entity->getFields();
         }

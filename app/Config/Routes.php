@@ -155,4 +155,23 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->match(['GET','POST'], 'paymentmethods/edit/(:num)', 'Admin\PaymentMethods::edit/$1', ['filter' => 'auth']);
     $routes->match(['GET','POST'], 'paymentmethods/delete/(:num)', 'Admin\PaymentMethods::delete/$1', ['filter' => 'auth']);
 
+// Campaign Übersicht / Liste (GET + POST)
+    $routes->match(['GET', 'POST'], 'campaign', 'Admin\Campaign::index', ['filter' => 'auth']);
+
+// Campaign Formular (neu / edit) (GET + POST)
+    $routes->match(['GET', 'POST'], 'campaign/form', 'Admin\Campaign::form', ['filter' => 'auth']);
+    $routes->match(['GET', 'POST'], 'campaign/form/(:num)', 'Admin\Campaign::form/$1', ['filter' => 'auth']);
+
+// CSV Vorlage herunterladen
+    $routes->get('campaign/download-sample-csv', 'Admin\Campaign::downloadCompanySampleCsv', ['filter' => 'auth']);
+
+// CSV Import Formular anzeigen
+    $routes->get('campaign/import_csv', 'Admin\Campaign::import_csv', ['filter' => 'auth']);
+
+// CSV Import verarbeiten (POST)
+    $routes->post('campaign/import_csv_process', 'Admin\Campaign::import_csv_process', ['filter' => 'auth']);
+
+    $routes->get('campaign/mark-responded/(:num)', 'Admin\Campaign::markResponded/$1', ['filter' => 'auth']);
+
+
 });

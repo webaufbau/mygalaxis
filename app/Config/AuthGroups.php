@@ -172,25 +172,6 @@ class AuthGroups extends ShieldAuthGroups
         'my.permission_view' => 'Berechtigungen anzeigen',
         'my.permission_edit' => 'Berechtigungen bearbeiten',
 
-        // TV-Screens verwalten
-        'my.tvscreen_view' => 'TV-Screens anzeigen',
-        'my.tvscreen_create' => 'TV-Screen erstellen',
-        'my.tvscreen_edit' => 'TV-Screen bearbeiten',
-        'my.tvscreen_delete' => 'TV-Screen löschen',
-        'my.tvscreen_admin' => 'TV-Screen administrieren',
-        'my.tvscreenentry_view' => 'TV-Screen Beiträge anzeigen',
-        'my.tvscreenentry_create' => 'TV-Screen Beiträge erstellen',
-        'my.tvscreenentry_edit' => 'TV-Screen Beiträge bearbeiten',
-        'my.tvscreenentry_delete' => 'TV-Screen Beiträge löschen',
-        'my.tvscreenentry_admin' => 'TV-Screen Beiträge administrieren',
-
-        // RSS Feeds verwalten
-        'my.rssfeed_view' => 'RSS-Feed anzeigen',
-        'my.rssfeed_create' => 'RSS-Feed erstellen',
-        'my.rssfeed_edit' => 'RSS-Feed bearbeiten',
-        'my.rssfeed_delete' => 'RSS-Feed löschen',
-        'my.rssfeed_admin' => 'RSS-Feed administrieren',
-
         // Push versenden
         'my.send_push_notifications' => 'Push-Benachrichtigungen senden',
 
@@ -199,27 +180,6 @@ class AuthGroups extends ShieldAuthGroups
         'my.category_create' => 'Kategorie erstellen',
         'my.category_edit' => 'Kategorie bearbeiten',
         'my.category_delete' => 'Kategorie löschen',
-
-        // Epaper verwalten
-        'my.epaper_view' => 'E-Paper anzeigen',
-        'my.epaper_create' => 'E-Paper erstellen',
-        'my.epaper_edit' => 'E-Paper bearbeiten',
-        'my.epaper_delete' => 'E-Paper löschen',
-
-        // E-Paper Download PDF
-        'my.epaper_pdf_download' => 'E-Paper PDF Direktaufruf',
-
-        // Todesanzeigen verwalten
-        'my.obituary_view' => 'Todesanzeigen anzeigen',
-        'my.obituary_create' => 'Todesanzeige erstellen',
-        'my.obituary_edit' => 'Todesanzeige bearbeiten',
-        'my.obituary_delete' => 'Todesanzeige löschen',
-
-        // Regionen verwalten
-        'my.region_view' => 'Regionen anzeigen',
-        'my.region_create' => 'Region erstellen',
-        'my.region_edit' => 'Region bearbeiten',
-        'my.region_delete' => 'Region löschen',
 
         // searchindexen verwalten
         'my.searchindex_view' => 'Suche-Index anzeigen',
@@ -272,6 +232,8 @@ class AuthGroups extends ShieldAuthGroups
         'my.push_notifications_delete' => 'Push Benachrichtigungen löschen',
         'my.push_notifications_admin' => 'Push Benachrichtigungen administrieren',
 
+
+        'my.campaign_view' => 'Kampagnen anzeigen',
 
 
         'my.statistics_admin' => 'Statistik anzeigen',
@@ -404,18 +366,13 @@ class AuthGroups extends ShieldAuthGroups
             'my.push_create',
             'my.push_delete',
             'my.push_admin',
-            'my.push_notifications_view',
-            'my.push_notifications_edit',
-            'my.push_notifications_create',
-            'my.push_notifications_delete',
-            'my.push_notifications_admin',
-            'my.advertorial_view',
-            'my.advertorial_create',
-            'my.advertorial_edit',
-            'my.advertorial_delete',
-            'my.advertorial_admin',
             'my.language_view',
             'my.news_impressions_stats',
+            'my.campaign_admin',
+            'my.campaign_view',
+            'my.campaign_create',
+            'my.campaign_edit',
+            'my.campaign_delete',
         ],
         'superadmin' => [
             'my.permission_view',

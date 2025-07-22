@@ -23,7 +23,8 @@ class ReviewModel extends BaseModel
         'created_at',
     ];
 
-    protected $useTimestamps = false; // oder true, falls du `updated_at` etc. einbaust
+    protected $useTimestamps = true; // oder true, falls du `updated_at` etc. einbaust
+    protected $dateFormat = 'datetime';
 
     protected $dates = ['created_at'];
 

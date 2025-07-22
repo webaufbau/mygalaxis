@@ -10,7 +10,6 @@
 
     <!-- jQuery & Bootstrap Bundle JS -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <!-- Eigene Styles -->
@@ -117,8 +116,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-normal" href="/admin/paymentmethods">
-                                <i class="bi bi-credit-card me-1"></i> Zahlungsarten
+                            <a class="nav-link text-normal" href="/admin/campaign">
+                                <i class="bi bi-send me-1"></i> Firmen anschreiben
                             </a>
                         </li>
                     <?php } ?>

@@ -606,3 +606,31 @@ CREATE TABLE `saferpay_transactions` (
 
 ALTER TABLE `saferpay_transactions`
     ADD `transaction_data` text COLLATE 'utf8mb4_general_ci' NULL;
+
+
+
+CREATE TABLE campaigns (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   company_name VARCHAR(255) NOT NULL,
+   company_email VARCHAR(255),
+   company_contact_person VARCHAR(255),
+   company_address TEXT,
+   company_zip VARCHAR(10),
+   company_city VARCHAR(100),
+   company_canton VARCHAR(10),
+   company_phone VARCHAR(50),
+   company_website VARCHAR(255),
+   company_industry VARCHAR(255),
+   company_categories VARCHAR(255),
+   company_languages VARCHAR(255),
+   company_notes TEXT,
+
+   subject VARCHAR(255) NOT NULL,
+   message TEXT,
+   status ENUM('pending','sent','responded','error') DEFAULT 'pending',
+   sent_at DATETIME NULL,
+   response_at DATETIME NULL,
+
+   created_at DATETIME,
+   updated_at DATETIME
+);
