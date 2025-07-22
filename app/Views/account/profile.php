@@ -24,7 +24,7 @@
 
     <div class="mb-3">
         <label class="form-label">Firmenname</label>
-        <input type="text" name="company_name" class="form-control" value="<?= esc($user->company_name) ?>" required="required">
+        <input type="text" name="company_name" id="company-name" class="form-control" value="<?= esc($user->company_name) ?>" required="required">
     </div>
 
     <div class="mb-3">
