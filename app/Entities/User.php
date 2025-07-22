@@ -81,7 +81,7 @@ class User extends \CodeIgniter\Shield\Entities\User
      */
     protected $casts = [
         'id'          => '?integer',
-        'active'      => 'int_bool',
+        'active'      => 'boolean',
         'permissions' => 'array',
         'groups'      => 'array',
     ];

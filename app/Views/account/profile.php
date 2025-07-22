@@ -33,8 +33,15 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Firmen-UID <a href="https://www.zefix.ch/de/search/entity/welcome" target="_blank">Zefix</a></label>
-        <input type="text" name="company_uid" class="form-control" value="<?= esc($user->company_uid) ?>" required="required">
+        <label class="form-label">
+            Firmen-UID
+            <a href="https://www.zefix.ch/de/search/entity/welcome" target="_blank">Zefix</a>
+        </label>
+        <input type="text" name="company_uid" class="form-control"
+               value="<?= esc($user->company_uid) ?>"
+               required
+               pattern="CHE-\d{3}\.\d{3}\.\d{3}"
+               title="Bitte geben Sie eine gültige UID im Format CHE-123.456.789 ein.">
     </div>
 
     <div class="mb-3">
