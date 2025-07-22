@@ -325,7 +325,7 @@ class Campaign extends Crud {
         }
 
         // Datensatz löschen
-        log_message('info', 'Campaign gelöscht: ' . json_encode($campaign->getFields()));
+        log_message('debug', 'Campaign gelöscht: ' . json_encode($campaign->getFields()));
         $this->model_class->delete($entity_id);
 
         return redirect()->back()->with('success', 'Kampagne erfolgreich gelöscht');
