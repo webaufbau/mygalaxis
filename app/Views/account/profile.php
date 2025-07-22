@@ -24,34 +24,36 @@
 
     <div class="mb-3">
         <label class="form-label">Firmenname</label>
-        <input type="text" name="company_name" class="form-control" value="<?= esc($user->company_name) ?>">
+        <input type="text" name="company_name" class="form-control" value="<?= esc($user->company_name) ?>" required="required">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Ansprechperson</label>
-        <input type="text" name="contact_person" class="form-control" value="<?= esc($user->contact_person) ?>">
+        <input type="text" name="contact_person" class="form-control" value="<?= esc($user->contact_person) ?>" required="required">
     </div>
 
     <div class="mb-3">
-        <label class="form-label">UID</label>
-        <input type="text" name="company_uid" class="form-control" value="<?= esc($user->company_uid) ?>">
+        <label class="form-label">Firmen-UID <a href="https://www.zefix.ch/de/search/entity/welcome" target="_blank">Zefix</a></label>
+        <input type="text" name="company_uid" class="form-control" value="<?= esc($user->company_uid) ?>" required="required">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Strasse</label>
-        <input type="text" name="company_street" class="form-control" value="<?= esc($user->company_street) ?>">
+        <input type="text" name="company_street" class="form-control" value="<?= esc($user->company_street) ?>" required="required">
     </div>
 
     <div class="row">
         <div class="col-md-4 mb-3">
             <label class="form-label">PLZ</label>
-            <input type="text" name="company_zip" class="form-control" value="<?= esc($user->company_zip) ?>">
+            <input type="text" name="company_zip" class="form-control" value="<?= esc($user->company_zip) ?>" required="required">
         </div>
         <div class="col-md-8 mb-3">
             <label class="form-label">Ort</label>
-            <input type="text" name="company_city" class="form-control" value="<?= esc($user->company_city) ?>">
+            <input type="text" name="company_city" class="form-control" value="<?= esc($user->company_city) ?>" required="required">
         </div>
     </div>
+
+    <?php if(strlen($user->company_street) > 3 && strlen($user->company_zip) > 1 && strlen($user->company_city) > 1) { ?>
 
     <h5 class="mt-4">Vorschau Standort (Google Maps)</h5>
 
@@ -117,6 +119,8 @@ console.log('address', address);
                 allowfullscreen
         ></iframe>
     </div>
+
+    <?php } ?>
 
 
     <div class="mb-3">

@@ -51,7 +51,22 @@ class OfferPurchaseService
                 $this->finalize($user, $offer, $price, 'saferpay_alias');
                 return true;
             } catch (\Exception $e) {
+                $message = $e->getMessage();
                 log_message('error', 'Saferpay-Zahlung fehlgeschlagen: ' . $e->getMessage());
+
+                // Prüfe, ob es ein VALIDATION_FAILED wegen Adresse ist
+                if (str_contains($message, 'VALIDATION_FAILED') &&
+                    (str_contains($message, 'BillingAddress.Street') ||
+                        str_contains($message, 'BillingAddress.Zip') ||
+                        str_contains($message, 'BillingAddress.City'))) {
+
+                    // Fehler-Message für den Nutzer setzen (Session-Flash)
+                    session()->setFlashdata('error', 'Ihre Adresse ist unvollständig oder ungültig. Bitte korrigieren Sie diese im Profil.');
+
+                    // Weiterleitung zur Profilseite
+                    return redirect()->to('/profile');
+                }
+
             }
         }
 

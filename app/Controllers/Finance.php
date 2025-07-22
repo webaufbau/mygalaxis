@@ -77,6 +77,22 @@ class Finance extends BaseController
             $response = $this->saferpay->initTransactionWithAlias($successUrl, $failUrl, $amount, $refno);
             return redirect()->to($response['RedirectUrl']);
         } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            log_message('error', 'Saferpay-Zahlung fehlgeschlagen: ' . $e->getMessage());
+
+            // Prüfe, ob es ein VALIDATION_FAILED wegen Adresse ist
+            if (str_contains($errorMessage, 'VALIDATION_FAILED') &&
+                (str_contains($errorMessage, 'BillingAddress.Street') ||
+                    str_contains($errorMessage, 'BillingAddress.Zip') ||
+                    str_contains($errorMessage, 'BillingAddress.City'))) {
+
+                // Fehler-Message für den Nutzer setzen (Session-Flash)
+                session()->setFlashdata('error', 'Ihre Adresse ist unvollständig oder ungültig. Bitte korrigieren Sie diese, um Ihr Guthaben aufzuladen.');
+
+                // Weiterleitung zur Profilseite
+                return redirect()->to('/profile');
+            }
+
             return $this->response->setStatusCode(500)->setBody("Zahlung fehlgeschlagen: " . $e->getMessage());
         }
     }
