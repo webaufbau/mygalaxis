@@ -78,7 +78,6 @@ class Campaign extends Crud {
         $this->template->set('page_title', $this->model_class->getTitle());
         $this->template->set('navbar_html', '
             <a href="' . site_url('admin/campaign/import_csv') . '" class="btn btn-primary btn-sm">Import CSV</a>
-            <a href="' . site_url('admin/campaign/download_sample_csv') . '" class="btn btn-primary btn-sm">Vorlage CSV</a>
         ');
 
         $table = $this->getCrudTable($this->app_controller, $this->model_name, (array)$entries);
