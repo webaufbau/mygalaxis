@@ -17,7 +17,7 @@ class SendReviewReminder extends BaseCommand
 {
     protected $group       = 'Reviews';
     protected $name        = 'reviews:send-reminder';
-    protected $description = 'Sendet 5 Tage nach Kauf einen Review-Link an den Anbieter (Ersteller des Angebots).';
+    protected $description = 'Sendet 30 Tage nach Kauf einen Review-Link an den Anbieter (Ersteller des Angebots).';
 
     // Models als Klassenvariablen definieren
     protected $bookingModel;
@@ -27,6 +27,7 @@ class SendReviewReminder extends BaseCommand
 
     public function __construct(LoggerInterface $logger, Commands $commands)
     {
+        parent::__construct($logger, $commands);
         $this->logger   = $logger;
         $this->commands = $commands;
 
@@ -39,7 +40,7 @@ class SendReviewReminder extends BaseCommand
 
     public function run(array $params)
     {
-        $fiveDaysAgo = date('Y-m-d H:i:s', strtotime('-5 days'));
+        $fiveDaysAgo = date('Y-m-d H:i:s', strtotime('-30 days'));
 
         $bookings = $this->bookingModel
             ->where('created_at <=', $fiveDaysAgo)
@@ -91,11 +92,17 @@ class SendReviewReminder extends BaseCommand
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title' => 'Ihre Anfrage',
+            'content' => $message,
+        ])->render('emails/layout');
+
         $email = \Config\Services::email();
         $email->setTo($to);
         $email->setFrom('info@offertenschweiz.ch', 'Offertenschweiz');
         $email->setSubject($subject);
-        $email->setMessage($message);
+        $email->setMessage($fullEmail);
         $email->setMailType('html');
 
         if (!$email->send()) {

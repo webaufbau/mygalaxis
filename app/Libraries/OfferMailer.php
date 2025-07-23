@@ -11,6 +11,7 @@ class OfferMailer
 
     public function __construct()
     {
+        exit(); // Gibt es nicht mehr diese Library
         $this->email = Services::email();
     }
 

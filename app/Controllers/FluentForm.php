@@ -298,7 +298,13 @@ class FluentForm extends BaseController
         ];
 
         // HTML-Ansicht generieren
-        $htmlMessage = view('emails/offer_notification', $emailData);
+        $message = view('emails/offer_notification', $emailData);
+
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title' => 'Ihre Anfrage',
+            'content' => $message,
+        ])->render('emails/layout');
 
         // Maildienst starten
         $email = \Config\Services::email();
@@ -307,7 +313,7 @@ class FluentForm extends BaseController
         $email->setTo($userEmail);            // Kunde als To
         $email->setBCC($bccString);         // Admins als BCC
         $email->setSubject('Wir bestätigen Dir deine Anfrage/Offerte');
-        $email->setMessage($htmlMessage);
+        $email->setMessage($fullEmail);
         $email->setMailType('html');
 
         if (!$email->send()) {

@@ -48,6 +48,7 @@ return [
         'file-upload' => 'Dateien',
         'file_upload' => 'Dateien',
         'additional_service' => 'Weitere Dienstleistung',
+        'address' => 'Adresse',
 
 
         // Nutzer & Wohnung

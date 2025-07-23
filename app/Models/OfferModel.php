@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use DateTime;
 
 class OfferModel extends Model
 {
@@ -23,6 +24,7 @@ class OfferModel extends Model
         'lastname',
         'email',
         'phone',
+        'work_start_date',
         'additional_service',
         'service_url',
         'uuid',
@@ -41,7 +43,8 @@ class OfferModel extends Model
         'reminder_sent_at',
         'verification_token',
         'group_id',
-        'form_fields_combo'
+        'form_fields_combo',
+        'access_hash',
     ];
 
     protected $useTimestamps = true;
@@ -89,6 +92,10 @@ class OfferModel extends Model
         $data['phone'] = $formFields['phone'] ?? $userInputs['phone'] ?? null;
         $data['additional_service'] = $formFields['additional_service'] ?? null;
         $data['service_url'] = $formFields['service_url'] ?? null;
+
+        $date = DateTime::createFromFormat('d/m/Y', $formFields['datetime_1']);
+        $timestamp = $date ? $date->getTimestamp() : false;
+        $data['work_start_date'] = date("Y-m-d", $timestamp) ?? null;
 
         if (empty($original['uuid'])) {
             $data['uuid'] = bin2hex(random_bytes(16));

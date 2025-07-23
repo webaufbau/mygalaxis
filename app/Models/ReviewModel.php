@@ -18,12 +18,17 @@ class ReviewModel extends BaseModel
         'hash',
         'reviewer_firstname',
         'reviewer_lastname',
+        'created_by_email',
+        'created_by_firstname',
+        'created_by_lastname',
+        'created_by_zip',
+        'created_by_city',
+        'created_by_country',
         'rating',
         'comment',
         'created_at',
     ];
 
-    protected $useTimestamps = true; // oder true, falls du `updated_at` etc. einbaust
     protected $dateFormat = 'datetime';
 
     protected $dates = ['created_at'];

@@ -64,6 +64,10 @@ class User extends \CodeIgniter\Shield\Entities\User
     private ?string $email_text = null;
     private ?string $stripe_customer_id = null;
 
+    // only for custom public vars
+    private ?string $average_rating = null;
+    private ?string $reviews = null;
+
     /**
      * @var string[]
      * @phpstan-var list<string>

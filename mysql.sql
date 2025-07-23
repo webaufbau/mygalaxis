@@ -633,3 +633,26 @@ CREATE TABLE `campaigns` (
      `updated_at` datetime DEFAULT NULL,
      PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `bookings`
+    ADD `offer_notification_sent_at` datetime NULL;
+
+ALTER TABLE `offers`
+    CHANGE `uuid` `uuid` varchar(64) COLLATE 'utf8mb4_unicode_ci' NULL AFTER `service_url`,
+    CHANGE `from_campaign` `from_campaign` tinyint(1) NULL AFTER `verify_type`,
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`,
+    CHANGE `form_name` `form_name` varchar(100) COLLATE 'utf8mb4_unicode_ci' NULL AFTER `updated_at`,
+    ADD `access_hash` varchar(64) NULL;
+
+ALTER TABLE `offers`
+    ADD `work_start_date` varchar(100) COLLATE 'utf8mb4_unicode_ci' NULL AFTER `phone`,
+    ADD `country` varchar(100) COLLATE 'utf8mb4_unicode_ci' NULL AFTER `zip`,
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;
+
+ALTER TABLE `reviews`
+    CHANGE `created_by` `created_by_email` varchar(250) NOT NULL AFTER `reviewer_lastname`,
+    ADD `created_by_firstname` varchar(250) NOT NULL AFTER `created_by_email`,
+    ADD `created_by_lastname` varchar(250) NOT NULL AFTER `created_by_firstname`,
+    ADD `created_by_zip` varchar(250) NOT NULL AFTER `created_by_lastname`,
+    ADD `created_by_city` varchar(250) NOT NULL AFTER `created_by_zip`,
+    ADD `created_by_country` varchar(250) NOT NULL AFTER `created_by_city`;

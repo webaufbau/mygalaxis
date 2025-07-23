@@ -65,7 +65,7 @@ class CheckOffers extends BaseCommand
                 $updateData['type'] = $detectedType;
             }
 
-            foreach (['type', 'city', 'zip', 'customer_type', 'firstname', 'lastname', 'email', 'phone', 'additional_service', 'service_url', 'uuid'] as $key) {
+            foreach (['type', 'city', 'zip', 'customer_type', 'firstname', 'lastname', 'email', 'phone', 'work_start_date', 'additional_service', 'service_url', 'uuid'] as $key) {
                 if (empty($offer[$key]) && !empty($enriched[$key])) {
                     $updateData[$key] = $enriched[$key];
                 }

@@ -110,8 +110,8 @@ class OfferPurchaseService
         ]);
 
         // Benachrichtigung
-        $mailer = new \App\Libraries\OfferMailer();
-        $mailer->sendOfferPurchasedToRequester($offer, (array)$user);
+        //$mailer = new \App\Libraries\OfferMailer();
+        //$mailer->sendOfferPurchasedToRequester($offer, (array)$user);
     }
 
 }

@@ -42,10 +42,17 @@ $routes->get('/verification/verify-offer/(:num)/(:any)', 'Verification::verifyOf
 // Web Hooks
 $routes->post('webhooks/payrexx', 'WebhookController::payrexx');
 
-
-
 // Registrierung
 $routes->match(['POST'], 'register', 'RegisterController::registerAction');
+
+
+$routes->get('offer/interested/(:segment)', 'PublicController::interestedCompanies/$1');
+$routes->get('rating/write/(:segment)', 'PublicController::showRatingForm/$1');
+$routes->post('rating/submit', 'PublicController::submitRating');
+$routes->get('company/ratings/(:segment)', 'PublicController::companyRatings/$1');
+
+
+
 
 // ----------------------------
 // Geschützter Bereich (Login erforderlich)
