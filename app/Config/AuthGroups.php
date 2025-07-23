@@ -132,6 +132,8 @@ class AuthGroups extends ShieldAuthGroups
         'my.review_delete' => 'Bewertungen löschen',
         'my.review_admin' => 'Alle Bewertungen administrieren',
 
+        'my.region_view' => 'Region anzeigen',
+
         // Newsimport
         'my.newsimport_view' => 'NewsImport anzeigen',
         'my.newsimport_create' => 'NewsImport erstellen',

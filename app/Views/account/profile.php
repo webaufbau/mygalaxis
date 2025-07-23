@@ -6,7 +6,6 @@
 <form method="post" action="/profile/update">
     <?= csrf_field() ?>
 
-    <!--
     <div class="form-check form-switch mb-4">
         <input
                 class="form-check-input"
@@ -20,7 +19,6 @@
             Automatischer Kauf von passenden Angeboten aktivieren
         </label>
     </div>
-    -->
 
     <div class="mb-3">
         <label class="form-label">Firmenname</label>

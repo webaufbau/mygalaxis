@@ -1,7 +1,7 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2>Agenda Tage blockieren</h2>
+<h2>Agenda: Automatischen Kauf blockieren</h2>
 <p>Klicke auf ein Datum, um es zu sperren oder entsperren.</p>
 
 <!-- Kalender -->
