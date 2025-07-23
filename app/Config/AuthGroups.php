@@ -240,7 +240,10 @@ class AuthGroups extends ShieldAuthGroups
 
 
         'my.campaign_view' => 'Kampagnen anzeigen',
-
+        'my.campaign_admin' => 'Kampagnen erstellen',
+        'my.campaign_create' => 'Kampagnen erstellen',
+        'my.campaign_edit' => 'Kampagnen Bearbeiten',
+        'my.campaign_delete' => 'Kampagne löschen',
 
         'my.statistics_admin' => 'Statistik anzeigen',
 
