@@ -189,13 +189,13 @@ class Campaign extends Crud {
         $file->move($targetDir, $fileName);
         $filePath = $targetDir . $fileName;
 
-        //try {
+        try {
             $this->importCampaignsFromCSV($filePath);
             $this->setFlash('Import erfolgreich.', 'success');
-        /*} catch (\Exception $e) {
-            dd($e->getMessage());
+        } catch (\Exception $e) {
+            log_message('error', 'Fehler beim Campaign-Import: ' . $e->getMessage());
             $this->setFlash('Fehler beim Import: ' . $e->getMessage(), 'danger');
-        }*/
+        }
 
         return redirect()->to('admin/campaign');
     }
@@ -214,10 +214,7 @@ class Campaign extends Crud {
         }
 
         // BOM entfernen, falls vorhanden
-        $header = array_map(function($h) {
-            return trim(preg_replace('/^\xEF\xBB\xBF/', '', $h));
-        }, fgetcsv($handle, 0, ';'));
-
+        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
 
         while (($row = fgetcsv($handle, 0, ';')) !== false) {
             if (count($row) !== count($header)) {
@@ -226,14 +223,10 @@ class Campaign extends Crud {
             $data = array_combine($header, $row);
 
             // Minimalvalidierung
-            d($data['company_name']);
-            d(empty($data['company_name']));
-            d($data['company_email']);
-            dd(empty($data['company_email']));
             if (empty($data['company_name']) || empty($data['company_email'])) {
                 continue;
             }
-            dd($data);
+
             $campaignData = [
                 'company_name'           => $data['company_name'] ?? '',
                 'company_email'          => $data['company_email'] ?? '',
@@ -254,7 +247,7 @@ class Campaign extends Crud {
                 'sent_at'                => $data['sent_at'] ?? null,
                 'response_at'            => $data['response_at'] ?? null,
             ];
-dd($campaignData);
+
             $this->model_class->insert($campaignData);
         }
 
