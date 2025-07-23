@@ -37,7 +37,7 @@ class SaferpayService
             "Payer" => [
                 "LanguageCode" => "de-CH",
                 "Email" => $user->getEmail(),
-                "IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+                //"IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
                 "FirstName" => $user->contact_person ?? '', // Kontaktperson als Vorname
                 "LastName" => $user->company_name ?? '',    // Firmenname als Nachname (falls keine echte Person verfügbar)
                 "Phone" => $user->company_phone ?? '',
@@ -101,7 +101,7 @@ class SaferpayService
             "Payer" => [
                 "LanguageCode" => "de-CH",
                 "Email" => $user->getEmail(),
-                "IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+                //"IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
                 "FirstName" => $user->contact_person ?? '',
                 "LastName" => $user->company_name ?? '',
                 "Phone" => $user->company_phone ?? '',
