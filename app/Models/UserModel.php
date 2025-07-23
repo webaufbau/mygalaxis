@@ -334,7 +334,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                     ],
                     'user_group' => [
                         'type' => 'multiple',
-                        'label' => 'Benutzer-Gruppen (mehrere möglich)',
+                        'label' => 'Benutzer-Gruppen',
                         'required' => 'required',
                         'options' => $user_group_options,
                         'value' => $entity->getGroups(),
