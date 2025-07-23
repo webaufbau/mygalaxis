@@ -238,7 +238,6 @@ class AuthGroups extends ShieldAuthGroups
         'my.push_notifications_delete' => 'Push Benachrichtigungen löschen',
         'my.push_notifications_admin' => 'Push Benachrichtigungen administrieren',
 
-
         'my.campaign_view' => 'Kampagnen anzeigen',
         'my.campaign_admin' => 'Kampagnen erstellen',
         'my.campaign_create' => 'Kampagnen erstellen',

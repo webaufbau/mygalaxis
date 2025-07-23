@@ -189,12 +189,13 @@ class Campaign extends Crud {
         $file->move($targetDir, $fileName);
         $filePath = $targetDir . $fileName;
 
-        try {
+        //try {
             $this->importCampaignsFromCSV($filePath);
             $this->setFlash('Import erfolgreich.', 'success');
-        } catch (\Exception $e) {
+        /*} catch (\Exception $e) {
+            dd($e->getMessage());
             $this->setFlash('Fehler beim Import: ' . $e->getMessage(), 'danger');
-        }
+        }*/
 
         return redirect()->to('admin/campaign');
     }
@@ -212,20 +213,29 @@ class Campaign extends Crud {
             throw new \RuntimeException('Konnte CSV-Kopfzeile nicht lesen.');
         }
 
+        // BOM entfernen, falls vorhanden
+        $header = array_map(function($h) {
+            return trim(preg_replace('/^\xEF\xBB\xBF/', '', $h));
+        }, fgetcsv($handle, 0, ';'));
+
+
         while (($row = fgetcsv($handle, 0, ';')) !== false) {
             if (count($row) !== count($header)) {
                 continue; // Ungültige Zeile überspringen
             }
-
             $data = array_combine($header, $row);
 
             // Minimalvalidierung
-            if (empty($data['company_name']) || empty($data['subject'])) {
+            d($data['company_name']);
+            d(empty($data['company_name']));
+            d($data['company_email']);
+            dd(empty($data['company_email']));
+            if (empty($data['company_name']) || empty($data['company_email'])) {
                 continue;
             }
-
+            dd($data);
             $campaignData = [
-                'company_name'           => $data['company_name'],
+                'company_name'           => $data['company_name'] ?? '',
                 'company_email'          => $data['company_email'] ?? '',
                 'company_contact_person' => $data['company_contact_person'] ?? '',
                 'company_address'        => $data['company_address'] ?? '',
@@ -238,13 +248,13 @@ class Campaign extends Crud {
                 'company_categories'     => $data['company_categories'] ?? '',
                 'company_languages'      => $data['company_languages'] ?? '',
                 'company_notes'          => $data['company_notes'] ?? '',
-                'subject'                => $data['subject'],
+                'subject'                => $data['subject'] ?? '',
                 'message'                => $data['message'] ?? '',
                 'status'                 => $data['status'] ?? 'pending',
                 'sent_at'                => $data['sent_at'] ?? null,
                 'response_at'            => $data['response_at'] ?? null,
             ];
-
+dd($campaignData);
             $this->model_class->insert($campaignData);
         }
 
