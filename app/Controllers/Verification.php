@@ -143,7 +143,7 @@ class Verification extends Controller
         $success = false;
 
         if ($method === 'sms') {
-            $success = $twilio->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
+            $success = false; // $twilio->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
 
             if ($success) {
                 log_message('info', "SMS-Code an $phone gesendet.");
@@ -234,7 +234,7 @@ class Verification extends Controller
             $success = false;
 
             if ($method === 'sms') {
-                $success = $twilio->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
+                $success = false; // $twilio->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
 
                 if ($success) {
                     log_message('info', "SMS-Code an $normalizedPhone gesendet.");

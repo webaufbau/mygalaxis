@@ -32,7 +32,7 @@ class InfobipService
 
     public function sendSms(string $to, string $text): array
     {
-        $destination = new SmsDestination(to: $to);
+        $destination = new SmsDestination(to: str_replace("+", "", $to));
         $content     = new SmsTextContent(text: $text);
         $message     = new SmsMessage(
             destinations: [$destination],
