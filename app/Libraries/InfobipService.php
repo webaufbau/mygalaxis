@@ -22,7 +22,7 @@ class InfobipService
         $config = config(InfobipConfig::class);
 
         $configuration = new Configuration(
-            host: rtrim($config->api_host, '/'),
+            host: 'https://' . rtrim($config->api_host, '/') . '/',
             apiKey: $config->api_key
         );
 
@@ -69,10 +69,10 @@ class InfobipService
 
         } catch (ApiException $apiException) {
             // HANDLE THE EXCEPTION
-            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getCode());
-            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . print_r($apiException->getResponseHeaders(), true));
-            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getResponseBody());
-            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . print_r($apiException->getResponseObject(), true));
+            log_message('error', "Fehler beim SMS-Versand API-Exception CODE an $to: " . $apiException->getCode());
+            log_message('error', "Fehler beim SMS-Versand API-Exception HEADERS an $to: " . print_r($apiException->getResponseHeaders(), true));
+            log_message('error', "Fehler beim SMS-Versand API-Exception BODY an $to: " . $apiException->getResponseBody());
+            log_message('error', "Fehler beim SMS-Versand API-Exception OBJECT an $to: " . print_r($apiException->getResponseObject(), true));
 
             return [
                 'success'    => false,
