@@ -51,7 +51,61 @@
     <h2>Bestätigungscode eingeben</h2>
 
     <?php if ($method === 'sms'): ?>
-        <p>Wir haben eine SMS mit Ihrem Bestätigungscode an <strong><?= esc($phone) ?></strong> gesendet.</p>
+        <div id="sms-status-box" class="alert alert-info">
+            Wir senden eine SMS mit Ihrem Bestätigungscode an <strong id="sms-number"><?= esc($phone) ?></strong>.
+        </div>
+
+        <script>
+            const smsNumber = document.getElementById('sms-number').textContent;
+            const statusBox = document.getElementById('sms-status-box');
+            let attempts = 0;
+            const maxAttempts = 5;
+            let timerId;
+
+            function updateStatusBox(message, type = 'info') {
+                statusBox.textContent = message;
+                statusBox.className = ''; // Klassen zurücksetzen
+                statusBox.classList.add('alert', `alert-${type}`);
+            }
+
+            function pollSmsStatus() {
+                attempts++;
+                fetch('/verification/sms-status')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'DELIVERED_TO_HANDSET' || data.status === 'DELIVERED') {
+                            updateStatusBox(`✅ SMS erfolgreich zugestellt an ${smsNumber}.`, 'success');
+                            clearTimeout(timerId);
+                        } else if (data.status === 'PENDING_ENROUTE' || data.status === 'PENDING_ACCEPTED') {
+                            updateStatusBox(`⏳ SMS wird zugestellt... Bitte warten.`);
+                            setTimeout(pollSmsStatus, 5000);
+                        } else if (attempts >= maxAttempts) {
+                            updateStatusBox(`❌ Der Status konnte leider nicht ermittelt werden, dies ist ein Hinweis, dass die Telefonnummer nicht korrekt sein könnte. Falls Sie keine SMS erhalten haben, überprüfen Sie bitte die eingegebene Telefonnummer und klicken Sie anschliessend auf „Bestätigen“, um einen neuen Code anzufordern.`, 'danger');
+                            clearTimeout(timerId);
+                        } else if (data.status === 'NO_RESULT') {
+                            updateStatusBox(`⏳ Status wird ermittelt... Bitte warten.`);
+                            setTimeout(pollSmsStatus, 5000);
+                        } else if (data.status === 'INVALID_DESTINATION_ADDRESS' || data.status === 'UNDELIVERABLE') {
+                            updateStatusBox(`❌ SMS konnte nicht zugestellt werden. Bitte prüfen Sie die Nummer ${smsNumber}.`, 'danger');
+                        } else if (data.status === 'ERROR' || data.status === 'NO_MESSAGE_ID') {
+                            updateStatusBox(`❌ Fehler beim SMS-Versand: ${data.description || data.message}`, 'danger');
+                        } else {
+                            updateStatusBox(`ℹ️ Status: ${data.status}. Bitte warten...`);
+                            setTimeout(pollSmsStatus, 5000);
+                        }
+                    })
+                    .catch(() => {
+                        updateStatusBox('⚠️ Verbindungsfehler beim Abrufen des SMS-Status. Versuche es erneut...', 'warning');
+                        timerId = setTimeout(pollSmsStatus, 5000);
+                    });
+            }
+
+            // Starte den Poll nach 5 Sekunden (nach Seitenladezeit)
+            window.addEventListener('load', () => {
+                timerId = setTimeout(pollSmsStatus, 5000);
+            });
+        </script>
+
     <?php else: ?>
         <p>Sie erhalten in wenigen Sekunden einen Anruf auf <strong><?= esc($phone) ?></strong> mit Ihrem Bestätigungscode.</p>
     <?php endif; ?>

@@ -152,9 +152,12 @@ class Verification extends Controller
 
                 // Fallback: Infobip versuchen
                 $infobip = new \App\Libraries\InfobipService();
-                $fallbackSuccess = $infobip->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
+                $infobipResponseArray = $infobip->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                if ($fallbackSuccess) {
+                session()->set('sms_sent_status', $infobipResponseArray['status']);
+                session()->set('sms_message_id', $infobipResponseArray['messageId']);
+
+                if ($infobipResponseArray) {
                     log_message('info', "SMS-Code an $phone über Infobip gesendet (Fallback).");
                     return redirect()->to('/verification/confirm');
                 } else {
@@ -182,13 +185,21 @@ class Verification extends Controller
     public function confirm()
     {
         $verificationCode = session('verification_code');
-        if (!$verificationCode || $verificationCode=='') {
+        if (!$verificationCode || $verificationCode == '') {
             log_message('info', 'Verifizierung Confirm verificationCode fehlt.');
-
-            return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // oder Fehlerseite
+            return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/');
         }
 
-        return view('verification_confirm', ['verification_code' => session()->get('verification_code')]);
+        $smsStatus = session('sms_sent_status'); // z.B. "DELIVERED_TO_HANDSET", "INVALID_DESTINATION_ADDRESS"
+
+
+        return view('verification_confirm', [
+            'verification_code' => $verificationCode,
+            'sms_status' => $smsStatus,
+            'phone' => session('phone'),
+            'method' => session('verify_method'),
+        ]);
+
     }
 
     public function verify()
@@ -201,7 +212,7 @@ class Verification extends Controller
         $sessionCode = session()->get('verification_code');
 
         // Wenn eine neue Telefonnummer angegeben wurde:
-        if (!empty($newPhone) && $newPhone !== session()->get('phone')) {
+        if (!empty($newPhone)) { //  && $newPhone !== session()->get('phone')
             $normalizedPhone = $this->normalizePhone($newPhone);
             $method = session()->get('verify_method') ?? 'sms';
 
@@ -223,7 +234,7 @@ class Verification extends Controller
             $success = false;
 
             if ($method === 'sms') {
-                $success = $twilio->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
+                $success = false; // $twilio->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
 
                 if ($success) {
                     log_message('info', "SMS-Code an $normalizedPhone gesendet.");
@@ -232,9 +243,12 @@ class Verification extends Controller
 
                     // Fallback: Infobip versuchen
                     $infobip = new \App\Libraries\InfobipService();
-                    $fallbackSuccess = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
+                    $infobipResponseArray = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                    if ($fallbackSuccess) {
+                    session()->set('sms_sent_status', $infobipResponseArray['status']);
+                    session()->set('sms_message_id', $infobipResponseArray['messageId']);
+
+                    if ($infobipResponseArray) {
                         log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
                         return redirect()->to('/verification/confirm');
                     } else {
@@ -256,7 +270,6 @@ class Verification extends Controller
             }
 
             return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
-
 
         }
 
@@ -282,6 +295,23 @@ class Verification extends Controller
         log_message('info', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
         return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
     }
+
+
+    public function checkSmsStatus() {
+        $messageId = session('sms_message_id');
+        if (!$messageId) {
+            return $this->response->setJSON([
+                'status' => 'NO_MESSAGE_ID',
+                'message' => 'Keine SMS ID gefunden.'
+            ]);
+        }
+
+        $infobip = new \App\Libraries\InfobipService();
+        $status = $infobip->checkDeliveryStatus($messageId);
+
+        return $this->response->setJSON($status);
+    }
+
 
 
     // sending with mail after inserted and not verified:
