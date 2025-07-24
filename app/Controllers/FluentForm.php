@@ -174,7 +174,7 @@ class FluentForm extends BaseController
             $matchingOffers = $offerFindModel
                 ->where('email', $data['email'] ?? $userEmail)
                 ->where('type', $other_type_has_to_be)
-                ->where('created_at >=', date('Y-m-d H:i:s', strtotime('3600 minutes')))
+                ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-3600 minutes')))
                 ->orderBy('created_at', 'DESC')
                 ->findAll(1); // nur das letzte holen
 
