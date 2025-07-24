@@ -4,10 +4,14 @@ namespace App\Controllers;
 use App\Models\OfferModel;
 use CodeIgniter\Controller;
 
-class Offers extends Controller
+class Offers extends BaseController
 {
     public function index()
     {
+        if(auth()->user()->inGroup('admin')) {
+            return redirect()->back()->with('error', 'Diese Ansicht /offers ist nur für Firmenbenutzer. Als Admin bitte /dashboard verwenden');
+        }
+
         $user = auth()->user();
         $userId = $user->id ?? null;
 
