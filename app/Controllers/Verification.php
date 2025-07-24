@@ -244,6 +244,7 @@ class Verification extends Controller
                     // Fallback: Infobip versuchen
                     $infobip = new \App\Libraries\InfobipService();
                     $infobipResponseArray = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
+                    log_message('info', "SMS-Code an Infobip infobipResponseArray: " . print_r($infobipResponseArray, true));
 
                     session()->set('sms_sent_status', $infobipResponseArray['status']);
                     session()->set('sms_message_id', $infobipResponseArray['messageId']);
