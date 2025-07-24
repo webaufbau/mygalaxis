@@ -43,7 +43,10 @@ class InfobipService
         $smsRequest = new SmsRequest(messages: [$message]);
         try {
             $response = $this->smsApi->sendSmsMessages($smsRequest);
+            log_message('info', "Response Messages " . print_r($response, true));
             $response_message  = $response->getMessages()[0] ?? null;
+            log_message('info', "Response Message " . print_r($response_message, true));
+
             if ($response_message) {
                 $statusName  = $response_message->getStatus()?->getName();
                 $statusGroup = $response_message->getStatus()?->getGroupName();
