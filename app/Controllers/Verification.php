@@ -302,7 +302,7 @@ class Verification extends Controller
         if (!$messageId) {
             return $this->response->setJSON([
                 'status' => 'NO_MESSAGE_ID',
-                'message' => 'Keine SMS ID gefunden.'
+                'message' => 'Bitte Nummer prüfen.'
             ]);
         }
 
