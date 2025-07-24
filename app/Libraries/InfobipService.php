@@ -3,12 +3,14 @@
 namespace App\Libraries;
 
 use Config\Infobip as InfobipConfig;
+use Infobip\ApiException;
 use Infobip\Configuration;
-use Infobip\Api\SmsApi;
+use Infobip\Model\SmsRequest;
 use Infobip\Model\SmsDestination;
 use Infobip\Model\SmsMessage;
-use Infobip\Model\SmsRequest;
+use Infobip\Api\SmsApi;
 use Infobip\Model\SmsTextContent;
+
 
 class InfobipService
 {
@@ -65,6 +67,20 @@ class InfobipService
                 'messageId'  => null,
             ];
 
+        } catch (ApiException $apiException) {
+            // HANDLE THE EXCEPTION
+            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getCode());
+            //log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getResponseHeaders());
+            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getResponseBody());
+            //log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getResponseObject());
+
+            return [
+                'success'    => false,
+                'status'     => 'EXCEPTION',
+                'error'      => $apiException->getResponseBody(),
+                'messageId'  => null,
+            ];
+
         } catch (\Throwable $e) {
             log_message('error', "Fehler beim SMS-Versand an $to: " . $e->getMessage());
             return [
@@ -79,7 +95,7 @@ class InfobipService
     public function checkDeliveryStatus(string $messageId): array
     {
         try {
-            $response = $this->smsApi->getOutboundSmsMessageDeliveryReports($messageId);
+            $response = $this->smsApi->getOutboundSmsMessageDeliveryReports(messageId: $messageId);
 
             $result = $response->getResults()[0] ?? null;
 
