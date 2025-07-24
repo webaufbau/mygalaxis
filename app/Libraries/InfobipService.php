@@ -22,7 +22,7 @@ class InfobipService
         $config = config(InfobipConfig::class);
 
         $configuration = new Configuration(
-            host: 'https://' . rtrim($config->api_host, '/') . '/',
+            host: rtrim($config->api_host, '/'),
             apiKey: $config->api_key
         );
 
