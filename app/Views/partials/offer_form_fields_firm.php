@@ -7,6 +7,7 @@ $excludeKeys = [
     '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
     'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
     'vorname', 'nachname', 'email', 'phone', 'additional_service', 'referrer',
+
 ];
 
 $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
