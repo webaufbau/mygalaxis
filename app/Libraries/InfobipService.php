@@ -70,9 +70,9 @@ class InfobipService
         } catch (ApiException $apiException) {
             // HANDLE THE EXCEPTION
             log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getCode());
-            //log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getResponseHeaders());
+            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . print_r($apiException->getResponseHeaders(), true));
             log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getResponseBody());
-            //log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . $apiException->getResponseObject());
+            log_message('error', "Fehler beim SMS-Versand API-Exception an $to: " . print_r($apiException->getResponseObject(), true));
 
             return [
                 'success'    => false,
