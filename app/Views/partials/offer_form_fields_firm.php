@@ -61,6 +61,10 @@ $imageBaseUrl = $fieldConfig->imageBaseUrl;
             $cleanValue = is_string($value) ? trim(strtolower($value)) : $value;
             if ($cleanValue === 'nein' || $cleanValue === false || $cleanValue === null || $cleanValue === '') continue;
 
+            if ($key == 'phone') {
+                $value = $offer['phone'] ?? $value;
+            }
+
             // Label
             $label = $fieldLabels[$key] ?? ucwords(str_replace(['_', '-'], ' ', $key));
 
