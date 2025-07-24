@@ -212,7 +212,7 @@ class Verification extends Controller
         $sessionCode = session()->get('verification_code');
 
         // Wenn eine neue Telefonnummer angegeben wurde:
-        if (!empty($newPhone)) { //  && $newPhone !== session()->get('phone')
+        if (!empty($newPhone) && $newPhone !== session()->get('phone')) { //  && $newPhone !== session()->get('phone')
             $normalizedPhone = $this->normalizePhone($newPhone);
             $method = session()->get('verify_method') ?? 'sms';
 

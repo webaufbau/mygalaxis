@@ -79,7 +79,7 @@ class InfobipService
 
             return [
                 'success'    => false,
-                'status'     => 'EXCEPTION',
+                'status'     => 'API-EXCEPTION',
                 'error'      => $apiException->getResponseBody(),
                 'messageId'  => null,
             ];
