@@ -3,9 +3,8 @@
 namespace App\Controllers;
 
 use App\Libraries\TwilioService;
-use CodeIgniter\Controller;
 
-class Verification extends Controller
+class Verification extends BaseController
 {
     public function index()
     {
@@ -60,10 +59,7 @@ class Verification extends Controller
 
         $phone = $this->normalizePhone($phone);
 
-        $isMobile = false;
-        if (preg_match('/^(\+41|0)(75|76|77|78|79)[0-9]{7}$/', str_replace(' ', '', $phone))) {
-            $isMobile = true;
-        }
+        $isMobile = is_mobile_number($phone);
 
         $method = $isMobile ? 'sms' : 'call';
 
@@ -313,8 +309,6 @@ class Verification extends Controller
         return $this->response->setJSON($status);
     }
 
-
-
     // sending with mail after inserted and not verified:
     public function verifyOffer($offerId = null, $token = null)
     {
@@ -348,8 +342,6 @@ class Verification extends Controller
         return redirect()->to('/verification/send');
     }
 
-
-
     private function normalizePhone(string $phone): string
     {
         $phone = preg_replace('/\D+/', '', $phone); // Nur Zahlen
@@ -359,22 +351,6 @@ class Verification extends Controller
             $phone = '+' . $phone;
         }
         return $phone;
-    }
-
-    private function isMobileNumber(string $phone): bool
-    {
-        // Schweiz +41 Mobilnummern beginnen mit +4175, +4176, +4177, +4178, +4179
-        // Beispiel: +41781234567
-
-        $mobilePrefixes = ['+4175', '+4176', '+4177', '+4178', '+4179'];
-
-        foreach ($mobilePrefixes as $prefix) {
-            if (str_starts_with($phone, $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
 }
