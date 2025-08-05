@@ -10,8 +10,8 @@ use App\Models\UserModel;
 class Dashboard extends Controller
 {
     public function index() {
-        echo base64_encode('API_367271_95535142:Xr9$Y=bF&1+zqF14M');
-        exit();
+        //echo base64_encode('API_367271_95535142:Xr9$Y=bF&1+zqF14M');
+        //exit();
         if (!auth()->loggedIn()) {
             return redirect()->to('/login');
         }
