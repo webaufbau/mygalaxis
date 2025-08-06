@@ -186,8 +186,13 @@
         });
 
         function updateHiddenField() {
-            $("#otp-code").val($inputs.map(function () { return this.value; }).get().join(""));
+            $("#otp-code").val(
+                $inputs.map(function () { return this.value; }).get().join("")
+            );
         }
+
+        // **Erstes Feld automatisch aktivieren**
+        $inputs.first().focus();
     });
 </script>
 
