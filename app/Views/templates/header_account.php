@@ -115,11 +115,7 @@
                                 <i class="bi bi-list me-1"></i> Kategorien
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-normal" href="/admin/campaign">
-                                <i class="bi bi-send me-1"></i> Firmen anschreiben
-                            </a>
-                        </li>
+
                     <?php } ?>
                     <!-- Logout Right -->
                     <li class="nav-item">
