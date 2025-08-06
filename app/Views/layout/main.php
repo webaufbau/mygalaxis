@@ -41,7 +41,7 @@
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Logo -->
         <a class="navbar-brand fw-bold text-primary" href="/">
-            <?=$siteConfig->name;?>
+            <?=Config('SiteConfig')->name;?>
         </a>
 
         <?php if (auth()->loggedIn()): ?>
