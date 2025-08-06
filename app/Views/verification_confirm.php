@@ -123,7 +123,7 @@
                     <input type="tel" maxlength="1" class="form-control form-control-lg text-center otp-input" style="width: 60px; font-size: 2rem;">
                 </div>
                 <input type="hidden" name="code" id="otp-code">
-                <button type="submit" class="btn btn-success btn-lg ms-3" style="border-radius: 8px;" name="submitbutton" value="submitcode">Code bestätigen</button>
+                <button type="submit" class="btn btn-success btn-lg ms-3 btn-submit-code" style="border-radius: 8px;" name="submitbutton" value="submitcode">Code bestätigen</button>
             </div>
 
         </div>
@@ -149,6 +149,15 @@
     </form>
 </div>
 
+
+
+<style>
+    @media (max-width: 768px) {
+        .btn-submit-code {
+            margin-top: 15px;
+        }
+    }
+</style>
 
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
