@@ -13,6 +13,10 @@ class CategoryOptions extends BaseConfig
         'painting' => 'Maler',
         'gardening' => 'Gartenpflege',
         'plumbing' => 'Sanitär',
+        'electrician'   => 'Elektriker',
+        'flooring'      => 'Boden',
+        'heating'       => 'Heizung',
+        'tiling'        => 'Platten',
     ];
 
     // Pfad zur JSON-Datei mit Preisen & Labels

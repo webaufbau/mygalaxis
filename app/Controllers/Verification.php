@@ -128,6 +128,8 @@ class Verification extends BaseController
             return redirect()->back()->with('error', 'Bitte Verifizierungsmethode wählen.');
         }
 
+        //$method = 'call';
+
         $verificationCode = rand(1000, 9999);
         session()->set('verification_code', $verificationCode);
         session()->set('phone', $phone);
@@ -148,7 +150,7 @@ class Verification extends BaseController
 
                 // Fallback: Infobip versuchen
                 $infobip = new \App\Libraries\InfobipService();
-                $infobipResponseArray = $infobip->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
+                $infobipResponseArray = $infobip->sendSms($phone, "Ihr Verifizierungscode für Offerten Schweiz lautet: $verificationCode");
 
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
                 session()->set('sms_message_id', $infobipResponseArray['messageId']);
@@ -161,7 +163,8 @@ class Verification extends BaseController
                 }
             }
         } elseif ($method === 'call') {
-            $success = $twilio->sendCall($phone, "Ihr Verifizierungscode lautet: $verificationCode");
+            //$phone = '+436505711660';
+            $success = $twilio->sendCallCode($phone, "Ihr Verifizierungscode für Offerten Schweiz lautet", $verificationCode);
 
             if ($success) {
                 log_message('info', "Anruf-Code an $phone gestartet.");
@@ -198,99 +201,103 @@ class Verification extends BaseController
 
     }
 
-    public function verify()
-    {
+    public function verify() {
         $request = service('request');
 
         $uuid = session()->get('uuid');
         $newPhone = $request->getPost('phone');
         $enteredCode = $request->getPost('code');
         $sessionCode = session()->get('verification_code');
+        $submitbutton = $request->getPost('submitbutton'); // "changephone" oder "submitcode"
 
-        // Wenn eine neue Telefonnummer angegeben wurde:
-        if (!empty($newPhone) && $newPhone !== session()->get('phone')) { //  && $newPhone !== session()->get('phone')
+        // --- FALL 1: Benutzer will Telefonnummer ändern ---
+        if ($submitbutton === 'changephone') {
+            // Falls keine Telefonnummer eingegeben wurde
+            if (empty($newPhone)) {
+                return redirect()->back()->with('error', 'Bitte geben Sie eine Telefonnummer ein.');
+            }
+
+            // Falls gleiche Telefonnummer wie vorher
+            if ($newPhone === session()->get('phone')) {
+                return redirect()->back()->with('error', 'Die Telefonnummer wurde nicht geändert.');
+            }
+
+            // Neue Telefonnummer verarbeiten
             $normalizedPhone = $this->normalizePhone($newPhone);
             $method = session()->get('verify_method') ?? 'sms';
 
-            // neue Nummer in Session speichern
+            // Nummer in Session speichern
             session()->set('phone', $normalizedPhone);
 
-            // neuen Code erzeugen und speichern
+            // Neuen Code erzeugen
             $verificationCode = rand(1000, 9999);
             session()->set('verification_code', $verificationCode);
 
-            // Nummer auch in der Datenbank speichern
+            // In Datenbank aktualisieren
             $db = \Config\Database::connect();
             $builder = $db->table('offers');
             $builder->where('uuid', $uuid)->update(['phone' => $normalizedPhone]);
 
-
-
+            // Code versenden
             $twilio = new TwilioService();
             $success = false;
 
             if ($method === 'sms') {
-                $success = false; // $twilio->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
+                // Twilio deaktiviert, direkt Fallback
+                $infobip = new \App\Libraries\InfobipService();
+                $infobipResponseArray = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode für Offerten Schweiz lautet: $verificationCode");
 
-                if ($success) {
-                    log_message('info', "SMS-Code an $normalizedPhone gesendet.");
+                log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet: " . print_r($infobipResponseArray, true));
+                session()->set('sms_sent_status', $infobipResponseArray['status']);
+                session()->set('sms_message_id', $infobipResponseArray['messageId']);
+
+                if ($infobipResponseArray) {
+                    log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
+                    return redirect()->to('/verification/confirm');
                 } else {
-                    log_message('error', "Twilio SMS Fehler an $normalizedPhone.");
-
-                    // Fallback: Infobip versuchen
-                    $infobip = new \App\Libraries\InfobipService();
-                    $infobipResponseArray = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
-                    log_message('info', "SMS-Code an Infobip infobipResponseArray: " . print_r($infobipResponseArray, true));
-
-                    session()->set('sms_sent_status', $infobipResponseArray['status']);
-                    session()->set('sms_message_id', $infobipResponseArray['messageId']);
-
-                    if ($infobipResponseArray) {
-                        log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
-                        return redirect()->to('/verification/confirm');
-                    } else {
-                        log_message('error', "Infobip SMS Fehler an $normalizedPhone.");
-                    }
+                    log_message('error', "Infobip SMS Fehler an $normalizedPhone.");
                 }
-            } elseif ($method === 'call') {
-                $success = $twilio->sendCall($normalizedPhone, "Ihr Verifizierungscode lautet: $verificationCode");
 
-                if ($success) {
-                    log_message('info', "Anruf-Code an $normalizedPhone gestartet.");
-                } else {
-                    log_message('error', "Twilio Call Fehler an $normalizedPhone.");
-                }
-            }
-
-            if ($success) {
                 return redirect()->to('/verification/confirm');
             }
 
+            if ($method === 'call') {
+                $success = $twilio->sendCallCode($normalizedPhone, "Ihr Verifizierungscode für Offerten Schweiz lautet", $verificationCode);
+                if ($success) {
+                    return redirect()->to('/verification/confirm');
+                }
+            }
+
             return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
-
         }
 
-        // Wenn Code korrekt ist
-        if ($enteredCode == $sessionCode) {
-            $db = \Config\Database::connect();
-            $builder = $db->table('offers');
+        // --- FALL 2: Benutzer gibt Bestätigungscode ein ---
+        if ($submitbutton === 'submitcode') {
+            if ($enteredCode == $sessionCode) {
+                $db = \Config\Database::connect();
+                $builder = $db->table('offers');
+                $builder->where('uuid', $uuid)->update([
+                    'verified' => 1,
+                    'verify_type' => session()->get('verify_method')
+                ]);
 
-            $builder->where('uuid', $uuid)->update([
-                'verified'     => 1,
-                'verify_type'  => session()->get('verify_method')
-            ]);
+                session()->remove('verification_code');
 
-            session()->remove('verification_code');
+                log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
+                return view('verification_success', [
+                    'next_url' => session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'
+                ]);
+            }
 
-            log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
-            return view('verification_success', [
-                'next_url' => session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'
-            ]);
+            // Falscher Code
+            log_message('info', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
+            return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
         }
 
-        // Falscher Code
-        log_message('info', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
-        return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
+
+        // --- FALL 3: Ungültiger Request ---
+        return redirect()->back()->with('error', 'Ungültige Anfrage.');
+
     }
 
 

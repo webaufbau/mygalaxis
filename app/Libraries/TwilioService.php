@@ -54,7 +54,7 @@ class TwilioService
         }
     }
 
-    public function sendCall(string $to, string $message): bool
+    public function sendCall(string $to, string $message, bool $escape = true): bool
     {
         try {
             if ($this->testMode) {
@@ -62,8 +62,21 @@ class TwilioService
                 return true;
             }
 
+            // Nur escapen, wenn explizit gewünscht
+            $finalMessage = $escape ? htmlspecialchars($message) : $message;
+
+            $twiml = '
+<Response>
+    <Say language="de-DE" voice="Polly.Vicki">
+        <prosody rate="slow">
+            ' . $finalMessage . '
+        </prosody>
+    </Say>
+</Response>
+';
+
             $call = $this->client->calls->create($to, $this->fromCaller, [
-                'twiml' => '<Response><Say voice="woman">' . htmlspecialchars($message) . '</Say></Response>'
+                'twiml' => $twiml,
             ]);
 
             return in_array($call->status, ['queued', 'initiated', 'ringing']);
@@ -72,4 +85,23 @@ class TwilioService
             return false;
         }
     }
+
+
+    public function sendCallCode(string $to, string $message, int $code): bool
+    {
+        $digits = str_split($code);
+        $ssmlDigits = '';
+        foreach ($digits as $digit) {
+            $ssmlDigits .= $digit . '<break time="300ms"/>';
+        }
+
+        // Wiederhole den Code zweimal mit etwas Pause dazwischen
+        $messageText = $message . ' ' . $ssmlDigits . '<break time="400ms"/> Ich wiederhole: ' . $ssmlDigits;
+
+        return $this->sendCall($to, $messageText, false);
+    }
+
+
+
+
 }

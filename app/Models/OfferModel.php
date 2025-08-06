@@ -118,6 +118,10 @@ class OfferModel extends Model
         if (str_contains($source, 'maler')) return 'painting';
         if (str_contains($source, 'garten')) return 'gardening';
         if (str_contains($source, 'sanitaer')) return 'plumbing';
+        if (str_contains($source, 'elektriker')) return 'electrician';
+        if (str_contains($source, 'boden')) return 'flooring';
+        if (str_contains($source, 'heizung')) return 'heating';
+        if (str_contains($source, 'platten')) return 'tiling';
 
         return 'unknown';
     }
@@ -150,12 +154,16 @@ class OfferModel extends Model
     public function extractFieldsByType(string $type, array $formFields): array
     {
         return match ($type) {
-            'move'      => $this->extractMoveFields($formFields),
-            'cleaning'  => $this->extractCleaningFields($formFields),
-            'painting'  => $this->extractPaintingFields($formFields),
-            'gardening' => $this->extractGardeningFields($formFields),
-            'plumbing'  => $this->extractPlumbingFields($formFields),
-            default     => [],
+            'move'       => $this->extractMoveFields($formFields),
+            'cleaning'   => $this->extractCleaningFields($formFields),
+            'painting'   => $this->extractPaintingFields($formFields),
+            'gardening'  => $this->extractGardeningFields($formFields),
+            'plumbing'   => $this->extractPlumbingFields($formFields),
+            'electrician'=> $this->extractElectricianFields($formFields),
+            'flooring'   => $this->extractFlooringFields($formFields),
+            'heating'    => $this->extractHeatingFields($formFields),
+            'tiling'     => $this->extractTilingFields($formFields),
+            default      => [],
         };
     }
 
@@ -205,6 +213,38 @@ class OfferModel extends Model
         return [
             'problem_type' => $formFields['sanitaer_typ'] ?? null,
             'urgency'      => $formFields['dringlichkeit'] ?? null,
+        ];
+    }
+
+    public function extractElectricianFields(array $formFields): array
+    {
+        return [
+            'service_type' => $formFields['elektriker_arbeit'] ?? null,
+            'urgency'      => $formFields['dringlichkeit'] ?? null,
+        ];
+    }
+
+    public function extractFlooringFields(array $formFields): array
+    {
+        return [
+            'floor_type'  => $formFields['bodenbelag'] ?? null,
+            'area'        => $formFields['bodenflaeche'] ?? null,
+        ];
+    }
+
+    public function extractHeatingFields(array $formFields): array
+    {
+        return [
+            'heating_type' => $formFields['heizungstyp'] ?? null,
+            'problem'      => $formFields['heizungsproblem'] ?? null,
+        ];
+    }
+
+    public function extractTilingFields(array $formFields): array
+    {
+        return [
+            'tile_type' => $formFields['plattenart'] ?? null,
+            'area'      => $formFields['plattenflaeche'] ?? null,
         ];
     }
 

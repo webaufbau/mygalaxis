@@ -2,16 +2,20 @@
 
 return [
     'type' => [
-        'move' => 'Umzug',
-        'cleaning' => 'Reinigung',
-        'move_cleaning' => 'Umzug + Reinigung',
-        'painting' => 'Malerarbeiten',
-        'painter' => 'Malerarbeiten',
-        'gardening' => 'Gartenpflege',
-        'gardener' => 'Gartenpflege',
-        'plumbing' => 'Sanitär',
-        'furniture_assembly' => 'Möbelaufbau',
-        'other' => 'Sonstiges',
+        'move'              => 'Umzug',
+        'cleaning'          => 'Reinigung',
+        'move_cleaning'     => 'Umzug + Reinigung',
+        'painting'          => 'Malerarbeiten',
+        'painter'           => 'Malerarbeiten',
+        'gardening'         => 'Gartenpflege',
+        'gardener'          => 'Gartenpflege',
+        'plumbing'          => 'Sanitär',
+        'electrician'       => 'Elektriker',
+        'flooring'          => 'Boden',
+        'heating'           => 'Heizung',
+        'tiling'            => 'Platten',
+        'furniture_assembly'=> 'Möbelaufbau',
+        'other'             => 'Sonstiges',
     ],
 
     'credit_type' => [
@@ -171,6 +175,15 @@ return [
         // Wohnungsgröße aus Label
         'wand_teil_anzahl_1' => 'Wohnfläche (m²)',
 
-        // ... beliebig erweiterbar
+        // Bodenleger-spezifisch
+        'art_objekt'            => 'Art des Objekts',
+        'arbeiten_boden'        => 'Art der Bodenarbeiten',
+        'boden_material'        => 'Bodenmaterial',
+        'boden_grundflaeche'    => 'Grundfläche vorhanden?',
+        'boden_grundflaeche_ja' => 'Grundfläche (m²)',
+        'boden_zimmer'          => 'Zimmeranzahl angeben?',
+        'boden_zimmer_anzahl'   => 'Anzahl Zimmer',
+        'details_art'           => 'Art des Auftrags (Privat/Öffentlich)',
+
     ],
 ];

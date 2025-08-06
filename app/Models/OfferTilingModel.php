@@ -1,0 +1,21 @@
+<?php
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+class OfferTilingModel extends Model
+{
+    protected $table = 'offers_tiling';
+    protected $primaryKey = 'id';
+    protected $returnType = 'array';
+    protected $allowedFields = [
+        'offer_id',
+        'tile_type',
+        'area_m2',
+        'grout_color',
+        'special_requests'
+    ];
+    protected $useTimestamps = true;
+    protected $createdField = 'created_at';
+    protected $updatedField = 'updated_at';
+}

@@ -656,3 +656,63 @@ ALTER TABLE `reviews`
     ADD `created_by_zip` varchar(250) NOT NULL AFTER `created_by_lastname`,
     ADD `created_by_city` varchar(250) NOT NULL AFTER `created_by_zip`,
     ADD `created_by_country` varchar(250) NOT NULL AFTER `created_by_city`;
+
+DROP TABLE IF EXISTS `offers_electrician`;
+CREATE TABLE `offers_electrician` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `offer_id` int(10) unsigned NOT NULL,
+  `service_type` varchar(100) DEFAULT NULL, -- z.B. Installation, Reparatur
+  `urgency_level` enum('low','medium','high') DEFAULT 'medium',
+  `power_capacity_kw` decimal(5,2) DEFAULT NULL, -- falls relevant
+  `special_requests` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `offer_id` (`offer_id`),
+  CONSTRAINT `offers_electrician_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `offers_flooring`;
+CREATE TABLE `offers_flooring` (
+`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+`offer_id` int(10) unsigned NOT NULL,
+`floor_type` varchar(100) DEFAULT NULL, -- z.B. Parkett, Laminat
+`area_m2` int(11) DEFAULT NULL,
+`duration_estimation` varchar(50) DEFAULT NULL,
+`special_requests` text DEFAULT NULL,
+`created_at` datetime DEFAULT current_timestamp(),
+`updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+PRIMARY KEY (`id`),
+KEY `offer_id` (`offer_id`),
+CONSTRAINT `offers_flooring_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `offers_heating`;
+CREATE TABLE `offers_heating` (
+`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+`offer_id` int(10) unsigned NOT NULL,
+`heating_type` varchar(100) DEFAULT NULL, -- z.B. Gas, Wärmepumpe
+`problem_description` varchar(255) DEFAULT NULL,
+`urgency_level` enum('low','medium','high') DEFAULT 'medium',
+`special_requests` text DEFAULT NULL,
+`created_at` datetime DEFAULT current_timestamp(),
+`updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+PRIMARY KEY (`id`),
+KEY `offer_id` (`offer_id`),
+CONSTRAINT `offers_heating_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `offers_tiling`;
+CREATE TABLE `offers_tiling` (
+`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+`offer_id` int(10) unsigned NOT NULL,
+`tile_type` varchar(100) DEFAULT NULL, -- z.B. Keramik, Naturstein
+`area_m2` int(11) DEFAULT NULL,
+`grout_color` varchar(50) DEFAULT NULL,
+`special_requests` text DEFAULT NULL,
+`created_at` datetime DEFAULT current_timestamp(),
+`updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+PRIMARY KEY (`id`),
+KEY `offer_id` (`offer_id`),
+CONSTRAINT `offers_tiling_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

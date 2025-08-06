@@ -5,11 +5,6 @@ namespace App\Commands;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use App\Models\OfferModel;
-use App\Models\OfferMoveModel;
-use App\Models\OfferCleaningModel;
-use App\Models\OfferPaintingModel;
-use App\Models\OfferGardeningModel;
-use App\Models\OfferPlumbingModel;
 
 class CheckOffers extends BaseCommand
 {
@@ -23,16 +18,20 @@ class CheckOffers extends BaseCommand
     public function run(array $params)
     {
         $offerModel = new OfferModel();
-        $offers = $offerModel->where('checked_at IS NULL')->findAll(100);
+        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->findAll(100);
 
         // Modell dynamisch laden (nach Typ)
         $modelClassMap = [
-            'move'      => \App\Models\OfferMoveModel::class,
-            'cleaning'  => \App\Models\OfferCleaningModel::class,
-            'move_cleaning'  => \App\Models\OfferMoveCleaningModel::class,
-            'painting'  => \App\Models\OfferPaintingModel::class,
-            'gardening' => \App\Models\OfferGardeningModel::class,
-            'plumbing'  => \App\Models\OfferPlumbingModel::class,
+            'move'          => \App\Models\OfferMoveModel::class,
+            'cleaning'      => \App\Models\OfferCleaningModel::class,
+            'move_cleaning' => \App\Models\OfferMoveCleaningModel::class,
+            'painting'      => \App\Models\OfferPaintingModel::class,
+            'gardening'     => \App\Models\OfferGardeningModel::class,
+            'plumbing'      => \App\Models\OfferPlumbingModel::class,
+            'electrician'   => \App\Models\OfferElectricianModel::class,
+            'flooring'      => \App\Models\OfferFlooringModel::class,
+            'heating'       => \App\Models\OfferHeatingModel::class,
+            'tiling'        => \App\Models\OfferTilingModel::class,
         ];
 
         foreach ($offers as $offer) {
@@ -100,21 +99,4 @@ class CheckOffers extends BaseCommand
         CLI::write("Prüfung abgeschlossen.", 'cyan');
     }
 
-    protected function detectType(array $fields): string
-    {
-        $source =
-            $fields['_wp_http_referer']
-            ?? $fields['__submission']['source_url']
-            ?? $fields['service_url']
-            ?? '';
-
-        if (str_contains($source, 'umzug')) return 'move';
-        if (str_contains($source, 'umzuege')) return 'move';
-        if (str_contains($source, 'reinigung')) return 'cleaning';
-        if (str_contains($source, 'maler')) return 'painting';
-        if (str_contains($source, 'garten')) return 'gardening';
-        if (str_contains($source, 'sanitaer')) return 'plumbing';
-
-        return 'unknown';
-    }
 }

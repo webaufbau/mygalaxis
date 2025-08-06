@@ -63,7 +63,7 @@
             let timerId;
 
             function updateStatusBox(message, type = 'info') {
-                statusBox.textContent = message;
+                statusBox.innerHTML = message;
                 statusBox.className = ''; // Klassen zurücksetzen
                 statusBox.classList.add('alert', `alert-${type}`);
             }
@@ -80,7 +80,7 @@
                             updateStatusBox(`⏳ SMS wird zugestellt... Bitte warten.`);
                             setTimeout(pollSmsStatus, 5000);
                         } else if (attempts >= maxAttempts) {
-                            updateStatusBox(`❌ Der Status konnte leider nicht ermittelt werden, dies ist ein Hinweis, dass die Telefonnummer nicht korrekt sein könnte. Falls Sie keine SMS erhalten haben, überprüfen Sie bitte die eingegebene Telefonnummer und klicken Sie anschliessend auf „Bestätigen“, um einen neuen Code anzufordern.`, 'danger');
+                            updateStatusBox(`❌ Der Status konnte leider nicht ermittelt werden, dies ist ein Hinweis, dass die Telefonnummer nicht korrekt sein könnte. Falls Sie keine SMS erhalten haben, überprüfen Sie bitte die eingegebene Telefonnummer und klicken Sie anschliessend auf „Telefonnummer anpassen“. <a href="/verification/confirm">Um einen neuen Code anzufordern klicken Sie hier.</a>`, 'danger');
                             clearTimeout(timerId);
                         } else if (data.status === 'NO_RESULT') {
                             updateStatusBox(`⏳ Status wird ermittelt... Bitte warten.`);
@@ -110,27 +110,87 @@
         <p>Sie erhalten in wenigen Sekunden einen Anruf auf <strong><?= esc($phone) ?></strong> mit Ihrem Bestätigungscode.</p>
     <?php endif; ?>
 
-    <p>
-        Sollte die angezeigte Telefonnummer nicht korrekt sein oder Sie keinen Code erhalten haben, geben Sie bitte Ihre richtige Telefonnummer in das untenstehende Feld ein, lassen Sie das Feld für den Bestätigungscode leer und senden Sie das Formular erneut ab.
-        So wird Ihnen ein neuer Code an die korrekte Nummer gesendet.
-    </p>
-
     <form method="post" action="<?= site_url('/verification/verify') ?>">
         <?= csrf_field() ?>
 
         <div class="mb-3">
-            <label for="code" class="form-label">Bestätigungscode</label>
-            <input type="text" name="code" id="code" class="form-control">
+            <label for="otp" class="form-label">Bestätigungscode</label>
+            <div class="input-group justify-content-center">
+                <div class="d-flex gap-2">
+                    <input type="tel" maxlength="1" class="form-control form-control-lg text-center otp-input" style="width: 60px; font-size: 2rem;">
+                    <input type="tel" maxlength="1" class="form-control form-control-lg text-center otp-input" style="width: 60px; font-size: 2rem;">
+                    <input type="tel" maxlength="1" class="form-control form-control-lg text-center otp-input" style="width: 60px; font-size: 2rem;">
+                    <input type="tel" maxlength="1" class="form-control form-control-lg text-center otp-input" style="width: 60px; font-size: 2rem;">
+                </div>
+                <input type="hidden" name="code" id="otp-code">
+                <button type="submit" class="btn btn-success btn-lg ms-3" style="border-radius: 8px;" name="submitbutton" value="submitcode">Code bestätigen</button>
+            </div>
+
         </div>
 
-        <div class="mb-3">
+
+        <br><br><br>
+
+
+        <div class="alert alert-light border">
+            Sollte die angezeigte Telefonnummer nicht korrekt sein oder Sie keinen Code erhalten haben, geben Sie bitte Ihre richtige Telefonnummer unten ein und senden Sie das Formular erneut ab.<br>
+            <strong>Hinweis:</strong> Zu häufige Anfragen hintereinander werden automatisch blockiert.
+        </div>
+
+
+        <div class="mb-3" style="max-width: 600px; margin: 0 auto;">
             <label for="phone" class="form-label">Telefonnummer</label>
-            <input type="tel" name="phone" id="phone" class="form-control" value="<?= esc($phone) ?>">
+            <div class="input-group">
+                <input type="tel" name="phone" id="phone" class="form-control" value="<?= esc($phone) ?>">
+                <button type="submit" class="btn btn-secondary" name="submitbutton" value="changephone">Telefonnummer anpassen</button>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-success">Bestätigen</button>
     </form>
 </div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const $inputs = $(".otp-input");
+
+        // Eingabe validieren und automatisch weiterspringen
+        $inputs.on("input", function () {
+            const val = this.value.replace(/\D/g, ''); // nur Zahlen
+            this.value = val;
+
+            if (val.length === 1) {
+                $(this).next(".otp-input").focus();
+            }
+            updateHiddenField();
+        });
+
+        // Mit Backspace zurückspringen
+        $inputs.on("keydown", function (e) {
+            if (e.key === "Backspace" && !this.value) {
+                $(this).prev(".otp-input").focus();
+            }
+        });
+
+        // Copy & Paste des gesamten Codes
+        $inputs.first().on("paste", function (e) {
+            const paste = e.originalEvent.clipboardData.getData("text").replace(/\D/g, '');
+            if (paste.length === $inputs.length) {
+                $inputs.each(function (i) {
+                    this.value = paste[i] || "";
+                });
+                updateHiddenField();
+            }
+        });
+
+        function updateHiddenField() {
+            $("#otp-code").val($inputs.map(function () { return this.value; }).get().join(""));
+        }
+    });
+</script>
+
 
 </body>
 </html>
