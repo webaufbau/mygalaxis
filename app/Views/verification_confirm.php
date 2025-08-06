@@ -20,8 +20,9 @@
     <div class="elementor-element elementor-element-67308e5 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="67308e5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
         <div class="elementor-element elementor-element-817a056 elementor-widget elementor-widget-image" data-id="817a056" data-element_type="widget" data-widget_type="image.default">
             <div class="elementor-widget-container">
-                <a href="https://offertenschweiz.ch/">
-                    <img src="https://offertenschweiz.ch/wp-content/uploads/2025/06/OFFERTENSchweiz00001.ch_.png" class="attachment-large size-large wp-image-1581" alt="offertenschweiz-logo" srcset="https://offertenschweiz.ch/wp-content/uploads/2025/06/OFFERTENSchweiz00001.ch_.png 1005w, https://offertenschweiz.ch/wp-content/uploads/2025/06/OFFERTENSchweiz00001.ch_-300x31.png 300w, https://offertenschweiz.ch/wp-content/uploads/2025/06/OFFERTENSchweiz00001.ch_-768x79.png 768w" sizes="(max-width: 800px) 100vw, 800px">								</a>
+                <a href="<?=$siteConfig->frontendUrl;?>">
+                    <img src="<?=$siteConfig->logoUrl;?>" class="attachment-large size-large wp-image-1581" alt="-logo">
+                </a>
             </div>
         </div>
     </div>

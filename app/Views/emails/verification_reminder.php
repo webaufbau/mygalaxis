@@ -4,7 +4,7 @@
     <p>Hallo <?= esc($data['vorname'] ?? ''); ?>,</p>
 
     <div class="highlight">
-        <p>Du hast kürzlich eine Anfrage über Offertenschweiz gestellt, aber die Verifizierung deiner Telefonnummer wurde noch nicht abgeschlossen.</p>
+        <p>Du hast kürzlich eine Anfrage über <?=$siteConfig->name;?> gestellt, aber die Verifizierung deiner Telefonnummer wurde noch nicht abgeschlossen.</p>
         <p>Ohne diese Bestätigung kann deine Anfrage nicht weiterverarbeitet werden.</p>
     </div>
 
@@ -16,5 +16,5 @@
 
     <div class="footer">
         Diese Nachricht wurde automatisch generiert am <?= date('d.m.Y H:i') ?>.<br>
-        Offerten Schweiz
+        <?=$siteConfig->name;?>
     </div>

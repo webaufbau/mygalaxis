@@ -79,9 +79,26 @@ class OfferModel extends Model
         $address = $this->extractAddressData($formFields);
 
         $data = [];
-        if(!$original || !isset($original['type']) || !str_contains($original['type'], '_')) {
-            $data['type'] = $this->detectType($formFields);
+
+        // Exakter Typ (aus Formularfeld)
+        $exactType = $fields['type']
+            ?? $fields['service_type']
+            ?? $fields['angebot_typ']
+            ?? $fields['_wp_http_referer']
+            ?? $fields['__submission']['source_url']
+            ?? $fields['service_url']
+            ?? ''
+            ?? null;
+
+        if (!$original || !isset($original['type'])) {
+            $data['type'] = $this->detectType($formFields); // Grobe Kategorie
         }
+
+        // Exakten Typ immer mitschreiben, falls vorhanden
+        if ($exactType) {
+            $data['original_type'] = strtolower(trim($exactType));
+        }
+
         $data['city'] = $address['city'];
         $data['zip'] = $address['zip'];
         $data['customer_type'] = isset($formFields['firmenname']) ? 'firma' : 'privat';
@@ -93,10 +110,16 @@ class OfferModel extends Model
         $data['additional_service'] = $formFields['additional_service'] ?? null;
         $data['service_url'] = $formFields['service_url'] ?? null;
 
-        $date = DateTime::createFromFormat('d/m/Y', $formFields['datetime_1']);
-        $timestamp = $date ? $date->getTimestamp() : false;
-        $data['work_start_date'] = date("Y-m-d", $timestamp) ?? null;
+        // Startdatum formatieren
+        if (!empty($formFields['datetime_1'])) {
+            $date = DateTime::createFromFormat('d/m/Y', $formFields['datetime_1']);
+            $timestamp = $date ? $date->getTimestamp() : false;
+            $data['work_start_date'] = $timestamp ? date("Y-m-d", $timestamp) : null;
+        } else {
+            $data['work_start_date'] = null;
+        }
 
+        // UUID nur setzen, wenn noch nicht vorhanden
         if (empty($original['uuid'])) {
             $data['uuid'] = bin2hex(random_bytes(16));
         }
@@ -104,27 +127,64 @@ class OfferModel extends Model
         return $data;
     }
 
+
     protected function detectType(array $fields): string
     {
-        $source =
-            $fields['_wp_http_referer']
+        // Feldname, in dem der Wert erwartet wird
+        $typeValue = $fields['type']
+            ?? $fields['service_type']
+            ?? $fields['angebot_typ']
+            ?? $fields['_wp_http_referer']
             ?? $fields['__submission']['source_url']
             ?? $fields['service_url']
-            ?? '';
+            ?? ''
+            ?? null;
 
-        if (str_contains($source, 'umzug')) return 'move';
-        if (str_contains($source, 'umzuege')) return 'move';
-        if (str_contains($source, 'reinigung')) return 'cleaning';
-        if (str_contains($source, 'maler')) return 'painting';
-        if (str_contains($source, 'garten')) return 'gardening';
-        if (str_contains($source, 'sanitaer')) return 'plumbing';
-        if (str_contains($source, 'elektriker')) return 'electrician';
-        if (str_contains($source, 'boden')) return 'flooring';
-        if (str_contains($source, 'heizung')) return 'heating';
-        if (str_contains($source, 'platten')) return 'tiling';
+        if (!$typeValue) {
+            return 'unknown';
+        }
 
-        return 'unknown';
+        // Erlaubte Werte und ihre Zuordnung
+        $mapping = [
+            // Umzug
+            'umzug_privat'  => 'move',
+            'umzug_firma'   => 'move',
+
+            // Reinigung
+            'reinigung_wohnung'       => 'cleaning',
+            'reinigung_haus'          => 'cleaning',
+            'reinigung_gewerbe'       => 'cleaning',
+            'reinigung_andere'        => 'cleaning',
+            'reinigung_nur_fenster'   => 'cleaning',
+            'reinigung_fassaden'      => 'cleaning',
+            'reinigung_hauswartung'   => 'cleaning',
+
+            // Maler
+            'maler_wohnung' => 'painting',
+            'maler_haus'    => 'painting',
+            'maler_gewerbe' => 'painting',
+            'maler_andere'  => 'painting',
+
+            // Garten
+            'garten_neue_gartenanlage'        => 'gardening',
+            'garten_garten_umgestalten'       => 'gardening',
+            'garten_allgemeine_gartenpflege'  => 'gardening',
+            'garten_andere_gartenarbeiten'    => 'gardening',
+
+            // Einzelne Gewerke
+            'elektriker'   => 'electrician',
+            'sanitaer'     => 'plumbing',
+            'heizung'      => 'heating',
+            'plattenleger' => 'tiling',
+            'bodenleger'   => 'flooring',
+        ];
+
+        // Kleinbuchstaben und Whitespace entfernen, um Fehler zu vermeiden
+        $normalized = strtolower(trim($typeValue));
+
+        return $mapping[$normalized] ?? 'unknown';
     }
+
 
     protected function extractAddressData(array $fields): array
     {

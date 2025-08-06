@@ -57,6 +57,7 @@ class RemindVerification extends BaseCommand
             $emailData = [
                 'data' => $formFields,
                 'verifyLink' => $verifyLink,
+                'siteConfig' => config('SiteConfig'),
             ];
 
             $htmlMessage = view('emails/verification_reminder', $emailData);
@@ -74,9 +75,11 @@ class RemindVerification extends BaseCommand
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
+        $siteConfig = config('SiteConfig');
+
         $email = \Config\Services::email();
         $email->setTo($to);
-        $email->setFrom('info@offertenschweiz.ch', 'Offertenschweiz');
+        $email->setFrom($siteConfig->email, $siteConfig->name);
         $email->setSubject($subject);
         $email->setMessage($message);
         $email->setMailType('html');

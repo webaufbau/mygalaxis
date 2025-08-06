@@ -27,23 +27,53 @@
     </div>
 </form>
 
+    <!-- Filter -->
+    <!-- Filter -->
+    <form method="get" class="mb-4 d-flex align-items-end flex-wrap" style="gap: 1rem;">
+        <!-- Jahr -->
+        <div>
+            <label for="year" class="form-label mb-0 me-2">Jahr:</label>
+            <select id="year" name="year" class="form-select form-select-sm" onchange="this.form.submit();">
+                <option value="">Alle Jahre</option>
+                <?php foreach ($years as $y): ?>
+                    <option value="<?= $y['year'] ?>" <?= $currentYear == $y['year'] ? 'selected' : '' ?>>
+                        <?= $y['year'] ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <!-- Monat -->
+        <div>
+            <label for="month" class="form-label mb-0 me-2">Monat:</label>
+            <select id="month" name="month" class="form-select form-select-sm" onchange="this.form.submit();">
+                <option value=""><?= lang('Calendar.allMonths') ?? 'Alle Monate' ?></option>
+                <?php
+                $months = lang('Calendar.months');
+                for ($m = 1; $m <= 12; $m++): ?>
+                    <option value="<?= $m ?>" <?= $currentMonth == $m ? 'selected' : '' ?>>
+                        <?= $months[$m] ?>
+                    </option>
+                <?php endfor; ?>
+
+            </select>
+        </div>
+
+        <!-- Filter anwenden -->
+        <button type="submit" class="btn btn-sm btn-primary">Anzeigen</button>
+
+        <!-- PDF-Export -->
+        <a href="<?= site_url('finance/pdf?year=' . ($currentYear ?? '') . '&month=' . ($currentMonth ?? '')) ?>"
+           class="btn btn-sm btn-secondary">
+            <i class="bi bi-file-earmark-pdf"></i> PDF Export
+        </a>
+    </form>
+
+
 <!-- Tabelle -->
 <?php if (empty($bookings)): ?>
     <div class="alert alert-warning">Keine Buchungen gefunden.</div>
 <?php else: ?>
-
-    <!-- Filter -->
-    <form method="get" class="mb-4 d-flex align-items-center" style="gap: 1rem; max-width: 250px;">
-        <label for="year" class="form-label mb-0 me-2">Jahr:</label>
-        <select id="year" name="year" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="">Alle Jahre</option>
-            <?php foreach ($years as $y): ?>
-                <option value="<?= $y['year'] ?>" <?= $currentYear == $y['year'] ? 'selected' : '' ?>>
-                    <?= $y['year'] ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </form>
 
     <div class="table-responsive" style="overflow-y: auto;">
         <table class="table table-bordered table-hover align-middle mb-0">

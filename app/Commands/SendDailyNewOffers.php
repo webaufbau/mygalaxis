@@ -111,24 +111,34 @@ class SendDailyNewOffers extends BaseCommand
 
     protected function sendEmailToCompany(User $user, array $offers): void
     {
+        $siteConfig = config('SiteConfig');
+
         $data = [
+            'siteConfig' => Config('SiteConfig'),
             'firma'  => $user,
             'offers' => $offers,
         ];
 
-        $subject = 'Neue Offerten für Sie bei Offertenschweiz';
+        $subject = 'Neue Offerten für Sie bei ' . $siteConfig->name;
         $message = view('emails/daily_offer_suggestions', $data);
-        $original_email = $user->getEmail();
 
-        // Testmodus: Mails gehen nicht an echten Benutzer
-        $email_to = 'testbenutzer@offertenschweiz.ch';
-        $subject = 'TEST EMAIL – NICHT AN ECHTEN BENUTZER! (eigentlich an: ' . $original_email . ') – ' . $subject;
+        $originalEmail = $user->getEmail();
 
-        $this->sendEmail($email_to, $subject, $message);
+        // Prüfen, ob Testmodus aktiv ist
+        if ($siteConfig->testMode) {
+            $emailTo = $siteConfig->testEmail;
+            $subject = 'TEST EMAIL – NICHT AN ECHTEN BENUTZER! (eigentlich an: ' . $originalEmail . ') – ' . $subject;
+        } else {
+            $emailTo = $originalEmail;
+        }
+
+        $this->sendEmail($emailTo, $subject, $message);
     }
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
+        $siteConfig = config('SiteConfig');
+
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title'   => 'Neue passende Offerten',
@@ -137,7 +147,7 @@ class SendDailyNewOffers extends BaseCommand
 
         $email = \Config\Services::email();
         $email->setTo($to);
-        $email->setFrom('info@offertenschweiz.ch', 'Offertenschweiz');
+        $email->setFrom($siteConfig->email, $siteConfig->name);
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');

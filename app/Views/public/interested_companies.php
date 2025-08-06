@@ -155,7 +155,7 @@
 
 <!-- Zurück -->
 <div class="mt-4">
-    <a href="<?= ('https://www.offertenschweiz.ch/') ?>" class="btn btn-secondary">Zurück zur Startseite</a>
+    <a href="<?= $siteConfig->frontendUrl ?>" class="btn btn-secondary">Zurück zur Startseite</a>
 </div>
 
 <style>

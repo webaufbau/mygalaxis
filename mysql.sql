@@ -716,3 +716,8 @@ PRIMARY KEY (`id`),
 KEY `offer_id` (`offer_id`),
 CONSTRAINT `offers_tiling_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `offers` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+ALTER TABLE `offers`
+    ADD `original_type` varchar(50) COLLATE 'utf8mb4_unicode_ci' NOT NULL AFTER `type`,
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;

@@ -26,10 +26,15 @@ class Finance extends BaseController
         $paymentMethodModel = new PaymentMethodModel();
 
         $year = $this->request->getGet('year');
+        $month = $this->request->getGet('month');
 
         $builder = $bookingModel->where('user_id', $user->id);
+
         if ($year) {
             $builder->where('YEAR(created_at)', $year);
+        }
+        if ($month) {
+            $builder->where('MONTH(created_at)', $month);
         }
 
         $bookings = $builder->orderBy('created_at', 'DESC')->paginate(15);
@@ -45,8 +50,10 @@ class Finance extends BaseController
             ->where('user_id', $user->id)
             ->first()['amount'] ?? 0;
 
-        $currentMonth = date('m');
-        $currentYear = date('Y');
+        // Falls kein Filter gesetzt, Standardwerte verwenden
+        $currentYear = $year ?: date('Y');
+        $currentMonth = $month ?: ''; // leer bedeutet "Alle Monate"
+
         $monthlyTurnover = $bookingModel->selectSum('amount')
             ->where('user_id', $user->id)
             ->where('MONTH(created_at)', $currentMonth)
@@ -59,7 +66,8 @@ class Finance extends BaseController
             'pager' => $pager,
             'balance' => $balance,
             'years' => $years,
-            'currentYear' => $year,
+            'currentYear' => $currentYear,
+            'currentMonth' => $currentMonth,
             'monthlyTurnover' => $monthlyTurnover,
         ]);
     }
@@ -396,5 +404,51 @@ class Finance extends BaseController
 
         return redirect()->back()->with('error', 'Nicht gefunden oder Zugriff verweigert.');
     }
+
+    public function pdf()
+    {
+        $user = auth()->user();
+        $year = $this->request->getGet('year');
+        $month = $this->request->getGet('month');
+
+        $bookingModel = new BookingModel();
+        $builder = $bookingModel->where('user_id', $user->id);
+
+        if ($year) {
+            $builder->where('YEAR(created_at)', $year);
+        }
+        if ($month) {
+            $builder->where('MONTH(created_at)', $month);
+        }
+
+        $bookings = $builder->orderBy('created_at', 'DESC')->findAll();
+
+        // HTML für PDF generieren
+        $html = view('account/pdf_finance', [
+            'bookings' => $bookings,
+            'year' => $year,
+            'month' => $month
+        ]);
+
+        // Bootstrap 5 CSS lokal laden (z.B. im public/css-Verzeichnis)
+        $bootstrapCss = file_get_contents('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
+        //$bootstrapCss = file_get_contents(ROOTPATH . 'public/css/bootstrap.min.css');
+
+        // mPDF initialisieren mit besserer Schrift
+        $mpdf = new \Mpdf\Mpdf([
+            'default_font' => 'helvetica',
+        ]);
+
+        // CSS und HTML einfügen
+        $mpdf->WriteHTML($bootstrapCss, \Mpdf\HTMLParserMode::HEADER_CSS);
+        $mpdf->WriteHTML($html);
+
+        // PDF-Ausgabe: Stream (im Browser anzeigen)
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output('', 'S'));
+    }
+
+
 
 }

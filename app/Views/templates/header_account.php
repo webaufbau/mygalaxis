@@ -40,7 +40,7 @@
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Logo -->
         <a class="navbar-brand fw-bold text-primary" href="/">
-            OffertenSchweiz
+            <?=$siteConfig->name;?>
         </a>
 
         <?php if (auth()->loggedIn()): ?>

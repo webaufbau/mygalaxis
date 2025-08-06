@@ -22,7 +22,7 @@ class Verification extends BaseController
             if ($waited >= $maxWaitTime) {
                 log_message('info', 'Verifikation kann nicht gemacht werden uuid fehlt nach 5 Sekunden' .  print_r($_SESSION, true));
 
-                return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'); // Fehlerseite oder Hinweis
+                return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl); // Fehlerseite oder Hinweis
             }
         }
 
@@ -50,7 +50,7 @@ class Verification extends BaseController
             log_message('info', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID '.$uuid.': ' .  print_r($_SESSION, true));
             log_message('info', 'Abfrage: ' . $builder->db()->getLastQuery());
 
-            return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/')->with('error', 'Keine Anfrage gefunden.');
+            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl)->with('error', 'Keine Anfrage gefunden.');
         }
 
         // form_fields ist JSON, decode es:
@@ -150,7 +150,7 @@ class Verification extends BaseController
 
                 // Fallback: Infobip versuchen
                 $infobip = new \App\Libraries\InfobipService();
-                $infobipResponseArray = $infobip->sendSms($phone, "Ihr Verifizierungscode für Offerten Schweiz lautet: $verificationCode");
+                $infobipResponseArray = $infobip->sendSms($phone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet: $verificationCode");
 
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
                 session()->set('sms_message_id', $infobipResponseArray['messageId']);
@@ -164,7 +164,7 @@ class Verification extends BaseController
             }
         } elseif ($method === 'call') {
             //$phone = '+436505711660';
-            $success = $twilio->sendCallCode($phone, "Ihr Verifizierungscode für Offerten Schweiz lautet", $verificationCode);
+            $success = $twilio->sendCallCode($phone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet", $verificationCode);
 
             if ($success) {
                 log_message('info', "Anruf-Code an $phone gestartet.");
@@ -186,13 +186,14 @@ class Verification extends BaseController
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode == '') {
             log_message('info', 'Verifizierung Confirm verificationCode fehlt.');
-            return redirect()->to(session()->get('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/');
+            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl);
         }
 
         $smsStatus = session('sms_sent_status'); // z.B. "DELIVERED_TO_HANDSET", "INVALID_DESTINATION_ADDRESS"
 
 
         return view('verification_confirm', [
+            'siteConfig' => $this->siteConfig,
             'verification_code' => $verificationCode,
             'sms_status' => $smsStatus,
             'phone' => session('phone'),
@@ -245,7 +246,7 @@ class Verification extends BaseController
             if ($method === 'sms') {
                 // Twilio deaktiviert, direkt Fallback
                 $infobip = new \App\Libraries\InfobipService();
-                $infobipResponseArray = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode für Offerten Schweiz lautet: $verificationCode");
+                $infobipResponseArray = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet: $verificationCode");
 
                 log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet: " . print_r($infobipResponseArray, true));
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
@@ -262,7 +263,7 @@ class Verification extends BaseController
             }
 
             if ($method === 'call') {
-                $success = $twilio->sendCallCode($normalizedPhone, "Ihr Verifizierungscode für Offerten Schweiz lautet", $verificationCode);
+                $success = $twilio->sendCallCode($normalizedPhone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet", $verificationCode);
                 if ($success) {
                     return redirect()->to('/verification/confirm');
                 }
@@ -283,9 +284,10 @@ class Verification extends BaseController
 
                 session()->remove('verification_code');
 
-                log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'));
+                log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? $this->siteConfig->thankYouUrl));
                 return view('verification_success', [
-                    'next_url' => session('next_url') ?? 'https://offertenschweiz.ch/dankesseite-umzug/'
+                    'siteConfig' => $this->siteConfig,
+                    'next_url' => session('next_url') ?? $this->siteConfig->thankYouUrl
                 ]);
             }
 
@@ -344,7 +346,7 @@ class Verification extends BaseController
         session()->set('uuid', $offer['uuid']);
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
-        session()->set('next_url', 'https://offertenschweiz.ch/dankesseite-umzug/'); // fix immer danke seite
+        session()->set('next_url', $this->siteConfig->thankYouUrl); // fix immer danke seite
 
         return redirect()->to('/verification/send');
     }

@@ -14,4 +14,4 @@
 
 <p>Wir wünschen viel Erfolg bei der Auswahl passender Aufträge!</p>
 
-<p>Freundliche Grüsse<br>Ihr Offertenschweiz-Team</p>
+<p>Freundliche Grüsse<br>Ihr <?=$siteConfig->name;?>-Team</p>

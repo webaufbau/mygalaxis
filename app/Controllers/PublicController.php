@@ -50,6 +50,7 @@ class PublicController extends BaseController
             ->first();
 
         return view('public/interested_companies', [
+            'siteConfig' => $this->siteConfig,
             'offer' => $offer,
             'companies' => $companies,
             'alreadyRated' => !is_null($alreadyRated),

@@ -212,20 +212,28 @@ class FluentForm extends BaseController
 
         // Typ-spezifische Speicherung:
         $typeModelMap = [
-            'move'      => \App\Models\OfferMoveModel::class,
-            'cleaning'  => \App\Models\OfferCleaningModel::class,
-            'move_cleaning'  => \App\Models\OfferMoveCleaningModel::class,
-            'painting'  => \App\Models\OfferPaintingModel::class,
-            'gardening' => \App\Models\OfferGardeningModel::class,
-            'plumbing'  => \App\Models\OfferPlumbingModel::class,
+            'move'          => \App\Models\OfferMoveModel::class,
+            'cleaning'      => \App\Models\OfferCleaningModel::class,
+            'move_cleaning' => \App\Models\OfferMoveCleaningModel::class,
+            'painting'      => \App\Models\OfferPaintingModel::class,
+            'gardening'     => \App\Models\OfferGardeningModel::class,
+            'plumbing'      => \App\Models\OfferPlumbingModel::class,
+            'electrician'   => \App\Models\OfferElectricianModel::class,
+            'flooring'      => \App\Models\OfferFlooringModel::class,
+            'heating'       => \App\Models\OfferHeatingModel::class,
+            'tiling'        => \App\Models\OfferTilingModel::class,
         ];
 
         $typeExtractorMap = [
-            'move'      => 'extractMoveFields',
-            'cleaning'  => 'extractCleaningFields',
-            'painting'  => 'extractPaintingFields',
-            'gardening' => 'extractGardeningFields',
-            'plumbing'  => 'extractPlumbingFields',
+            'move'        => 'extractMoveFields',
+            'cleaning'    => 'extractCleaningFields',
+            'painting'    => 'extractPaintingFields',
+            'gardening'   => 'extractGardeningFields',
+            'plumbing'    => 'extractPlumbingFields',
+            'electrician' => 'extractElectricianFields',
+            'flooring'    => 'extractFlooringFields',
+            'heating'     => 'extractHeatingFields',
+            'tiling'      => 'extractTilingFields',
         ];
 
         if (isset($typeModelMap[$type], $typeExtractorMap[$type])) {
@@ -256,7 +264,7 @@ class FluentForm extends BaseController
         helper('text'); // für esc()
 
         // Admins
-        $adminEmails = ['anfrage@offertenschweiz.ch'];
+        $adminEmails = [$this->siteConfig->emailRequest];
         $bccString = implode(',', $adminEmails);
 
         // Formularverfasser
@@ -309,7 +317,7 @@ class FluentForm extends BaseController
         // Maildienst starten
         $email = \Config\Services::email();
 
-        $email->setFrom('anfrage@offertenschweiz.ch', 'OffertenSchweiz.ch');
+        $email->setFrom($this->siteConfig->emailRequest, $this->siteConfig->name);
         $email->setTo($userEmail);            // Kunde als To
         $email->setBCC($bccString);         // Admins als BCC
         $email->setSubject('Wir bestätigen Dir deine Anfrage/Offerte');

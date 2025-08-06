@@ -104,12 +104,15 @@ class SendOfferPurchaseNotification extends BaseCommand
 
     protected function sendEmailToCustomer(array $customer, User $company, array $offer): void
     {
+        $siteConfig = config('SiteConfig');
+
         $accessHash = bin2hex(random_bytes(16));
         $this->offerModel->update($offer['id'], ['access_hash' => $accessHash]);
 
         $interessentenLink = site_url('offer/interested/' . $accessHash);
 
         $data = [
+            'siteConfig' => Config('SiteConfig'),
             'kunde'             => $customer,
             'firma'             => $company,
             'offer'             => $offer,
@@ -118,17 +121,23 @@ class SendOfferPurchaseNotification extends BaseCommand
 
         $subject = 'Eine Firma hat Ihre Anfrage '.$offer['title'].' gekauft';
         $message = view('emails/offer_purchase_to_customer', $data);
-        $original_email = $customer['email'];
+        $originalEmail = $customer['email'];
 
-        // Testmodus: Mails gehen nicht an echten Benutzer
-        $email_to = 'testbenutzer@offertenschweiz.ch';
-        $subject = 'TEST EMAIL – NICHT AN ECHTEN BENUTZER! (eigentlich an: ' . $original_email . ') – ' . $subject;
+        // Prüfen, ob Testmodus aktiv ist
+        if ($siteConfig->testMode) {
+            $emailTo = $siteConfig->testEmail;
+            $subject = 'TEST EMAIL – NICHT AN ECHTEN BENUTZER! (eigentlich an: ' . $originalEmail . ') – ' . $subject;
+        } else {
+            $emailTo = $originalEmail;
+        }
 
-        $this->sendEmail($email_to, $subject, $message);
+        $this->sendEmail($emailTo, $subject, $message);
     }
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
+        $siteConfig = config('SiteConfig');
+
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title' => 'Ihre Anfrage',
@@ -137,7 +146,7 @@ class SendOfferPurchaseNotification extends BaseCommand
 
         $email = \Config\Services::email();
         $email->setTo($to);
-        $email->setFrom('info@offertenschweiz.ch', 'Offertenschweiz');
+        $email->setFrom($siteConfig->email, $siteConfig->name);
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');

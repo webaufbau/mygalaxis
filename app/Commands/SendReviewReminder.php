@@ -92,6 +92,8 @@ class SendReviewReminder extends BaseCommand
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
+        $siteConfig = config('SiteConfig');
+
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title' => 'Ihre Anfrage',
@@ -100,7 +102,7 @@ class SendReviewReminder extends BaseCommand
 
         $email = \Config\Services::email();
         $email->setTo($to);
-        $email->setFrom('info@offertenschweiz.ch', 'Offertenschweiz');
+        $email->setFrom($siteConfig->email, $siteConfig->name);
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');

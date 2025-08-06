@@ -51,6 +51,8 @@ abstract class BaseController extends Controller
 
     protected string $permission_prefix = '';
 
+    protected $siteConfig;
+
     /**
      * Be sure to declare properties for any property fetch you initialized.
      * The creation of dynamic property is deprecated in PHP 8.2.
@@ -73,6 +75,10 @@ abstract class BaseController extends Controller
         $this->template = new Template();
 
         //$this->template->set('flash_message', $this->getFlash());
+
+        $siteConfig = config('SiteConfig');
+        $this->siteConfig = $siteConfig;
+        $this->template->set('siteConfig', $siteConfig);
 
         $class_name = explode("\\",get_class($this));
         $this->app_controller = strtolower(end($class_name));
