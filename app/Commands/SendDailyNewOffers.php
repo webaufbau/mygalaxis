@@ -113,13 +113,17 @@ class SendDailyNewOffers extends BaseCommand
     {
         $siteConfig = config('SiteConfig');
 
+        // Sprache des Benutzers setzen
+        $language = $user->language ?? 'de';  // default Deutsch
+        service('language')->setLocale($language);
+
         $data = [
             'siteConfig' => Config('SiteConfig'),
             'firma'  => $user,
             'offers' => $offers,
         ];
 
-        $subject = 'Neue Offerten für Sie bei ' . $siteConfig->name;
+        $subject = lang('Email.dailyOffersSubject', [$siteConfig->name]);
         $message = view('emails/daily_offer_suggestions', $data);
 
         $originalEmail = $user->getEmail();

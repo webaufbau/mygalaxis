@@ -45,6 +45,7 @@ class OfferModel extends Model
         'group_id',
         'form_fields_combo',
         'access_hash',
+        'language',
     ];
 
     protected $useTimestamps = true;
@@ -102,6 +103,8 @@ class OfferModel extends Model
         $data['city'] = $address['city'];
         $data['zip'] = $address['zip'];
         $data['customer_type'] = isset($formFields['firmenname']) ? 'firma' : 'privat';
+
+        $data['language'] = $formFields['language'] ?? 'de';
 
         $data['firstname'] = $formFields['vorname'] ?? $userInputs['vorname'] ?? null;
         $data['lastname'] = $formFields['nachname'] ?? $userInputs['nachname'] ?? null;

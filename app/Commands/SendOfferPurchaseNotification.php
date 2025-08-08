@@ -87,16 +87,23 @@ class SendOfferPurchaseNotification extends BaseCommand
 
     protected function sendEmailToCompany(User $company, array $offer, array $customer): void
     {
+        $siteConfig = config('SiteConfig');
+
+        // Sprache aus Offer-Daten setzen
+        $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
+        service('request')->setLocale($language);
+
         $company_backend_offer_link = site_url('/offers/mine#detailsview-' . $offer['id']);
 
         $data = [
-            'offer'  => $offer,
-            'kunde'  => $customer,
-            'firma'  => $company,
+            'siteConfig'        => $siteConfig,
+            'kunde'             => $customer,
+            'firma'             => $company,
+            'offer'             => $offer,
             'company_backend_offer_link' => $company_backend_offer_link,
         ];
 
-        $subject = 'Vielen Dank für den Kauf einer Offerte';
+        $subject = lang('Email.offerPurchasedCompanySubject', [$offer['title']]);
         $message = view('emails/offer_purchase_to_company', $data);
 
         $this->sendEmail($company->email, $subject, $message);
@@ -106,21 +113,27 @@ class SendOfferPurchaseNotification extends BaseCommand
     {
         $siteConfig = config('SiteConfig');
 
+        // Sprache aus Offer-Daten setzen
+        $language = $offer['language'] ?? 'de'; // Fallback: Deutsch
+        service('request')->setLocale($language);
+
         $accessHash = bin2hex(random_bytes(16));
         $this->offerModel->update($offer['id'], ['access_hash' => $accessHash]);
 
         $interessentenLink = site_url('offer/interested/' . $accessHash);
 
         $data = [
-            'siteConfig' => Config('SiteConfig'),
+            'siteConfig'        => $siteConfig,
             'kunde'             => $customer,
             'firma'             => $company,
             'offer'             => $offer,
             'interessentenLink' => $interessentenLink,
         ];
 
-        $subject = 'Eine Firma hat Ihre Anfrage '.$offer['title'].' gekauft';
+        // Betreff aus Sprachdateien holen
+        $subject = lang('Email.offerPurchasedSubject', [$offer['title']]);
         $message = view('emails/offer_purchase_to_customer', $data);
+
         $originalEmail = $customer['email'];
 
         // Prüfen, ob Testmodus aktiv ist

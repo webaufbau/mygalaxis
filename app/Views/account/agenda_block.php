@@ -1,8 +1,15 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2>Agenda: Automatischen Kauf blockieren</h2>
-<p>Klicke auf ein Datum, um es zu sperren oder entsperren.</p>
+<h2><?= esc(lang('Calendar.agendaTitle')) ?></h2>
+<p><?= esc(lang('Calendar.agendaDescription')) ?></p>
+
+<?php
+$monthNames = lang('Calendar.monthNames');
+if (!is_array($monthNames)) {
+    $monthNames = [];
+}
+?>
 
 <!-- Kalender -->
 <div id="calendar"></div>
@@ -15,11 +22,8 @@
 
 <div id="calendar" class="d-none"></div>
 
-
-
-
 <script>
-    $(function (e) {
+    $(function() {
         window.CSRF = {
             name: '<?= csrf_token() ?>',
             value: '<?= csrf_hash() ?>'
@@ -30,8 +34,8 @@
         var calendar;
 
         calendar = $("#calendar").calendarGC({
-            dayNames: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
-            monthNames: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+            dayNames: <?= json_encode(lang('Calendar.dayNames')) ?>,
+            monthNames: <?= json_encode(array_values($monthNames)) ?>,
             dayBegin: 1,
             prevIcon: '&#x3c;',
             nextIcon: '&#x3e;',
@@ -43,11 +47,8 @@
             },
             events: events,
             onclickDate: function (e, data) {
-                console.log('data', data);
                 toggleDate(data.datejs);
             }
-
-
         });
 
         function alertPopup(message, type) {
@@ -89,7 +90,7 @@
                         var newDate = new Date(d.getFullYear(), d.getMonth(), 1);
                         const dateParts = value['eventDate'].split(", ");
                         const year = parseInt(dateParts[0]);
-                        const month = parseInt(dateParts[1]) - 1; // Month is zero-based in JavaScript (0 - 11)
+                        const month = parseInt(dateParts[1]) - 1; // JS: 0-11
                         const day = parseInt(dateParts[2]);
                         const jsDate = new Date(year, month, day);
                         value['date'] = jsDate;
@@ -99,7 +100,6 @@
                             eventName: value['eventName'],
                             className: value['className'],
                             dateColor: value['dateColor']
-
                         });
                     });
                 },
@@ -111,12 +111,10 @@
                     calendar.setDate(pickedDate);
                     $('#calendar').removeClass('d-none');
 
-                    /* has checkbox with class check-if-change add eventlistener and remove js-remove */
                     var checkboxes = $('.check-if-change');
                     checkboxes.change(function (event) {
                         var log_form_container = $(event.target).closest('.logo-form-container');
 
-                        console.log($(log_form_container));
                         event.preventDefault();
                         var form = $(event.target).closest('form');
                         $.ajax({
@@ -129,19 +127,16 @@
                                 log_form_container.find('img').replaceWith(response['icon']);
                             },
                             error: function(xhr, status, error) {
-                                alertPopup(error.message, 'danger');
+                                alertPopup('<?= esc(lang('Calendar.errorSaving')) ?>', 'danger');
                             }
                         });
                     });
 
-
                     if ($('.today').length) {
-                        // Scroll to .today class smoothly
                         $('html, body').animate({
                             scrollTop: $('.today').offset().top - $('header').height() - $('.gc-calendar-header').height() - $('.gc-calendar-footer').height() - 10
                         }, 1000);
                     }
-
 
                     $("#segment-month").html(this.segment_month);
                 }
@@ -170,19 +165,14 @@
                     }
                 },
                 error: function () {
-                    alert('Fehler beim Speichern.');
+                    alert('<?= esc(lang('General.errorSaving')) ?>');
                 }
             });
         }
 
-
-
         load_events(new Date());
     });
-
 </script>
-
-
 
 <style>
     .event-red {
@@ -190,8 +180,6 @@
         color: white !important;
         padding: 0 4px;
     }
-
 </style>
-
 
 <?= $this->endSection() ?>

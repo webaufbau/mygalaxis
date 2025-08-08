@@ -7,6 +7,7 @@ use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Config\SiteConfig;
 use Psr\Log\LoggerInterface;
 
 use App\Libraries\Template;
@@ -51,7 +52,7 @@ abstract class BaseController extends Controller
 
     protected string $permission_prefix = '';
 
-    protected $siteConfig;
+    protected SiteConfig $siteConfig;
 
     /**
      * Be sure to declare properties for any property fetch you initialized.

@@ -721,3 +721,11 @@ CONSTRAINT `offers_tiling_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `offers` (
 ALTER TABLE `offers`
     ADD `original_type` varchar(50) COLLATE 'utf8mb4_unicode_ci' NOT NULL AFTER `type`,
     CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;
+
+ALTER TABLE `users`
+    CHANGE `updated_at` `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`,
+    ADD `language` char(5) COLLATE 'utf8mb4_general_ci' NOT NULL DEFAULT 'de';
+
+ALTER TABLE `offers`
+    ADD `language` char(5) COLLATE 'utf8mb4_bin' NULL DEFAULT 'de' AFTER `bought_by`,
+    CHANGE `updated_at` `updated_at` datetime NULL DEFAULT current_timestamp() ON UPDATE CURRENT_TIMESTAMP AFTER `created_at`;

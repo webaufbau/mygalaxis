@@ -65,3 +65,15 @@ if (!function_exists('generate_url')) {
         return $url . '?' . http_build_query($params);
     }
 }
+
+function lang_url(string $path = '', ?string $locale = null): string
+{
+    $locale = $locale ?? service('request')->getLocale();
+
+    // Standard-Sprache ohne Prefix
+    if ($locale === 'de') {
+        return '/' . ltrim($path, '/');
+    }
+
+    return '/' . $locale . '/' . ltrim($path, '/');
+}

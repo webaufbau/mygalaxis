@@ -43,7 +43,7 @@ class Credit extends BaseController
     {
         $amount = (float) $this->request->getPost('amount');
         if ($amount <= 0) {
-            return redirect()->back()->with('error', 'Ungültiger Betrag.');
+            return redirect()->back()->with('error', lang('Finance.messageInvalidAmount'));
         }
 
         $this->creditModel->insert([
@@ -53,6 +53,6 @@ class Credit extends BaseController
             'description' => 'Manuelle Aufladung',
         ]);
 
-        return redirect()->to('/credits')->with('success', 'Guthaben erfolgreich aufgeladen.');
+        return redirect()->to('/credits')->with('success', lang('Finance.messageCreditAdded'));
     }
 }

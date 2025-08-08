@@ -95,13 +95,14 @@ class Finance extends BaseController
                     str_contains($errorMessage, 'BillingAddress.City'))) {
 
                 // Fehler-Message für den Nutzer setzen (Session-Flash)
-                session()->setFlashdata('error', 'Ihre Adresse ist unvollständig oder ungültig. Bitte korrigieren Sie diese, um Ihr Guthaben aufzuladen.');
+                session()->setFlashdata('error', lang('Finance.errorIncompleteAddress'));
 
                 // Weiterleitung zur Profilseite
                 return redirect()->to('/profile');
             }
 
-            return $this->response->setStatusCode(500)->setBody("Zahlung fehlgeschlagen: " . $e->getMessage());
+            return $this->response->setStatusCode(500)
+                ->setBody(lang('Finance.errorPaymentFailed') . ': ' . $errorMessage);
         }
     }
 
@@ -114,7 +115,7 @@ class Finance extends BaseController
         $token = $this->saferpay->getTokenByRefno($refno);  // Du brauchst diese Methode, um den Token zu laden
 
         if (!$token) {
-            return redirect()->to('/finance/topupFail')->with('error', 'Transaktion nicht gefunden.');
+            return redirect()->to('/finance/topupFail')->with('error', lang('Finance.messageTransactionNotFound'));
         }
 
         try {
@@ -132,7 +133,7 @@ class Finance extends BaseController
                 $booking_id = $bookingModel->insert([
                     'user_id' => $user->id,
                     'type' => 'topup',
-                    'description' => "Guthabenaufladung via " . ($response['Transaction']['AcquirerName'] ?? 'Online-Zahlung'),
+                    'description' => lang('Finance.topupDescription') . " " . ($response['Transaction']['AcquirerName'] ?? lang('Finance.onlinePayment')),
                     'amount' => $amount / 100,
                     'created_at' => date('Y-m-d H:i:s'),
                 ]);
@@ -174,10 +175,10 @@ class Finance extends BaseController
 
 
 
-                return redirect()->to('/finance')->with('message', 'Zahlung erfolgreich.');
+                return redirect()->to('/finance')->with('message', lang('Finance.messagePaymentSuccess'));
             }
 
-            return redirect()->to('/finance/topupFail')->with('error', 'Zahlung nicht autorisiert.');
+            return redirect()->to('/finance/topupFail')->with('error', lang('Finance.errorPaymentNotAuthorized'));
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
 
@@ -185,12 +186,12 @@ class Finance extends BaseController
             log_message('error', 'Saferpay API Fehler: ' . $errorMessage);
 
             // Benutzerfreundliche Meldung mit genauer Erklärung
-            $userMessage = 'Fehler bei der Zahlungsprüfung. ';
+            $userMessage = lang('Finance.errorPaymentCheck');
 
             if (strpos($errorMessage, 'AUTHORIZATION_AMOUNT_EXCEEDED') !== false) {
-                $userMessage .= 'Die Zahlung wurde abgelehnt, da das verfügbare Guthaben oder Kreditlimit nicht ausreicht.';
+                $userMessage = lang('Finance.errorAmountExceeded');
             } else {
-                $userMessage .= 'Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support.';
+                $userMessage .= lang('Finance.errorPaymentCheck');
             }
 
             // Weiterleitung mit Flash-Message (wenn dein Framework das unterstützt)
@@ -203,32 +204,6 @@ class Finance extends BaseController
     {
         return view('finance/topup_fail'); // oder redirect mit Fehlermeldung
     }
-
-
-
-
-    /**
-     * Startet den Redirect zu Datatrans mit Tokenization
-     */
-    /*public function topup()
-    {
-        $amount = (int)(floatval($this->request->getPost('amount')) * 100);
-        $refno = uniqid('topup_');
-
-        // URLs für Redirect
-        $successUrl = site_url("finance/topupSuccess?refno=$refno");
-        $cancelUrl  = site_url('finance/topupCancel');
-        $errorUrl   = site_url('finance/topupError');
-
-        try {
-            $response = $this->datatrans->initTransactionWithAlias($successUrl, $cancelUrl, $errorUrl, $amount, $refno);
-            $redirectUrl = str_replace('{transactionId}', $response['transactionId'], $this->datatrans->config->redirectUrlTemplate);
-
-            return redirect()->to($redirectUrl);
-        } catch (\Exception $e) {
-            return $this->response->setStatusCode(500)->setBody("Fehler beim Starten der Zahlung: " . $e->getMessage());
-        }
-    }*/
 
 
     /**
@@ -247,71 +222,6 @@ class Finance extends BaseController
             return $this->response->setStatusCode(500)->setBody("Alias-Zahlung fehlgeschlagen: " . $e->getMessage());
         }
     }
-
-
-
-    /*public function topup()
-    {
-        $user = auth()->user();
-
-        $userPaymentMethodModel = new \App\Models\UserPaymentMethodModel();
-        $paymentMethodModel = new \App\Models\PaymentMethodModel();
-
-        // Eigene Zahlungsmethoden holen
-        $userMethods = $userPaymentMethodModel->where('user_id', $user->id)->findAll();
-
-        // Optional: Namen & Details aus payment_methods ergänzen
-        $myPaymentMethods = [];
-        foreach ($userMethods as $method) {
-            $baseMethod = $paymentMethodModel->where('code', $method['payment_method_code'])->first();
-            if ($baseMethod) {
-                $myPaymentMethods[] = [
-                    'id' => $method['id'],
-                    'code' => $method['payment_method_code'],
-                    'name' => $baseMethod['name'],
-                    'provider_data' => $method['provider_data'], // JSON string
-                ];
-            }
-        }
-
-        if ($this->request->getMethod() === 'POST') {
-            $post = $this->request->getPost();
-            $amount = floatval($post['amount'] ?? 0);
-            $paymentMethod = $post['payment_method'] ?? '';
-            $mode = $post['mode'] ?? 'once';
-
-            if ($amount <= 0) {
-                return redirect()->back()->with('error', 'Bitte geben Sie einen gültigen Betrag ein.');
-            }
-            if (!in_array($paymentMethod, array_column($myPaymentMethods, 'code'))) {
-                return redirect()->back()->with('error', 'Bitte wählen Sie eine gültige Zahlungsmethode.');
-            }
-
-            $bookingModel = new BookingModel();
-            $bookingModel->insert([
-                'user_id' => $user->id,
-                'type' => 'topup',
-                'description' => "Guthabenaufladung via $paymentMethod ($mode)",
-                'amount' => $amount,
-                'created_at' => date('Y-m-d H:i:s'),
-            ]);
-
-            return redirect()->to('/finance/topup')->with('message', 'Zahlung erfolgreich verarbeitet.');
-        }
-
-
-        $paymentMethodModel = new PaymentMethodModel();
-        $paymentMethods = $paymentMethodModel->where('active', 1)->findAll();
-
-
-        return view('account/finance_topup', [
-            'myPaymentMethods' => $myPaymentMethods,
-            'paymentMethods' => $paymentMethods,
-            'session' => session(),
-        ]);
-    }*/
-
-
 
     public function userPaymentMethods()
     {
@@ -342,7 +252,7 @@ class Finance extends BaseController
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
             $model->insert($data);
-            return redirect()->to('/finance/userpaymentmethods')->with('message', 'Zahlungsmethode gespeichert.');
+            return redirect()->to('/finance/userpaymentmethods')->with('message', lang('Finance.messagePaymentMethodSaved'));
         }
 
         $paymentMethodModel = new PaymentMethodModel();
@@ -368,7 +278,7 @@ class Finance extends BaseController
             return redirect()->to($response);
         }
 
-        return redirect()->back()->with('error', 'Zahlungsseite konnte nicht erstellt werden.');
+        return redirect()->back()->with('error', lang('Finance.errorPaymentPageNotCreated'));
     }
 
     public function paymentSuccess()
@@ -380,7 +290,7 @@ class Finance extends BaseController
         $response = $payrexx->request('Transaction', ['referenceId' => $reference]);
 
         if (!isset($response['data'][0]['token'])) {
-            return redirect()->to('/finance/userpaymentmethods')->with('error', 'Kein Token erhalten.');
+            return redirect()->to('/finance/userpaymentmethods')->with('error', lang('Finance.errorNoTokenReceived'));
         }
 
         $token = $response['data'][0]['token'];
@@ -389,7 +299,7 @@ class Finance extends BaseController
         $model = new \App\Models\UserPaymentMethodModel();
         $model->saveEncryptedToken($user->id, 'creditcard', $token);
 
-        return redirect()->to('/finance/userpaymentmethods')->with('message', 'Zahlungsmethode gespeichert.');
+        return redirect()->to('/finance/userpaymentmethods')->with('message', lang('Finance.messagePaymentMethodSaved'));
     }
 
     public function deleteUserPaymentMethod($id)
@@ -399,10 +309,10 @@ class Finance extends BaseController
 
         if ($method && $method['user_id'] == auth()->user()->id) {
             $model->delete($id);
-            return redirect()->back()->with('message', 'Zahlungsmethode gelöscht.');
+            return redirect()->to('/finance/userpaymentmethods')->with('message', lang('Finance.messagePaymentMethodSaved'));
         }
 
-        return redirect()->back()->with('error', 'Nicht gefunden oder Zugriff verweigert.');
+        return redirect()->back()->with('error', lang('Finance.errorNotFoundOrDenied'));
     }
 
     public function pdf()

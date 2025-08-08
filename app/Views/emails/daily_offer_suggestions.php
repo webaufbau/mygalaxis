@@ -1,17 +1,17 @@
-<p>Guten Tag <?= esc($firma->company_name) ?> <?= esc($firma->contact_person) ?>,</p>
+<p><?= lang('Email.greeting', [$firma->company_name, $firma->contact_person]) ?></p>
 
-<p>Hier sind neue Offerten, die kürzlich bei uns eingegangen sind und zu Ihren Filterkriterien passen:</p>
+<p><?= lang('Email.intro') ?></p>
 
 <ul>
     <?php foreach ($offers as $offer): ?>
         <li>
             <strong><?= esc($offer['title']) ?></strong><br>
             <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?><br>
-            <a href="<?= site_url('/offers#details-' . $offer['id']) ?>">Jetzt ansehen</a>
+            <a href="<?= site_url('/offers#details-' . $offer['id']) ?>"><?= lang('Email.viewNow') ?></a>
         </li>
     <?php endforeach; ?>
 </ul>
 
-<p>Wir wünschen viel Erfolg bei der Auswahl passender Aufträge!</p>
+<p><?= lang('Email.successWishes') ?></p>
 
-<p>Freundliche Grüsse<br>Ihr <?=$siteConfig->name;?>-Team</p>
+<p><?= lang('Email.greetings') ?></p>

@@ -68,8 +68,8 @@
     <?= $content ?? '' ?>
 
     <div class="footer">
-        Diese Nachricht wurde automatisch generiert am <?= date('d.m.Y H:i') ?>.<br>
-        Offerten Schweiz
+        <?= lang('Email.automaticGenerated') ?> <?= date('d.m.Y H:i') ?>.<br>
+        <?=lang('Email.greetings');?>
     </div>
 
 </div>

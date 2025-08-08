@@ -1,10 +1,10 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2 class="my-4"><?= esc($title ?? 'Angebote') ?></h2>
+<h2 class="my-4"><?= esc(lang('Offers.my_offers_title')) ?></h2>
 
 <?php if (empty($offers)): ?>
-    <div class="alert alert-info">Keine Angebote gefunden.</div>
+    <div class="alert alert-info"><?= lang('Offers.none_found') ?></div>
 <?php else: ?>
     <div class="list-group">
         <?php foreach ($offers as $offer): ?>
@@ -13,59 +13,55 @@
                 <?php
                 $status = $offer['status'] ?? 'available';
                 $btnClass = 'btn-primary';
-                $btnText = 'Zum Kauf';
+                $btnText = lang('Offers.toBuy');
 
                 if ($status === 'sold') {
                     $btnClass = 'btn-success disabled';
-                    $btnText = 'Erledigt';
+                    $btnText = lang('Offers.done');
                 } elseif ($status === 'out_of_stock') {
                     $btnClass = 'btn-danger disabled';
-                    $btnText = 'Ausverkauft';
+                    $btnText = lang('Offers.sold_out');
                 }
-
-
                 ?>
-
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="flex-grow-1 me-3">
-                        <span class="title fw-bold d-block">
-
-                                <?= esc($offer['title']) ?>
-
-                        </span>
-                        <small class="text-muted">Gekauft am <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                        <span class="title fw-bold d-block"><?= esc($offer['title']) ?></span>
+                        <small class="text-muted">
+                            <?= lang('Offers.purchased_on') ?> <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?>
+                        </small>
                         <br>
 
-                        <?php if($status == 'available') { ?>
-                        <!-- Toggle-Link für Details -->
-                            <a class=" " id="detailsview-<?= $offer['id'] ?>" data-bs-toggle="collapse" href="#details-<?= $offer['id'] ?>" role="button" aria-expanded="false" aria-controls="details-<?= $offer['id'] ?>" data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
-                                <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i> Anfragedetails anzeigen
+                        <?php if ($status == 'available'): ?>
+                            <a id="detailsview-<?= $offer['id'] ?>"
+                               data-bs-toggle="collapse"
+                               href="#details-<?= $offer['id'] ?>"
+                               role="button"
+                               aria-expanded="false"
+                               aria-controls="details-<?= $offer['id'] ?>"
+                               data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
+                                <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i>
+                                <?= lang('Offers.show_request_details') ?>
                             </a>
-
-                        <?php } else { echo "<p></p>"; } ?>
-
-
+                        <?php else: ?>
+                            <p></p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="text-end" style="min-width: 150px;">
                         <?php
-                        // Prüfen, ob gekauft (purchased_price vorhanden)
                         if (isset($offer['purchased_price'])) {
-                            // Ermittlung, ob Original- oder reduzierter Preis gekauft wurde
                             $originalPrice = $offer['price'];
                             $discountedPrice = $originalPrice / 2;
 
                             if ($offer['purchased_price'] == $originalPrice) {
-                                echo '<div class="small  ">Normal</div>';
+                                echo '<div class="small">' . lang('Offers.price_normal') . '</div>';
                             } elseif ($offer['purchased_price'] == $discountedPrice) {
-                                echo '<div class="small  ">Reduziert</div>';
+                                echo '<div class="small">' . lang('Offers.price_discounted') . '</div>';
                             } else {
-                                echo '<div class="small  ">Gekauft</div>';
+                                echo '<div class="small">' . lang('Offers.price_purchased') . '</div>';
                             }
-
                         } else {
-                            // Noch nicht gekauft — zeige regulären Preis mit ggf. Rabatt
                             $createdDate = new DateTime($offer['created_at']);
                             $now = new DateTime();
                             $diffDays = $now->diff($createdDate)->days;
@@ -80,31 +76,27 @@
                             <div class="small">
                                 <?php if ($priceWasDiscounted): ?>
                                     <span class="text-decoration-line-through text-muted me-2">
-                    <?= number_format($offer['price'], 2) ?> CHF
-                </span>
-                                    <span class="text-">
-                    <?= number_format($displayPrice, 2) ?> CHF
-                </span>
+                                        <?= number_format($offer['price'], 2) ?> CHF
+                                    </span>
+                                    <span><?= number_format($displayPrice, 2) ?> CHF</span>
                                 <?php else: ?>
                                     <?= number_format($displayPrice, 2) ?> CHF
                                 <?php endif; ?>
                             </div>
                         <?php } ?>
                     </div>
-
                 </div>
 
-                <!-- Collapsible Details -->
                 <div class="collapse mt-3" id="details-<?= $offer['id'] ?>">
                     <div class="card card-body bg-light">
                         <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => $isOwnView ?? false]) ?>
                     </div>
                 </div>
-
             </div>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
+
 
 <script>
     document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(link => {

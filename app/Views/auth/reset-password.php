@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 
 <h2>Neues Passwort setzen</h2>
-<form method="post" action="/auth/reset-password">
+<form method="post" action="<?=lang_url('auth/reset-password');?>">
     <?= csrf_field() ?>
 
     <input type="hidden" name="token" value="<?= esc($token) ?>">

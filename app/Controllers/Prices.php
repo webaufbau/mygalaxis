@@ -6,6 +6,7 @@ class Prices extends Controller
 {
     public function index()
     {
+        exit();
         // Beispiel-Daten für die Preisliste
         $prices = [
             'Bis 1 Zimmer' => [

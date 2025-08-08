@@ -1,27 +1,28 @@
 
-    <h2>🎉 Wir bestätigen Dir deine Anfrage/Offerte</h2>
+<h2><?= lang('Offers.offer_added_email_subject') ?></h2>
 
-    <p>Hallo <?= esc($data['vorname'] ?? ''); ?> <?= esc($data['nachname'] ?? ''); ?>,</p>
+<p><?= lang('Email.offer_added_greeting', [$data['vorname'], $data['nachname']]) ?></p>
 
     <div class="highlight">
-        <p>Herzlichen Dank für deine Anfrage für <strong><?= esc($formular_page ?? 'eine Dienstleistung') ?></strong>.</p>
-        <p>In Kürze wirst du <strong>bis zu 3 unverbindliche Offerten</strong> von passenden Anbietern aus deiner Region erhalten. Je nach Saison kann es vorkommen, dass die Firmen für den gewünschten Zeitraum schon ausgebucht sind und daher keine Angebote unterbreiten.</p>
+        <p><?= lang('Email.offer_added_thank_you', ['service' => esc($formular_page ?? lang('Offers.no_service'))]) ?></p>
+        <p><?= lang('Offers.offer_added_info_1') ?></p>
+        <p><?= lang('Offers.offer_added_info_2') ?></p>
     </div>
 
-    <h3>So funktioniert's:</h3>
+    <h3><?= lang('Offers.offer_added_how_it_works') ?></h3>
     <ul>
-        <li>Du erhältst Angebote per E-Mail – oft innerhalb von 1–2 Werktagen</li>
-        <li>Anbieter können dich kontaktieren, falls Rückfragen bestehen</li>
-        <li>Du entscheidest in Ruhe, welches Angebot am besten passt</li>
+        <li><?= lang('Offers.offer_added_how_1') ?></li>
+        <li><?= lang('Offers.offer_added_how_2') ?></li>
+        <li><?= lang('Offers.offer_added_how_3') ?></li>
     </ul>
 
-    <p><strong>Hinweis:</strong> Prüfe auch deinen Spam-/Werbungsordner, falls du keine E-Mail erhältst.</p>
+    <p><strong><?= lang('Offers.offer_added_note') ?></strong></p>
 
     <?php if (!empty($data['additional_service']) && ! $data['additional_service'] == 'Nein'): ?>
-        <p><strong>Du hast weitere Dienstleistungen angefragt:</strong> <?= esc($data['additional_service']) ?></p>
+        <p><strong><?= lang('Offers.offer_added_additional_services') ?></strong> <?= esc($data['additional_service']) ?></p>
     <?php endif; ?>
 
-    <h3>Zusammenfassung deiner Anfrage</h3>
+    <h3><?= lang('Offers.offer_added_summary') ?></h3>
     <ul>
         <?php
         // Lade die Sprachübersetzungen

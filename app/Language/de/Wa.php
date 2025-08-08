@@ -19,7 +19,6 @@ return [
     // Group
     'group_user'         => 'Benutzer',
     'group_service'       => 'Service',
-    'group_editor'       => 'Redaktion',
     'group_admin'     => 'Administrator',
     'group_developer'       => 'Entwickler',
     'group_superadmin'   => 'Superadmin',

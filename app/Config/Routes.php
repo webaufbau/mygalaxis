@@ -6,14 +6,8 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
+
 $routes = service('routes');
-
-// Auth-Routen von Shield aktivieren (stellt /login, /register etc. bereit)
-
-$routes->match(['POST'], 'register', 'RegisterController::myregisterAction');
-service('auth')->routes($routes);
-
-//$routes->match(['POST'], 'login', 'LoginController::loginAction');
 
 // Homepage-Logik: Weiterleitung je nach Login-Status
 $routes->get('/', function () {
@@ -23,34 +17,84 @@ $routes->get('/', function () {
     return redirect()->to('/login');
 });
 
-// Webhooks & Forms
-$routes->post('form/webhook', '\App\Controllers\FluentForm::webhook');
-$routes->get('form/handle', '\App\Controllers\FluentForm::handle');
+function defineAppRoutes($routes) {
 
-// Verifizierung
-$routes->get('/verification', 'Verification::index');
-$routes->post('/verification/send', 'Verification::send');
-$routes->get('/verification/send', 'Verification::send');
-$routes->get('/verification/confirm', 'Verification::confirm');
-$routes->post('/verification/verify', 'Verification::verify');
+    // Auth-Routen von Shield aktivieren (stellt /login, /register etc. bereit)
 
-$routes->get('/verarbeitung', 'Verification::processing'); // oder beliebiger Pfadname
-$routes->get('/verification/check-session', 'Verification::checkSession');
-$routes->get('/verification/verify-offer/(:num)/(:any)', 'Verification::verifyOffer/$1/$2');
-$routes->get('/verification/sms-status', 'Verification::checkSmsStatus');
+    $routes->match(['POST'], 'register', 'RegisterController::myregisterAction');
+
+    service('auth')->routes($routes);
+    // Login
+    $routes->get('login', '\CodeIgniter\Shield\Controllers\LoginController::loginView');
+    $routes->post('login', '\CodeIgniter\Shield\Controllers\LoginController::loginAction');
+
+    // Register
+    $routes->get('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerView');
+    //$routes->post('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerAction');
+
+    // Route um Magic Link anzufordern (Formular anzeigen und absenden)
+    $routes->get('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginView');
+    $routes->post('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginAction');
+
+// Route zum Verifizieren des Magic Links (Token aus Link)
+    $routes->get('magic-link/verify/(:segment)', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify/$1');
 
 
-// Web Hooks
-$routes->post('webhooks/payrexx', 'WebhookController::payrexx');
+    // Passwort zurücksetzen (Reset Password)
+    //$routes->get('forgot-password', '\CodeIgniter\Shield\Controllers\ForgotPasswordController::index');
+    //$routes->post('forgot-password', '\CodeIgniter\Shield\Controllers\ForgotPasswordController::sendResetLink');
+    //$routes->get('reset-password/(:segment)', '\CodeIgniter\Shield\Controllers\ResetPasswordController::index/$1');
+    //$routes->post('reset-password', '\CodeIgniter\Shield\Controllers\ResetPasswordController::reset');
 
-// Registrierung
-$routes->match(['POST'], 'register', 'RegisterController::registerAction');
+    // E-Mail Verifizierung
+    //$routes->get('verify-email', '\CodeIgniter\Shield\Controllers\VerifyEmailController::index');
+    //$routes->get('verify-email/resend', '\CodeIgniter\Shield\Controllers\VerifyEmailController::resend');
+
+    // Abmelden (Logout)
+    $routes->get('logout', '\CodeIgniter\Shield\Controllers\LoginController::logoutAction');
+
+    //$routes->match(['POST'], 'login', 'LoginController::loginAction');
+
+    // ---- ALLE deine bestehenden Routen ab hier ----
+
+    // Webhooks & Forms
+    $routes->post('form/webhook', '\App\Controllers\FluentForm::webhook');
+    $routes->get('form/handle', '\App\Controllers\FluentForm::handle');
+
+    // Verifizierung
+    $routes->get('verification', 'Verification::index');
+    $routes->post('verification/send', 'Verification::send');
+    $routes->get('verification/send', 'Verification::send');
+    $routes->get('verification/confirm', 'Verification::confirm');
+    $routes->post('verification/verify', 'Verification::verify');
+
+    $routes->get('processing', 'Verification::processing'); // oder beliebiger Pfadname
+    $routes->get('verification/check-session', 'Verification::checkSession');
+    $routes->get('verification/verify-offer/(:num)/(:any)', 'Verification::verifyOffer/$1/$2');
+    $routes->get('verification/sms-status', 'Verification::checkSmsStatus');
 
 
-$routes->get('offer/interested/(:segment)', 'PublicController::interestedCompanies/$1');
-$routes->get('rating/write/(:segment)', 'PublicController::showRatingForm/$1');
-$routes->post('rating/submit', 'PublicController::submitRating');
-$routes->get('company/ratings/(:segment)', 'PublicController::companyRatings/$1');
+    // Web Hooks
+    $routes->post('webhooks/payrexx', 'WebhookController::payrexx');
+
+    // Registrierung
+    $routes->match(['POST'], 'register', 'RegisterController::registerAction');
+
+
+    $routes->get('offer/interested/(:segment)', 'PublicController::interestedCompanies/$1');
+    $routes->get('rating/write/(:segment)', 'PublicController::showRatingForm/$1');
+    $routes->post('rating/submit', 'PublicController::submitRating');
+    $routes->get('company/ratings/(:segment)', 'PublicController::companyRatings/$1');
+
+}
+
+defineAppRoutes($routes);
+
+// Gruppe für Sprachen
+$routes->group('{locale}', function($routes) {
+    defineAppRoutes($routes);
+});
+
 
 
 
@@ -78,10 +122,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->group('finance', ['filter' => 'auth'], function($routes) {
         $routes->get('', 'Finance::index');
         $routes->match(['GET', 'POST'], 'topup', 'Finance::topup');
-        $routes->get('userpaymentmethods', 'Finance::userPaymentMethods');
-        $routes->match(['GET', 'POST'], 'userpaymentmethods/add', 'Finance::addUserPaymentMethod');
+        //$routes->get('userpaymentmethods', 'Finance::userPaymentMethods');
+        //$routes->match(['GET', 'POST'], 'userpaymentmethods/add', 'Finance::addUserPaymentMethod');
         $routes->match(['GET', 'POST'], 'startAddPaymentMethodAjax', 'Finance::startAddPaymentMethodAjax');
-        $routes->get('userpaymentmethods/delete/(:num)', 'Finance::deleteUserPaymentMethod/$1');
+        //$routes->get('userpaymentmethods/delete/(:num)', 'Finance::deleteUserPaymentMethod/$1');
         $routes->get('pdf', 'Finance::pdf');
     });
 
@@ -98,11 +142,11 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
 
     // Credits / Guthaben
-    $routes->group('credits', function ($routes) {
+    /*$routes->group('credits', function ($routes) {
         $routes->get('/', 'Credit::index');
         $routes->get('add', 'Credit::add');
         $routes->post('add', 'Credit::store');
-    });
+    });*/
 
     $routes->get('agenda', 'AgendaBlock::index', ['filter' => 'auth']);
     $routes->post('agenda/toggle', 'AgendaBlock::toggle', ['filter' => 'auth']);
@@ -117,6 +161,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('profile', 'Profile::index');
     $routes->post('profile/update', 'Profile::update');
 });
+
+
 
 // ----------------------------
 // Admin-Bereich (Admin-Login erforderlich)

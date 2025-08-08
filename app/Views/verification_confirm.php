@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Code eingeben</title>
+    <title><?= lang('Verification.confirmTitle'); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -28,7 +28,6 @@
     </div>
 </div>
 
-
 <div class="container mt-5">
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -49,11 +48,11 @@
     $method = session('verify_method');
     ?>
 
-    <h2>Bestätigungscode eingeben</h2>
+    <h2><?= lang('Verification.enterCode'); ?></h2>
 
     <?php if ($method === 'sms'): ?>
         <div id="sms-status-box" class="alert alert-info">
-            Wir senden eine SMS mit Ihrem Bestätigungscode an <strong id="sms-number"><?= esc($phone) ?></strong>.
+            <?= str_replace('{phone}', esc($phone), lang('Verification.smsSending')); ?>
         </div>
 
         <script>
@@ -62,6 +61,18 @@
             let attempts = 0;
             const maxAttempts = 5;
             let timerId;
+
+            // Übersetzungen aus PHP in JS übertragen
+            const i18n = {
+                smsDelivered: "<?= lang('Verification.smsDelivered') ?>",
+                smsPending: "<?= lang('Verification.smsPending') ?>",
+                smsFailed: "<?= lang('Verification.smsFailed') ?>",
+                smsNoResult: "<?= lang('Verification.smsNoResult') ?>",
+                smsInvalidNumber: "<?= lang('Verification.smsInvalidNumber') ?>",
+                smsError: "<?= lang('Verification.smsError') ?>",
+                smsUnknown: "<?= lang('Verification.smsUnknown') ?>",
+                smsConnectionError: "<?= lang('Verification.smsConnectionError') ?>"
+            };
 
             function updateStatusBox(message, type = 'info') {
                 statusBox.innerHTML = message;
@@ -75,28 +86,28 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.status === 'DELIVERED_TO_HANDSET' || data.status === 'DELIVERED') {
-                            updateStatusBox(`✅ SMS erfolgreich zugestellt an ${smsNumber}.`, 'success');
+                            updateStatusBox(i18n.smsDelivered.replace('{phone}', smsNumber), 'success');
                             clearTimeout(timerId);
                         } else if (data.status === 'PENDING_ENROUTE' || data.status === 'PENDING_ACCEPTED') {
-                            updateStatusBox(`⏳ SMS wird zugestellt... Bitte warten.`);
+                            updateStatusBox(i18n.smsPending, 'info');
                             setTimeout(pollSmsStatus, 5000);
                         } else if (attempts >= maxAttempts) {
-                            updateStatusBox(`❌ Der Status konnte leider nicht ermittelt werden, dies ist ein Hinweis, dass die Telefonnummer nicht korrekt sein könnte. Falls Sie keine SMS erhalten haben, überprüfen Sie bitte die eingegebene Telefonnummer und klicken Sie anschliessend auf „Telefonnummer anpassen“. <a href="/verification/confirm">Um einen neuen Code anzufordern klicken Sie hier.</a>`, 'danger');
+                            updateStatusBox(i18n.smsFailed, 'danger');
                             clearTimeout(timerId);
                         } else if (data.status === 'NO_RESULT') {
-                            updateStatusBox(`⏳ Status wird ermittelt... Bitte warten.`);
+                            updateStatusBox(i18n.smsNoResult, 'info');
                             setTimeout(pollSmsStatus, 5000);
                         } else if (data.status === 'INVALID_DESTINATION_ADDRESS' || data.status === 'UNDELIVERABLE') {
-                            updateStatusBox(`❌ SMS konnte nicht zugestellt werden. Bitte prüfen Sie die Nummer ${smsNumber}.`, 'danger');
+                            updateStatusBox(i18n.smsInvalidNumber.replace('{phone}', smsNumber), 'danger');
                         } else if (data.status === 'ERROR' || data.status === 'NO_MESSAGE_ID') {
-                            updateStatusBox(`❌ Fehler beim SMS-Versand: ${data.description || data.message}`, 'danger');
+                            updateStatusBox(i18n.smsError.replace('{error}', data.description || data.message), 'danger');
                         } else {
-                            updateStatusBox(`ℹ️ Status: ${data.status}. Bitte warten...`);
+                            updateStatusBox(i18n.smsUnknown.replace('{status}', data.status), 'info');
                             setTimeout(pollSmsStatus, 5000);
                         }
                     })
                     .catch(() => {
-                        updateStatusBox('⚠️ Verbindungsfehler beim Abrufen des SMS-Status. Versuche es erneut...', 'warning');
+                        updateStatusBox(i18n.smsConnectionError, 'warning');
                         timerId = setTimeout(pollSmsStatus, 5000);
                     });
             }
@@ -108,14 +119,14 @@
         </script>
 
     <?php else: ?>
-        <p>Sie erhalten in wenigen Sekunden einen Anruf auf <strong><?= esc($phone) ?></strong> mit Ihrem Bestätigungscode.</p>
+        <p><?= str_replace('{phone}', esc($phone), lang('Verification.callSending')); ?></p>
     <?php endif; ?>
 
     <form method="post" action="<?= site_url('/verification/verify') ?>">
         <?= csrf_field() ?>
 
         <div class="mb-3">
-            <label for="otp" class="form-label">Bestätigungscode</label>
+            <label for="otp-code" class="form-label"><?= lang('Verification.codeLabel'); ?></label>
             <div class="input-group justify-content-center">
                 <div class="d-flex gap-2">
                     <input type="tel" maxlength="1" class="form-control form-control-lg text-center otp-input" style="width: 60px; font-size: 2rem;">
@@ -124,7 +135,7 @@
                     <input type="tel" maxlength="1" class="form-control form-control-lg text-center otp-input" style="width: 60px; font-size: 2rem;">
                 </div>
                 <input type="hidden" name="code" id="otp-code">
-                <button type="submit" class="btn btn-success btn-lg ms-3 btn-submit-code" style="border-radius: 8px;" name="submitbutton" value="submitcode">Code bestätigen</button>
+                <button type="submit" class="btn btn-success btn-lg ms-3 btn-submit-code" style="border-radius: 8px;" name="submitbutton" value="submitcode">    <?= lang('Verification.submitCode'); ?></button>
             </div>
 
         </div>
@@ -134,16 +145,16 @@
 
 
         <div class="alert alert-light border">
-            Sollte die angezeigte Telefonnummer nicht korrekt sein oder Sie keinen Code erhalten haben, geben Sie bitte Ihre richtige Telefonnummer unten ein und senden Sie das Formular erneut ab.<br>
-            <strong>Hinweis:</strong> Zu häufige Anfragen hintereinander werden automatisch blockiert.
+            <?= lang('Verification.changePhoneNote'); ?><br>
+            <strong><?= lang('Verification.note'); ?>:</strong> <?= lang('Verification.noteText'); ?>
         </div>
 
 
         <div class="mb-3" style="max-width: 600px; margin: 0 auto;">
-            <label for="phone" class="form-label">Telefonnummer</label>
+            <label for="phone" class="form-label"><?= lang('Verification.phoneLabel'); ?></label>
             <div class="input-group">
                 <input type="tel" name="phone" id="phone" class="form-control" value="<?= esc($phone) ?>">
-                <button type="submit" class="btn btn-secondary" name="submitbutton" value="changephone">Telefonnummer anpassen</button>
+                <button type="submit" class="btn btn-secondary" name="submitbutton" value="changephone"><?= lang('Verification.changePhone'); ?></button>
             </div>
         </div>
 

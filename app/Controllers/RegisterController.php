@@ -159,6 +159,16 @@ class RegisterController extends ShieldRegister {
                 $user->username = null;
             }*/
 
+            // Sprachkürzel aus URL-Segment holen, Deutsch hat keinen Prefix
+            $locale = service('uri')->getSegment(1);
+            $availableLocales = ['en', 'fr', 'it'];
+            if (!in_array($locale, $availableLocales)) {
+                $locale = 'de'; // Deutsch (default)
+            }
+
+            $user->language = $locale;
+            $user->setAttribute('language', $locale);
+
             try {
                 /*d($this->request->getPost());
                 d($this->request->getPost($allowedPostFields));

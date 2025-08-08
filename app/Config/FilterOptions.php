@@ -5,33 +5,33 @@ use CodeIgniter\Config\BaseConfig;
 class FilterOptions extends BaseConfig
 {
     public array $categories = [
-        'Umzug',
-        'Umzug + Reinigung',
-        'Reinigung',
-        'Maler',
-        'Gärtner',
+        'move',
+        'move_cleaning',
+        'cleaning',
+        'painting',
+        'gardening',
     ];
 
     public array $types = [
-        'move' => 'Umzug',
-        'cleaning' => 'Reinigung',
-        'move_cleaning' => 'Umzug + Reinigung',
-        'painting' => 'Maler',
-        'gardening' => 'Gartenpflege',
-        'plumbing' => 'Sanitär',
+        'move' => 'move',
+        'cleaning' => 'cleaning',
+        'move_cleaning' => 'move_cleaning',
+        'painting' => 'painting',
+        'gardening' => 'gardening',
+        'plumbing' => 'plumbing',
     ];
 
     public array $languages = [
-        'Deutsch',
-        'Englisch',
-        'Französisch',
-        'Italienisch',
+        'de',
+        'en',
+        'fr',
+        'it',
     ];
 
     public array $services = [
-        'Hausrat einpacken',
-        'Hausrat anpacken',
-        'Möbel Aufbau',
-        'Lampen demontieren',
+        'packing',
+        'unpacking',
+        'furniture_assembly',
+        'lamp_disassembly',
     ];
 }

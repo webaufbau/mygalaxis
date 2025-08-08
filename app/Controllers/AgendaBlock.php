@@ -63,7 +63,7 @@ class AgendaBlock extends BaseController
         foreach ($dates as $row) {
             $dateParts = explode('-', $row['date']);
             $events[] = [
-                'eventName' => 'Blockiert',
+                'eventName' => lang('Calendar.blocked'),
                 'eventDate' => $dateParts[0] . ', ' . $dateParts[1] . ', ' . $dateParts[2],
                 'className' => 'event-red', // eigene CSS-Klasse
                 'dateColor' => '#dc3545',

@@ -19,7 +19,7 @@ class PublicController extends BaseController
         $offer = $offerModel->where('access_hash', $offerHash)->first();
 
         if (!$offer) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Offerte nicht gefunden.');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(lang('Offers.offerNotFound'));
         }
 
         $bookings = $bookingModel
@@ -64,7 +64,7 @@ class PublicController extends BaseController
         $company = $companyModel->where('public_hash', $companyHash)->first();
 
         if (!$company) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Firma nicht gefunden.');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(lang('Offers.companyNotFound'));
         }
 
         return view('rating/write', [
@@ -89,16 +89,16 @@ class PublicController extends BaseController
         $offer_access_hash = $data['offer_token'];
         $offer = $offerModel->where('access_hash', $offer_access_hash)->first();
         if (!$offer) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Offerte nicht gefunden.');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound(lang('Offers.offerNotFound'));
         }
 
         if (!isset($data['recipient_id']) || empty($data['rating'])) {
-            return redirect()->back()->with('error', 'Bitte alle Felder ausfüllen.');
+            return redirect()->back()->with('error', lang('General.fillAllFields'));
         }
 
         // Validierung
         if (!is_numeric($data['rating']) || $data['rating'] < 1 || $data['rating'] > 5) {
-            return redirect()->back()->with('error', 'Ungültige Bewertung.');
+            return redirect()->back()->with('error', lang('Offers.invalidRating'));
         }
 
         // Prüfen ob recipient_id die Offerte auch tatsächlich gekauft hat
@@ -109,18 +109,17 @@ class PublicController extends BaseController
             ->first();
 
         if (!$recipient_user_has_bought_offer) {
-            return redirect()->back()->with('error', 'Diese Firma kann nicht bewertet werden. Bitte versuchen Sie es erneut.');
+            return redirect()->back()->with('error', lang('Offers.companyNotEligibleForRating'));
         }
 
         // Prüfe, ob der Anfragesteller die Firma bewerten darf
         // Hat er die Offerte bereits bewertet? Nur eine Bewertung je Offerte
-        // Hat er überhaupt Erlaubnis die Offerte zu bewerten?
         $alreadyRated = $reviewModel
             ->where('offer_id', $offer['id'])
             ->first();
 
         if ($alreadyRated) {
-            return redirect()->back()->with('error', 'Sie haben für diese Anfrage bereits eine Bewertung abgegeben.');
+            return redirect()->back()->with('error', lang('Offers.alreadyRated'));
         }
 
         $reviewModel->insert([
@@ -137,7 +136,6 @@ class PublicController extends BaseController
             'created_by_country' => $offer['country'] ?? '',
         ]);
 
-        return redirect()->to('/offer/interested/' . $offer['access_hash'])->with('success', 'Vielen Dank für Ihre Bewertung!');
+        return redirect()->to('/offer/interested/' . $offer['access_hash'])->with('success', lang('Offers.thankYouForRating'));
     }
-
 }

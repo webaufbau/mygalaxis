@@ -12,6 +12,46 @@ declare(strict_types=1);
  */
 
 return [
+    'registerTitle'           => 'Registrieren',
+    'emailAddress'            => 'E-Mail-Adresse',
+    'emailRequired'           => 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+    'password'                => 'Passwort',
+    'passwordMinLength'       => 'Bitte geben Sie ein Passwort mit mindestens 6 Zeichen ein.',
+    'passwordConfirm'         => 'Passwort bestätigen',
+    'passwordConfirmRequired' => 'Bitte bestätigen Sie Ihr Passwort.',
+    'passwordsMismatch'       => 'Die Passwörter stimmen nicht überein.',
+    'companyDataTitle'        => 'Firmendaten',
+    'companyName'             => 'Firmenname',
+    'companyNameRequired'     => 'Bitte geben Sie den Firmennamen ein.',
+    'companyUid'              => 'Handelsregister (UID)',
+    'companyUidRequired'      => 'Bitte geben Sie die UID im Format CHE-999.999.999 ein.',
+    'companyStreet'           => 'Strasse',
+    'companyStreetRequired'   => 'Bitte geben Sie die Strasse ein.',
+    'companyZip'              => 'PLZ',
+    'companyZipRequired'      => 'Bitte geben Sie die Postleitzahl ein.',
+    'companyCity'             => 'Ort',
+    'companyCityRequired'     => 'Bitte geben Sie den Ort ein.',
+    'companyPhone'            => 'Telefonnummer',
+    'companyPhoneRequired'    => 'Bitte geben Sie eine gültige Telefonnummer im Format +41 78 123 45 67 ein.',
+    'companyWebsite'          => 'Website',
+    'companyWebsiteRequired'  => 'Bitte geben Sie eine gültige URL ein.',
+    'registerButton'          => 'Registrieren',
+
+    // Messages
+    'loginFailed' => 'Login fehlgeschlagen',
+    'messageInvalidEmail' => 'Bitte gib eine gültige E-Mail-Adresse ein.',
+    'resetLinkSentIfRegistered' => 'Falls die E-Mail registriert ist, erhältst du einen Link zum Zurücksetzen.',
+    'resetPasswordSubject' => 'Passwort zurücksetzen',
+    'resetPasswordMessage' => "Hallo,\n\nBitte klicke auf folgenden Link, um dein Passwort zurückzusetzen:\n%s\n\nDer Link ist 1 Stunde gültig.",
+    'enterEmail' => 'Bitte gib deine E-Mail-Adresse ein.',
+    'userNotFound' => 'Benutzer wurde nicht gefunden.',
+    'invalidOrExpiredLink' => 'Ungültiger oder abgelaufener Link.',
+    'invalidRequest' => 'Ungültige Anfrage.',
+    'passwordsDontMatch' => 'Passwörter stimmen nicht überein.',
+    'passwordChangedSuccess' => 'Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden.',
+    'emailAlreadyRegistered' => 'E-Mail ist bereits registriert.',
+    'registrationSuccess' => 'Registrierung erfolgreich. Du kannst dich jetzt einloggen.',
+
     // Exceptions
     'unknownAuthenticator'  => '{0} ist kein gültiger Authentifikator.',
     'unknownUserProvider'   => 'Der zu verwendende User Provider konnte nicht ermittelt werden.',
@@ -29,6 +69,7 @@ return [
     'unableSendEmailToUser' => 'Leider gab es ein Problem beim Senden der E-Mail. Wir konnten keine E-Mail an "{0}" senden.',
     'throttled'             => 'Es wurden zu viele Anfragen von dieser IP-Adresse gestellt. Sie können es in {0} Sekunden erneut versuchen.',
     'notEnoughPrivilege'    => 'Sie haben nicht die erforderliche Berechtigung, um den gewünschten Vorgang auszuführen.',
+
     // JWT Exceptions
     'invalidJWT'     => 'Der Token ist ungültig.',
     'expiredJWT'     => 'Der Token ist abgelaufen.',
@@ -36,8 +77,8 @@ return [
 
     'email'           => 'E-Mail-Adresse',
     'username'        => 'Benutzername',
-    'password'        => 'Passwort',
-    'passwordConfirm' => 'Passwort (erneut)',
+    //'password'        => 'Passwort',
+    //'passwordConfirm' => 'Passwort (erneut)',
     'haveAccount'     => 'Haben Sie bereits ein Konto?',
     'token'           => 'Token',
 
@@ -114,4 +155,8 @@ return [
 
     // Permissions
     'unknownPermission' => '{0} ist keine gültige Berechtigung.',
+
+    // AGB
+    'acceptAGBRequired' => 'Die AGB müssen akzeptiert werden.',
+
 ];

@@ -37,6 +37,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth' => \App\Filters\AuthFilter::class,
         'admin-auth' => \App\Filters\AdminAuthFilter::class,
+        'locale' => \App\Filters\LocaleFilter::class,
     ];
 
     /**
@@ -72,6 +73,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'locale',  // <-- Sprache über URL erkennen
             // 'honeypot',
             'csrf' => [
                 'except' => [

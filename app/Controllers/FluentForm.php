@@ -45,8 +45,17 @@ class FluentForm extends BaseController
 
         if($additional_service == 'Nein') {
             log_message('debug', 'Weiterleitung zur Verifikation mit UUID '.$uuid.' ' .  print_r($_SESSION, true));
-            return redirect()->to('verarbeitung');
+            return redirect()->to('processing');
         }
+
+        // Aktuelle Sprache aus Helper holen
+        $locale = getCurrentLocale();
+
+        // Basis-URI für Weiterleitung (z.B. "processing")
+        $baseUri = 'processing';
+
+        // URI mit Sprachsegment (sofern nicht 'de')
+        $redirectUri = changeLocaleInUri($baseUri, $locale);
 
         // URL zusammensetzen (alle GET-Parameter anhängen)
         if ($next_url) {

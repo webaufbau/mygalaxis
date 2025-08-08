@@ -9,7 +9,7 @@ class Offers extends BaseController
     public function index()
     {
         if(auth()->user()->inGroup('admin')) {
-            return redirect()->back()->with('error', 'Diese Ansicht /offers ist nur für Firmenbenutzer. Als Admin bitte /dashboard verwenden');
+            return redirect()->back()->with('error', lang('Offers.errors.admin_view_only'));
         }
 
         $user = auth()->user();
@@ -135,7 +135,7 @@ class Offers extends BaseController
         $user = auth()->user();
 
         if (!$user) {
-            return redirect()->to('/login')->with('error', 'Bitte einloggen, um Ihre Anfragen zu sehen.');
+            return redirect()->to('/login')->with('error', lang('Offers.errors.login_required'));
         }
 
         $bookingModel = new \App\Models\BookingModel();
@@ -180,7 +180,6 @@ class Offers extends BaseController
             'offers' => $offers,
             'search' => null,
             'filter' => null,
-            'title' => 'Meine gekauften Anfragen',
             'isOwnView' => true,
         ]);
     }
@@ -195,10 +194,10 @@ class Offers extends BaseController
         $success = $purchaseService->purchase($user, $id);
 
         if ($success) {
-            return redirect()->to('/offers/mine#detailsview-' . $id)->with('message', 'Anfrage erfolgreich gekauft!');
+            return redirect()->to('/offers/mine#detailsview-' . $id)->with('message', lang('Offers.messages.purchase_success'));
         }
 
-        return redirect()->to('/finance/topup')->with('error', 'Nicht genügend Guthaben oder keine gültige Kreditkarte.');
+        return redirect()->to('/finance/topup')->with('error', lang('Offers.errors.not_enough_balance'));
     }
 
     /**
@@ -211,7 +210,7 @@ class Offers extends BaseController
         $bookingModel->insert([
             'user_id' => $user->id,
             'type' => 'offer_purchase',
-            'description' => "Anfrage gekauft: #" . $offer['id'],
+            'description' => lang('Offers.buy.offer_purchased') . ": #" . $offer['id'],
             'reference_id' => $offer['id'],
             'amount' => -$price,
             'created_at' => date('Y-m-d H:i:s'),
@@ -249,7 +248,7 @@ class Offers extends BaseController
         $expectedHash = hash_hmac('sha256', $offer['id'] . $offer['email'], $_ENV['app.secret.key'] ?? 'topsecret');
 
         if (!hash_equals($expectedHash, $hash)) {
-            return redirect()->to('/')->with('error', 'Ungültiger Link.');
+            return redirect()->to('/')->with('error', lang('Offers.errors.invalid_link'));
         }
 
         // Auftrag bestätigen...

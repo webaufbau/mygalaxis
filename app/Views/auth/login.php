@@ -4,7 +4,7 @@
 
 <h1>Login</h1>
 
-<form method="post" action="/login" class="w-50 mx-auto">
+<form method="post" action="<?=lang_url('login');?>" class="w-50 mx-auto">
     <?= csrf_field() ?>
 
     <div class="mb-3">

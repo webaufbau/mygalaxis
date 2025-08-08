@@ -11,15 +11,12 @@ use App\Models\ReviewModel;
 use CodeIgniter\CLI\Commands;
 use Psr\Log\LoggerInterface;
 
-// ReviewModel importieren
-
 class SendReviewReminder extends BaseCommand
 {
     protected $group       = 'Reviews';
     protected $name        = 'reviews:send-reminder';
     protected $description = 'Sendet 30 Tage nach Kauf einen Review-Link an den Anbieter (Ersteller des Angebots).';
 
-    // Models als Klassenvariablen definieren
     protected $bookingModel;
     protected $offerModel;
     protected $userModel;
@@ -28,10 +25,6 @@ class SendReviewReminder extends BaseCommand
     public function __construct(LoggerInterface $logger, Commands $commands)
     {
         parent::__construct($logger, $commands);
-        $this->logger   = $logger;
-        $this->commands = $commands;
-
-        // Models initialisieren
         $this->bookingModel = new BookingModel();
         $this->offerModel = new OfferModel();
         $this->userModel = new UserModel();
@@ -40,52 +33,65 @@ class SendReviewReminder extends BaseCommand
 
     public function run(array $params)
     {
-        $fiveDaysAgo = date('Y-m-d H:i:s', strtotime('-30 days'));
+        $xDaysAgo = date('Y-m-d H:i:s', strtotime('-30 days'));
 
+        // Buchungen vor mindestens 30 Tagen, wo noch kein Reminder gesendet wurde
         $bookings = $this->bookingModel
-            ->where('created_at <=', $fiveDaysAgo)
-            ->where('review_reminder_sent_at IS NULL')
+            ->where('created_at <=', $xDaysAgo)
+            ->where('review_reminder_sent_at', null)
             ->findAll(100);
 
         if (!$bookings) {
-            CLI::write('Keine Buchungen gefunden, die eine Review-Erinnerung benötigen.', 'yellow');
+            CLI::write(lang('Reviews.noBookingsFound'), 'yellow');
             return;
         }
 
         foreach ($bookings as $booking) {
-            $offer = $this->offerModel->find($booking['offer_id']);
+            $offer = $this->offerModel->find($booking['reference_id']);
             if (!$offer) {
-                CLI::write("Offer ID {$booking['offer_id']} nicht gefunden.", 'red');
+                CLI::write(lang('Reviews.offerNotFound', [$booking['reference_id']]), 'red');
                 continue;
             }
 
-            $creator = $this->userModel->find($offer['created_by']);
-            if (!$creator) {
-                CLI::write("Anbieter (User ID {$offer['created_by']}) nicht gefunden.", 'red');
+            // Prüfen, ob bereits eine Bewertung für diese Offer existiert egal an welche Firma
+            $existingReview = $this->reviewModel
+                ->where('offer_id', $offer['id'])
+                ->first();
+
+            if ($existingReview) {
+                CLI::write(lang('Reviews.alreadyReviewed', [$booking['id']]), 'yellow');
+                // Reminder nicht senden, da Bewertung schon existiert
                 continue;
             }
 
-            // Review-Link generieren
-            $reviewLink = $this->createReviewLink($booking['offer_id'], $booking['recipient_id']);
+            // Creator der Offer (kein User)
+            $creatorEmail = $offer['email'] ?? null;
+            if (!$creatorEmail) {
+                CLI::write(lang('Reviews.creatorEmailMissing', [$offer['id']]), 'red');
+                continue;
+            }
 
-            // E-Mail Daten vorbereiten
+            // Review-Link generieren: öffnet Seite für Anbieter (mit offer hash)
+            $reviewLink = site_url('offer/interested/' . $offer['access_hash']);
+
+            // Maildaten
             $emailData = [
                 'offerTitle' => $offer['title'],
-                'companyName' => ($offer['firstname'] ?? '') . ' ' . ($offer['lastname'] ?? ''),
+                'creatorFirstname' => $offer['firstname'] ?? '',
+                'creatorLastname' => $offer['lastname'] ?? '',
                 'reviewLink' => $reviewLink,
                 'bookingDate' => $booking['created_at'],
             ];
 
-            $subject = "Bitte um Bewertung für dein Angebot: {$offer['title']}";
-
+            $subject = lang('Reviews.emailSubject', [$offer['title']]);
             $message = view('emails/review_reminder', $emailData);
 
-            if ($this->sendEmail($creator['email'], $subject, $message)) {
-                CLI::write("Review-Erinnerung an {$creator['email']} gesendet (Booking-ID {$booking['id']}).", 'green');
+            if ($this->sendEmail($creatorEmail, $subject, $message)) {
+                CLI::write(lang('Reviews.reminderSent', [$creatorEmail, $booking['id']]), 'green');
 
                 $this->bookingModel->update($booking['id'], ['review_reminder_sent_at' => date('Y-m-d H:i:s')]);
             } else {
-                CLI::write("Fehler beim Senden der E-Mail an {$creator['email']} (Booking-ID {$booking['id']}).", 'red');
+                CLI::write(lang('Reviews.emailSendFailed', [$creatorEmail, $booking['id']]), 'red');
             }
         }
     }
@@ -96,7 +102,7 @@ class SendReviewReminder extends BaseCommand
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
-            'title' => 'Ihre Anfrage',
+            'title' => lang('Reviews.emailTitle'),
             'content' => $message,
         ])->render('emails/layout');
 
@@ -113,26 +119,5 @@ class SendReviewReminder extends BaseCommand
         }
 
         return true;
-    }
-
-    public function createReviewLink(int $offerId, int $recipientId): string
-    {
-        $offer = $this->offerModel->find($offerId);
-        if (!$offer) {
-            throw new \Exception("Angebot nicht gefunden.");
-        }
-
-        $hash = bin2hex(random_bytes(16));
-
-        $this->reviewModel->insert([
-            'offer_id' => $offer->id,
-            'recipient_id' => $recipientId,
-            'hash' => $hash,
-            'reviewer_firstname' => $offer->firstname,
-            'reviewer_lastname' => $offer->lastname,
-            'created_at' => date('Y-m-d H:i:s'),
-        ]);
-
-        return site_url('bewerten/' . $hash);
     }
 }

@@ -1,13 +1,13 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2 class="my-4">Bewertungen</h2>
+<h2 class="my-4"><?= esc(lang('Reviews.title')) ?></h2>
 
 <!-- Zusammenfassung -->
 <div class="mb-4">
     <div class="row">
         <div class="col-md-4">
-            <h4>⭑ Durchschnitt:</h4>
+            <h4>⭑ <?= esc(lang('Reviews.average')) ?>:</h4>
             <div class="d-flex align-items-center">
                 <?php
                 $rounded = round($avgReview, 1);
@@ -21,11 +21,11 @@
             </div>
         </div>
         <div class="col-md-4">
-            <h4>Anfragen gekauft:</h4>
+            <h4><?= esc(lang('Reviews.purchasedRequests')) ?>:</h4>
             <p><?= $totalPurchased ?></p>
         </div>
         <div class="col-md-4">
-            <h4>Erhaltene Bewertungen:</h4>
+            <h4><?= esc(lang('Reviews.receivedReviews')) ?>:</h4>
             <p><?= $totalReviews ?></p>
         </div>
     </div>
@@ -33,7 +33,7 @@
 
 <!-- Bewertungen -->
 <?php if (empty($reviews)): ?>
-    <div class="alert alert-info">Noch keine Bewertungen erhalten.</div>
+    <div class="alert alert-info"><?= esc(lang('Reviews.noReviewsYet')) ?></div>
 <?php else: ?>
     <div class="list-group">
         <?php foreach ($reviews as $review): ?>
@@ -45,13 +45,13 @@
                             <i class="bi <?= $i <= $review->rating ? 'bi-star-fill text-warning' : 'bi-star text-secondary' ?>"></i>
                         <?php endfor; ?>
                     </div>
-                    <a class="btn btn-sm " data-bs-toggle="collapse" href="#comment-<?= $review->id ?>" aria-expanded="false" aria-controls="comment-<?= $review->id ?>">
-                        Kommentar anzeigen
+                    <a class="btn btn-sm" data-bs-toggle="collapse" href="#comment-<?= $review->id ?>" aria-expanded="false" aria-controls="comment-<?= $review->id ?>">
+                        <?= esc(lang('Reviews.showComment')) ?>
                     </a>
                 </div>
                 <div class="collapse mt-3" id="comment-<?= $review->id ?>">
                     <div class="card card-body bg-light">
-                        <?= esc($review->comment ?: 'Kein Kommentar.') ?>
+                        <?= esc($review->comment ?: lang('Reviews.noComment')) ?>
                     </div>
                 </div>
             </div>

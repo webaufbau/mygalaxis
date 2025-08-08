@@ -60,7 +60,7 @@
                 <?php if(auth()->user()->inGroup('user')) { ?>
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link <?= ($segment1 === '' || $segment1 === 'dashboard') ? 'active' : '' ?>" href="/dashboard">Übersicht</a>
+                            <a class="nav-link <?= ($segment1 === '' || $segment1 === 'dashboard') ? 'active' : '' ?>" href="/dashboard">XÜbersichtX</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'filter' ? 'active' : '' ?>" href="/filter">Filter</a>

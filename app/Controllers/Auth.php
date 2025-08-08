@@ -8,8 +8,7 @@ class Auth extends Controller
 {
     public function login()
     {
-        // Beispiel: Lade Login View
-        return view('\CodeIgniter\Shield\Views\login'); // auth/login
+        return view('\CodeIgniter\Shield\Views\login');
     }
 
     public function processLogin()
@@ -25,7 +24,7 @@ class Auth extends Controller
             return redirect()->to('/dashboard');
         }
 
-        return redirect()->back()->with('error', 'Login fehlgeschlagen');
+        return redirect()->back()->with('error', lang('Auth.loginFailed'));
     }
 
     public function forgotPassword()
@@ -36,23 +35,19 @@ class Auth extends Controller
         if ($this->request->getMethod() === 'POST') {
             $email = $this->request->getPost('email');
 
-            // Einfaches Validieren der E-Mail
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $session->setFlashdata('error', 'Bitte gib eine gültige E-Mail-Adresse ein.');
+                $session->setFlashdata('error', lang('Auth.invalidEmail'));
                 return redirect()->back();
             }
 
-            // Prüfe, ob User mit dieser E-Mail existiert
             $userModel = new UserModel();
             $user = $userModel->where('email', $email)->first();
 
             if (!$user) {
-                // Sicherheitshalber: nicht sagen, dass die Mail nicht existiert
-                $session->setFlashdata('success', 'Falls die E-Mail registriert ist, erhältst du einen Link zum Zurücksetzen.');
+                $session->setFlashdata('success', lang('Auth.resetLinkSentIfRegistered'));
                 return redirect()->to('/auth/login');
             }
 
-            // Token generieren und speichern (z.B. 64 Zeichen zufällig)
             $token = bin2hex(random_bytes(32));
             $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
@@ -61,17 +56,18 @@ class Auth extends Controller
                 'reset_expires' => $expires,
             ]);
 
-            // Link zum Zurücksetzen
             $resetLink = base_url("/auth/reset-password?token=$token");
 
-            // Mail versenden (hier einfach per mail(), besser SMTP nutzen)
-            $subject = 'Passwort zurücksetzen';
-            $message = "Hallo,\n\nBitte klicke auf folgenden Link, um dein Passwort zurückzusetzen:\n$resetLink\n\nDer Link ist 1 Stunde gültig.";
+            $subject = lang('Auth.resetPasswordSubject');
+            $message = sprintf(
+                lang('Auth.resetPasswordMessage'),
+                $resetLink
+            );
             $headers = 'From: no-reply@deinedomain.de';
 
             mail($email, $subject, $message, $headers);
 
-            $session->setFlashdata('success', 'Falls die E-Mail registriert ist, erhältst du einen Link zum Zurücksetzen.');
+            $session->setFlashdata('success', lang('Auth.resetLinkSentIfRegistered'));
             return redirect()->to('/auth/login');
         }
 
@@ -83,23 +79,20 @@ class Auth extends Controller
         $email = $this->request->getPost('email');
 
         if (empty($email)) {
-            return redirect()->back()->withInput()->with('error', 'Bitte gib deine E-Mail-Adresse ein.');
+            return redirect()->back()->withInput()->with('error', lang('Auth.enterEmail'));
         }
 
         $user = (new UserModel())->where('email', $email)->first();
 
-        if (! $user) {
-            return redirect()->back()->withInput()->with('error', 'Benutzer wurde nicht gefunden.');
+        if (!$user) {
+            return redirect()->back()->withInput()->with('error', lang('Auth.userNotFound'));
         }
 
         $passwords = service('passwords');
-
-        // Send reset link
         $passwords->forgot($user);
 
-        return redirect()->back()->with('message', 'Wenn die E-Mail existiert, wurde ein Link zum Zurücksetzen des Passworts gesendet.');
+        return redirect()->back()->with('message', lang('Auth.resetLinkSentIfRegistered'));
     }
-
 
     public function resetPassword()
     {
@@ -111,10 +104,9 @@ class Auth extends Controller
             if (!$token) {
                 return redirect()->to('/auth/login');
             }
-            // Prüfe Token
             $user = $userModel->where('reset_token', $token)->first();
             if (!$user || strtotime($user['reset_expires']) < time()) {
-                $session->setFlashdata('error', 'Ungültiger oder abgelaufener Link.');
+                $session->setFlashdata('error', lang('Auth.invalidOrExpiredLink'));
                 return redirect()->to('/auth/forgot-password');
             }
 
@@ -122,29 +114,26 @@ class Auth extends Controller
             return;
         }
 
-        // POST: Neues Passwort setzen
         $token = $this->request->getPost('token');
         $password = $this->request->getPost('password');
         $password_confirm = $this->request->getPost('password_confirm');
 
         if (!$token) {
-            $session->setFlashdata('error', 'Ungültige Anfrage.');
+            $session->setFlashdata('error', lang('Auth.invalidRequest'));
             return redirect()->to('/auth/forgot-password');
         }
 
         if ($password !== $password_confirm) {
-            $session->setFlashdata('error', 'Passwörter stimmen nicht überein.');
+            $session->setFlashdata('error', lang('Auth.passwordsDontMatch'));
             return redirect()->back()->withInput();
         }
 
-        // Prüfe Token
         $user = $userModel->where('reset_token', $token)->first();
         if (!$user || strtotime($user['reset_expires']) < time()) {
-            $session->setFlashdata('error', 'Ungültiger oder abgelaufener Link.');
+            $session->setFlashdata('error', lang('Auth.invalidOrExpiredLink'));
             return redirect()->to('/auth/forgot-password');
         }
 
-        // Passwort hashen und speichern
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $userModel->update($user['id'], [
             'password' => $hashedPassword,
@@ -152,7 +141,7 @@ class Auth extends Controller
             'reset_expires' => null,
         ]);
 
-        $session->setFlashdata('success', 'Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden.');
+        $session->setFlashdata('success', lang('Auth.passwordChangedSuccess'));
         return redirect()->to('/auth/login');
     }
 
@@ -167,24 +156,24 @@ class Auth extends Controller
             $password_confirm = $this->request->getPost('password_confirm');
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $session->setFlashdata('error', 'Bitte gültige E-Mail eingeben.');
+                $session->setFlashdata('error', lang('Auth.messageInvalidEmail'));
                 return redirect()->back()->withInput();
             }
 
             if ($password !== $password_confirm) {
-                $session->setFlashdata('error', 'Passwörter stimmen nicht überein.');
+                $session->setFlashdata('error', lang('Auth.passwordsDontMatch'));
                 return redirect()->back()->withInput();
             }
 
             if (strlen($password) < 6) {
-                $session->setFlashdata('error', 'Passwort muss mindestens 6 Zeichen lang sein.');
+                $session->setFlashdata('error', lang('Auth.passwordMinLength'));
                 return redirect()->back()->withInput();
             }
 
             $userModel = new UserModel();
 
             if ($userModel->where('email', $email)->first()) {
-                $session->setFlashdata('error', 'E-Mail ist bereits registriert.');
+                $session->setFlashdata('error', lang('Auth.emailAlreadyRegistered'));
                 return redirect()->back()->withInput();
             }
 
@@ -197,7 +186,7 @@ class Auth extends Controller
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
-            $session->setFlashdata('success', 'Registrierung erfolgreich. Du kannst dich jetzt einloggen.');
+            $session->setFlashdata('success', lang('Auth.registrationSuccess'));
             return redirect()->to('/auth/login');
         }
 
@@ -206,9 +195,6 @@ class Auth extends Controller
 
     public function processRegister()
     {
-        return $this->register(); // einfach delegieren
+        return $this->register();
     }
-
-
-
 }

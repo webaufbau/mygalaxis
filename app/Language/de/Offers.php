@@ -1,6 +1,46 @@
 <?php
 
 return [
+    'title' => 'Angebote',
+    'searchPlaceholder' => 'Suchen...',
+    'searchAriaLabel' => 'Suche',
+    'allStatuses' => 'Alle Status',
+    'statusAvailable' => 'Zum Kauf',
+    'statusSold' => 'Erledigt',
+    'statusOutOfStock' => 'Ausverkauft',
+    'filterButton' => 'Filtern',
+    'noOffersFound' => 'Keine Angebote gefunden. Bitte',
+    'expandFilters' => 'erweitern Sie die Filter',
+    'showDetails' => 'Anfragedetails anzeigen',
+    'buyButton' => 'Kaufen',
+    'detailsButton' => 'Details',
+
+    'my_offers_title'        => 'Meine gekauften Anfragen',
+    'none_found'             => 'Keine Angebote gefunden.',
+    'toBuy'                  => 'Zum Kauf',
+    'done'                   => 'Erledigt',
+    'sold_out'               => 'Ausverkauft',
+    'purchased_on'           => 'Gekauft am',
+    'show_request_details'   => 'Anfragedetails anzeigen',
+    'price_normal'           => 'Normal',
+    'price_discounted'       => 'Reduziert',
+    'price_purchased'        => 'Gekauft',
+
+    'offerNotFound' => 'Offerte nicht gefunden.',
+    'companyNotFound' => 'Firma nicht gefunden.',
+    'invalidRating' => 'Ungültige Bewertung.',
+    'companyNotEligibleForRating' => 'Diese Firma kann nicht bewertet werden. Bitte versuchen Sie es erneut.',
+    'alreadyRated' => 'Sie haben für diese Anfrage bereits eine Bewertung abgegeben.',
+    'thankYouForRating' => 'Vielen Dank für Ihre Bewertung!',
+
+    'offerFeeInfo1'     => 'Wenn Sie eine Offerte annehmen möchte fällt dafür eine Gebühr an. Diese Gebühr wird pro Anfrage berechnet und kann mit den bei uns hinterlegten Zahlungsmitteln bezahlt werden.',
+    'offerFeeInfo2'     => 'Die Preise variieren je nach Art der Anfrage und Wohnungsgrösse. Nachfolgend sehen Sie die Übersicht der Gebühren — so behalten Sie stets den Überblick.',
+    'priceListCaption'  => 'Preisliste der Anfragen für Offerten',
+    'object'            => 'Objekt',
+    'category'          => 'Kategorie',
+    'accept'            => 'Annehmen',
+    'reducedPrice'      => 'Reduzierter Preis',
+
     'type' => [
         'move'              => 'Umzug',
         'cleaning'          => 'Reinigung',
@@ -30,6 +70,10 @@ return [
         'available' => 'Verfügbar',
         'sold' => 'Verkauft',
         'out_of_stock' => 'Nicht verfügbar',
+    ],
+
+    'buy' => [
+        'offer_purchased' => 'Anfrage gekauft',
     ],
 
     'labels' => [
@@ -185,5 +229,16 @@ return [
         'boden_zimmer_anzahl'   => 'Anzahl Zimmer',
         'details_art'           => 'Art des Auftrags (Privat/Öffentlich)',
 
+    ],
+
+    'errors' => [
+        'admin_view_only' => 'Diese Ansicht /offers ist nur für Firmenbenutzer. Als Admin bitte /dashboard verwenden.',
+        'login_required' => 'Bitte einloggen, um Ihre Anfragen zu sehen.',
+        'not_enough_balance' => 'Nicht genügend Guthaben oder keine gültige Kreditkarte.',
+        'invalid_link' => 'Ungültiger Link.',
+    ],
+
+    'messages' => [
+        'purchase_success' => 'Anfrage erfolgreich gekauft!',
     ],
 ];

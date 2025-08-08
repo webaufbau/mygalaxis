@@ -48,6 +48,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'auto_purchase',
             'email_text',
             'stripe_customer_id',
+            'language',
         ];
     }
 

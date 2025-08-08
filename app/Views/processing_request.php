@@ -60,18 +60,32 @@
 <div class="container mt-5">
     <div class="loader-container">
         <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-        <div class="message">Ihre Anfrage wird verarbeitet...<br>Bitte einen Moment Geduld.</div>
+        <div class="message">
+            <?= lang('General.processingRequest') ?><br>
+            <?= lang('General.pleaseWait') ?>
+        </div>
     </div>
 </div>
 
+<?php $locale = getCurrentLocale(); ?>
+
 <script>
+    const locale = '<?= esc($locale) ?>';
+
+    function buildUrl(path) {
+        if (locale === 'de') {
+            return '/' + path;
+        }
+        return '/' + locale + '/' + path;
+    }
+
     async function checkSession() {
         try {
-            const response = await fetch('/verification/check-session');
+            const response = await fetch(buildUrl('verification/check-session'));
             const data = await response.json();
 
             if (data.status === 'ok') {
-                window.location.href = '/verification';
+                window.location.href = buildUrl('verification');
             } else {
                 setTimeout(checkSession, 2000);
             }
@@ -82,6 +96,7 @@
 
     checkSession();
 </script>
+
 
 </body>
 </html>

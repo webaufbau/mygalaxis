@@ -104,7 +104,7 @@ class Filters extends Controller
 
         $userModel->save($data);
 
-        return redirect()->to('/filter')->with('message', 'Filter wurden gespeichert.');
+        return redirect()->to('/filter')->with('message', lang('Filter.messageFilterSaved'));
     }
 
 }

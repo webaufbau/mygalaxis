@@ -43,6 +43,7 @@ class Profile extends Controller
             'company_website',
             'company_email',
             'company_phone',
+            'language',
         ]);
 
         $data['auto_purchase'] = $this->request->getPost('auto_purchase') ? 1 : 0;
@@ -54,6 +55,6 @@ class Profile extends Controller
                 ->with('errors', $userModel->errors());
         }
 
-        return redirect()->to('/profile')->with('success', 'Daten erfolgreich aktualisiert.');
+        return redirect()->to('/profile')->with('success', lang('General.successMessageUpdate'));
     }
 }

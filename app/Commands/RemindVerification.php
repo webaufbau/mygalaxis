@@ -32,6 +32,12 @@ class RemindVerification extends BaseCommand
         }
 
         foreach ($offers as $offer) {
+
+            // Sprache des Benutzers aus der Offerte Info setzen
+            $language = $offer['language'] ?? 'de';  // default Deutsch
+            service('language')->setLocale($language);
+
+
             $formFields = json_decode($offer['form_fields'], true);
             $email = $formFields['email'] ?? $offer['email'] ?? null;
             $vorname = $formFields['firstname'] ?? $offer['firstname'] ?? 'Nutzer';

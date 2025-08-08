@@ -68,6 +68,8 @@ class User extends \CodeIgniter\Shield\Entities\User
     private ?string $average_rating = null;
     private ?string $reviews = null;
 
+    private ?string $language = null;
+
     /**
      * @var string[]
      * @phpstan-var list<string>

@@ -5,7 +5,7 @@
 <h2>Passwort vergessen</h2>
 <p>Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen des Passworts zu erhalten.</p>
 
-<form method="post" action="/auth/forgot-password">
+<form method="post" action="<?=lang_url('auth/forgot-password');?>">
     <?= csrf_field() ?>
 
     <div class="mb-3">

@@ -71,15 +71,15 @@ echo form_open($queryroute, $attributes);
         <div class="col-md-12">
             <div class="btn-group float-end">
                 <!--<a href="<?=site_url('crud?model='.$entity->getModelShortname());?>" class="btn btn-default btn-sm"><i class="bi bi-asterisk"></i> Alle anzeigen</a>-->
-                <button type="submit" class="btn btn-primary btn-sm" name="submitaction" id="submitactionSave" value="save" title="[CTRL] + [s]">Speichern</button>
+                <button type="submit" class="btn btn-primary btn-sm" name="submitaction" id="submitactionSave" value="save" title="[CTRL] + [s]"><?= esc(lang('General.save')) ?></button>
                 <?php if($id>0) { ?>
-                <a href="<?=site_url($url_prefix.$app_controller.'/form', 'https');?>" class="btn btn-info btn-sm">Neuer Eintrag</a>
+                <a href="<?=site_url($url_prefix.$app_controller.'/form', 'https');?>" class="btn btn-info btn-sm"><?= esc(lang('General.newEntry')) ?></a>
                 <?php } ?>
                 <?php if(isset($form_configuration['config']['seo_slug_field']) && isset($form_configuration['fields']['seo'][$form_configuration['config']['seo_slug_field']])) { ?>
-                    <a href="<?=site_url($form_configuration['fields']['seo'][$form_configuration['config']['seo_slug_field']]['prefix'].'/'.$entity->getValue($form_configuration['config']['seo_slug_field']), 'https');?>" target="preview" class="btn btn-eap btn-primary btn-sm"><i class="bi bi-eye"></i> Ansehen</a>
+                    <a href="<?=site_url($form_configuration['fields']['seo'][$form_configuration['config']['seo_slug_field']]['prefix'].'/'.$entity->getValue($form_configuration['config']['seo_slug_field']), 'https');?>" target="preview" class="btn btn-eap btn-primary btn-sm"><i class="bi bi-eye"></i> <?= esc(lang('General.view')) ?></a>
                 <?php } ?>
                 <?php if(isset($id) && $id > 0) { ?>
-                    <button type="submit" class="btn btn-danger btn-sm del" name="submitaction" id="submitactionSave" value="delete">Löschen</button>
+                    <button type="submit" class="btn btn-danger btn-sm del" name="submitaction" id="submitactionSave" value="delete"><?= esc(lang('General.delete')) ?></button>
                 <?php } ?>
             </div>
         </div>

@@ -3,19 +3,19 @@
 
 <h2 class="mb-3"><?= esc($title) ?></h2>
 <p class="lead">
-    Wenn Sie eine Offerte annehmen möchte fällt dafür eine Gebühr an. Diese Gebühr wird pro Anfrage berechnet und kann mit den bei uns hinterlegten Zahlungsmitteln bezahlt werden.
-    Die Preise variieren je nach Art der Anfrage und Wohnungsgrösse. Nachfolgend sehen Sie die Übersicht der Gebühren — so behalten Sie stets den Überblick.
+    <?= lang('Offers.offerFeeInfo1') ?><br>
+    <?= lang('Offers.offerFeeInfo2') ?>
 </p>
 
 <div class="table-responsive">
     <table class="table table-bordered table-hover align-middle">
-        <caption class="caption-top fw-semibold mb-2">Preisliste der Anfragen für Offerten</caption>
+        <caption class="caption-top fw-semibold mb-2"><?= lang('Offers.priceListCaption') ?></caption>
         <thead class="table-light">
         <tr>
-            <th scope="col">Objekt</th>
-            <th scope="col">Kategorie</th>
-            <th scope="col">Annehmen</th>
-            <th scope="col">Reduzierter Preis</th>
+            <th scope="col"><?= lang('Offers.object') ?></th>
+            <th scope="col"><?= lang('Offers.category') ?></th>
+            <th scope="col"><?= lang('Offers.accept') ?></th>
+            <th scope="col"><?= lang('Offers.reducedPrice') ?></th>
         </tr>
         </thead>
         <tbody>

@@ -65,10 +65,28 @@
     <?= $this->renderSection('content') ?>
 </main>
 
+
 <!-- Footer -->
-<footer class="bg-light text-center text-muted py-4 mt-auto border-top">
-    <div class="container">
-        <small>&copy; <?= date('Y') ?> Offerten Manager – Alle Rechte vorbehalten</small>
+<footer class="bg-white border-top mt-5 py-3">
+    <div class="container d-flex justify-content-center">
+        <!-- Sprachumschalter -->
+        <form method="get" action="" class="m-0">
+            <?php
+            $locales = ['de' => 'Deutsch', 'en' => 'English', 'fr' => 'Français', 'it' => 'Italiano'];
+            $currentUri = service('uri')->getPath();
+            $currentLocale = getCurrentLocale(array_keys($locales));
+            ?>
+
+            <select class="form-select form-select-sm" onchange="location = this.value;">
+                <?php foreach ($locales as $code => $name):
+                    $url = base_url(changeLocaleInUri($currentUri, $code, array_keys($locales)));
+                    $selected = ($code === $currentLocale) ? 'selected' : '';
+                    ?>
+                    <option value="<?= esc($url) ?>" <?= $selected ?>><?= esc($name) ?></option>
+                <?php endforeach; ?>
+            </select>
+
+        </form>
     </div>
 </footer>
 

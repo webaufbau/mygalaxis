@@ -6,8 +6,7 @@ use App\Libraries\TwilioService;
 
 class Verification extends BaseController
 {
-    public function index()
-    {
+    public function index() {
         $maxWaitTime = 5; // Sekunden
         $waited = 0;
 
@@ -20,7 +19,7 @@ class Verification extends BaseController
             $waited++;
 
             if ($waited >= $maxWaitTime) {
-                log_message('info', 'Verifikation kann nicht gemacht werden uuid fehlt nach 5 Sekunden' .  print_r($_SESSION, true));
+                log_message('info', 'Verifikation kann nicht gemacht werden uuid fehlt nach 5 Sekunden' . print_r($_SESSION, true));
 
                 return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl); // Fehlerseite oder Hinweis
             }
@@ -29,7 +28,7 @@ class Verification extends BaseController
         $db = \Config\Database::connect();
         $builder = $db->table('offers');
 
-        $maxWaitTime = 18; // Maximal 10 Sekunden warten
+        $maxWaitTime = 18; // Maximal x Sekunden warten
         $waited = 0;
         $sleepInterval = 1; // Sekunde
 
@@ -47,10 +46,10 @@ class Verification extends BaseController
         }
 
         if (!$row) {
-            log_message('info', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID '.$uuid.': ' .  print_r($_SESSION, true));
+            log_message('info', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID ' . $uuid . ': ' . print_r($_SESSION, true));
             log_message('info', 'Abfrage: ' . $builder->db()->getLastQuery());
 
-            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl)->with('error', 'Keine Anfrage gefunden.');
+            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl)->with('error', lang('Verification.noOfferFound'));
         }
 
         // form_fields ist JSON, decode es:
@@ -68,13 +67,23 @@ class Verification extends BaseController
         session()->set('verify_method', $method);
 
         // Weiterleitung zu send(), um direkt Code zu verschicken
-        return redirect()->to('/verification/send');
+        $locale = getCurrentLocale(); // 'de', 'fr', 'en', ...
+
+        if ($locale === 'de') {
+            // Deutsch ohne Prefix
+            return redirect()->to('/verification/send');
+        } else {
+            // Andere Sprachen mit Prefix
+            return redirect()->to("/{$locale}/verification/send");
+        }
     }
 
     public function processing()
     {
         log_message('info', 'Verifizierung processing: Warte auf Datensatz');
-        return view('processing_request');
+        return view('processing_request', [
+            'siteConfig' => $this->siteConfig,
+        ]);
     }
 
     public function checkSession()
@@ -111,7 +120,7 @@ class Verification extends BaseController
 
         if (!$phone) {
             log_message('info', 'Verifizierung gesendet: Verifizierung Telefonnummer fehlt.');
-            return redirect()->back()->with('error', 'Telefonnummer fehlt.');
+            return redirect()->back()->with('error', lang('Verification.phoneMissing'));
         }
 
         $phone = $this->normalizePhone($phone);
@@ -121,11 +130,11 @@ class Verification extends BaseController
 
         // Wenn kein Mobile, dann nur Anruf zulassen
         if (!$isMobile && $method !== 'call') {
-            return redirect()->back()->with('error', 'Festnetznummer: nur Anruf-Verifizierung möglich.');
+            return redirect()->back()->with('error', lang('Verification.fixedLineOnlyCall'));
         }
 
         if (!$method) {
-            return redirect()->back()->with('error', 'Bitte Verifizierungsmethode wählen.');
+            return redirect()->back()->with('error', lang('Verification.chooseMethod'));
         }
 
         //$method = 'call';
@@ -140,6 +149,10 @@ class Verification extends BaseController
         $twilio = new TwilioService();
         $success = false;
 
+        // Hilfsfunktion für korrekte locale-URL
+        $locale = getCurrentLocale();
+        $prefix = ($locale === 'de') ? '' : '/' . $locale;
+
         if ($method === 'sms') {
             $success = false; // $twilio->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
 
@@ -150,21 +163,28 @@ class Verification extends BaseController
 
                 // Fallback: Infobip versuchen
                 $infobip = new \App\Libraries\InfobipService();
-                $infobipResponseArray = $infobip->sendSms($phone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet: $verificationCode");
+                $message = lang('Verification.smsVerificationCode', [
+                    'sitename' => $this->siteConfig->name,
+                    'code' => $verificationCode
+                ]);
+                $infobipResponseArray = $infobip->sendSms($phone, $message);
 
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
                 session()->set('sms_message_id', $infobipResponseArray['messageId']);
 
                 if ($infobipResponseArray) {
                     log_message('info', "SMS-Code an $phone über Infobip gesendet (Fallback).");
-                    return redirect()->to('/verification/confirm');
+                    return redirect()->to($prefix . '/verification/confirm');
                 } else {
                     log_message('error', "Infobip SMS Fehler an $phone.");
                 }
             }
         } elseif ($method === 'call') {
             //$phone = '+436505711660';
-            $success = $twilio->sendCallCode($phone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet", $verificationCode);
+            $message = lang('Verification.callVerificationCode', [
+                'sitename' => $this->siteConfig->name,
+            ]);
+            $success = $twilio->sendCallCode($phone, $message, $verificationCode);
 
             if ($success) {
                 log_message('info', "Anruf-Code an $phone gestartet.");
@@ -174,11 +194,10 @@ class Verification extends BaseController
         }
 
         if ($success) {
-            return redirect()->to('/verification/confirm');
+            return redirect()->to($prefix . '/verification/confirm');
         }
 
-        return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
-
+        return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
     }
 
     public function confirm()
@@ -190,7 +209,6 @@ class Verification extends BaseController
         }
 
         $smsStatus = session('sms_sent_status'); // z.B. "DELIVERED_TO_HANDSET", "INVALID_DESTINATION_ADDRESS"
-
 
         return view('verification_confirm', [
             'siteConfig' => $this->siteConfig,
@@ -204,6 +222,10 @@ class Verification extends BaseController
 
     public function verify() {
         $request = service('request');
+
+        // Aktuelle Sprache ermitteln (Locale Helper muss verfügbar sein)
+        $locale = getCurrentLocale();
+        $prefix = ($locale === 'de') ? '' : '/' . $locale;
 
         $uuid = session()->get('uuid');
         $newPhone = $request->getPost('phone');
@@ -246,7 +268,11 @@ class Verification extends BaseController
             if ($method === 'sms') {
                 // Twilio deaktiviert, direkt Fallback
                 $infobip = new \App\Libraries\InfobipService();
-                $infobipResponseArray = $infobip->sendSms($normalizedPhone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet: $verificationCode");
+                $message = lang('Verification.smsVerificationCode', [
+                    'sitename' => $this->siteConfig->name,
+                    'code' => $verificationCode
+                ]);
+                $infobipResponseArray = $infobip->sendSms($normalizedPhone, $message);
 
                 log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet: " . print_r($infobipResponseArray, true));
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
@@ -254,22 +280,25 @@ class Verification extends BaseController
 
                 if ($infobipResponseArray) {
                     log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
-                    return redirect()->to('/verification/confirm');
+                    return redirect()->to($prefix . '/verification/confirm');
                 } else {
                     log_message('error', "Infobip SMS Fehler an $normalizedPhone.");
                 }
 
-                return redirect()->to('/verification/confirm');
+                return redirect()->to($prefix . '/verification/confirm');
             }
 
             if ($method === 'call') {
-                $success = $twilio->sendCallCode($normalizedPhone, "Ihr Verifizierungscode für " . $this->siteConfig->name . " lautet", $verificationCode);
+                $message = lang('Verification.callVerificationCode', [
+                    'sitename' => $this->siteConfig->name,
+                ]);
+                $success = $twilio->sendCallCode($normalizedPhone, $message, $verificationCode);
                 if ($success) {
-                    return redirect()->to('/verification/confirm');
+                    return redirect()->to($prefix . '/verification/confirm');
                 }
             }
 
-            return redirect()->to('/verification')->with('error', 'Fehler beim Versenden des Codes.');
+            return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
         }
 
         // --- FALL 2: Benutzer gibt Bestätigungscode ein ---
@@ -293,12 +322,12 @@ class Verification extends BaseController
 
             // Falscher Code
             log_message('info', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
-            return redirect()->back()->with('error', 'Falscher Code. Bitte erneut versuchen.');
+            return redirect()->back()->with('error', lang('Verification.wrongCode'));
         }
 
 
         // --- FALL 3: Ungültiger Request ---
-        return redirect()->back()->with('error', 'Ungültige Anfrage.');
+        return redirect()->back()->with('error', lang('Verification.invalidRequest'));
 
     }
 
@@ -319,21 +348,23 @@ class Verification extends BaseController
     }
 
     // sending with mail after inserted and not verified:
-    public function verifyOffer($offerId = null, $token = null)
-    {
+    public function verifyOffer($offerId = null, $token = null) {
+        $locale = getCurrentLocale();
+        $prefix = ($locale === 'de') ? '' : '/' . $locale;
+
         if (!$offerId || !$token) {
-            return redirect()->to('/')->with('error', 'Ungültiger Verifizierungslink.');
+            return redirect()->to($prefix . '/')->with('error', lang('Verification.invalidVerificationLink'));
         }
 
         $offerModel = new \App\Models\OfferModel();
         $offer = $offerModel->find($offerId);
 
         if (!$offer || $offer['verification_token'] !== $token) {
-            return redirect()->to('/')->with('error', 'Ungültiger oder abgelaufener Verifizierungslink.');
+            return redirect()->to($prefix . '/')->with('error', lang('Verification.invalidOrOldVerificationLink'));
         }
 
         if ((int)$offer['verified'] === 1) {
-            return redirect()->to('/')->with('message', 'Angebot bereits verifiziert.');
+            return redirect()->to($prefix . '/')->with('message', lang('Verification.alreadyVerified'));
         }
 
         $fields = json_decode($offer['form_fields'], true);
@@ -348,7 +379,7 @@ class Verification extends BaseController
         session()->set('verify_method', $method);
         session()->set('next_url', $this->siteConfig->thankYouUrl); // fix immer danke seite
 
-        return redirect()->to('/verification/send');
+        return redirect()->to($prefix . '/verification/send');
     }
 
     private function normalizePhone(string $phone): string

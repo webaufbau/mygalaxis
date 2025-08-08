@@ -82,7 +82,7 @@ class OfferPurchaseService
         $bookingModel->insert([
             'user_id' => $user->id,
             'type' => 'offer_purchase',
-            'description' => "Anfrage gekauft: #" . $offer['id'],
+            'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'],
             'reference_id' => $offer['id'],
             'amount' => -$price,
             'created_at' => date('Y-m-d H:i:s'),
