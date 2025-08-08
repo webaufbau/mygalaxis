@@ -88,3 +88,6 @@ UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'https:\/\/mygal
 UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'mygalaxis.primeno.ch', 'my.offertenschweiz.ch');
 UPDATE wpei_fluentform_form_meta SET `value` = REPLACE(`value`, 'next_url_action={inputs.next_url_action}&name={inputs.names}&service_url={inputs.service_url}&uuid={inputs.uuid}', 'additional_service={inputs.additional_service}&refurl={wp.site_url}&service_url={inputs.service_url}&uuid={inputs.uuid}');
 
+
+
+
