@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 return [
     'pageNotFound'    => '404 - Page Not Found',
-    'sorryCannotFind' => 'Sorry! The page you are looking for could not be found.',
+    'sorryCannotFind' => 'Sorry! The requested page could not be found.',
     'badRequest'      => '400 - Bad Request',
-    'sorryBadRequest' => 'Sorry! We couldn’t process your request.',
-    'whoops'          => 'Oops!',
+    'sorryBadRequest' => 'Sorry! Your request could not be processed.',
+    'whoops'          => 'Whoops!',
     'weHitASnag'      => 'Something went wrong. Please try again later.',
 ];
