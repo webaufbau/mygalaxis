@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<h2>Kategorien bearbeiten</h2>
+<!--<h2>Kategorien bearbeiten</h2>-->
 
 <form method="post">
     <?= csrf_field() ?>
