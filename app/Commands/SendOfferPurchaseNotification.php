@@ -87,7 +87,7 @@ class SendOfferPurchaseNotification extends BaseCommand
 
     protected function sendEmailToCompany(User $company, array $offer, array $customer): void
     {
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
 
         // Sprache aus Offer-Daten setzen
         $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
@@ -111,7 +111,7 @@ class SendOfferPurchaseNotification extends BaseCommand
 
     protected function sendEmailToCustomer(array $customer, User $company, array $offer): void
     {
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
 
         // Sprache aus Offer-Daten setzen
         $language = $offer['language'] ?? 'de'; // Fallback: Deutsch
@@ -149,7 +149,7 @@ class SendOfferPurchaseNotification extends BaseCommand
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([

@@ -63,7 +63,7 @@ class RemindVerification extends BaseCommand
             $emailData = [
                 'data' => $formFields,
                 'verifyLink' => $verifyLink,
-                'siteConfig' => config('SiteConfig'),
+                'siteConfig' => siteconfig(),
             ];
 
             $htmlMessage = view('emails/verification_reminder', $emailData);
@@ -81,7 +81,7 @@ class RemindVerification extends BaseCommand
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
 
         $email = \Config\Services::email();
         $email->setTo($to);
