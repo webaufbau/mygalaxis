@@ -17,7 +17,7 @@ function renderInputs($translations, $namePrefix) {
 ?>
 
 <div class="container mt-5">
-    <h2>Übersetzungen</h2>
+    <h2>Texte</h2>
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
