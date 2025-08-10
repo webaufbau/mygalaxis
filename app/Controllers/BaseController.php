@@ -52,7 +52,7 @@ abstract class BaseController extends Controller
 
     protected string $permission_prefix = '';
 
-    protected SiteConfig $siteConfig;
+    protected \App\Libraries\SiteConfigLoader $siteConfig;
 
     /**
      * Be sure to declare properties for any property fetch you initialized.
@@ -77,7 +77,7 @@ abstract class BaseController extends Controller
 
         //$this->template->set('flash_message', $this->getFlash());
 
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
         $this->siteConfig = $siteConfig;
         $this->template->set('siteConfig', $siteConfig);
 
