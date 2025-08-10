@@ -66,7 +66,7 @@ class Language extends AdminBase
             'search_term' => $this->request->getGet('search_term'),
         ]);
 
-        return $this->template->load('account/admin/language_editor');
+        return $this->template->load('admin/language_editor');
     }
 
     public function update()
@@ -171,7 +171,7 @@ class Language extends AdminBase
             'search_term' => $search_term,
         ]);
 
-        return $this->template->load('account/admin/language_editor');
+        return $this->template->load('admin/language_editor');
     }
 
     private function searchInFiles($searchTerm, $directory) {
