@@ -134,6 +134,11 @@ if ($currentLocale !== 'de') {
                             <i class="bi bi-gear me-1"></i> Einstellungen
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-normal" href="/admin/language-editor">
+                            <i class="bi bi-translate me-1"></i> Texte
+                        </a>
+                    </li>
 
                     <?php } ?>
                     <!-- Logout Right -->

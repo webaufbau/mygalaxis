@@ -229,5 +229,15 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
 
     $routes->get('campaign/mark-responded/(:num)', 'Admin\Campaign::markResponded/$1', ['filter' => 'auth']);
 
+    
+    $routes->get('language-editor', 'Admin\Language::index');
+    $routes->post('language-editor/update', 'Admin\Language::update');
+    $routes->get('language-editor/search', 'Admin\Language::search');
+
+    $routes->match(['GET', 'POST'], 'push', 'Admin\Push::index');
+    $routes->match(['GET', 'POST'], 'push/form', 'Admin\Push::form');
+    $routes->match(['GET', 'POST'], 'push/form/(:num)', 'Admin\Push::form/$1');
+    $routes->match(['GET', 'POST'], 'push/delete/(:num)', 'Admin\Push::delete/$1');
+
 
 });

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Account\Admin;
+namespace App\Controllers\Admin;
 
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
