@@ -72,6 +72,9 @@ writable/config/*
 writable/debugbar/*
 !writable/debugbar/.gitkeep
 
+writable/Language/*
+!writable/Language/.gitkeep
+
 php_errors.log
 
 #-------------------------
