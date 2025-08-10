@@ -1,0 +1,3 @@
+<?php
+// The secret token to add as a GitHub or GitLab secret, or otherwise as https://www.example.com/?token=secret-token
+define("TOKEN", "AAAAA=");

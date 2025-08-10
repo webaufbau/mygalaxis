@@ -129,6 +129,11 @@ if ($currentLocale !== 'de') {
                             <i class="bi bi-list me-1"></i> Kategorien
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-normal" href="/admin/settings">
+                            <i class="bi bi-gear me-1"></i> Einstellungen
+                        </a>
+                    </li>
 
                     <?php } ?>
                     <!-- Logout Right -->
