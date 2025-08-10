@@ -115,7 +115,7 @@ class Language extends AdminBase
             }
         }
 
-        return redirect()->to('/admin/language-editor')->with('success', 'Übersetzungen aktualisiert.');
+        return redirect()->to('/admin/language-editor')->with('success', 'Texte aktualisiert.');
     }
 
     public function search() {

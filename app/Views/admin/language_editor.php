@@ -16,14 +16,12 @@ function renderInputs($translations, $namePrefix) {
 
 ?>
 
-<div class="container mt-5">
+<div class=" mt-5">
     <h2>Texte</h2>
 
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
-    <?php endif; ?>
-
     <form action="<?= site_url('admin/language-editor/update'); ?>" method="post" id="language-form">
+        <?= csrf_field() ?>
+
         <div class="form-group">
             <label for="file-select">Wählen Sie ein Thema aus:</label>
             <select class="form-control form-select mb-3" id="file-select" onchange="showForm()">
