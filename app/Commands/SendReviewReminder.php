@@ -98,7 +98,7 @@ class SendReviewReminder extends BaseCommand
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([

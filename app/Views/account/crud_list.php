@@ -1,5 +1,5 @@
 
-    <h2><?=$page_title;?></h2>
+    <!--<h2><?=$page_title;?></h2>-->
 
     <div class="d-flex justify-content-start">
     <a href="<?=site_url($app_controller.'/form/?model='.$model_name);?>" class="btn btn-default"><i class="bi bi-plus"></i></a>

@@ -1,7 +1,7 @@
 
 <div class="col ">
 
-    <h2><?=$page_title;?></h2>
+    <!--<h2><?=$page_title;?></h2>-->
 
     <nav class="navbar navbar-expand-lg navbar-filters rounded-3 my-3">
         <div class="container-fluid">

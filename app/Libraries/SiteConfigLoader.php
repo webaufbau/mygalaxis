@@ -95,6 +95,10 @@ class SiteConfigLoader
             }
         }
 
+        $dir = dirname($this->jsonPath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
         $success = file_put_contents($this->jsonPath, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
 
         if ($success) {

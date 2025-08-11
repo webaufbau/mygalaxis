@@ -54,7 +54,7 @@ if ($currentLocale !== 'de') {
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Logo -->
         <a class="navbar-brand fw-bold text-primary" href="<?= lang_url('login') ?>">
-            <?= esc(Config('SiteConfig')->name) ?>
+            <?= esc(siteconfig()->name) ?>
         </a>
 
         <?php if (auth()->loggedIn()): ?>

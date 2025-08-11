@@ -111,14 +111,14 @@ class SendDailyNewOffers extends BaseCommand
 
     protected function sendEmailToCompany(User $user, array $offers): void
     {
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
 
         // Sprache des Benutzers setzen
         $language = $user->language ?? 'de';  // default Deutsch
         service('language')->setLocale($language);
 
         $data = [
-            'siteConfig' => Config('SiteConfig'),
+            'siteConfig' => siteconfig(),
             'firma'  => $user,
             'offers' => $offers,
         ];
@@ -141,7 +141,7 @@ class SendDailyNewOffers extends BaseCommand
 
     protected function sendEmail(string $to, string $subject, string $message): bool
     {
-        $siteConfig = config('SiteConfig');
+        $siteConfig = siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
