@@ -63,7 +63,6 @@ function defineAppRoutes($routes) {
         $routes->get('fluentform/handle', '\App\Controllers\FluentForm::handle');
         $routes->post('payrexx', '\App\Controllers\WebhookController::payrexx');
         $routes->post('deploy', '\App\Controllers\Deploy::webhook');
-        $routes->get('deployget', '\App\Controllers\Deploy::webhook');
     });
 
     // old:

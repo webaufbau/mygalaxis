@@ -79,6 +79,8 @@ class Filters extends BaseFilters
                 'except' => [
                     'form/webhook',
                     'form/handle',
+                    'webhook/deploy',
+                    'webhook/fluentform',
                     'verification',
                     'verification/send',
                     'verification/confirm',
