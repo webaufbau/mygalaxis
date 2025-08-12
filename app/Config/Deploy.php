@@ -12,6 +12,7 @@ class Deploy extends BaseConfig
     public string $token = '';  // z.B. aus .env
     public bool $runComposerUpdate = false;
     public string $composerPath = '/usr/local/bin/composer';
+    public string $composerHome = '/tmp';
     public int $maxExecutionTime = 180;
     public string $beforePull = '';
     public string $afterPull = '';

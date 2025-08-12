@@ -203,7 +203,13 @@ class Deploy extends Controller
         // Optional: Composer Update
         if ($this->config->runComposerUpdate) {
             fputs($file, "*** COMPOSER UPDATE INITIATED ***\n");
-            exec($this->config->composerPath . ' update 2>&1', $composerOutput, $composerExitCode);
+
+            // Composer-Home-Umgebungsvariable setzen und dann composer update ausführen
+            $cmd = 'COMPOSER_HOME=' . escapeshellarg($this->config->composerHome) . ' '
+                . escapeshellcmd($this->config->composerPath) . ' update 2>&1';
+
+            exec($cmd, $composerOutput, $composerExitCode);
+
             $composerOutputText = !empty($composerOutput) ? implode("\n", $composerOutput) : "[no output]";
             $composerOutputText .= "\n";
 
