@@ -347,4 +347,7 @@ Hinweise
    
    Bei jedem Aufruf wird das Skript angestossen, ein weiter Anstoss wird erst ausgeführt wenn voriger beendet. 
    /usr/home/offerv/./sync_db.sh --dry.run >> /usr/home/offerv/www_logs/pt-table-sync.log 2>&1 	
-   
+
+## Beispiel: Git Webhook Update (`sync_db.sh.example`)
+
+Im Projekt findest du eine Beispiel-Datei `sync_db.sh.example`. Diese dient als Vorlage für die Synchronisation zweier Datenbank auf gleichen oder unterschiedlichen Servern.
