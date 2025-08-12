@@ -1,40 +1,77 @@
 #!/bin/bash
 
-LOCKFILE="/tmp/pt-table-sync.lock"
+LOCKFILE="/tmp/db_sync.lock"
 
-if [ -e "$LOCKFILE" ] && kill -0 $(cat "$LOCKFILE") 2>/dev/null; then
-    echo "Script läuft bereits mit PID $(cat $LOCKFILE), Abbruch."
-    exit 1
+if [ -e "$LOCKFILE" ] && kill -0 "$(cat $LOCKFILE)"; then
+  echo "DB Sync läuft bereits, beende..."
+  exit 1
 fi
 
 echo $$ > "$LOCKFILE"
 
-BACKUP_HOST="aaa.your-database.de"
-BACKUP_USER="afg"
-BACKUP_PASS="xxxyyyzzz"
-BACKUP_DB="bkp_at_my"
+# SSH-Key & Port für Zielserver (Import)
+SSH_KEY="~/.ssh/id_rsync_passive"
+SSH_PORT=22
 
-MASTER_HOST="bbb.your-database.de"
-MASTER_USER="afz"
-MASTER_PASS="mmmhhh"
-MASTER_DB="live_at_my"
+DST_DB_IMPORT=true  # true = Import remote triggern
 
-MODE="--dry-run"
-if [ "$1" == "--execute" ]; then
-  MODE="--execute"
-elif [ "$1" == "--dry-run" ]; then
-  MODE="--dry-run"
-fi
+# Array mit DB-Sync-Konfigurationen
+# Format: src_host|src_dbname|src_user|src_pass|dst_host|dst_username|dst_dbname|dst_user|dst_pass
 
-echo "Starte pt-table-sync mit Modus: $MODE"
-echo "Backup-DB: $BACKUP_HOST, Master-DB: $MASTER_HOST"
+databases=(
+  # weitere hier hinzufügen
+)
 
-pt-table-sync $MODE --print \
-  --databases $BACKUP_DB \
-  h=$BACKUP_HOST,u=$BACKUP_USER,p=$BACKUP_PASS \
-  --databases $MASTER_DB \
-  h=$MASTER_HOST,u=$MASTER_USER,p=$MASTER_PASS
+for dbconf in "${databases[@]}"; do
+  IFS='|' read -r SRC_HOST SRC_DB_NAME SRC_DB_USER SRC_DB_PASS DST_HOST DST_USERNAME DST_DB_NAME DST_DB_USER DST_DB_PASS <<< "$dbconf"
 
-echo "Fertig."
+  echo "Sync DB $SRC_DB_NAME@$SRC_HOST → $DST_DB_NAME@$DST_HOST (User: $DST_USERNAME)"
+
+  DUMP_FILE="/tmp/${SRC_DB_NAME}_backup.sql"
+
+  # 1) Dump von Quellserver holen
+  if [ "$SRC_HOST" = "localhost" ]; then
+    # Lokal dumpen
+    mysqldump --single-transaction --quick -u "$SRC_DB_USER" -p"$SRC_DB_PASS" "$SRC_DB_NAME" > "$DUMP_FILE"
+    if [ $? -ne 0 ]; then
+      echo "Fehler beim Dump von $SRC_DB_NAME auf localhost"
+      rm -f "$LOCKFILE"
+      exit 1
+    fi
+  else
+    # Dump remote vom Quellserver holen via ssh
+    echo "Hole Dump remote von $SRC_HOST"
+    ssh -p "$SSH_PORT" "$SRC_HOST" "mysqldump --single-transaction --quick -u $SRC_DB_USER -p'$SRC_DB_PASS' $SRC_DB_NAME" > "$DUMP_FILE"
+    if [ $? -ne 0 ]; then
+      echo "Fehler beim Dump von $SRC_DB_NAME auf $SRC_HOST"
+      rm -f "$LOCKFILE"
+      exit 1
+    fi
+  fi
+
+  # 2) Dump per rsync auf Zielserver übertragen
+  echo "Übertrage Dump zu $DST_USERNAME@$DST_HOST..."
+  rsync -avz -e "ssh -i $SSH_KEY -p $SSH_PORT" "$DUMP_FILE" "$DST_USERNAME@$DST_HOST:/tmp/"
+  if [ $? -ne 0 ]; then
+    echo "Fehler beim Übertragen der DB-Datei zu $DST_HOST"
+    rm -f "$LOCKFILE"
+    exit 1
+  fi
+
+  # 3) Optional: Import auf Zielserver triggern
+  if [ "$DST_DB_IMPORT" = true ]; then
+    echo "Importiere DB $DST_DB_NAME auf $DST_HOST..."
+    ssh -i "$SSH_KEY" -p "$SSH_PORT" "$DST_USERNAME@$DST_HOST" "mysql -u $DST_DB_USER -p'$DST_DB_PASS' $DST_DB_NAME < /tmp/${SRC_DB_NAME}_backup.sql && rm /tmp/${SRC_DB_NAME}_backup.sql"
+    if [ $? -ne 0 ]; then
+      echo "Fehler beim Import der DB $DST_DB_NAME auf $DST_HOST"
+      rm -f "$LOCKFILE"
+      exit 1
+    fi
+  fi
+
+  rm -f "$DUMP_FILE"
+done
 
 rm -f "$LOCKFILE"
+echo "Alle Datenbanken erfolgreich synchronisiert."
+exit 0

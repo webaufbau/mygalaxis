@@ -18,6 +18,9 @@ $routes->get('/', function () {
 });
 
 function defineAppRoutes($routes) {
+    $routes->get('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginView');
+    $routes->post('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginAction');
+    $routes->get('magic-link/verify/(:segment)', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify/$1');
 
     // Auth-Routen von Shield aktivieren (stellt /login, /register etc. bereit)
 
@@ -31,13 +34,6 @@ function defineAppRoutes($routes) {
     // Register
     $routes->get('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerView');
     //$routes->post('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerAction');
-
-    // Route um Magic Link anzufordern (Formular anzeigen und absenden)
-    $routes->get('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginView');
-    $routes->post('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginAction');
-
-// Route zum Verifizieren des Magic Links (Token aus Link)
-    $routes->get('magic-link/verify/(:segment)', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify/$1');
 
 
     // Passwort zurücksetzen (Reset Password)
@@ -98,6 +94,7 @@ function defineAppRoutes($routes) {
 }
 
 defineAppRoutes($routes);
+
 
 // Gruppe für Sprachen
 $routes->group('{locale}', function($routes) {
