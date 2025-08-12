@@ -19,7 +19,7 @@ class Deploy extends Controller
         $json    = json_decode($content, true);
 
         // --- Logging ---
-        $logFile = $this->config->logfile;
+        $logFile = WRITEPATH . 'logs/' . $this->config->logfile;
         $file = fopen($logFile, 'a');
         $time = time();
         date_default_timezone_set('UTC');
