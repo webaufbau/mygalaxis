@@ -63,11 +63,31 @@ function forbid($file, $reason) {
 }
 
 // Check for a GitHub signature
-if (!empty(TOKEN)
-    && isset($_SERVER["HTTP_X_HUB_SIGNATURE_256"])
-    && $token !== hash_hmac('sha256', $content, TOKEN)
-) {
-    forbid($file, "X-Hub-Signature-256 does not match TOKEN");
+// Check for a GitHub signature
+if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"])) {
+    list($algo, $githubSignature) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE"], 2) + array("", "");
+    $expectedSignature = hash_hmac($algo, $content, TOKEN);
+
+    // Debug log
+    fputs($file, "DEBUG: algo={$algo}\n");
+    fputs($file, "DEBUG: githubSignature={$githubSignature}\n");
+    fputs($file, "DEBUG: expectedSignature={$expectedSignature}\n");
+
+    if (!hash_equals($expectedSignature, $githubSignature)) {
+        forbid($file, "X-Hub-Signature does not match TOKEN");
+    }
+} elseif (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE_256"])) {
+    list($algo, $githubSignature) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE_256"], 2) + array("", "");
+    $expectedSignature = hash_hmac('sha256', $content, TOKEN);
+
+    // Debug log
+    fputs($file, "DEBUG: algo=sha256\n");
+    fputs($file, "DEBUG: githubSignature={$githubSignature}\n");
+    fputs($file, "DEBUG: expectedSignature={$expectedSignature}\n");
+
+    if (!hash_equals($expectedSignature, $githubSignature)) {
+        forbid($file, "X-Hub-Signature-256 does not match TOKEN");
+    }
 } elseif (!empty(TOKEN) && isset($_SERVER["HTTP_X_GITLAB_TOKEN"]) && $token !== TOKEN) {
     forbid($file, "X-GitLab-Token does not match TOKEN");
 // Check for a $_GET token
