@@ -113,9 +113,14 @@ class SendDailyNewOffers extends BaseCommand
     {
         $siteConfig = siteconfig();
 
-        // Sprache des Benutzers setzen
-        $language = $user->language ?? 'de';  // default Deutsch
-        service('language')->setLocale($language);
+        // Sprache aus Offer-Daten setzen
+        $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
+        $request = service('request');
+        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+            service('language')->setLocale($language);
+        } else {
+            $request->setLocale($language);
+        }
 
         $data = [
             'siteConfig' => siteconfig(),
