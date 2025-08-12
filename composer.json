@@ -16,7 +16,6 @@
         "codeigniter4/shield": "^1.1",
         "infobip/infobip-api-php-client": "^6.2",
         "mpdf/mpdf": "^8.2",
-        "stripe/stripe-php": "^17.4",
         "twilio/sdk": "^8.6"
     },
     "require-dev": {
