@@ -19,7 +19,9 @@ class Deploy extends Controller
         $json    = json_decode($content, true);
 
         // --- Logging ---
-        $logFile = WRITEPATH . 'logs/' . $this->config->logfile;
+        $baseName = pathinfo($this->config->logfile ?? 'deploy.log', PATHINFO_FILENAME);
+        $date = date('Y-m-d');
+        $logFile = WRITEPATH . 'logs/' . $baseName . '-' . $date . '.log';
         $file = fopen($logFile, 'a');
         $time = time();
         date_default_timezone_set('UTC');
