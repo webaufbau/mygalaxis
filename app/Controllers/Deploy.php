@@ -203,7 +203,7 @@ class Deploy extends Controller
         // Optional: Composer Update
         if ($this->config->runComposerUpdate) {
             fputs($file, "*** COMPOSER UPDATE INITIATED ***\n");
-            \exec('composer update 2>&1', $composerOutput, $composerExitCode);
+            exec($this->config->composerPath . ' update 2>&1', $composerOutput, $composerExitCode);
             $composerOutputText = !empty($composerOutput) ? implode("\n", $composerOutput) : "[no output]";
             $composerOutputText .= "\n";
 

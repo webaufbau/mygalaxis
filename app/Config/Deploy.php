@@ -11,6 +11,7 @@ class Deploy extends BaseConfig
     public string $gitPath = '/usr/bin/git';
     public string $token = '';  // z.B. aus .env
     public bool $runComposerUpdate = false;
+    public string $composerPath = '/usr/local/bin/composer';
     public int $maxExecutionTime = 180;
     public string $beforePull = '';
     public string $afterPull = '';
