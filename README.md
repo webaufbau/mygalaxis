@@ -87,19 +87,11 @@ Das ist der kritischste Teil:
 
 
 
-### The secret token to add as a GitHub or GitLab secret, or otherwise as https://www.example.com/?token=secret-token
-    # erstelle im root git_deploy_token.php
-    define("TOKEN", "");
-
-
-
 # Deployment & Synchronisation
 
-## Beispiel: Git Webhook Update PHP (`git_deploy.php.example`)
+## Git Webhook (/webhook/deploy)
 
-Im Projekt findest du eine Beispiel-Datei `git_deploy.php.example`. Diese dient als Vorlage für das Update Skript als Webhook welches 
-Erstelle einen neuen individuellen Token und passe ihn bei Push im Repos an.
-Dies ist ein Webhook Push welcher ein Update macht.
+Trage die URL /webhook/deploy beim Git Anbieter ein und Token definiert in .env.  
 
 ## Beispiel: Synchronisation der Uploads (`sync_uploads.sh.example`)
 
