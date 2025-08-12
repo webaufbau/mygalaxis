@@ -16,7 +16,8 @@
         "codeigniter4/shield": "^1.1",
         "infobip/infobip-api-php-client": "^6.2",
         "mpdf/mpdf": "^8.2",
-        "twilio/sdk": "^8.6"
+        "twilio/sdk": "^8.6",
+        "wl-online-payments-direct/sdk-php": "^6.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",
