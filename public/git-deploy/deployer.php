@@ -12,11 +12,14 @@ file_put_contents('/home/famajynu/www/my_offertenschweiz_ch/git_webhook_payload.
 // retrieve the token
 if (!$token && isset($_SERVER["HTTP_X_HUB_SIGNATURE"])) {
     list($algo, $token) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE"], 2) + array("", "");
+} elseif (!$token && isset($_SERVER["HTTP_X_HUB_SIGNATURE_256"])) {
+    list($algo, $token) = explode("=", $_SERVER["HTTP_X_HUB_SIGNATURE_256"], 2) + array("", "");
 } elseif (isset($_SERVER["HTTP_X_GITLAB_TOKEN"])) {
     $token = $_SERVER["HTTP_X_GITLAB_TOKEN"];
 } elseif (isset($_GET["token"])) {
     $token = $_GET["token"];
 }
+
 
 // retrieve the checkout_sha
 if (isset($json["checkout_sha"])) {
@@ -60,9 +63,11 @@ function forbid($file, $reason) {
 }
 
 // Check for a GitHub signature
-if (!empty(TOKEN) && isset($_SERVER["HTTP_X_HUB_SIGNATURE"]) && $token !== hash_hmac($algo, $content, TOKEN)) {
-    forbid($file, "X-Hub-Signature does not match TOKEN");
-// Check for a GitLab token
+if (!empty(TOKEN)
+    && isset($_SERVER["HTTP_X_HUB_SIGNATURE_256"])
+    && $token !== hash_hmac('sha256', $content, TOKEN)
+) {
+    forbid($file, "X-Hub-Signature-256 does not match TOKEN");
 } elseif (!empty(TOKEN) && isset($_SERVER["HTTP_X_GITLAB_TOKEN"]) && $token !== TOKEN) {
     forbid($file, "X-GitLab-Token does not match TOKEN");
 // Check for a $_GET token
