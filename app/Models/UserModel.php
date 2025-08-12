@@ -3,6 +3,7 @@ namespace App\Models;
 
 use CodeIgniter\Shield\Entities\User;
 use CodeIgniter\Shield\Models\UserModel as ShieldUserModel;
+use Config\Database;
 
 class UserModel extends \CodeIgniter\Shield\Models\UserModel {
     protected $title = 'Benutzer';
@@ -13,8 +14,9 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
 
     protected $useTimestamps = true;
     protected $afterFind = ['fetchIdentities'];
-    protected $afterInsert = ['saveEmailIdentity'];
-    protected $afterUpdate = ['saveEmailIdentity', 'saveGroups', 'savePermissions'];
+    protected $afterInsert = ['saveEmailIdentity', 'replicateQuery'];
+    protected $afterUpdate = ['saveEmailIdentity', 'saveGroups', 'savePermissions', 'replicateQuery'];
+    protected $afterDelete = ['replicateQuery'];
 
     protected function initialize(): void {
         parent::initialize();
@@ -51,6 +53,14 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'language',
         ];
     }
+
+    protected $queryLog = [];
+
+    protected function replicateQuery(array $data)
+    {
+        return $data;
+    }
+
 
     public function getPrimaryKeyField() {
         return $this->primaryKey;

@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use Config\Database;
 
 class BaseModel extends Model {
     private array $form_configuration = [];
@@ -15,8 +16,9 @@ class BaseModel extends Model {
     protected bool $indexable = false;
 
 
-    protected $afterInsert = ['indexAfterInsert'];
-    protected $afterUpdate = ['indexAfterUpdate'];
+    protected $afterInsert = ['replicateQuery'];
+    protected $afterUpdate = ['replicateQuery'];
+    protected $afterDelete = ['replicateQuery'];
 
     public function getTable() {
         return $this->table;
@@ -281,77 +283,9 @@ class BaseModel extends Model {
         return $this;
     }
 
-    protected function indexAfterInsert(array $data)
+    protected function replicateQuery(array $data)
     {
-        $this->indexContent($this->getInsertID(), $data['data']);
         return $data;
-    }
-
-    protected function indexAfterUpdate(array $data)
-    {
-        $this->indexContent($data['id'][0], $data['data']);
-        return $data;
-    }
-
-    protected function indexContent($id, $data)
-    {
-        if(!$this->indexable) {
-            return false;
-        }
-
-        $modelType = get_class($this);
-        $entity = $this->getEntity();
-        if(!$entity) { return false; }
-        $title = $data[$entity->getTitleField()] ?? null;
-        $link = $this->generateLink($id);
-        $content = $this->generateContent($data);
-        $table = $this->getTable();
-        $id_field = $this->getPrimaryKeyField();
-
-        $db = \Config\Database::connect();
-        $builder = $db->table('search_index');
-
-        // Prüfen, ob der Datensatz bereits existiert
-        $existing = $builder->where('model_type', $modelType)->where('model_id', $id)->get()->getRowArray();
-
-        $existing_entity = model($modelType)->find($id);
-        if($existing_entity) {
-            $title = $existing_entity->getTitle();
-            $content = $existing_entity->getRawContent();
-        }
-
-        $link = $existing_entity->getLink();
-
-
-        $content = str_replace("><", "> <", $content);
-        $content = strip_tags($content);
-        $content = str_replace("\n", " ", $content);
-
-        $indexData = [
-            'user_id' => $data['user_id'] ?? $existing_entity->user_id,
-            'organization_id' => $data['organization_id'] ?? $existing_entity->organization_id,
-            'model_type' => $modelType,
-            'model_id' => $id,
-            'model_table' => $table,
-            'model_id_field' => $id_field,
-            'title' => $title,
-            'link' => $link,
-            'content' => $content,
-            'entry_date' => $existing_entity->getDate(),
-            'entry_text' => substr($content, 0, 215),
-            'entry_image' => $existing_entity->getImage(),
-            'entry_author' => $existing_entity->getAuthor(),
-            'entry_tags' => json_encode($existing_entity->getTags()),
-            'additional_data' => json_encode($data),
-        ];
-
-        if ($existing) {
-            // Update existing record
-            $builder->where('id', $existing['id'])->update($indexData);
-        } else {
-            // Insert new record
-            $builder->insert($indexData);
-        }
     }
 
     public function generateLink($id)
