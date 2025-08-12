@@ -27,7 +27,6 @@ $currentLocale = service('request')->getLocale();
 
             <?php elseif ($meta['multilang'] ?? false): ?>
                 <div>
-                    <label><?= esc($meta['label']) ?></label>
                     <ul class="nav nav-tabs" role="tablist">
                         <?php foreach ($supportedLocales as $index => $lang): ?>
                             <li class="nav-item" role="presentation">
