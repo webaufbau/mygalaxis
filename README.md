@@ -93,9 +93,9 @@ Das ist der kritischste Teil:
 
 Trage die URL /webhook/deploy beim Git Anbieter ein und Token definiert in .env.  
 
-## Beispiel: Synchronisation der Uploads (`sync_uploads.sh.example`)
+## Beispiel: Synchronisation der Uploads (`_examples/sync_uploads.sh.example`)
 
-Im Projekt findest du eine Beispiel-Datei `sync_uploads.sh.example`. Diese dient als Vorlage für ein Skript, mit dem Uploads und andere schreibbare Verzeichnisse vom aktiven auf den passiven Server synchronisiert werden.
+Im Projekt findest du eine Beispiel-Datei `_examples/sync_uploads.sh.example`. Diese dient als Vorlage für ein Skript, mit dem Uploads und andere schreibbare Verzeichnisse vom aktiven auf den passiven Server synchronisiert werden.
 
 ### Inhalt von `sync_uploads.sh.example`
 
@@ -296,9 +296,9 @@ Dieses Skript synchronisiert die Datenbank eines aktiven Servers zu einem passiv
 - Übertragung des Dumps zum Zielserver
 - Import des Dumps in die Zieldatenbank
 
-## Beispiel: Synchronisation der Datenbank (`sync_database.sh.example`)
+## Beispiel: Synchronisation der Datenbank (`_examples/sync_database.sh.example`)
 
-Im Projekt findest du eine Beispiel-Datei `sync_database.sh.example`. Diese dient als Vorlage für die Synchronisation der Datenbank. Nach dem Kopieren in eine ohne .example Datei müssen die Zugangsdaten angepasst werden.
+Im Projekt findest du eine Beispiel-Datei `_examples/sync_database.sh.example`. Diese dient als Vorlage für die Synchronisation der Datenbank. Nach dem Kopieren in eine ohne .example Datei müssen die Zugangsdaten angepasst werden.
 
 ## Verwendung
 
@@ -340,6 +340,6 @@ Hinweise
    Bei jedem Aufruf wird das Skript angestossen, ein weiter Anstoss wird erst ausgeführt wenn voriger beendet. 
    /usr/home/offerv/./sync_db.sh --dry.run >> /usr/home/offerv/www_logs/pt-table-sync.log 2>&1 	
 
-## Beispiel: Git Webhook Update (`sync_db.sh.example`)
+## Beispiel: Git Webhook Update (`_examples/sync_db.sh.example`)
 
-Im Projekt findest du eine Beispiel-Datei `sync_db.sh.example`. Diese dient als Vorlage für die Synchronisation zweier Datenbank auf gleichen oder unterschiedlichen Servern.
+Im Projekt findest du eine Beispiel-Datei `_examples/sync_db.sh.example`. Diese dient als Vorlage für die Synchronisation zweier Datenbank auf gleichen oder unterschiedlichen Servern.
