@@ -17,7 +17,15 @@ $currentLocale = service('request')->getLocale();
         <div class="mb-3">
             <label for="<?= esc($fieldName) ?>"><?= esc($meta['label']) ?></label>
 
-            <?php if ($meta['multilang'] ?? false): ?>
+            <?php if ($meta['type'] === 'file'): ?>
+                <?php if (!empty($values->$fieldName)): ?>
+                    <div class="mb-2">
+                        <img src="<?= esc($values->$fieldName) ?>" alt="<?= esc($meta['label']) ?>" style="max-height: 80px;">
+                    </div>
+                <?php endif; ?>
+                <input type="file" name="<?= esc($fieldName) ?>" id="<?= esc($fieldName) ?>" class="form-control">
+
+            <?php elseif ($meta['multilang'] ?? false): ?>
                 <div>
                     <label><?= esc($meta['label']) ?></label>
                     <ul class="nav nav-tabs" role="tablist">

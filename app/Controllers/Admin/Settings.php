@@ -17,6 +17,19 @@ class Settings extends AdminBase {
         if ($this->request->getMethod() === 'POST') {
             $postData = $this->request->getPost();
 
+            // Dynamisch alle file-Felder aus SiteConfig prüfen und hochladen
+            foreach ($loader->getFields() as $fieldName => $meta) {
+                if (($meta['type'] ?? '') === 'file') {
+                    $file = $this->request->getFile($fieldName);
+                    if ($file && $file->isValid() && !$file->hasMoved()) {
+                        $newName = $file->getRandomName();
+                        $file->move(FCPATH . 'uploads', $newName);
+                        // Webzugänglicher Pfad (URL) speichern
+                        $postData[$fieldName] = base_url('uploads/' . $newName);
+                    }
+                }
+            }
+
             $success = $loader->save($postData);
 
             if ($success) {

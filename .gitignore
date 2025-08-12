@@ -52,6 +52,12 @@ $RECYCLE.BIN/
 Vagrantfile
 
 #-------------------------
+# System Uploads
+#-------------------------
+public/uploads/*
+!public/uploads/index.html
+
+#-------------------------
 # Temporary Files
 #-------------------------
 writable/cache/*

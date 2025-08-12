@@ -41,6 +41,10 @@ class SiteConfig extends BaseConfig
             'type' => 'url',
             'label' => 'Logo URL',
         ],
+        'faviconUrl' => [
+            'type' => 'file',
+            'label' => 'Favicon URL',
+        ],
         'testMode' => [
             'type' => 'checkbox',
             'label' => 'Testmodus aktivieren',
