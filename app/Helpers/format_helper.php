@@ -64,7 +64,7 @@ if (!function_exists('is_mobile_number')) {
             // Deutschland: +49 oder 0 / Mobile: 15x, 16x, 17x
             '/^(\+49|0)(15[0-9]|16[0-9]|17[0-9])[0-9]{7,8}$/',
             // Österreich: +43 oder 0 / Mobile: 650-699 (diverse Provider)
-            '/^(\+43|0)(65[0-9]|66[0-9]|67[0-9])[0-9]{6,8}$/',
+            '/^(\+43|0)(65[0-9]|66[0-9]|67[0-9]|68[0-9]|69[0-9])[0-9]{6,8}$/',
         ];
 
         foreach ($patterns as $pattern) {
