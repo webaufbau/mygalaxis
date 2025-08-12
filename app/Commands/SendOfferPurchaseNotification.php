@@ -91,7 +91,12 @@ class SendOfferPurchaseNotification extends BaseCommand
 
         // Sprache aus Offer-Daten setzen
         $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
-        service('request')->setLocale($language);
+        $request = service('request');
+        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+            service('language')->setLocale($language);
+        } else {
+            $request->setLocale($language);
+        }
 
         $company_backend_offer_link = site_url('/offers/mine#detailsview-' . $offer['id']);
 
