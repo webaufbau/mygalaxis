@@ -95,9 +95,9 @@ Das ist der kritischste Teil:
 
 # Deployment & Synchronisation
 
-## Beispiel: Git Webhook Update (`git_deploy_token.php.example`)
+## Beispiel: Git Webhook Update PHP (`git_deploy.php.example`)
 
-Im Projekt findest du eine Beispiel-Datei `git_deploy_token.php.example`. Diese dient als Vorlage für den Token für das Git-Deploy Skript. 
+Im Projekt findest du eine Beispiel-Datei `git_deploy.php.example`. Diese dient als Vorlage für das Update Skript als Webhook welches 
 Erstelle einen neuen individuellen Token und passe ihn bei Push im Repos an.
 Dies ist ein Webhook Push welcher ein Update macht.
 

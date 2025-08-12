@@ -58,8 +58,20 @@ function defineAppRoutes($routes) {
     // ---- ALLE deine bestehenden Routen ab hier ----
 
     // Webhooks & Forms
+    $routes->group('webhook', function($routes) {
+        $routes->post('fluentform', '\App\Controllers\FluentForm::webhook');
+        $routes->get('fluentform/handle', '\App\Controllers\FluentForm::handle');
+        $routes->post('payrexx', 'WebhookController::payrexx');
+        $routes->post('deploy', 'Deploy::webhook');
+    });
+
+    // old:
     $routes->post('form/webhook', '\App\Controllers\FluentForm::webhook');
     $routes->get('form/handle', '\App\Controllers\FluentForm::handle');
+
+
+
+
 
     // Verifizierung
     $routes->get('verification', 'Verification::index');
@@ -73,9 +85,6 @@ function defineAppRoutes($routes) {
     $routes->get('verification/verify-offer/(:num)/(:any)', 'Verification::verifyOffer/$1/$2');
     $routes->get('verification/sms-status', 'Verification::checkSmsStatus');
 
-
-    // Web Hooks
-    $routes->post('webhooks/payrexx', 'WebhookController::payrexx');
 
     // Registrierung
     $routes->match(['POST'], 'register', 'RegisterController::registerAction');
