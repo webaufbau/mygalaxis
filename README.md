@@ -339,3 +339,12 @@ Hinweise
     Bei großen Datenbanken kann der Dump und Import einige Zeit dauern, die Intervalle entsprechend anpassen.
     Dieses Verfahren ist nicht "Live"-Synchronisation, sondern eine periodische Spiegelung.
     Für Echtzeit-Replikation sind Root-Zugriff und MySQL-Replikation erforderlich, die bei Managed Hosting oft nicht verfügbar sind.
+
+
+# Datenbanksynchronisation per PT-TABLE-SYNC
+
+   Diese Methode ist bei Hetzner verfügbar. Dabei werden 2 Datenbanken alle Tabellen verglichen dann aktualisiert. 
+   
+   Bei jedem Aufruf wird das Skript angestossen, ein weiter Anstoss wird erst ausgeführt wenn voriger beendet. 
+   /usr/home/offerv/./sync_db.sh --dry.run >> /usr/home/offerv/www_logs/pt-table-sync.log 2>&1 	
+   

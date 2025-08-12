@@ -1,0 +1,40 @@
+#!/bin/bash
+
+LOCKFILE="/tmp/pt-table-sync.lock"
+
+if [ -e "$LOCKFILE" ] && kill -0 $(cat "$LOCKFILE") 2>/dev/null; then
+    echo "Script läuft bereits mit PID $(cat $LOCKFILE), Abbruch."
+    exit 1
+fi
+
+echo $$ > "$LOCKFILE"
+
+BACKUP_HOST="aaa.your-database.de"
+BACKUP_USER="afg"
+BACKUP_PASS="xxxyyyzzz"
+BACKUP_DB="bkp_at_my"
+
+MASTER_HOST="bbb.your-database.de"
+MASTER_USER="afz"
+MASTER_PASS="mmmhhh"
+MASTER_DB="live_at_my"
+
+MODE="--dry-run"
+if [ "$1" == "--execute" ]; then
+  MODE="--execute"
+elif [ "$1" == "--dry-run" ]; then
+  MODE="--dry-run"
+fi
+
+echo "Starte pt-table-sync mit Modus: $MODE"
+echo "Backup-DB: $BACKUP_HOST, Master-DB: $MASTER_HOST"
+
+pt-table-sync $MODE --print \
+  --databases $BACKUP_DB \
+  h=$BACKUP_HOST,u=$BACKUP_USER,p=$BACKUP_PASS \
+  --databases $MASTER_DB \
+  h=$MASTER_HOST,u=$MASTER_USER,p=$MASTER_PASS
+
+echo "Fertig."
+
+rm -f "$LOCKFILE"
