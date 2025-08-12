@@ -123,7 +123,7 @@ class Deploy extends Controller
         // Reset HEAD if requested
         if ($this->request->getGet('reset') === 'true') {
             fputs($file, "*** RESET TO HEAD INITIATED ***\n");
-            exec($this->config->gitPath . " reset --hard HEAD 2>&1", $output, $exit);
+            \exec($this->config->gitPath . " reset --hard HEAD 2>&1", $output, $exit);
             $output = !empty($output) ? implode("\n", $output) : "[no output]";
             $output .= "\n";
             if ($exit !== 0) {
@@ -139,7 +139,7 @@ class Deploy extends Controller
         // BEFORE_PULL if set
         if (!empty($this->config->beforePull)) {
             fputs($file, "*** BEFORE_PULL INITIATED ***\n");
-            exec($this->config->beforePull . " 2>&1", $output, $exit);
+            \exec($this->config->beforePull . " 2>&1", $output, $exit);
             $output = !empty($output) ? implode("\n", $output) : "[no output]";
             $output .= "\n";
             if ($exit !== 0) {
@@ -153,7 +153,7 @@ class Deploy extends Controller
         }
 
         // Git Pull
-        exec($this->config->gitPath . " pull 2>&1", $output, $exit);
+        \exec($this->config->gitPath . " pull 2>&1", $output, $exit);
         $output = !empty($output) ? implode("\n", $output) : "[no output]";
         $output .= "\n";
 
@@ -169,7 +169,7 @@ class Deploy extends Controller
         // Reset to specific sha if provided
         if (!empty($sha)) {
             fputs($file, "*** RESET TO HASH INITIATED ***\n");
-            exec($this->config->gitPath . " reset --hard {$sha} 2>&1", $output, $exit);
+            \exec($this->config->gitPath . " reset --hard {$sha} 2>&1", $output, $exit);
             $output = !empty($output) ? implode("\n", $output) : "[no output]";
             $output .= "\n";
 
@@ -186,7 +186,7 @@ class Deploy extends Controller
         // AFTER_PULL if set
         if (!empty($this->config->afterPull)) {
             fputs($file, "*** AFTER_PULL INITIATED ***\n");
-            exec($this->config->afterPull . " 2>&1", $output, $exit);
+            \exec($this->config->afterPull . " 2>&1", $output, $exit);
             $output = !empty($output) ? implode("\n", $output) : "[no output]";
             $output .= "\n";
 
@@ -203,7 +203,7 @@ class Deploy extends Controller
         // Optional: Composer Update
         if ($this->config->runComposerUpdate) {
             fputs($file, "*** COMPOSER UPDATE INITIATED ***\n");
-            exec('composer update 2>&1', $composerOutput, $composerExitCode);
+            \exec('composer update 2>&1', $composerOutput, $composerExitCode);
             $composerOutputText = !empty($composerOutput) ? implode("\n", $composerOutput) : "[no output]";
             $composerOutputText .= "\n";
 
