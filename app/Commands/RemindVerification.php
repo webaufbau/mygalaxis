@@ -33,10 +33,14 @@ class RemindVerification extends BaseCommand
 
         foreach ($offers as $offer) {
 
-            // Sprache des Benutzers aus der Offerte Info setzen
-            $language = $offer['language'] ?? 'de';  // default Deutsch
-            service('language')->setLocale($language);
-
+            // Sprache aus Offer-Daten setzen
+            $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
+            $request = service('request');
+            if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+                service('language')->setLocale($language);
+            } else {
+                $request->setLocale($language);
+            }
 
             $formFields = json_decode($offer['form_fields'], true);
             $email = $formFields['email'] ?? $offer['email'] ?? null;
