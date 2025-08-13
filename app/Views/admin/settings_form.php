@@ -64,6 +64,14 @@ $currentLocale = service('request')->getLocale();
                 <input type="checkbox" name="<?= esc($fieldName) ?>" id="<?= esc($fieldName) ?>" value="1" <?= $values->$fieldName ? 'checked' : '' ?> >
             <?php elseif ($meta['type'] === 'textarea'): ?>
                 <textarea name="<?= esc($fieldName) ?>" id="<?= esc($fieldName) ?>" class="form-control"><?= esc($values->$fieldName) ?></textarea>
+            <?php elseif ($meta['type'] === 'dropdown'): ?>
+                <select name="<?= esc($fieldName) ?>" id="<?= esc($fieldName) ?>" class="form-control">
+                    <?php foreach ($meta['options'] as $key => $label): ?>
+                        <option value="<?= esc($key) ?>" <?= ($values->$fieldName === $key) ? 'selected' : '' ?>>
+                            <?= esc($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             <?php else: ?>
                 <input
                     type="<?= esc($meta['type']) ?>"

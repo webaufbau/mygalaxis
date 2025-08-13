@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Language\CustomLanguage;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -19,14 +20,31 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
-    /*
-     * public static function example($getShared = true)
-     * {
-     *     if ($getShared) {
-     *         return static::getSharedInstance('example');
-     *     }
+    /**
+     * Pager service.
      *
-     *     return new \CodeIgniter\Example();
-     * }
+     * @param bool $getShared
+     *
+     * @return object
      */
+    public static function pager(bool $getShared = true)
+    {
+        if ($getShared) {
+            return static::getSharedInstance('pager');
+        }
+
+        // Instantiate your custom Pager class with required parameters
+        $config = config(\Config\Pager::class); // Assuming PagerConfig is the configuration class for your Pager
+        $view = \Config\Services::renderer(); // Get the RendererInterface instance
+        return new Pager($config, $view);
+    }
+
+    public static function language(string $locale = null, bool $getShared = true)
+    {
+        if ($getShared) {
+            return static::getSharedInstance('language', $locale);
+        }
+
+        return new CustomLanguage($locale ?? \Config\Services::request()->getLocale());
+    }
 }
