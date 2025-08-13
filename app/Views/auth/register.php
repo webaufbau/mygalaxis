@@ -221,7 +221,7 @@ elseif($siteConfig->phoneCheck == 'de') {
         definitions: {
             'A': { validator: "[A-Z]" },
             '9': { validator: "[0-9]" },
-            '*': { validator: "[A-Z0-9.]"}
+            '*': { validator: "[A-Za-z0-9.]"}
         },
         placeholder: "_",
         showMaskOnHover: false,
