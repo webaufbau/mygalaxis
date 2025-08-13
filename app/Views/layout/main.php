@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <title><?= esc($title ?? 'Offerten Manager') ?></title>
+    <title><?= esc($title ?? siteconfig()->name) ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap 5 CSS -->

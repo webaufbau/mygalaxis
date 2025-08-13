@@ -32,7 +32,7 @@
     <div class="container">
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
             <?php if(auth()->user()->inGroup('admin')) { ?>
-                <small>&copy; <?= date('Y') ?> Offerten Manager – Alle Rechte vorbehalten</small>
+                <small>&copy; <?= date('Y') ?> <?=siteconfig()->name;?> – Alle Rechte vorbehalten</small>
             <?php } ?>
 
         </div>
