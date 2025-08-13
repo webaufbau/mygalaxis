@@ -30,7 +30,7 @@ elseif($siteConfig->companyUidCheck == 'at') {
 elseif($siteConfig->companyUidCheck == 'de') {
     $companyUidLink = 'https://www.unternehmensregister.de/de/suche';
     $companyUidName = 'Unternehmensregister';
-    $companyUidInputmask = 'DEA****.HRB99999';
+    $companyUidInputmask = 'DEB****.*99999';
     $companyUidPlaceholder = 'DEXxxxx.HRB12345';
     $companyUidPattern = '^DE[A-Z0-9]{4,8}\.(HRB|HRA|GsR)[0-9]{1,5}$';
     $companyUidInvalidFeedback = sprintf(
