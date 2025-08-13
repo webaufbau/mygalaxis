@@ -21485,3 +21485,16 @@ INSERT INTO `zipcodes` (`country_code`, `zipcode`, `place`, `state`, `state_code
 ('BR',	'40140-080',	'Salvador da bahia',	'Bahia',	'BA',	'Bahia',	'Salvador',	'2927',	'Salvador',	'2927',	-12.9747220,	-38.4766650);
 
 -- 2025-08-11 16:27:21
+
+DROP TABLE IF EXISTS `settings`;
+CREATE TABLE `settings` (
+  `id` int(9) NOT NULL AUTO_INCREMENT,
+  `class` varchar(255) NOT NULL,
+  `key` varchar(255) NOT NULL,
+  `value` text DEFAULT NULL,
+  `type` varchar(31) NOT NULL DEFAULT 'string',
+  `context` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
