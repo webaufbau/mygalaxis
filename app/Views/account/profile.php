@@ -1,6 +1,74 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
+<?php
+$siteConfig = siteconfig();
+
+// Firmen-ID / UID
+if($siteConfig->companyUidCheck == 'ch') {
+    $companyUidLink = 'https://www.zefix.ch/de/search/entity/welcome';
+    $companyUidName = 'Zefix';
+    $companyUidInputmask = 'CHE-999.999.999';
+    $companyUidPlaceholder = 'CHE-123.456.789';
+    $companyUidPattern = '^CHE-[0-9]{3}\.[0-9]{3}\.[0-9]{3}$';
+    $companyUidInvalidFeedback = sprintf(
+        lang('Auth.companyUidRequired'), // z.B. "Bitte geben Sie die UID im Format %s ein."
+        $companyUidPlaceholder
+    );
+}
+elseif($siteConfig->companyUidCheck == 'at') {
+    $companyUidLink = 'https://justizonline.gv.at/jop/web/firmenbuchabfrage';
+    $companyUidName = 'Firmenbuch';
+    $companyUidInputmask = 'FN999999[a]';
+    $companyUidPlaceholder = 'FN123456a';
+    $companyUidPattern = 'FN[0-9]{1,6}[a-z]$';
+    $companyUidInvalidFeedback = sprintf(
+        lang('Auth.companyUidRequired'),
+        $companyUidPlaceholder
+    );
+}
+elseif($siteConfig->companyUidCheck == 'de') {
+    $companyUidLink = 'https://www.unternehmensregister.de/de/suche';
+    $companyUidName = 'Unternehmensregister';
+    $companyUidInputmask = 'DEA****.***99999';
+    $companyUidPlaceholder = 'DEXxxxx.HRB12345';
+    $companyUidPattern = '^DE[A-Z0-9]{4,8}\.(HRB|HRA|GsR)[0-9]{1,5}$';
+    $companyUidInvalidFeedback = sprintf(
+        lang('Auth.companyUidRequired'),
+        $companyUidPlaceholder
+    );
+}
+
+// Telefonnummer
+if($siteConfig->phoneCheck == 'ch') {
+    $companyPhonePlaceholder = '+41 78 123 45 67';
+    $companyPhoneInputmask = '+99 99 999 99 99';
+    $companyPhonePattern = '^\+41\s\d{2}\s\d{3}\s\d{2}\s\d{2}$';
+    $companyPhoneInvalidFeedback = sprintf(
+        lang('Auth.companyPhoneRequired'),
+        $companyPhonePlaceholder
+    );
+}
+elseif($siteConfig->phoneCheck == 'at') {
+    $companyPhonePlaceholder = '+43 660 1234567';
+    $companyPhoneInputmask = '+43 999 9999999';
+    $companyPhonePattern = '^\+43\s\d{1,3}\s\d{5,7}$';
+    $companyPhoneInvalidFeedback = sprintf(
+        lang('Auth.companyPhoneRequired'),
+        $companyPhonePlaceholder
+    );
+}
+elseif($siteConfig->phoneCheck == 'de') {
+    $companyPhonePlaceholder = '+49 30 12345678';
+    $companyPhoneInputmask = '+49 99999 9999999';
+    $companyPhonePattern = '^\+49\s\d{1,5}\s\d{5,8}$';
+    $companyPhoneInvalidFeedback = sprintf(
+        lang('Auth.companyPhoneRequired'),
+        $companyPhonePlaceholder
+    );
+}
+
+?>
 <h2 class="my-4"><?= esc(lang('Profile.titleAccount')) ?></h2>
 
 <form method="post" action="/profile/update">
@@ -48,14 +116,15 @@
 
     <div class="mb-3">
         <label class="form-label">
-            <?= esc(lang('Profile.companyUID')) ?>
-            <a id="zefix-link" href="https://www.zefix.ch/de/search/entity/welcome" target="_blank">Zefix</a>
+            <?= esc(lang('Profile.companyUID')) ?> <?php if($siteConfig->companyUidCheck !== '') { echo '<a href="'.$companyUidLink.'" target="_blank">'.$companyUidName.'</a>'; } ?></label>
         </label>
         <input type="text" name="company_uid" class="form-control"
                value="<?= esc($user->company_uid) ?>"
                required
-               pattern="CHE-\d{3}\.\d{3}\.\d{3}"
-               title="<?= esc(lang('Profile.companyUIDPattern')) ?>">
+        <?php if(isset($companyUidPattern)) { echo 'pattern="'.$companyUidPattern.'"'; } ?>
+        <?php if(isset($companyUidPlaceholder)) { echo 'placeholder="'.$companyUidPlaceholder.'"'; } ?>
+               title="<?=$companyUidInvalidFeedback; ?>"
+        >
     </div>
 
     <div class="mb-3">
@@ -110,7 +179,12 @@
 
     <div class="mb-3">
         <label class="form-label"><?= esc(lang('Profile.phone')) ?></label>
-        <input type="text" name="company_phone" class="form-control" value="<?= esc($user->company_phone) ?>">
+        <input type="text" name="company_phone" class="form-control" value="<?= esc($user->company_phone) ?>"
+               required
+            <?php if(isset($companyPhonePattern)) { echo 'pattern="'.$companyPhonePattern.'"'; } ?>
+            <?php if(isset($companyPhonePlaceholder)) { echo 'placeholder="'.$companyPhonePlaceholder.'"'; } ?>
+               title="<?=$companyPhoneInvalidFeedback; ?>"
+        >
     </div>
 
 

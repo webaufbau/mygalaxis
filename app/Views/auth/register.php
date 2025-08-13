@@ -68,7 +68,6 @@ elseif($siteConfig->phoneCheck == 'de') {
     );
 }
 
-
 ?>
 
 
@@ -143,6 +142,7 @@ elseif($siteConfig->phoneCheck == 'de') {
                     required
                     <?php if(isset($companyUidPattern)) { echo 'pattern="'.$companyUidPattern.'"'; } ?>
                     <?php if(isset($companyUidPlaceholder)) { echo 'placeholder="'.$companyUidPlaceholder.'"'; } ?>
+                    title="<?=$companyUidInvalidFeedback; ?>"
             >
             <div class="invalid-feedback">
                 <?=$companyUidInvalidFeedback ?? '';?>
@@ -184,7 +184,7 @@ elseif($siteConfig->phoneCheck == 'de') {
                     required
                     <?php if(isset($companyPhonePattern)) { echo 'pattern="'.$companyPhonePattern.'"'; } ?>
                     <?php if(isset($companyPhonePlaceholder)) { echo 'placeholder="'.$companyPhonePlaceholder.'"'; } ?>
-                    title="<?= lang('Auth.companyPhoneRequired') ?>"
+                    title="<?=$companyPhoneInvalidFeedback; ?>"
             >
             <div class="invalid-feedback">
                 <?=$companyPhoneInvalidFeedback ?? ''; ?>
