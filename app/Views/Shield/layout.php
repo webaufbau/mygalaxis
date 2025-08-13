@@ -12,10 +12,13 @@
     <?= $this->renderSection('pageStyles') ?>
 
     <?php
-    $mimeType = pathinfo(siteconfig()->faviconUrl, PATHINFO_EXTENSION) === 'jpg' ? 'image/jpeg' : 'image/png';
+    $siteConfig = siteconfig();
+    if($siteConfig->faviconUrl !== '') {
+    $mimeType = pathinfo($siteConfig->faviconUrl, PATHINFO_EXTENSION) === 'jpg' ? 'image/jpeg' : 'image/png';
     ?>
-    <link rel="shortcut icon" type="<?= $mimeType ?>" href="<?= siteconfig()->faviconUrl ?>">
-    <link rel="apple-touch-icon" href="<?= siteconfig()->faviconUrl ?>">
+    <link rel="shortcut icon" type="<?= $mimeType ?>" href="<?= $siteConfig->faviconUrl ?>">
+    <link rel="apple-touch-icon" href="<?= $siteConfig->faviconUrl ?>">
+    <?php } ?>
 </head>
 
 <body class="bg-light">
