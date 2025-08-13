@@ -33,6 +33,12 @@
             flex-shrink: 0;
         }
     </style>
+
+    <?php
+    $mimeType = pathinfo(siteconfig()->faviconUrl, PATHINFO_EXTENSION) === 'jpg' ? 'image/jpeg' : 'image/png';
+    ?>
+    <link rel="shortcut icon" type="<?= $mimeType ?>" href="<?= siteconfig()->faviconUrl ?>">
+    <link rel="apple-touch-icon" href="<?= siteconfig()->faviconUrl ?>">
 </head>
 <body>
 

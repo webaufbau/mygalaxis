@@ -10,7 +10,7 @@ $supportedLocales = $appConfig->supportedLocales;
 $currentLocale = service('request')->getLocale();
 ?>
 
-<form method="post" action="<?= current_url() ?>">
+<form method="post" action="<?= current_url() ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
 
     <?php foreach ($fields as $fieldName => $meta): ?>
@@ -18,7 +18,7 @@ $currentLocale = service('request')->getLocale();
             <label for="<?= esc($fieldName) ?>"><?= esc($meta['label']) ?></label>
 
             <?php if ($meta['type'] === 'file'): ?>
-                <?php if (!empty($values->$fieldName)): ?>
+                <?php if ($values->$fieldName !== ''): ?>
                     <div class="mb-2">
                         <img src="<?= esc($values->$fieldName) ?>" alt="<?= esc($meta['label']) ?>" style="max-height: 80px;">
                     </div>

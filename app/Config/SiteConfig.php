@@ -45,7 +45,7 @@ class SiteConfig extends BaseConfig
             'label' => 'Backend URL',
         ],
         'logoUrl' => [
-            'type' => 'url',
+            'type' => 'file',
             'label' => 'Verfikationsprozess Logo URL',
         ],
         'faviconUrl' => [
