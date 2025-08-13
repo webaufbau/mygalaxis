@@ -27,7 +27,7 @@ class Services extends BaseService
      *
      * @return object
      */
-    public static function pager(bool $getShared = true)
+    /*public static function pager(bool $getShared = true)
     {
         if ($getShared) {
             return static::getSharedInstance('pager');
@@ -37,7 +37,7 @@ class Services extends BaseService
         $config = config(\Config\Pager::class); // Assuming PagerConfig is the configuration class for your Pager
         $view = \Config\Services::renderer(); // Get the RendererInterface instance
         return new Pager($config, $view);
-    }
+    }*/
 
     public static function language(string $locale = null, bool $getShared = true)
     {
