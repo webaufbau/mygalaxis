@@ -1,28 +1,28 @@
 
-<h2><?= lang('Offers.offer_added_email_subject') ?></h2>
+<h2><?= lang('Email.offer_added_email_subject') ?></h2>
 
 <p><?= lang('Email.offer_added_greeting', [$data['vorname'], $data['nachname']]) ?></p>
 
     <div class="highlight">
         <p><?= lang('Email.offer_added_thank_you', ['service' => esc($formular_page ?? lang('Offers.no_service'))]) ?></p>
-        <p><?= lang('Offers.offer_added_info_1') ?></p>
-        <p><?= lang('Offers.offer_added_info_2') ?></p>
+        <p><?= lang('Email.offer_added_info_1') ?></p>
+        <p><?= lang('Email.offer_added_info_2') ?></p>
     </div>
 
-    <h3><?= lang('Offers.offer_added_how_it_works') ?></h3>
+    <h3><?= lang('Email.offer_added_how_it_works') ?></h3>
     <ul>
-        <li><?= lang('Offers.offer_added_how_1') ?></li>
-        <li><?= lang('Offers.offer_added_how_2') ?></li>
-        <li><?= lang('Offers.offer_added_how_3') ?></li>
+        <li><?= lang('Email.offer_added_how_1') ?></li>
+        <li><?= lang('Email.offer_added_how_2') ?></li>
+        <li><?= lang('Email.offer_added_how_3') ?></li>
     </ul>
 
-    <p><strong><?= lang('Offers.offer_added_note') ?></strong></p>
+    <p><strong><?= lang('Email.offer_added_note') ?></strong></p>
 
     <?php if (!empty($data['additional_service']) && ! $data['additional_service'] == 'Nein'): ?>
-        <p><strong><?= lang('Offers.offer_added_additional_services') ?></strong> <?= esc($data['additional_service']) ?></p>
+        <p><strong><?= lang('Email.offer_added_additional_services') ?></strong> <?= esc($data['additional_service']) ?></p>
     <?php endif; ?>
 
-    <h3><?= lang('Offers.offer_added_summary') ?></h3>
+    <h3><?= lang('Email.offer_added_summary') ?></h3>
     <ul>
         <?php
         // Lade die Sprachübersetzungen
