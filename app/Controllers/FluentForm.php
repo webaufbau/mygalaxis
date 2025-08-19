@@ -273,7 +273,7 @@ class FluentForm extends BaseController
         helper('text'); // für esc()
 
         // Admins
-        $adminEmails = [$this->siteConfig->emailRequest];
+        $adminEmails = [$this->siteConfig->email];
         $bccString = implode(',', $adminEmails);
 
         // Formularverfasser
@@ -326,7 +326,7 @@ class FluentForm extends BaseController
         // Maildienst starten
         $email = \Config\Services::email();
 
-        $email->setFrom($this->siteConfig->emailRequest, $this->siteConfig->name);
+        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
         $email->setTo($userEmail);            // Kunde als To
         $email->setBCC($bccString);         // Admins als BCC
         $email->setSubject('Wir bestätigen Dir deine Anfrage/Offerte');
