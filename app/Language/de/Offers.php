@@ -229,6 +229,28 @@ return [
         'boden_zimmer_anzahl'   => 'Anzahl Zimmer',
         'details_art'           => 'Art des Auftrags (Privat/Öffentlich)',
 
+
+        // Neue
+        'auszug_stock' => 'Auszug Stock',
+        'auszug_keller' => 'Auszug Keller',
+        'auszug_hobby' => 'Auszug Hobby',
+        'auszug_dach' => 'Auszug Dach',
+        'auszug_lift' => 'Auszug Lift',
+        'auszug_zimmer' => 'Auszug Zimmer',
+        'auszug_entfernung' => 'Auszug Entfernung',
+        'auszug_klavier' => 'Auszug Klavier',
+        'auszug_personen' => 'Auszug Personen',
+        'einzug_stock' => 'Einzug Stock',
+        'einzug_keller' => 'Einzug Keller',
+        'einzug_hobby' => 'Einzug Hobby',
+        'einzug_dach' => 'Einzug Dach',
+        'einzug_lift' => 'Einzug Lift',
+        'einzug_zimmer' => 'Einzug Zimmer',
+        'einzug_entfernung' => 'Einzug Entfernung',
+        'umzugkartons' => 'Umzugkartons',
+        'erreichbar' => 'Erreichbar',
+
+
     ],
 
     'errors' => [

@@ -135,7 +135,7 @@ if (!empty($missingTranslations)) {
     $file = WRITEPATH . 'missing_translations.txt'; // z.B. writable/missing_translations.txt
     $content = '';
     foreach ($missingTranslations as $key => $label) {
-        $content .= "'".$key."'" . " => '" . $label . "'" . PHP_EOL;
+        $content .= "'".$key."'" . " => '" . $label . "'," . PHP_EOL;
     }
     // Anhängen, ohne Datei zu überschreiben
     file_put_contents($file, $content, FILE_APPEND | LOCK_EX);
