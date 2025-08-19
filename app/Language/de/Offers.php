@@ -250,6 +250,13 @@ return [
         'umzugkartons' => 'Umzugkartons',
         'erreichbar' => 'Erreichbar',
 
+        'arbeiten_elektriker' => 'Arbeiten Elektriker',
+        'elektriker_grundflaeche' => 'Elektriker Grundflaeche',
+        'elektriker_zimmer' => 'Elektriker Zimmer',
+        'terms-n-condition' => 'Terms N Condition',
+
+
+
 
     ],
 
