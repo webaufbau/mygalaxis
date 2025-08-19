@@ -28,9 +28,16 @@
         // Lade die Sprachübersetzungen
         $labels = lang('Offers.labels');
 
+        $missingTranslations = [];
+
         foreach ($filteredFields as $key => $value):
             // Übersetzung vorhanden?
-            $label = $labels[$key] ?? ucwords(str_replace(['_', '-'], ' ', $key));
+            if (isset($labels[$key])) {
+                $label = $labels[$key];
+            } else {
+                $label = ucwords(str_replace(['_', '-'], ' ', $key));
+                $missingTranslations[$key] = $label; // merken
+            }
 
             //echo $key.'|';
 
@@ -121,3 +128,15 @@
 
         <?php endforeach; ?>
     </ul>
+
+<?php
+// Fehlende Übersetzungen einmalig in Datei speichern
+if (!empty($missingTranslations)) {
+    $file = WRITEPATH . 'missing_translations.txt'; // z.B. writable/missing_translations.txt
+    $content = '';
+    foreach ($missingTranslations as $key => $label) {
+        $content .= "'".$key."'" . " => '" . $label . "'" . PHP_EOL;
+    }
+    // Anhängen, ohne Datei zu überschreiben
+    file_put_contents($file, $content, FILE_APPEND | LOCK_EX);
+}

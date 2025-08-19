@@ -97,7 +97,6 @@ return [
         'file_upload' => 'File',
         'additional_service' => 'Servizio aggiuntivo',
         'address' => 'Indirizzo',
-        'offer_added_how_it_works' => 'Ecco come funziona:',
 
 
         // Nutzer & Wohnung

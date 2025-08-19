@@ -36,6 +36,7 @@ return [
     'offer_added_additional_services' => 'Hai richiesto altri servizi:',
     'offer_added_summary' => 'Riepilogo della tua richiesta',
     'offer_added_no_comment' => 'Nessun commento.',
+    'offer_added_how_it_works' => 'Ecco come funziona:',
 
     // Offerte Kauf an Firmen
     'title_firm_interest' => 'Un\'azienda è interessata alla tua richiesta',
