@@ -81,6 +81,8 @@ writable/debugbar/*
 writable/Language/*
 !writable/Language/.gitkeep
 
+writable/missing_translation.txt
+
 php_errors.log
 
 #-------------------------
