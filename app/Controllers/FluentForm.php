@@ -272,6 +272,15 @@ class FluentForm extends BaseController
     {
         helper('text'); // für esc()
 
+        // Sprache aus Offer-Daten setzen
+        $language = $data['language'] ?? 'de'; // Fallback: Deutsch
+        $request = service('request');
+        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+            service('language')->setLocale($language);
+        } else {
+            $request->setLocale($language);
+        }
+
         // Admins
         $adminEmails = [$this->siteConfig->email];
         $bccString = implode(',', $adminEmails);
