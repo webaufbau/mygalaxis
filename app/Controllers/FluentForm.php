@@ -272,8 +272,23 @@ class FluentForm extends BaseController
     {
         helper('text'); // für esc()
 
+        // Sprache aus Offer-Daten setzen
+        $language = $data['lang'] ?? 'de'; // Fallback: Deutsch
+        log_message('debug', 'language aus offerte/fallback: ' . $language);
+        $request = service('request');
+        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+            service('language')->setLocale($language);
+        } else {
+            $request->setLocale($language);
+        }
+
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+
+
         // Admins
-        $adminEmails = [$this->siteConfig->emailRequest];
+        $adminEmails = [$this->siteConfig->email];
         $bccString = implode(',', $adminEmails);
 
         // Formularverfasser
@@ -326,10 +341,10 @@ class FluentForm extends BaseController
         // Maildienst starten
         $email = \Config\Services::email();
 
-        $email->setFrom($this->siteConfig->emailRequest, $this->siteConfig->name);
+        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
         $email->setTo($userEmail);            // Kunde als To
         $email->setBCC($bccString);         // Admins als BCC
-        $email->setSubject('Wir bestätigen Dir deine Anfrage/Offerte');
+        $email->setSubject(lang('Email.offer_added_email_subject'));
         $email->setMessage($fullEmail);
         $email->setMailType('html');
 

@@ -1,36 +1,43 @@
 
-<h2><?= lang('Offers.offer_added_email_subject') ?></h2>
+<h2><?= lang('Email.offer_added_email_subject') ?></h2>
 
 <p><?= lang('Email.offer_added_greeting', [$data['vorname'], $data['nachname']]) ?></p>
 
     <div class="highlight">
         <p><?= lang('Email.offer_added_thank_you', ['service' => esc($formular_page ?? lang('Offers.no_service'))]) ?></p>
-        <p><?= lang('Offers.offer_added_info_1') ?></p>
-        <p><?= lang('Offers.offer_added_info_2') ?></p>
+        <p><?= lang('Email.offer_added_info_1') ?></p>
+        <p><?= lang('Email.offer_added_info_2') ?></p>
     </div>
 
-    <h3><?= lang('Offers.offer_added_how_it_works') ?></h3>
+    <h3><?= lang('Email.offer_added_how_it_works') ?></h3>
     <ul>
-        <li><?= lang('Offers.offer_added_how_1') ?></li>
-        <li><?= lang('Offers.offer_added_how_2') ?></li>
-        <li><?= lang('Offers.offer_added_how_3') ?></li>
+        <li><?= lang('Email.offer_added_how_1') ?></li>
+        <li><?= lang('Email.offer_added_how_2') ?></li>
+        <li><?= lang('Email.offer_added_how_3') ?></li>
     </ul>
 
-    <p><strong><?= lang('Offers.offer_added_note') ?></strong></p>
+    <p><strong><?= lang('Email.offer_added_note') ?></strong></p>
 
     <?php if (!empty($data['additional_service']) && ! $data['additional_service'] == 'Nein'): ?>
-        <p><strong><?= lang('Offers.offer_added_additional_services') ?></strong> <?= esc($data['additional_service']) ?></p>
+        <p><strong><?= lang('Email.offer_added_additional_services') ?></strong> <?= esc($data['additional_service']) ?></p>
     <?php endif; ?>
 
-    <h3><?= lang('Offers.offer_added_summary') ?></h3>
+    <h3><?= lang('Email.offer_added_summary') ?></h3>
     <ul>
         <?php
         // Lade die Sprachübersetzungen
         $labels = lang('Offers.labels');
 
+        $missingTranslations = [];
+
         foreach ($filteredFields as $key => $value):
             // Übersetzung vorhanden?
-            $label = $labels[$key] ?? ucwords(str_replace(['_', '-'], ' ', $key));
+            if (isset($labels[$key])) {
+                $label = $labels[$key];
+            } else {
+                $label = ucwords(str_replace(['_', '-'], ' ', $key));
+                $missingTranslations[$key] = $label; // merken
+            }
 
             //echo $key.'|';
 
@@ -121,3 +128,15 @@
 
         <?php endforeach; ?>
     </ul>
+
+<?php
+// Fehlende Übersetzungen einmalig in Datei speichern
+if (!empty($missingTranslations)) {
+    $file = WRITEPATH . 'missing_translations.txt'; // z.B. writable/missing_translations.txt
+    $content = '';
+    foreach ($missingTranslations as $key => $label) {
+        $content .= "'".$key."'" . " => '" . $label . "'," . PHP_EOL;
+    }
+    // Anhängen, ohne Datei zu überschreiben
+    file_put_contents($file, $content, FILE_APPEND | LOCK_EX);
+}

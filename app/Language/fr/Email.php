@@ -37,6 +37,7 @@ return [
     'offer_added_summary' => 'Résumé de ta demande',
     'offer_added_no_comment' => 'Aucun commentaire.',
 
+
     // Offerte Kauf an Firmen
 'title_firm_interest'       => 'Une entreprise est intéressée par votre demande',
     'label_company'         => 'Entreprise',
@@ -53,6 +54,7 @@ return [
     'thanks'                => 'Merci pour votre confiance!',
     'see_companies'         => 'Voir les entreprises',
     'see_companies_text'    => 'Vous pouvez ici consulter les entreprises ayant acheté votre demande et les évaluer une fois les travaux terminés:',
+    'offer_added_how_it_works' => 'Voici comment cela fonctionne:',
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Veuillez confirmer votre numéro de téléphone',

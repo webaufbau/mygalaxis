@@ -36,6 +36,7 @@ return [
     'offer_added_additional_services' => 'You requested additional services:',
     'offer_added_summary' => 'Summary of your request',
     'offer_added_no_comment' => 'No comment.',
+    'offer_added_how_it_works' => 'This is how it works:',
 
     // Offerte Kauf an Firmen
     'title_firm_interest' => 'A company is interested in your request',
