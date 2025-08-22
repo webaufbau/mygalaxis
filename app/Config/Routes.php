@@ -91,6 +91,9 @@ function defineAppRoutes($routes) {
     $routes->post('rating/submit', 'PublicController::submitRating');
     $routes->get('company/ratings/(:segment)', 'PublicController::companyRatings/$1');
 
+
+    $routes->get('live-ticker.js', 'LiveTicker::js');
+
 }
 
 defineAppRoutes($routes);
