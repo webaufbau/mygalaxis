@@ -158,7 +158,6 @@ echo "
             const ts = parseInt(item.getAttribute('data-timestamp'), 10);
             const diff = Math.floor(now - ts);
     
-            // Angebote älter als 60 Minuten ausblenden
             if (diff >= 3600) {
                 item.style.display = 'none';
                 return;
@@ -173,19 +172,14 @@ echo "
         });
     }
     
-    // sofort ausführen
     updateTimeAgo();
     
-    // jede Minute aktualisieren
     setInterval(updateTimeAgo, 60*1000);
     
-    // Box ausblenden bei Klick irgendwo auf die Box
     document.querySelector('.live-ticker').addEventListener('click', function() {
         this.style.display = 'none';
     });
 
-
-    // Box per Klick ausblenden
     const ticker = document.getElementById('live-ticker');
     ticker.addEventListener('click', function() {
         ticker.style.display = 'none';
