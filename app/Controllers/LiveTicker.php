@@ -94,7 +94,7 @@ class LiveTicker extends Controller
             }
 
             // 3. Zufalls-Kombinationen erzeugen
-            for ($i=0; $i<5; $i++) {
+            for ($i=0; $i<10; $i++) {
                 $cat = $types[array_rand($types)];
                 $from = $cities[array_rand($cities)];
                 $to   = rand(0,1) ? $cities[array_rand($cities)] : null;
