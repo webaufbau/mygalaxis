@@ -63,14 +63,43 @@ class LiveTicker extends Controller
         echo '<div class="live-ticker">';
         echo '<div class="title">Neueste Anfragen</div>';
         foreach ($offers as $offer) {
-            $timeAgo = $this->timeAgo($offer['created_at']);
+            $timestamp = strtotime($offer['created_at']);
             $fromTo = $offer['city'] ?? '';
             $type = htmlspecialchars($offer['type']);
-            echo "<div class='offer-item'><span class='offer-type'>$type</span> <span class='offer-city'>$fromTo</span> <span class='offer-time'>$timeAgo</span></div>";
+
+            echo "<div class='offer-item' data-timestamp='{$timestamp}'>
+            <span class='offer-type'>$type</span> 
+            <span class='offer-city'>$fromTo</span> 
+            <span class='offer-time'></span>
+          </div>";
         }
+
         echo "<div class='total-offers'>{$totalOffers} Anfragen in den letzten 24 Stunden</div>";
         echo "</div>";
         echo "`);";
+
+        // **Live TimeAgo Script einfügen**
+        echo "
+function updateTimeAgo() {
+    document.querySelectorAll('.offer-item').forEach(item => {
+        const ts = parseInt(item.getAttribute('data-timestamp'), 10);
+        const diff = Math.floor((Date.now()/1000) - ts);
+
+        let text = '';
+        if (diff < 60) text = `vor \${diff} Sekunden`;
+        else if (diff < 3600) text = `vor \${Math.floor(diff/60)} Minuten`;
+        else if (diff < 86400) text = `vor \${Math.floor(diff/3600)} Stunden`;
+        else text = `vor \${Math.floor(diff/86400)} Tagen`;
+
+        item.querySelector('.offer-time').textContent = text;
+    });
+}
+
+updateTimeAgo();
+
+setInterval(updateTimeAgo, 60*1000);
+";
+
         exit();
     }
 
