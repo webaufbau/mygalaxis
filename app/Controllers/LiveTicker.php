@@ -42,6 +42,8 @@ class LiveTicker extends Controller
             $languages = Config('App')->supportedLocales ?? [];
 
             $jsTypes = [];
+            $jsLang = [];
+
             // Für jede Kategorie und jede Sprache die Übersetzung holen
             foreach ($categories as $cat_key => $cat_arr) {
                 $types[] = $cat_key;
@@ -49,6 +51,13 @@ class LiveTicker extends Controller
                     // Sprachdatei temporär setzen
                     service('language')->setLocale($tmp_lang);
                     $jsTypes[$cat_key][$tmp_lang] = lang('Offers.type.' . $cat_key);
+                    $jsLang[$tmp_lang] = [
+                        'just_now'    => lang('LiveTicker.just_now'),
+                        'seconds_ago' => lang('LiveTicker.seconds_ago'),
+                        'minutes_ago' => lang('LiveTicker.minutes_ago'),
+                        'hours_ago'   => lang('LiveTicker.hours_ago'),
+                        'days_ago'    => lang('LiveTicker.days_ago'),
+                    ];
                 }
             }
 
@@ -114,12 +123,13 @@ class LiveTicker extends Controller
             $totalOffers = rand(50, 100);
 
             // Cache speichern
-            $cache->save($cacheKey, ['offers'=>$offers, 'totalOffers'=>$totalOffers, 'jsTypes' => $jsTypes], 3600);
+            $cache->save($cacheKey, ['offers'=>$offers, 'totalOffers'=>$totalOffers, 'jsTypes' => $jsTypes, 'jsLang' => $jsLang], 3600);
         } else {
             $offers = $cache->get($cacheKey);
 
             $totalOffers = $offers['totalOffers'];
             $jsTypes = $offers['jsTypes'] ?? [];
+            $jsLang = $offers['jsLang'] ?? [];
             $offers = $offers['offers'];
 
             // Auch aus dem Cache sortieren
@@ -143,6 +153,15 @@ class LiveTicker extends Controller
         echo "
 var lang = '".($language ?? 'de')."';
 window.OffersTypes = ".json_encode($jsTypes ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP).";
+window.LangStrings = ".json_encode($jsLang ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP).";
+
+function t(key, value = null) {
+    let str = window.LangStrings[lang][key] || key;
+    if (value !== null) {
+        str = str.replace('{0}', value);
+    }
+    return str;
+}
 
 if (!document.getElementById('live-ticker-css')) {
     var link = document.createElement('link');
@@ -187,8 +206,11 @@ echo "
             }
     
             let text = '';
-            if (diff < 60) text = 'vor ' + diff + ' Sekunden';
-            else text = 'vor ' + Math.floor(diff/60) + ' Minuten';
+            if (diff < 60) {
+                text = t('seconds_ago', diff);
+            } else {
+                text = t('minutes_ago', Math.floor(diff/60));
+            }
     
             item.querySelector('.offer-time').textContent = text;
             item.style.display = 'block';
@@ -223,7 +245,7 @@ echo "
             return 'vor kurzem';
         }
 
-        if ($diff < 60) return 'vor ' . $diff . ' Sekunden';
+        if ($diff < 60) return str_replace("{0}", $diff, lang('LiveTicker.seconds_ago'));
         if ($diff < 3600) return 'vor ' . floor($diff / 60) . ' Minuten';
         if ($diff < 86400) return 'vor ' . floor($diff / 3600) . ' Stunden';
         return 'vor ' . floor($diff / 86400) . ' Tagen';
