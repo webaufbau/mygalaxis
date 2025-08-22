@@ -151,7 +151,7 @@ echo "document.write(` <div class='total-offers'>{$totalOffers} " . lang('LiveTi
 echo "
 (function(){
     function updateTimeAgo() {
-        const now = Date.now()/1000; // aktueller Timestamp in Sekunden
+        const now = Date.now()/1000;
         const hour = new Date().getHours();
     
         document.querySelectorAll('.offer-item').forEach(item => {
