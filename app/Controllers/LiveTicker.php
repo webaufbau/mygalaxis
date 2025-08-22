@@ -13,6 +13,10 @@ class LiveTicker extends Controller
         helper('text');
 
         $country = $this->request->getGet('country') ?? 'CH';
+        $language = $this->request->getGet('lang');
+        if($language) {
+            service('request')->setLocale($language);
+        }
 
         // CI4 Cache Service
         $cache = Services::cache();
