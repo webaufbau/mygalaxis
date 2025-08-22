@@ -19,11 +19,11 @@
 <body class="bg-light">
 
 <div data-elementor-type="header" data-elementor-id="1384" class="elementor elementor-1384 elementor-location-header" data-elementor-post-type="elementor_library">
-    <div class="elementor-element elementor-element-67308e5 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="67308e5" data-element_type="container" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
+    <div class="elementor-element elementor-element-67308e5 e-con-full e-flex e-con e-parent e-lazyloaded" data-id="67308e5" data-element_type="container" style="background-color: <?=$siteConfig->headerBackgroundColor ?? '';?>;" data-settings="{&quot;background_background&quot;:&quot;classic&quot;}">
         <div class="elementor-element elementor-element-817a056 elementor-widget elementor-widget-image" data-id="817a056" data-element_type="widget" data-widget_type="image.default">
             <div class="elementor-widget-container">
                 <a href="<?=$siteConfig->frontendUrl;?>">
-                    <img src="<?=$siteConfig->logoUrl;?>" class="attachment-large size-large wp-image-1581" alt="-logo">
+                    <img src="<?=$siteConfig->logoUrl;?>" class="attachment-large size-large wp-image-1581" alt="-logo" height="<?=$siteConfig->logoHeightPixel ?? '';?>">
                 </a>
             </div>
         </div>

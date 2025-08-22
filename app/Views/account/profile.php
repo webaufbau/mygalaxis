@@ -105,18 +105,18 @@ elseif($siteConfig->phoneCheck == 'de') {
     </div>
 
     <div class="mb-3">
-        <label class="form-label"><?= esc(lang('Profile.companyName')) ?></label>
+        <label class="form-label"><?= esc(lang('Profile.companyName')) ?> *</label>
         <input type="text" name="company_name" id="company-name" class="form-control" value="<?= esc($user->company_name) ?>" required="required">
     </div>
 
     <div class="mb-3">
-        <label class="form-label"><?= esc(lang('Profile.contactPerson')) ?></label>
+        <label class="form-label"><?= esc(lang('Profile.contactPerson')) ?> *</label>
         <input type="text" name="contact_person" class="form-control" value="<?= esc($user->contact_person) ?>" required="required">
     </div>
 
     <div class="mb-3">
         <label class="form-label">
-            <?= esc(lang('Profile.companyUID')) ?> <?php if($siteConfig->companyUidCheck !== '') { echo '<a href="'.$companyUidLink.'" target="_blank">'.$companyUidName.'</a>'; } ?></label>
+            <?= esc(lang('Profile.companyUID')) ?> * <?php if($siteConfig->companyUidCheck !== '') { echo '<a href="'.$companyUidLink.'" target="_blank">'.$companyUidName.'</a>'; } ?></label>
         </label>
         <input type="text" name="company_uid" class="form-control"
                value="<?= esc($user->company_uid) ?>"
@@ -128,17 +128,17 @@ elseif($siteConfig->phoneCheck == 'de') {
     </div>
 
     <div class="mb-3">
-        <label class="form-label"><?= esc(lang('Profile.street')) ?></label>
+        <label class="form-label"><?= esc(lang('Profile.street')) ?> *</label>
         <input type="text" name="company_street" class="form-control" value="<?= esc($user->company_street) ?>" required="required">
     </div>
 
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label class="form-label"><?= esc(lang('Profile.zip')) ?></label>
+            <label class="form-label"><?= esc(lang('Profile.zip')) ?> *</label>
             <input type="text" name="company_zip" class="form-control" value="<?= esc($user->company_zip) ?>" required="required">
         </div>
         <div class="col-md-8 mb-3">
-            <label class="form-label"><?= esc(lang('Profile.city')) ?></label>
+            <label class="form-label"><?= esc(lang('Profile.city')) ?> *</label>
             <input type="text" name="company_city" class="form-control" value="<?= esc($user->company_city) ?>" required="required">
         </div>
     </div>
@@ -173,12 +173,12 @@ elseif($siteConfig->phoneCheck == 'de') {
     </div>
 
     <div class="mb-3">
-        <label class="form-label"><?= esc(lang('Profile.companyEmail')) ?></label>
+        <label class="form-label"><?= esc(lang('Profile.companyEmail')) ?> *</label>
         <input type="email" name="company_email" class="form-control" value="<?= esc($user->company_email) ?>">
     </div>
 
     <div class="mb-3">
-        <label class="form-label"><?= esc(lang('Profile.phone')) ?></label>
+        <label class="form-label"><?= esc(lang('Profile.phone')) ?> *</label>
         <input type="text" name="company_phone" class="form-control" value="<?= esc($user->company_phone) ?>"
                required
             <?php if(isset($companyPhonePattern)) { echo 'pattern="'.$companyPhonePattern.'"'; } ?>

@@ -21,11 +21,19 @@ class Settings extends AdminBase {
             foreach ($loader->getFields() as $fieldName => $meta) {
                 if (($meta['type'] ?? '') === 'file') {
                     $file = $this->request->getFile($fieldName);
+
                     if ($file && $file->isValid() && !$file->hasMoved()) {
                         $newName = $file->getRandomName();
                         $file->move(FCPATH . 'uploads', $newName);
-                        // Webzugänglicher Pfad (URL) speichern
                         $postData[$fieldName] = base_url('uploads/' . $newName);
+                    } else {
+                        // Wenn keine neue Datei hochgeladen wurde, alten Wert behalten
+                        $postData[$fieldName] = $loader->$fieldName;
+                    }
+
+                    // Falls "löschen" Checkbox gesetzt
+                    if ($this->request->getPost('delete_'.$fieldName)) {
+                        $postData[$fieldName] = null;
                     }
                 }
             }

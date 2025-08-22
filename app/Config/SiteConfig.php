@@ -48,6 +48,14 @@ class SiteConfig extends BaseConfig
             'type' => 'file',
             'label' => 'Verfikationsprozess Logo',
         ],
+        'headerBackgroundColor' => [
+            'type' => 'color',
+            'label' => 'Verfikationsprozess Header Hintergrund Farbe',
+        ],
+        'logoHeightPixel' => [
+            'type' => 'text',
+            'label' => 'Verfikationsprozess Logo Höhe in Pixel',
+        ],
         'faviconUrl' => [
             'type' => 'file',
             'label' => 'Favicon URL',
