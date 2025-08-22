@@ -38,9 +38,22 @@ class LiveTicker extends Controller
             // 1. Branchen (Config/Library)
             $categoryManager = new CategoryManager();
             $categories = $categoryManager->getAll();
-            foreach($categories as $cat_key=>$cat_arr) {
-                $types[] = lang('Offers.type.' . $cat_key);
+
+            $languages = Config('App')->supportedLocales ?? [];
+
+            $jsTypes = [];
+            // Für jede Kategorie und jede Sprache die Übersetzung holen
+            foreach ($categories as $cat_key => $cat_arr) {
+                $types[] = $cat_key;
+                foreach ($languages as $tmp_lang) {
+                    // Sprachdatei temporär setzen
+                    service('language')->setLocale($tmp_lang);
+                    $jsTypes[$cat_key][$tmp_lang] = lang('Offers.type.' . $cat_key);
+                }
             }
+
+            service('language')->setLocale($language);
+
 
             // 2. Orte (aus DB)
             $rows = $db->table('zipcodes')
@@ -101,11 +114,12 @@ class LiveTicker extends Controller
             $totalOffers = rand(50, 100);
 
             // Cache speichern
-            $cache->save($cacheKey, ['offers'=>$offers, 'totalOffers'=>$totalOffers], 3600);
+            $cache->save($cacheKey, ['offers'=>$offers, 'totalOffers'=>$totalOffers, 'jsTypes' => $jsTypes], 3600);
         } else {
             $offers = $cache->get($cacheKey);
 
             $totalOffers = $offers['totalOffers'];
+            $jsTypes = $offers['jsTypes'] ?? [];
             $offers = $offers['offers'];
 
             // Auch aus dem Cache sortieren
@@ -127,6 +141,9 @@ class LiveTicker extends Controller
         $cssUrl = base_url('css/live-ticker.css');
 
         echo "
+var lang = '".($language ?? 'de')."';
+window.OffersTypes = ".json_encode($jsTypes ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP).";
+
 if (!document.getElementById('live-ticker-css')) {
     var link = document.createElement('link');
     link.id = 'live-ticker-css';
@@ -142,9 +159,11 @@ foreach ($offers as $offer) {
     $timestamp = strtotime($offer['created_at']);
     $fromTo = $offer['city'] ?? '';
     $type = htmlspecialchars($offer['type']);
+    $cat_key = $offer['type'];
+
     echo "document.write(`<div class='offer-item' data-timestamp='{$timestamp}'>
-        <span class='offer-type'>$type</span>
-        <span class='offer-city'>$fromTo</span>
+        <span class='offer-type'>` + (window.OffersTypes['{$cat_key}'] ? window.OffersTypes['{$cat_key}'][lang] : '{$cat_key}') + `</span>
+        <span class='offer-city'>{$fromTo}</span>
         <span class='offer-time'></span>
     </div>`);";
 }
