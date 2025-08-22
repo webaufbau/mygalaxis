@@ -51,6 +51,21 @@ class LiveTicker extends Controller
                 $cities[] = $row['community'];
             }
 
+            // Standard-Orte, falls DB keine liefert
+            if (empty($cities)) {
+                switch ($country) {
+                    case 'AT':
+                        $cities = ['Wien', 'Graz', 'Linz', 'Salzburg', 'Innsbruck', 'Klagenfurt', 'Villach', 'Wels', 'Sankt Pölten', 'Dornbirn'];
+                        break;
+                    case 'DE':
+                        $cities = ['Berlin', 'Hamburg', 'München', 'Köln', 'Frankfurt', 'Stuttgart', 'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig'];
+                        break;
+                    case 'CH':
+                    default:
+                        $cities = ['Zürich', 'Genf', 'Basel', 'Bern', 'Lausanne', 'Winterthur', 'St. Gallen', 'Luzern', 'Lugano', 'Biel/Bienne'];
+                        break;
+                }
+            }
 
             // 3. Zufalls-Kombinationen erzeugen
             for ($i=0; $i<5; $i++) {
