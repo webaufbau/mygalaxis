@@ -132,7 +132,7 @@ if (!document.getElementById('live-ticker-css')) {
 }
 
 document.write(`<div class='live-ticker' id='live-ticker'>
-    <div class='title'>Neueste Anfragen</div>`);";
+    <div class='title'>".lang('LiveTicker.latest_requests')."</div>`);";
 
 foreach ($offers as $offer) {
     $timestamp = strtotime($offer['created_at']);
