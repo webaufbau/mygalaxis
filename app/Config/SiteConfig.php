@@ -17,6 +17,7 @@ class SiteConfig extends BaseConfig
     public string $faviconUrl = '';
     public string $companyUidCheck = '';
     public string $phoneCheck = '';
+    public string $siteCountry = '';
 
     /**
      * Meta-Definition für die Felder

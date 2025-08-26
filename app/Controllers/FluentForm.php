@@ -149,6 +149,9 @@ class FluentForm extends BaseController
         }
 
 
+        $siteConfig = siteconfig();
+
+
         $offerModel = new OfferModel();
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
@@ -174,6 +177,7 @@ class FluentForm extends BaseController
             'from_campaign' => $isCampaign,
             'group_id'      => $groupId,
             'type'          => $type,
+            'country'       => $siteConfig->siteCountry ?? 'ch',
         ], $enriched);
 
         $host = $_SERVER['HTTP_HOST'] ?? $headers['Host'] ?? 'unknown';
