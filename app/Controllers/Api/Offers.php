@@ -115,17 +115,6 @@ class Offers extends ResourceController
             // bevorzugt die Subtable, die zum offers.type passt (z.B. type=painting -> offers_painting)
             $row['extra'] = null;
             if (!empty($extras)) {
-                /*$type = $row['type'] ?? null;
-                $preferred = $type ? ('offers_' . $type) : null;
-
-                if ($preferred && isset($extras[$preferred])) {
-                    $row['extra_table'] = $preferred;
-                    $row['extra']       = $extras[$preferred];
-                } else {
-                    $first = array_key_first($extras);
-                    $row['extra_table'] = $first;
-                    $row['extra']       = $extras[$first];
-                }*/
 
                 // Wenn du ALLE behalten willst, nimm das rein; sonst zeile auskommentieren
                 $row['extras'] = $extras;
