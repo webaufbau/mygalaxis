@@ -55,19 +55,89 @@ class Offers extends ResourceController
             'offers_tiling'
         ];
 
-        // ---- Daten abrufen ----
-        $since = $this->request->getGet('since');
-        $query = $this->model
-            ->select('offers.*, oc.*, oe.*, om.*')
-            ->join('offers_move om', 'om.offer_id = offers.id', 'left')
-            ->join('offers_cleaning oc', 'oc.offer_id = offers.id', 'left')
-            ->join('offers_electrician oe', 'oe.offer_id = offers.id', 'left')
-            ;
+        // ---- Query bauen ----
+        $model = $this->model->select('offers.*');
+        $db    = $this->model->db; // DB-Connection
 
-        if ($since) {
-            $query = $query->where('updated_at >=', $since);
+        foreach ($subTables as $table) {
+            // Join
+            $model->join($table, "$table.offer_id = offers.id", 'left');
+
+            // Feldnamen holen (CI4 kann getFieldNames oder getFieldData haben)
+            $fields = method_exists($db, 'getFieldNames')
+                ? $db->getFieldNames($table)
+                : array_map(static fn($f) => $f->name, $db->getFieldData($table));
+
+            // Aliassierte Selects hinzufügen: table.col AS table__col
+            foreach ($fields as $field) {
+                $model->select("$table.$field AS {$table}__{$field}");
+            }
         }
 
-        return $this->respond($query->findAll());
+        // Optionaler Filter
+        $since = $this->request->getGet('since');
+        if ($since) {
+            $model->where('offers.updated_at >=', $since);
+        }
+
+        // ---- EINMAL ausführen ----
+        $rows = $model->findAll();
+
+        // ---- Flache Spalten -> geschachtelte Extras mappen ----
+        $out = [];
+        foreach ($rows as $row) {
+            $extras = [];
+
+            foreach ($subTables as $table) {
+                $prefix = $table . '__';
+                $sub    = [];
+
+                // Felder dieser Subtable in ein Unterobjekt verschieben
+                foreach ($row as $k => $v) {
+                    if (strpos($k, $prefix) === 0) {
+                        $subField = substr($k, strlen($prefix));
+                        $sub[$subField] = $v;
+                        unset($row[$k]); // oben entfernen, unten schachteln
+                    }
+                }
+
+                // nur behalten, wenn da auch wirklich was drin ist (nicht alles null/leer)
+                $hasData = false;
+                foreach ($sub as $v) {
+                    if ($v !== null && $v !== '') { $hasData = true; break; }
+                }
+                if ($hasData) {
+                    $extras[$table] = $sub;
+                }
+            }
+
+            // Das „passende“ Extra bestimmen:
+            // bevorzugt die Subtable, die zum offers.type passt (z.B. type=painting -> offers_painting)
+            $row['extra'] = null;
+            if (!empty($extras)) {
+                /*$type = $row['type'] ?? null;
+                $preferred = $type ? ('offers_' . $type) : null;
+
+                if ($preferred && isset($extras[$preferred])) {
+                    $row['extra_table'] = $preferred;
+                    $row['extra']       = $extras[$preferred];
+                } else {
+                    $first = array_key_first($extras);
+                    $row['extra_table'] = $first;
+                    $row['extra']       = $extras[$first];
+                }*/
+
+                // Wenn du ALLE behalten willst, nimm das rein; sonst zeile auskommentieren
+                $row['extras'] = $extras;
+            }
+
+            $out[] = $row;
+        }
+
+        // LastQuery NACH der Ausführung loggen
+        log_message('info', 'SQL: ' . (string) $this->model->db->getLastQuery());
+
+        // Fertig ausliefern
+        return $this->respond($out);
     }
 }
