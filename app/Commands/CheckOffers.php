@@ -79,7 +79,7 @@ class CheckOffers extends BaseCommand
 
             if (is_null($offer['country'])) {
                 $siteConfig = siteconfig();
-                $updateData['country'] = $siteConfig->siteCountry ?? 'ch';
+                $updateData['country'] = $siteConfig->siteCountry ?? null;
             }
 
             foreach (['type', 'original_type', 'sub_type', 'city', 'zip', 'customer_type', 'language', 'firstname', 'lastname', 'email', 'phone', 'work_start_date', 'additional_service', 'service_url', 'uuid'] as $key) {
