@@ -93,5 +93,17 @@ class SiteConfig extends BaseConfig
             ],
             'default' => ''
         ],
+
+        // Land
+        'siteCountry' => [
+            'type' => 'dropdown',
+            'label' => 'Welches Land bei Registrierungen setzen?',
+            'options' => [
+                'ch'  => 'Schweiz',
+                'de'  => 'Deutschland',
+                'at'  => 'Österreich',
+            ],
+            'default' => 'ch'
+        ],
     ];
 }
