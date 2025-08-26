@@ -18,7 +18,7 @@ class CheckOffers extends BaseCommand
     public function run(array $params)
     {
         $offerModel = new OfferModel();
-        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->orWhere('platform IS NULL')->findAll(100);
+        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->orWhere('platform IS NULL')->orWhere('country IS NULL')->findAll(100);
 
         // Modell dynamisch laden (nach Typ)
         $modelClassMap = [
@@ -75,6 +75,11 @@ class CheckOffers extends BaseCommand
                     $domain = $host;
                 }
                 $updateData['platform'] = $domain;
+            }
+
+            if (is_null($offer['country'])) {
+                $siteConfig = siteconfig();
+                $updateData['country'] = $siteConfig->siteCountry ?? 'ch';
             }
 
             foreach (['type', 'original_type', 'sub_type', 'city', 'zip', 'customer_type', 'language', 'firstname', 'lastname', 'email', 'phone', 'work_start_date', 'additional_service', 'service_url', 'uuid'] as $key) {
