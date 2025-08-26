@@ -18,7 +18,7 @@ class CheckOffers extends BaseCommand
     public function run(array $params)
     {
         $offerModel = new OfferModel();
-        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->findAll(100);
+        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->orWhere('platform IS NULL')->findAll(100);
 
         // Modell dynamisch laden (nach Typ)
         $modelClassMap = [
@@ -62,6 +62,19 @@ class CheckOffers extends BaseCommand
             if ($offer['type'] !== $detectedType) {
                 CLI::write("Angebot {$offer['id']} hat falschen Typ (aktuell: {$offer['type']} != detect: {$detectedType}), wird aktualisiert.", 'yellow');
                 $updateData['type'] = $detectedType;
+            }
+
+            if (is_null($offer['platform'])) {
+                $headers = $offer['headers'] ? json_decode($offer['headers'], true) : [];
+                $host = $headers['Host'] ?? 'unknown';
+                $parts = explode('.', $host);
+                $partsCount = count($parts);
+                if ($partsCount > 2) {
+                    $domain = $parts[$partsCount - 2] . '.' . $parts[$partsCount - 1];
+                } else {
+                    $domain = $host;
+                }
+                $updateData['platform'] = $domain;
             }
 
             foreach (['type', 'original_type', 'sub_type', 'city', 'zip', 'customer_type', 'language', 'firstname', 'lastname', 'email', 'phone', 'work_start_date', 'additional_service', 'service_url', 'uuid'] as $key) {

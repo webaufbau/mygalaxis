@@ -176,6 +176,16 @@ class FluentForm extends BaseController
             'type'          => $type,
         ], $enriched);
 
+        $host = $_SERVER['HTTP_HOST'] ?? $headers['Host'] ?? 'unknown';
+        $parts = explode('.', $host);
+        $partsCount = count($parts);
+        if ($partsCount > 2) {
+            $domain = $parts[$partsCount - 2] . '.' . $parts[$partsCount - 1];
+        } else {
+            $domain = $host;
+        }
+        $insertData['platform'] = $domain;
+
         if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
             $other_type_has_to_be = $enriched['type'] == 'move' ? 'cleaning' : 'move';
             $userEmail = $data['email'] ?? null;
