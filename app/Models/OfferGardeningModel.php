@@ -7,11 +7,14 @@ class OfferGardeningModel extends Model
 {
     protected $table = 'offers_gardening';
     protected $primaryKey = 'id';
+    protected $returnType = 'array';
     protected $allowedFields = [
-        'offer_id', 'work_type', 'area_m2', 'duration_estimation', 'special_requests'
+        'offer_id',
+        'user_role',
+        'service_details',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
-
 }

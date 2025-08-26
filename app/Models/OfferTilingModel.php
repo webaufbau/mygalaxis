@@ -10,10 +10,9 @@ class OfferTilingModel extends Model
     protected $returnType = 'array';
     protected $allowedFields = [
         'offer_id',
-        'tile_type',
-        'area_m2',
-        'grout_color',
-        'special_requests'
+        'object_type',
+        'service_details',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';

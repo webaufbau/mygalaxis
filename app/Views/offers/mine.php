@@ -52,7 +52,7 @@
                         <?php
                         if (isset($offer['purchased_price'])) {
                             $originalPrice = $offer['price'];
-                            $discountedPrice = $originalPrice / 2;
+                            $discountedPrice = $offer['discounted_price'];
 
                             if ($offer['purchased_price'] == $originalPrice) {
                                 echo '<div class="small">' . lang('Offers.price_normal') . '</div>';
@@ -68,8 +68,8 @@
 
                             $displayPrice = $offer['price'];
                             $priceWasDiscounted = false;
-                            if ($diffDays > 3) {
-                                $displayPrice = $offer['price'] / 2;
+                            if ($offer['discounted_price'] > 0) {
+                                $displayPrice = $offer['discounted_price'];
                                 $priceWasDiscounted = true;
                             }
                             ?>

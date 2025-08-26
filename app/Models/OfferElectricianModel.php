@@ -10,10 +10,9 @@ class OfferElectricianModel extends Model
     protected $returnType = 'array';
     protected $allowedFields = [
         'offer_id',
-        'service_type',
-        'urgency_level',
-        'power_capacity_kw',
-        'special_requests'
+        'object_type',
+        'service_details',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';

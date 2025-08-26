@@ -10,10 +10,9 @@ class OfferFlooringModel extends Model
     protected $returnType = 'array';
     protected $allowedFields = [
         'offer_id',
-        'floor_type',
-        'area_m2',
-        'duration_estimation',
-        'special_requests'
+        'object_type',
+        'service_details',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';

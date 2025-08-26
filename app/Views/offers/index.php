@@ -75,8 +75,8 @@
 
                         $displayPrice = $offer['price'];
                         $priceWasDiscounted = false;
-                        if ($diffDays > 3) {
-                            $displayPrice = $offer['price'] / 2;
+                        if ($offer['discounted_price'] > 0) {
+                            $displayPrice = $offer['discounted_price'];
                             $priceWasDiscounted = true;
                         }
                         ?>

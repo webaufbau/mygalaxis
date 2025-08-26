@@ -18,7 +18,7 @@ class CheckOffers extends BaseCommand
     public function run(array $params)
     {
         $offerModel = new OfferModel();
-        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->findAll(100);
+        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->findAll(100);
 
         // Modell dynamisch laden (nach Typ)
         $modelClassMap = [
@@ -64,8 +64,8 @@ class CheckOffers extends BaseCommand
                 $updateData['type'] = $detectedType;
             }
 
-            foreach (['type', 'city', 'zip', 'customer_type', 'firstname', 'lastname', 'email', 'phone', 'work_start_date', 'additional_service', 'service_url', 'uuid'] as $key) {
-                if (empty($offer[$key]) && !empty($enriched[$key])) {
+            foreach (['type', 'original_type', 'sub_type', 'city', 'zip', 'customer_type', 'language', 'firstname', 'lastname', 'email', 'phone', 'work_start_date', 'additional_service', 'service_url', 'uuid'] as $key) {
+                if (!empty($enriched[$key])) { // empty($offer[$key]) &&
                     $updateData[$key] = $enriched[$key];
                 }
             }

@@ -7,11 +7,16 @@ class OfferPaintingModel extends Model
 {
     protected $table = 'offers_painting';
     protected $primaryKey = 'id';
+    protected $returnType = 'array';
     protected $allowedFields = [
-        'offer_id', 'work_type', 'area_m2', 'duration_estimation', 'special_requests'
+        'offer_id',
+        'object_type',
+        'business_type',
+        'painting_overview',
+        'service_details',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
-
 }
