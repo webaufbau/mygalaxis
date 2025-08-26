@@ -177,7 +177,7 @@ class FluentForm extends BaseController
             'from_campaign' => $isCampaign,
             'group_id'      => $groupId,
             'type'          => $type,
-            'country'       => $siteConfig->siteCountry ?? 'ch',
+            'country'       => $siteConfig->siteCountry ?? null,
         ], $enriched);
 
         $host = $_SERVER['HTTP_HOST'] ?? $headers['Host'] ?? 'unknown';
