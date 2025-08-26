@@ -20,7 +20,7 @@ class DiscountOldOffers extends BaseCommand
         // Hol alle relevanten Offers
         $offers = $offerModel
             ->where('discounted_price IS NULL')
-            ->where('work_start_date <', date('Y-m-d H:i:s', strtotime('-3 days')))
+            ->where('created_at <', date('Y-m-d H:i:s', strtotime('-3 days')))
             ->findAll();
 
         if (empty($offers)) {
