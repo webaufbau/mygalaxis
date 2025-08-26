@@ -105,6 +105,7 @@ $routes->group('{locale}', function($routes) {
 });
 
 
+$routes->get('api/offers', '\App\Controllers\Api\Offers::index');
 
 
 

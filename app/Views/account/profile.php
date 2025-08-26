@@ -116,11 +116,11 @@ elseif($siteConfig->phoneCheck == 'de') {
 
     <div class="mb-3">
         <label class="form-label">
-            <?= esc(lang('Profile.companyUID')) ?> * <?php if($siteConfig->companyUidCheck !== '') { echo '<a href="'.$companyUidLink.'" target="_blank">'.$companyUidName.'</a>'; } ?></label>
+            <?= esc(lang('Profile.companyUID')) ?> <?php if($siteConfig->companyUidCheck !== '') { echo '<a href="'.$companyUidLink.'" target="_blank">'.$companyUidName.'</a>'; } ?></label>
         </label>
         <input type="text" name="company_uid" class="form-control"
                value="<?= esc($user->company_uid) ?>"
-               required
+
         <?php if(isset($companyUidPattern)) { echo 'pattern="'.$companyUidPattern.'"'; } ?>
         <?php if(isset($companyUidPlaceholder)) { echo 'placeholder="'.$companyUidPlaceholder.'"'; } ?>
                title="<?=$companyUidInvalidFeedback; ?>"

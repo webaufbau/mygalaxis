@@ -147,7 +147,7 @@ elseif($siteConfig->phoneCheck == 'de') {
                     name="company_uid"
                     id="company_uid"
                     class="form-control"
-                    required
+
                     <?php if(isset($companyUidPattern)) { echo 'pattern="'.$companyUidPattern.'"'; } ?>
                     <?php if(isset($companyUidPlaceholder)) { echo 'placeholder="'.$companyUidPlaceholder.'"'; } ?>
                     <?php if(isset($companyUidInvalidFeedback)) { echo 'title="'.$companyUidInvalidFeedback.'"'; } ?>
