@@ -111,7 +111,6 @@ class Offers extends ResourceController
                 }
             }
 
-            // Das „passende“ Extra bestimmen:
             // bevorzugt die Subtable, die zum offers.type passt (z.B. type=painting -> offers_painting)
             $row['extra'] = null;
             if (!empty($extras)) {
