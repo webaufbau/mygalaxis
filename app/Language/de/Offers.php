@@ -273,6 +273,8 @@ return [
         'reinigungsart' => 'Welche Reinigungen sollen vorgenommen werden? (Mehrfachauswahl möglich)',
         'reinigung_wiederkehrend' => 'Wie oft soll gereinigt werden?',
         'reinigung_wiederkehrend_andere' => 'Bitte gib an, wie oft gereinigt werden soll.',
+        'reinigungsflaeche_qm' => 'Komplette Reinigungsfläche',
+
         'bodenbelaege_andere' => 'Bitte Bodenbelag angeben',
         'bodenbelaege_andere_masse' => 'Masse bekannt?',
         'bodenbelaege_andere_flaeche' => 'Fläche des Bodenbelags?',
@@ -358,7 +360,6 @@ return [
         'einzug_anzahl_m' => 'Anzahl Quadratmeter',
         'einzug_entfernung_firma' => 'Entfernung Haustür – Lastwagen (Meter):',
         'einzug_entfernung_m' => 'Anzahl Meter',
-        'details_leistungen_firma_1' => 'Gewünschte Leistungen (optional)',
         'details_einlagerung_gegenstaende' => 'Was möchtest du entsorgen?',
         'details_einlagerung_gegenstaende_1' => 'Was möchtest du einlagern?',
         'details_einlagerung_dauer' => 'Lagerdauer',

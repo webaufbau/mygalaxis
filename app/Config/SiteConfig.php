@@ -17,6 +17,7 @@ class SiteConfig extends BaseConfig
     public string $faviconUrl = '';
     public string $companyUidCheck = '';
     public string $phoneCheck = '';
+    public string $siteCountry = '';
 
     /**
      * Meta-Definition für die Felder
@@ -47,6 +48,14 @@ class SiteConfig extends BaseConfig
         'logoUrl' => [
             'type' => 'file',
             'label' => 'Verfikationsprozess Logo',
+        ],
+        'headerBackgroundColor' => [
+            'type' => 'color',
+            'label' => 'Verfikationsprozess Header Hintergrund Farbe',
+        ],
+        'logoHeightPixel' => [
+            'type' => 'text',
+            'label' => 'Verfikationsprozess Logo Höhe in Pixel',
         ],
         'faviconUrl' => [
             'type' => 'file',
@@ -84,6 +93,18 @@ class SiteConfig extends BaseConfig
                 'at'  => 'AT Format',
             ],
             'default' => ''
+        ],
+
+        // Land
+        'siteCountry' => [
+            'type' => 'dropdown',
+            'label' => 'Welches Land bei Registrierungen setzen?',
+            'options' => [
+                'ch'  => 'Schweiz',
+                'de'  => 'Deutschland',
+                'at'  => 'Österreich',
+            ],
+            'default' => 'ch'
         ],
     ];
 }

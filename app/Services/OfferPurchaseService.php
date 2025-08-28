@@ -26,9 +26,10 @@ class OfferPurchaseService
         $now = new DateTime();
         $days = $now->diff($created)->days;
         $price = $offer['price'];
-        if ($days > 3) {
-            $price = $price / 2;
+        if ($offer['discounted_price'] > 0) {
+            $price = $offer['discounted_price'];
         }
+
 
         $bookingModel = new BookingModel();
         $balance = $bookingModel->getUserBalance($user->id);

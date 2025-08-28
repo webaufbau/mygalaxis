@@ -10,12 +10,19 @@ class OfferCleaningModel extends Model
     protected $returnType = 'array';
     protected $allowedFields = [
         'offer_id',
+        'user_role',
+        'business_type',
+        'object_type',
+        'client_role',
+        'apartment_size',
+        'room_count',
+        'cleaning_area_sqm',
         'cleaning_type',
-        'property_size',
-        'extras',
+        'window_shutter_cleaning',
+        'facade_count',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
-
 }

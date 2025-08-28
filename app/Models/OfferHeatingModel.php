@@ -10,10 +10,9 @@ class OfferHeatingModel extends Model
     protected $returnType = 'array';
     protected $allowedFields = [
         'offer_id',
-        'heating_type',
-        'problem_description',
-        'urgency_level',
-        'special_requests'
+        'object_type',
+        'service_details',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';

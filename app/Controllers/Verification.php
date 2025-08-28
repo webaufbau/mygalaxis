@@ -21,7 +21,7 @@ class Verification extends BaseController
             if ($waited >= $maxWaitTime) {
                 log_message('info', 'Verifikation kann nicht gemacht werden uuid fehlt nach 5 Sekunden' . print_r($_SESSION, true));
 
-                return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl); // Fehlerseite oder Hinweis
+                return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de']); // Fehlerseite oder Hinweis
             }
         }
 
@@ -49,7 +49,7 @@ class Verification extends BaseController
             log_message('info', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID ' . $uuid . ': ' . print_r($_SESSION, true));
             log_message('info', 'Abfrage: ' . $builder->db()->getLastQuery());
 
-            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl)->with('error', lang('Verification.noOfferFound'));
+            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'])->with('error', lang('Verification.noOfferFound'));
         }
 
         // form_fields ist JSON, decode es:
@@ -205,7 +205,7 @@ class Verification extends BaseController
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode == '') {
             log_message('info', 'Verifizierung Confirm verificationCode fehlt.');
-            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl);
+            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de']);
         }
 
         $smsStatus = session('sms_sent_status'); // z.B. "DELIVERED_TO_HANDSET", "INVALID_DESTINATION_ADDRESS"
@@ -313,10 +313,10 @@ class Verification extends BaseController
 
                 session()->remove('verification_code');
 
-                log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? $this->siteConfig->thankYouUrl));
+                log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? $this->siteConfig->thankYouUrl['de']));
                 return view('verification_success', [
                     'siteConfig' => $this->siteConfig,
-                    'next_url' => session('next_url') ?? $this->siteConfig->thankYouUrl
+                    'next_url' => session('next_url') ?? $this->siteConfig->thankYouUrl['de']
                 ]);
             }
 
@@ -377,7 +377,7 @@ class Verification extends BaseController
         session()->set('uuid', $offer['uuid']);
         session()->set('phone', $phone);
         session()->set('verify_method', $method);
-        session()->set('next_url', $this->siteConfig->thankYouUrl); // fix immer danke seite
+        session()->set('next_url', $this->siteConfig->thankYouUrl['de']); // fix immer danke seite
 
         return redirect()->to($prefix . '/verification/send');
     }

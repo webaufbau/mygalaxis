@@ -5,21 +5,35 @@ use CodeIgniter\Model;
 
 class OfferMoveCleaningModel extends Model
 {
-    protected $table = 'offers_move';
+    protected $table = 'offers_move_cleaning';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
     protected $allowedFields = [
         'offer_id',
-        'apartment_size',
+        // --- Move Fields ---
+        'from_object_type',
+        'from_city',
+        'from_room_count',
+        'to_object_type',
+        'to_city',
+        'to_room_count',
+        'service_details_move',
         'move_date',
-        'distance',
-        'additional_services',
+        'customer_type',
+        // --- Cleaning Fields ---
+        'user_role',
+        'business_type',
+        'object_type',
+        'client_role',
+        'apartment_size_cleaning',
+        'room_count_cleaning',
+        'cleaning_area_sqm',
         'cleaning_type',
-        'property_size',
-        'extras',
+        'window_shutter_cleaning',
+        'facade_count',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
-
 }

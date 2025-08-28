@@ -7,11 +7,14 @@ class OfferPlumbingModel extends Model
 {
     protected $table = 'offers_plumbing';
     protected $primaryKey = 'id';
+    protected $returnType = 'array';
     protected $allowedFields = [
-        'offer_id', 'work_scope', 'urgency_level', 'affected_rooms', 'special_requests'
+        'offer_id',
+        'object_type',
+        'service_details',
+        'address_city',
     ];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
-
 }

@@ -133,19 +133,27 @@ elseif($siteConfig->phoneCheck == 'de') {
         </div>
 
         <div class="mb-3">
+            <label for="contact_person" class="form-label"><?= esc(lang('Profile.contactPerson')) ?> *</label>
+            <input type="text" name="contact_person" id="contact_person" class="form-control" required="required">
+            <div class="invalid-feedback">
+                <?= lang('Auth.contactPersonRequired') ?>
+            </div>
+        </div>
+
+        <div class="mb-3">
             <label for="company_uid" class="form-label"><?= lang('Auth.companyUid') ?> * <?php if($siteConfig->companyUidCheck !== '') { echo '<a href="'.$companyUidLink.'" target="_blank">'.$companyUidName.'</a>'; } ?></label>
             <input
                     type="text"
                     name="company_uid"
                     id="company_uid"
                     class="form-control"
-                    required
+
                     <?php if(isset($companyUidPattern)) { echo 'pattern="'.$companyUidPattern.'"'; } ?>
                     <?php if(isset($companyUidPlaceholder)) { echo 'placeholder="'.$companyUidPlaceholder.'"'; } ?>
                     <?php if(isset($companyUidInvalidFeedback)) { echo 'title="'.$companyUidInvalidFeedback.'"'; } ?>
             >
             <div class="invalid-feedback">
-                <?=$companyUidInvalidFeedback ?? '';?>
+                <?php if(isset($companyUidInvalidFeedback)) { echo 'title="'.$companyUidInvalidFeedback.'"'; } ?>
             </div>
         </div>
 
@@ -175,7 +183,7 @@ elseif($siteConfig->phoneCheck == 'de') {
         </div>
 
         <div class="mb-3">
-            <label for="company_phone" class="form-label"><?= lang('Auth.companyPhone') ?></label>
+            <label for="company_phone" class="form-label"><?= lang('Auth.companyPhone') ?> *</label>
             <input
                     type="tel"
                     name="company_phone"
@@ -230,9 +238,9 @@ elseif($siteConfig->phoneCheck == 'de') {
     });
     <?php } ?>
 
-    <?php if(isset($companyUidPattern) && $companyUidPattern !== '') { ?>
+    <?php if(isset($companyPhoneInputmask) && $companyPhoneInputmask !== '') { ?>
     $('#company_phone').inputmask({
-        mask: "+99 99 999 99 99",
+        mask: "<?=$companyPhoneInputmask;?>",
         definitions: {
             'A': { validator: "[A-Z]" },
             '9': { validator: "[0-9]" },
@@ -255,6 +263,8 @@ elseif($siteConfig->phoneCheck == 'de') {
                     // Passwort und Bestätigung prüfen
                     var pwd = form.querySelector('#password');
                     var pwdConfirm = form.querySelector('#password_confirm');
+                    console.log('pwd', pwd.value);
+                    console.log('pwdConfirm', pwdConfirm.value);
                     if (pwd.value !== pwdConfirm.value) {
                         pwdConfirm.setCustomValidity("<?= lang('Auth.passwordsMismatch') ?>");
                     } else {

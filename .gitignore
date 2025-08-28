@@ -81,7 +81,7 @@ writable/debugbar/*
 writable/Language/*
 !writable/Language/.gitkeep
 
-writable/missing_translation.txt
+writable/missing_translations.txt
 
 php_errors.log
 
@@ -105,6 +105,7 @@ phpunit
 # Composer
 #-------------------------
 vendor/
+composer.lock
 
 #-------------------------
 # IDE / Development Files

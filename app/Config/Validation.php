@@ -55,14 +55,22 @@ class Validation extends BaseConfig
                 'min_length[1]',
             ],
         ],
-        'company_uid' => [
-            'label' => 'Auth.company_uid',
+        'contact_person' => [
+            'label' => 'Auth.contact_person',
             'rules' => [
                 'required',
                 'max_length[150]',
                 'min_length[1]',
             ],
         ],
+        /*'company_uid' => [
+            'label' => 'Auth.company_uid',
+            'rules' => [
+                'required',
+                'max_length[150]',
+                'min_length[1]',
+            ],
+        ],*/
         'company_street' => [
             'label' => 'Auth.company_street',
             'rules' => [

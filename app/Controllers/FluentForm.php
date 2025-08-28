@@ -149,6 +149,9 @@ class FluentForm extends BaseController
         }
 
 
+        $siteConfig = siteconfig();
+
+
         $offerModel = new OfferModel();
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
@@ -174,7 +177,18 @@ class FluentForm extends BaseController
             'from_campaign' => $isCampaign,
             'group_id'      => $groupId,
             'type'          => $type,
+            'country'       => $siteConfig->siteCountry ?? null,
         ], $enriched);
+
+        $host = $_SERVER['HTTP_HOST'] ?? $headers['Host'] ?? 'unknown';
+        $parts = explode('.', $host);
+        $partsCount = count($parts);
+        if ($partsCount > 2) {
+            $domain = $parts[$partsCount - 2] . '.' . $parts[$partsCount - 1];
+        } else {
+            $domain = $host;
+        }
+        $insertData['platform'] = $domain;
 
         if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
             $other_type_has_to_be = $enriched['type'] == 'move' ? 'cleaning' : 'move';
