@@ -5,12 +5,14 @@ namespace App\Libraries;
 class CategoryManager
 {
     protected array $types;
+    protected array $options;
     protected string $path;
 
     public function __construct()
     {
         $config = config('CategoryOptions');
         $this->types = $config->categoryTypes;
+        $this->options = $config->categoryOptions;
         $this->path = $config->storagePath;
     }
 
@@ -18,19 +20,31 @@ class CategoryManager
     {
         $values = [];
 
+        // JSON einlesen
         if (file_exists($this->path)) {
             $json = file_get_contents($this->path);
             $values = json_decode($json, true) ?? [];
         }
 
-        // Ergänze fehlende Typen aus Config
+        // Kategorien ergänzen
         foreach ($this->types as $key => $defaultName) {
-            if (!isset($values[$key])) {
-                $values[$key] = [
-                    'name'  => $defaultName,
-                    'price' => 0.00,
+            $labels = $this->options[$key] ?? [];
+
+            $existingOptions = $values[$key]['options'] ?? [];
+
+            $options = [];
+            foreach ($labels as $idx => $label) {
+                $price = $existingOptions[$idx]['price'] ?? 0;
+                $options[] = [
+                    'label' => $label,
+                    'price' => $price
                 ];
             }
+
+            $values[$key] = [
+                'name' => $values[$key]['name'] ?? $defaultName,
+                'options' => $options
+            ];
         }
 
         return $values;
@@ -38,13 +52,21 @@ class CategoryManager
 
     public function save(array $data): bool
     {
-        // Nur erlaubte Typen speichern
         $filtered = [];
+
         foreach ($this->types as $key => $defaultName) {
             if (isset($data[$key])) {
+                $options = [];
+                foreach ($data[$key]['options'] as $opt) {
+                    $options[] = [
+                        'label' => $opt['label'], // Label fix aus Config
+                        'price' => floatval($opt['price'] ?? 0)
+                    ];
+                }
+
                 $filtered[$key] = [
-                    'name'  => $data[$key]['name'] ?? $defaultName,
-                    'price' => floatval($data[$key]['price'] ?? 0),
+                    'name' => $data[$key]['name'] ?? $defaultName,
+                    'options' => $options
                 ];
             }
         }
