@@ -83,6 +83,7 @@ class OfferModel extends Model
     public function enrichDataFromFormFields(array $formFields, array $original = []): array
     {
         $userInputs = $formFields['__submission']['user_inputs'] ?? [];
+        $originalType = $original['type'] ?? null;
 
         // Adresse extrahieren
         $address = $this->extractAddressData($formFields);
@@ -97,7 +98,7 @@ class OfferModel extends Model
         $exactType = $formFields['type']
             ?? $formFields['service_type']
             ?? $formFields['angebot_typ']
-            ?? $data['type']
+            ?? $originalType
             ?? $original['type']
             ?? $formFields['_wp_http_referer']
             ?? $formFields['__submission']['source_url']
@@ -110,7 +111,10 @@ class OfferModel extends Model
             $data['original_type'] = strtolower(trim($exactType));
         }
 
-        if(str_contains($data['original_type'], '_') && $original['type'] !== 'move_cleaning') {
+        if (!empty($originalType)
+            && str_contains($originalType, '_')
+            && (($original['type'] ?? null) !== 'move_cleaning')) {
+
             $data['sub_type'] = trim(strstr($data['original_type'], "_", false) ?? '', "_") ?? null;
         }
 
