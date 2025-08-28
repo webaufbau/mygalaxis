@@ -152,7 +152,7 @@ class FluentForm extends BaseController
         $offerModel = new OfferModel();
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
-        $type = $enriched['type'] ?? 'unknown';
+        $type = $enriched['type'] ?? $data['type'] ?? 'unknown';
 
         $categoryManager = new \App\Libraries\CategoryManager();
         $categories = $categoryManager->getAll();

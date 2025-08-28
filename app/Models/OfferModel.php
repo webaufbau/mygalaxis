@@ -3,6 +3,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 use DateTime;
+use Random\RandomException;
 
 class OfferModel extends Model
 {
@@ -72,6 +73,9 @@ class OfferModel extends Model
         return $data;
     }
 
+    /**
+     * @throws RandomException
+     */
     public function enrichDataFromFormFields(array $formFields, array $original = []): array
     {
         $userInputs = $formFields['__submission']['user_inputs'] ?? [];
