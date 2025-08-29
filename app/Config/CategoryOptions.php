@@ -83,6 +83,21 @@ class CategoryOptions extends BaseConfig
         ],
     ];
 
+    public array $discountRules = [
+        [
+            'hours'    => 8,
+            'discount' => 30,   // Prozent
+        ],
+        [
+            'hours'    => 14,
+            'discount' => 50,
+        ],
+        [
+            'hours'    => 24,
+            'discount' => 70,
+        ]
+    ];
+
     // Pfad zur JSON-Datei mit Preisen
     public string $storagePath = WRITEPATH . 'config/category_settings.json';
 }

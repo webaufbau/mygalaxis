@@ -25,19 +25,24 @@ class Category extends AdminBase {
         $manager = new CategoryManager();
 
         if ($this->request->getMethod() === 'POST') {
-            $data = $this->request->getPost('categories');
+            $categories    = $this->request->getPost('categories') ?? [];
+            $discountRules = $this->request->getPost('discountRules') ?? [];
 
-            if ($manager->save($data)) {
-                return redirect()->back()->with('message', 'Kategorien erfolgreich gespeichert.');
+            if ($manager->save($categories, $discountRules)) {
+                return redirect()->back()->with('message', 'Einstellungen erfolgreich gespeichert.');
             }
 
             return redirect()->back()->with('error', 'Fehler beim Speichern.');
         }
 
-        $categories = $manager->getAll();
+        $values = $manager->getAll();
 
-        return view('admin/category_settings', ['categories' => $categories]);
+        return view('admin/category_settings', [
+            'categories'    => $values['categories'],
+            'discountRules' => $values['discountRules']
+        ]);
     }
+
 
 
 }

@@ -29,8 +29,7 @@ class CategoryManager
         // Kategorien ergänzen
         foreach ($this->types as $key => $defaultName) {
             $labels = $this->options[$key] ?? [];
-
-            $existingOptions = $values[$key]['options'] ?? [];
+            $existingOptions = $values['categories'][$key]['options'] ?? [];
 
             $options = [];
             foreach ($labels as $idx => $label) {
@@ -41,36 +40,62 @@ class CategoryManager
                 ];
             }
 
-            $values[$key] = [
-                'name' => $values[$key]['name'] ?? $defaultName,
+            $values['categories'][$key] = [
+                'name'    => $values['categories'][$key]['name'] ?? $defaultName,
                 'options' => $options
             ];
+        }
+
+        // Falls keine discountRules existieren, Default aus Config nehmen
+        if (!isset($values['discountRules'])) {
+            $config = config('CategoryOptions');
+            $values['discountRules'] = $config->discountRules;
         }
 
         return $values;
     }
 
-    public function save(array $data): bool
+    public function save(array $categories, array $discountRules): bool
     {
-        $filtered = [];
+        $filteredCategories = [];
 
         foreach ($this->types as $key => $defaultName) {
-            if (isset($data[$key])) {
+            if (isset($categories[$key])) {
                 $options = [];
-                foreach ($data[$key]['options'] as $opt) {
+                foreach ($categories[$key]['options'] as $opt) {
                     $options[] = [
-                        'label' => $opt['label'], // Label fix aus Config
+                        'label' => $opt['label'], // Label fix
                         'price' => floatval($opt['price'] ?? 0)
                     ];
                 }
 
-                $filtered[$key] = [
-                    'name' => $data[$key]['name'] ?? $defaultName,
+                $filteredCategories[$key] = [
+                    'name'    => $categories[$key]['name'] ?? $defaultName,
                     'options' => $options
                 ];
             }
         }
 
-        return file_put_contents($this->path, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
+        // Discount Rules filtern
+        $filteredDiscounts = [];
+        foreach ($discountRules as $rule) {
+            if (!empty($rule['hours']) && !empty($rule['discount'])) {
+                $filteredDiscounts[] = [
+                    'hours'    => (int)$rule['hours'],
+                    'discount' => (int)$rule['discount'],
+                ];
+            }
+        }
+
+        $saveData = [
+            'categories'    => $filteredCategories,
+            'discountRules' => $filteredDiscounts
+        ];
+
+        return file_put_contents(
+                $this->path,
+                json_encode($saveData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            ) !== false;
     }
+
 }

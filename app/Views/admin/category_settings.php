@@ -58,8 +58,67 @@ function makeOptionKey(string $label, array $existingKeys): string
 
         </tbody>
     </table>
+
+
+
+    <h3>Rabattregeln</h3>
+
+    <table class="table" id="discount-rules-table">
+        <thead>
+        <tr>
+            <th>Stunden</th>
+            <th>Rabatt (%)</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!empty($discountRules)): ?>
+            <?php foreach ($discountRules as $i => $rule): ?>
+                <tr>
+                    <td><input type="number" name="discountRules[<?= $i ?>][hours]" value="<?= esc($rule['hours']) ?>" class="form-control" min="1"></td>
+                    <td><input type="number" name="discountRules[<?= $i ?>][discount]" value="<?= esc($rule['discount']) ?>" class="form-control" min="0" max="100"></td>
+                    <td><button type="button" class="btn btn-danger btn-sm remove-row">✕</button></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-secondary" id="add-discount-rule">+ Regel hinzufügen</button>
+
+
+
+
     <button type="submit" class="btn btn-primary">Speichern</button>
 </form>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let table = document.getElementById("discount-rules-table").getElementsByTagName("tbody")[0];
+        let addBtn = document.getElementById("add-discount-rule");
+
+        addBtn.addEventListener("click", function() {
+            let index = table.rows.length;
+            let row = table.insertRow();
+
+            row.innerHTML = `
+            <td><input type="number" name="discountRules[${index}][hours]" class="form-control" min="1"></td>
+            <td><input type="number" name="discountRules[${index}][discount]" class="form-control" min="0" max="100"></td>
+            <td><button type="button" class="btn btn-danger btn-sm remove-row">✕</button></td>
+        `;
+        });
+
+        table.addEventListener("click", function(e) {
+            if (e.target && e.target.classList.contains("remove-row")) {
+                e.target.closest("tr").remove();
+            }
+        });
+    });
+</script>
+
 
 
 <?= $this->endSection() ?>
