@@ -86,6 +86,8 @@ class OfferPriceCalculator
                     if (!empty($fields['reinigungsart_wiederkehrend']) && $fields['reinigungsart_wiederkehrend']=='Wiederkehrend') {
                         $price += $category['options']['wiederkehrend']['price'];
                     }
+
+                    dd($price);
                 }
                 break;
 
