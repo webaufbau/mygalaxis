@@ -36,6 +36,13 @@ class OfferPriceCalculator
                 if($selected && isset($category['options'][$selected])) {
                     $price = $category['options'][$selected]['price'];
                 }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
                 break;
 
             case 'move_cleaning':
@@ -43,6 +50,13 @@ class OfferPriceCalculator
                 if($selected && isset($category['options'][$selected])) {
                     $price = $category['options'][$selected]['price'];
                 }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
                 break;
 
             case 'cleaning':
@@ -88,6 +102,13 @@ class OfferPriceCalculator
                     }
 
                 }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
                 break;
 
             case 'painting':
@@ -153,10 +174,181 @@ class OfferPriceCalculator
                     $price += $category['options']['trennwaende']['price'] ?? 0;
                 }
 
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
                 break;
 
 
-            // TODO: weitere Kategorien: gardening, plumbing, electrician, heating, flooring, tiling
+            case 'gardening':
+
+                $category = $this->categoryPrices['gardening'] ?? [];
+
+                // --- Basis: Mieter / Eigentümer / Verwaltung / Andere ---
+                $price = $category['options']['mieter_eigentuemer_verwaltung_andere']['price'] ?? 0;
+
+                // --- Garten anlegen (Mehrfachauswahl) ---
+                foreach ($fields['garten_anlegen'] ?? [] as $arbeit) {
+                    // Normierung wie bei Painting
+                    $aKey = strtolower($arbeit);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (isset($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Wiederkehrende Arbeiten ---
+                $wiederkehrendFields = [
+                    'teich_reinigung_intervall',
+                    'hecke_schneiden_einmalig',
+                    'baum_schneiden_einmalig',
+                    'rasen_maehen_einmalig',
+                ];
+
+                foreach ($wiederkehrendFields as $fieldKey) {
+                    if (!empty($fields[$fieldKey]) && $fields[$fieldKey] === 'Wiederkehrend') {
+                        $price += $category['options']['wiederkehrend']['price'] ?? 0;
+                    }
+                }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
+                break;
+
+            case 'electrician':
+                $category = $this->categoryPrices['electrician'] ?? [];
+                $price = 0;
+
+                // --- Art Objekt ---
+                if (!empty($fields['art_objekt'])) {
+                    // Normierung wie bei Painting / Gardening
+                    $aKey = strtolower($fields['art_objekt']);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Arbeiten (Mehrfach möglich) ---
+                foreach ($fields['arbeiten_elektriker'] ?? [] as $arbeit) {
+                    $aKey = strtolower($arbeit);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
+                break;
+
+            case 'plumbing':
+                $category = $this->categoryPrices['plumbing'] ?? [];
+                $price = 0;
+
+                // --- Art Objekt ---
+                if (!empty($fields['art_objekt'])) {
+                    $aKey = strtolower($fields['art_objekt']);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Arbeiten (Mehrfach möglich) ---
+                foreach ($fields['arbeiten_sanitaer'] ?? [] as $arbeit) {
+                    $aKey = strtolower($arbeit);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
+                break;
+
+
+            case 'heating':
+                $category = $this->categoryPrices['heating'] ?? [];
+                $price = 0;
+
+                // --- Art Objekt ---
+                if (!empty($fields['art_objekt'])) {
+                    $aKey = strtolower($fields['art_objekt']);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Step 2 Arbeiten (Neubau, Renovierung, Umbau) ---
+                $step2Keys = ['neubau', 'renovierung', 'umbau'];
+                $selectedStep2 = [];
+
+                foreach ($fields['arbeiten_heizung'] ?? [] as $arbeit) {
+                    $aKey = strtolower($arbeit);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (in_array($aKey, $step2Keys)) {
+                        $price += $category['options'][$aKey]['price'] ?? 0;
+                        $selectedStep2[] = $aKey;
+                    }
+                }
+
+                // --- Step 3 Arbeiten (Neue Anlagen / Heizkörper / Andere) ---
+                foreach ($fields['arbeiten_heizung'] ?? [] as $arbeit) {
+                    $aKey = strtolower($arbeit);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!in_array($aKey, $step2Keys) && !empty($category['options'][$aKey])) {
+                        $additionalPrice = $category['options'][$aKey]['price'] ?? 0;
+
+                        // Wenn Step2-Arbeiten gewählt wurden, ziehen wir die Basis ab
+                        if (in_array($aKey, ['neue_waermepumpe','neue_gasheizung','neue_oelheizung','neue_erdwaerme'])) {
+                            foreach ($selectedStep2 as $step2Key) {
+                                $additionalPrice -= $category['options'][$step2Key]['price'] ?? 0;
+                            }
+                            $additionalPrice = max($additionalPrice, 0); // nicht negativ
+                        }
+
+                        $price += $additionalPrice;
+                    }
+                }
+
+                break;
+
+
+
         }
 
 

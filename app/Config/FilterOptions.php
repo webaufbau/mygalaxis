@@ -28,10 +28,4 @@ class FilterOptions extends BaseConfig
         'it',
     ];
 
-    public array $services = [
-        'packing',
-        'unpacking',
-        'furniture_assembly',
-        'lamp_disassembly',
-    ];
 }
