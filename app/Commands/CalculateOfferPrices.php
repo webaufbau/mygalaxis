@@ -26,7 +26,7 @@ class CalculateOfferPrices extends BaseCommand
         $offers = $offerModel
             ->where('type IS NOT NULL')
             ->where('original_type IS NOT NULL')
-            ->where('type', 'cleaning') // Test
+            ->where('type', 'painting') // Test
             ->orderBy('updated_at', 'ASC')
             ->findAll(100); // Die ältesten 100
 

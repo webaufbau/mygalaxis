@@ -76,3 +76,9 @@ if (!function_exists('is_mobile_number')) {
         return false;
     }
 }
+
+
+function convert_umlaute(string $text): string {
+    $umlaute = ['ä'=>'ae', 'ö'=>'oe', 'ü'=>'ue', 'ß'=>'ss'];
+    return strtr($text, $umlaute);
+}

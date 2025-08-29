@@ -87,30 +87,72 @@ class OfferPriceCalculator
                         $price += $category['options']['wiederkehrend']['price'];
                     }
 
-                    dd($price);
                 }
                 break;
 
             case 'painting':
-                foreach ($fields['arbeiten'] ?? [] as $arbeit) {
-                    foreach ($category['options'] as $opt) {
-                        if ($opt['label'] === $arbeit) {
-                            $price += $opt['price'];
-                            break;
-                        }
-                    }
+
+                $price = 0;
+                $category = $this->categoryPrices['painting'] ?? [];
+
+                if (isset($fields['art_gewerbe']) && $fields['art_gewerbe'] !== 'Andere') { // Wenn art_gewerbe dann Büro / Laden / Lager / Industrie ABER NICHT ANDERE => das ist teuerer
+                    $price = $category['options']['gewerbe_buero_laden_lager_industrie']['price'] ?? 0;
+                } elseif (isset($fields['art_objekt'])) { // Wenn art_objekt dann Wohnung / Haus / Gewerbe
+                    $price = $category['options']['neubau_renovierung_andere']['price'] ?? 0;
+                } else {
+                    // Andere → Fixpreis 39.-
+                    $price = $category['options']['gewerbe_andere']['price'] ?? 0;
                 }
-                // Zimmergrösse hinzufügen
-                $zimmer = $fields['zimmer_size'] ?? null;
-                if ($zimmer) {
-                    foreach ($category['options'] as $opt) {
-                        if ($opt['label'] === $zimmer) {
-                            $price += $opt['price'];
-                            break;
-                        }
-                    }
+
+                // arbeiten_wohnung
+                // Arbeiten
+                foreach ($fields['arbeiten_wohnung'] ?? [] as $arbeit) {
+                    $arbeit = strtolower($arbeit);           // "wände"
+                    $arbeit = convert_umlaute($arbeit);      // "waende"
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $arbeit); // "waende"
+                    $price += $category['options'][$aKey]['price'] ?? 0;
                 }
-                if (!empty($fields['trennwaende'])) $price += 15;
+
+                // Malerarbeiten Übersicht (Innenräume / Fassade / Andere)
+                foreach ($fields['malerarbeiten_uebersicht'] ?? [] as $arbeit) {
+                    $key = match(strtolower($arbeit)) {
+                        'innenräume', 'innenraeume' => 'arbeiten_innenraeume',
+                        'fassade' => 'arbeiten_fassade',
+                        'andere' => 'arbeiten_andere',
+                        default => null
+                    };
+                    if ($key) $price += $category['options'][$key]['price'] ?? 0;
+                }
+
+                // Zimmergrößen für Wände
+                $wandAnzahl = $fields['wand_komplett_anzahl'] ?? $fields['wand_teil_anzahl'] ?? null;
+                if ($wandAnzahl) {
+                    if ($wandAnzahl === 'Andere') {
+                        $key = 'andere_zimmer';
+                    } else {
+                        preg_match('/^\d+/', $wandAnzahl, $matches);
+                        $key = $matches[0] ?? null;
+                    }
+                    if ($key) $price += $category['options'][$key]['price'] ?? 0;
+                }
+
+                // Zimmergrößen für Decken
+                $deckenAnzahl = $fields['decken_komplett_anzahl'] ?? $fields['decken_teil_anzahl'] ?? null;
+                if ($deckenAnzahl) {
+                    if ($deckenAnzahl === 'Andere') {
+                        $key = 'andere_zimmer';
+                    } else {
+                        preg_match('/^\d+/', $deckenAnzahl, $matches);
+                        $key = $matches[0] ?? null;
+                    }
+                    if ($key) $price += $category['options'][$key]['price'] ?? 0;
+                }
+
+                // Trennwände
+                if (!empty($fields['wand_option_trennwand']) && $fields['wand_option_trennwand'] === 'Ja') {
+                    $price += $category['options']['trennwaende']['price'] ?? 0;
+                }
+
                 break;
 
 
@@ -118,10 +160,13 @@ class OfferPriceCalculator
         }
 
 
-
-
-
 dd($price);
+
+
+
+
+
+
         // Beispiel für move / move_cleaning
         if ($type === 'move' || $type === 'move_cleaning') {
             $zimmer = $fields['zimmer_size'] ?? null;

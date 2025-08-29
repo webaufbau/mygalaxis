@@ -54,14 +54,40 @@ class CategoryOptions extends BaseConfig
         ],
 
         'painting' => [
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
-            ['key' => 'innenraeume', 'label' => 'Innenräume', 'price' => 0],
-            ['key' => 'fassade', 'label' => 'Fassade', 'price' => 0],
-            ['key' => 'gewerbe_buero_laden_lager', 'label' => 'Gewerbe Büro/Laden/Lager', 'price' => 0],
-            ['key' => 'gewerbe_industrie', 'label' => 'Gewerbe Industrie', 'price' => 0],
-            ['key' => 'gewerbe_andere', 'label' => 'Gewerbe Andere', 'price' => 0],
+            // Grundtypen
+            ['key' => 'neubau_renovierung_andere', 'label' => 'Neubau / Renovierung / Andere', 'price' => 19],
+
+            // Arbeiten (Aufschlag)
+            ['key' => 'waende', 'label' => 'Wände', 'price' => 19],
+            ['key' => 'decken', 'label' => 'Decken', 'price' => 9],
+            ['key' => 'fensterlaeden', 'label' => 'Fensterläden', 'price' => 5],
+            ['key' => 'fenster', 'label' => 'Fenster', 'price' => 9],
+            ['key' => 'tueren', 'label' => 'Türen', 'price' => 5],
+            ['key' => 'treppengelaender', 'label' => 'Treppengeländer', 'price' => 9],
+            ['key' => 'garagentor', 'label' => 'Garagentor', 'price' => 5],
+            ['key' => 'heizkoerper', 'label' => 'Heizkörper', 'price' => 5],
+            ['key' => 'zaungelaender', 'label' => 'Zaungeländer', 'price' => 5],
+            ['key' => 'andere_arbeit', 'label' => 'Andere Arbeit', 'price' => 5],
+
+            // Zimmergröße (Aufschlag)
+            ['key' => '1', 'label' => '1Z', 'price' => 5],
+            ['key' => '2', 'label' => '2Z', 'price' => 10],
+            ['key' => '3', 'label' => '3Z', 'price' => 15],
+            ['key' => '4', 'label' => '4Z', 'price' => 20],
+            ['key' => '5', 'label' => '5Z', 'price' => 25],
+            ['key' => 'andere_zimmer', 'label' => 'Andere', 'price' => 10],
+
+            // Trennwände
+            ['key' => 'trennwaende', 'label' => 'Trennwände', 'price' => 15],
+
+            // Gewerbe-Spezialfälle
+            ['key' => 'gewerbe_buero_laden_lager_industrie', 'label' => 'Gewerbe Büro/Laden/Lager/Industrie', 'price' => 19],
+            ['key' => 'gewerbe_andere', 'label' => 'Gewerbe Andere', 'price' => 39],
+
+            // Innenräume / Fassade extra bei Haus
+            ['key' => 'arbeiten_innenraeume', 'label' => 'Malerarbeiten Innenräume', 'price' => 19],
+            ['key' => 'arbeiten_fassade', 'label' => 'Malerarbeiten Fassade', 'price' => 39],
+            ['key' => 'arbeiten_andere', 'label' => 'Malerarbeiten Andere', 'price' => 39],
         ],
 
         'gardening' => [
