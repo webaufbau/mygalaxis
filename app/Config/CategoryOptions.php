@@ -23,70 +23,154 @@ class CategoryOptions extends BaseConfig
     public array $categoryOptions = [
 
         'move' => [
-            "1Z", "2Z", "3Z", "4Z", "5Z", "EFH"
+            ['key' => '1', 'label' => '1Z', 'price' => 0],
+            ['key' => '2', 'label' => '2Z', 'price' => 0],
+            ['key' => '3', 'label' => '3Z', 'price' => 0],
+            ['key' => '4', 'label' => '4Z', 'price' => 0],
+            ['key' => '5', 'label' => '5Z', 'price' => 0],
+            ['key' => '6', 'label' => 'EFH', 'price' => 0],
         ],
 
         'move_cleaning' => [
-            "1Z", "2Z", "3Z", "4Z", "5Z", "EFH"
+            ['key' => '1', 'label' => '1Z', 'price' => 0],
+            ['key' => '2', 'label' => '2Z', 'price' => 0],
+            ['key' => '3', 'label' => '3Z', 'price' => 0],
+            ['key' => '4', 'label' => '4Z', 'price' => 0],
+            ['key' => '5', 'label' => '5Z', 'price' => 0],
+            ['key' => '6', 'label' => 'EFH', 'price' => 0],
         ],
 
         'cleaning' => [
-            "1Z", "2Z", "3Z", "4Z", "5Z", "Andere", "Wiederkehrend", "Nur Fenster", "Nur Fassaden", "Hauswartung"
+            ['key' => '1', 'label' => '1Z', 'price' => 19],
+            ['key' => '2', 'label' => '2Z', 'price' => 25],
+            ['key' => '3', 'label' => '3Z', 'price' => 29],
+            ['key' => '4', 'label' => '4Z', 'price' => 35],
+            ['key' => '5', 'label' => '5Z', 'price' => 39],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 39],
+            ['key' => 'wiederkehrend', 'label' => 'Wiederkehrend', 'price' => 20],  // Aufpreis
+            ['key' => 'nur_fenster', 'label' => 'Nur Fenster', 'price' => 19],
+            ['key' => 'nur_fassaden', 'label' => 'Nur Fassaden', 'price' => 39],
+            ['key' => 'hauswartung', 'label' => 'Hauswartung', 'price' => 79],
         ],
 
         'painting' => [
-            "Wohnung Neubau", "Wohnung Renovierung", "Wohnung Andere",
-            "Haus Innenräume", "Haus Fassade",
-            "Gewerbe Büro/Laden/Lager", "Gewerbe Industrie", "Gewerbe Andere"
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
+            ['key' => 'innenraeume', 'label' => 'Innenräume', 'price' => 0],
+            ['key' => 'fassade', 'label' => 'Fassade', 'price' => 0],
+            ['key' => 'gewerbe_buero_laden_lager', 'label' => 'Gewerbe Büro/Laden/Lager', 'price' => 0],
+            ['key' => 'gewerbe_industrie', 'label' => 'Gewerbe Industrie', 'price' => 0],
+            ['key' => 'gewerbe_andere', 'label' => 'Gewerbe Andere', 'price' => 0],
         ],
 
         'gardening' => [
-            "Mieter", "Eigentümer", "Verwaltung/Andere",
-            "Bodenplatten verlegen", "Kies/Split", "Brüstung/Stutzmauer",
-            "Zäune/Geländer", "Holz/WPC Dielen",
-            "Teich Arbeiten", "Neuen Teich anlegen", "Neuer Pool",
-            "Hecken/Bäume", "Hecke kompl. entfernen", "Hecke neu Pflanzen",
-            "Rasen", "Rasen ersetzen", "Rasen neu anlegen", "Sprinkleranlage",
-            "Andere"
+            ['key' => 'mieter', 'label' => 'Mieter', 'price' => 0],
+            ['key' => 'eigentuer', 'label' => 'Eigentümer', 'price' => 0],
+            ['key' => 'verwaltung_andere', 'label' => 'Verwaltung/Andere', 'price' => 0],
+            ['key' => 'bodenplatten_verlegen', 'label' => 'Bodenplatten verlegen', 'price' => 0],
+            ['key' => 'kies_split', 'label' => 'Kies/Split', 'price' => 0],
+            ['key' => 'bruestung_stutzmauer', 'label' => 'Brüstung/Stutzmauer', 'price' => 0],
+            ['key' => 'zaeune_gelaender', 'label' => 'Zäune/Geländer', 'price' => 0],
+            ['key' => 'holz_wpc_dielen', 'label' => 'Holz/WPC Dielen', 'price' => 0],
+            ['key' => 'teich_arbeiten', 'label' => 'Teich Arbeiten', 'price' => 0],
+            ['key' => 'neuen_teich_anlegen', 'label' => 'Neuen Teich anlegen', 'price' => 0],
+            ['key' => 'neuer_pool', 'label' => 'Neuer Pool', 'price' => 0],
+            ['key' => 'hecken_baeume', 'label' => 'Hecken/Bäume', 'price' => 0],
+            ['key' => 'hecke_kompl_entfernen', 'label' => 'Hecke kompl. entfernen', 'price' => 0],
+            ['key' => 'hecke_neu_pflanzen', 'label' => 'Hecke neu Pflanzen', 'price' => 0],
+            ['key' => 'rasen', 'label' => 'Rasen', 'price' => 0],
+            ['key' => 'rasen_ersetzen', 'label' => 'Rasen ersetzen', 'price' => 0],
+            ['key' => 'rasen_neu_anlegen', 'label' => 'Rasen neu anlegen', 'price' => 0],
+            ['key' => 'sprinkleranlage', 'label' => 'Sprinkleranlage', 'price' => 0],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
+            ['key' => 'wiederkehrend', 'label' => 'Wiederkehrend', 'price' => 0],
         ],
 
         'plumbing' => [
-            "Wohnung", "Haus", "MFH", "Gewerbe", "Andere",
-            "Neubau", "Renovierung", "Umbau", "Bad/WC Sanierung",
-            "Boiler Entkalkung", "Kleinreparaturen"
+            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 0],
+            ['key' => 'haus', 'label' => 'Haus', 'price' => 0],
+            ['key' => 'mfh', 'label' => 'MFH', 'price' => 0],
+            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 0],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
+            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 0],
+            ['key' => 'bad_wc_sanierung', 'label' => 'Bad/WC Sanierung', 'price' => 0],
+            ['key' => 'boiler_entkalkung', 'label' => 'Boiler Entkalkung', 'price' => 0],
+            ['key' => 'kleinreparaturen', 'label' => 'Kleinreparaturen', 'price' => 0],
         ],
 
         'electrician' => [
-            "Wohnung", "Haus", "MFH", "Gewerbe", "Andere",
-            "Neubau", "Renovierung", "Umbau", "Kompl. Sanierung",
-            "Solaranlage", "Alarmanlage",
-            "Internet/Telefonanschluss", "Kleinarbeiten", "Andere"
+            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 0],
+            ['key' => 'haus', 'label' => 'Haus', 'price' => 0],
+            ['key' => 'mfh', 'label' => 'MFH', 'price' => 0],
+            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 0],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
+            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 0],
+            ['key' => 'kompl_sanierung', 'label' => 'Kompl. Sanierung', 'price' => 0],
+            ['key' => 'solaranlage', 'label' => 'Solaranlage', 'price' => 0],
+            ['key' => 'alarmanlage', 'label' => 'Alarmanlage', 'price' => 0],
+            ['key' => 'internet_telefonanschluss', 'label' => 'Internet/Telefonanschluss', 'price' => 0],
+            ['key' => 'kleinarbeiten', 'label' => 'Kleinarbeiten', 'price' => 0],
+            ['key' => 'andere_2', 'label' => 'Andere', 'price' => 0],
         ],
 
         'heating' => [
-            "Wohnung", "Haus", "MFH", "Gewerbe", "Andere",
-            "Neubau", "Renovierung", "Umbau",
-            "Neue Wärmepumpe", "Neue Gasheizung", "Neue Ölheizung", "Neue Erdwärme",
-            "Heizkörper Austausch", "Andere"
+            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 0],
+            ['key' => 'haus', 'label' => 'Haus', 'price' => 0],
+            ['key' => 'mfh', 'label' => 'MFH', 'price' => 0],
+            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 0],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
+            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 0],
+            ['key' => 'neue_waermepumpe', 'label' => 'Neue Wärmepumpe', 'price' => 0],
+            ['key' => 'neue_gasheizung', 'label' => 'Neue Gasheizung', 'price' => 0],
+            ['key' => 'neue_oelheizung', 'label' => 'Neue Ölheizung', 'price' => 0],
+            ['key' => 'neue_erdwaerme', 'label' => 'Neue Erdwärme', 'price' => 0],
+            ['key' => 'heizkoerper_austausch', 'label' => 'Heizkörper Austausch', 'price' => 0],
+            ['key' => 'andere_2', 'label' => 'Andere', 'price' => 0],
         ],
 
         'flooring' => [
-            "Wohnung", "Haus", "MFH", "Gewerbe", "Andere",
-            "Neubau", "Renovierung", "Umbau",
-            "Belag entfernen", "Belag verlegen", "Parkett schleifen", "Parkett lackieren", "Andere"
+            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 0],
+            ['key' => 'haus', 'label' => 'Haus', 'price' => 0],
+            ['key' => 'mfh', 'label' => 'MFH', 'price' => 0],
+            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 0],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
+            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 0],
+            ['key' => 'belag_entfernen', 'label' => 'Belag entfernen', 'price' => 0],
+            ['key' => 'belag_verlegen', 'label' => 'Belag verlegen', 'price' => 0],
+            ['key' => 'parkett_schleifen', 'label' => 'Parkett schleifen', 'price' => 0],
+            ['key' => 'parkett_lackieren', 'label' => 'Parkett lackieren', 'price' => 0],
+            ['key' => 'andere_2', 'label' => 'Andere', 'price' => 0],
         ],
 
         'tiling' => [
-            "Wohnung", "Haus", "MFH", "Gewerbe", "Andere",
-            "Neubau", "Renovierung", "Umbau",
-            "Platten entfernen", "Platten verlegen", "Andere"
+            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 0],
+            ['key' => 'haus', 'label' => 'Haus', 'price' => 0],
+            ['key' => 'mfh', 'label' => 'MFH', 'price' => 0],
+            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 0],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
+            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 0],
+            ['key' => 'platten_entfernen', 'label' => 'Platten entfernen', 'price' => 0],
+            ['key' => 'platten_verlegen', 'label' => 'Platten verlegen', 'price' => 0],
+            ['key' => 'andere_2', 'label' => 'Andere', 'price' => 0],
         ],
     ];
+
 
     public array $discountRules = [
         [
             'hours'    => 8,
-            'discount' => 30,   // Prozent
+            'discount' => 30,
         ],
         [
             'hours'    => 14,

@@ -89,12 +89,12 @@ class CheckOffers extends BaseCommand
             }
 
             // Preis setzen falls 0
-            $calculator = new \App\Libraries\OfferPriceCalculator();
+            /*$calculator = new \App\Libraries\OfferPriceCalculator();
             $calculatedPrice = $calculator->calculatePrice($detectedType, $formFields);
             if ($calculatedPrice > 0) {
                 $updateData['price'] = $calculatedPrice;
                 CLI::write("Preis für Angebot {$offer['id']} automatisch gesetzt: {$calculatedPrice} CHF", 'light_green');
-            }
+            }*/
 
             $translatedType = lang('Offers.type.' . $detectedType);
 

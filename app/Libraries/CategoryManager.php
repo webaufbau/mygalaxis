@@ -27,26 +27,30 @@ class CategoryManager
         }
 
         // Kategorien ergänzen
-        foreach ($this->types as $key => $defaultName) {
-            $labels = $this->options[$key] ?? [];
-            $existingOptions = $values['categories'][$key]['options'] ?? [];
+        foreach ($this->types as $catKey => $defaultName) {
+            $labels = $this->options[$catKey] ?? [];
+            $existingOptions = $values['categories'][$catKey]['options'] ?? [];
 
             $options = [];
-            foreach ($labels as $idx => $label) {
-                $price = $existingOptions[$idx]['price'] ?? 0;
-                $options[] = [
+            foreach ($labels as $labelInfo) {
+                $key = $labelInfo['key'];
+                $label = $labelInfo['label'];
+                $price = $existingOptions[$key]['price'] ?? 0; // Jetzt nach key suchen
+                $options[$key] = [
+                    'key' => $key,
                     'label' => $label,
                     'price' => $price
                 ];
             }
 
-            $values['categories'][$key] = [
-                'name'    => $values['categories'][$key]['name'] ?? $defaultName,
+            $values['categories'][$catKey] = [
+                'name'    => $values['categories'][$catKey]['name'] ?? $defaultName,
+                'max' => $values['categories'][$catKey]['max'] ?? null,
                 'options' => $options
             ];
         }
 
-        // Falls keine discountRules existieren, Default aus Config nehmen
+        // Discount Rules
         if (!isset($values['discountRules'])) {
             $config = config('CategoryOptions');
             $values['discountRules'] = $config->discountRules;
@@ -55,22 +59,27 @@ class CategoryManager
         return $values;
     }
 
+
     public function save(array $categories, array $discountRules): bool
     {
         $filteredCategories = [];
 
-        foreach ($this->types as $key => $defaultName) {
-            if (isset($categories[$key])) {
+        foreach ($this->types as $catKey => $defaultName) {
+            if (isset($categories[$catKey])) {
                 $options = [];
-                foreach ($categories[$key]['options'] as $opt) {
-                    $options[] = [
+                foreach ($categories[$catKey]['options'] as $optKey => $opt) {
+                    $options[$optKey] = [
+                        'key' => $optKey,
                         'label' => $opt['label'], // Label fix
                         'price' => floatval($opt['price'] ?? 0)
                     ];
                 }
 
-                $filteredCategories[$key] = [
-                    'name'    => $categories[$key]['name'] ?? $defaultName,
+                $filteredCategories[$catKey] = [
+                    'name'    => $categories[$catKey]['name'] ?? $defaultName,
+                    'max' => (isset($categories[$catKey]['max']) && $categories[$catKey]['max'] !== '')
+                        ? intval($categories[$catKey]['max'])
+                        : null,
                     'options' => $options
                 ];
             }
@@ -97,5 +106,6 @@ class CategoryManager
                 json_encode($saveData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
             ) !== false;
     }
+
 
 }

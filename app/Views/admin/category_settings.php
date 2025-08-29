@@ -40,17 +40,49 @@ function makeOptionKey(string $label, array $existingKeys): string
                 <td>
                     <input type="text" name="categories[<?= esc($key) ?>][name]" value="<?= esc($cat['name']) ?>" class="form-control" readonly disabled>
                 </td>
+
                 <td>
 
-                    <?php $usedKeys = []; ?>
-                    <?php foreach ($cat['options'] as $opt): ?>
-                        <?php $optKey = makeOptionKey($opt['label'], $usedKeys); $usedKeys[] = $optKey; ?>
+                    <?php foreach ($cat['options'] as $optKey => $opt): ?>
                         <div class="mb-1">
                             <span><?= esc($opt['label']) ?></span>
-                            <input type="number" name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][price]" value="<?= esc($opt['price']) ?>" step="0.05" min="0" class="form-control" style="width:100px; display:inline-block; margin-left:5px;">
-                            <input type="hidden" name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][label]" value="<?= esc($opt['label']) ?>">
+                            <input type="number"
+                                   name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][price]"
+                                   value="<?= esc($opt['price']) ?>"
+                                   step="0.05" min="0"
+                                   class="form-control"
+                                   style="width:100px; display:inline-block; margin-left:5px;">
+                            <input type="hidden"
+                                   name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][label]"
+                                   value="<?= esc($opt['label']) ?>">
                         </div>
                     <?php endforeach; ?>
+
+
+
+                    <!-- Maximalwert -->
+                    <div class="mb-3">
+                        <label><strong>Maximalpreis festlegen:</strong></label>
+                        <div>
+                            <input type="checkbox"
+                                   id="max_unlimited_<?= esc($key) ?>"
+                                   name="categories[<?= esc($key) ?>][max_unlimited]"
+                                   value="1"
+                                <?= empty($cat['max']) ? 'checked' : '' ?>
+                                   onclick="toggleMaxField('<?= esc($key) ?>')">
+                            <label for="max_unlimited_<?= esc($key) ?>">∞ Kein Maximum</label>
+                        </div>
+                        <div id="max_field_<?= esc($key) ?>" style="<?= empty($cat['max']) ? 'display:none;' : '' ?>">
+                            <input type="number"
+                                   name="categories[<?= esc($key) ?>][max]"
+                                   value="<?= esc($cat['max'] ?? '') ?>"
+                                   min="1"
+                                   class="form-control"
+                                   style="width:120px;">
+                        </div>
+                    </div>
+
+
 
                 </td>
             </tr>
@@ -117,6 +149,19 @@ function makeOptionKey(string $label, array $existingKeys): string
             }
         });
     });
+</script>
+
+<script>
+    function toggleMaxField(key) {
+        const cb = document.getElementById('max_unlimited_' + key);
+        const field = document.getElementById('max_field_' + key);
+        if (cb.checked) {
+            field.style.display = 'none';
+            field.querySelector('input').value = '';
+        } else {
+            field.style.display = 'block';
+        }
+    }
 </script>
 
 
