@@ -15,7 +15,7 @@
             ?>
             <div class="form-check">
                 <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="<?= esc($type_id) ?>" id="<?= esc($id) ?>" <?= $checked ?>>
-                <label class="form-check-label" for="<?= esc($id) ?>"><?= esc(lang('Filter.' . $cat)); ?></label>
+                <label class="form-check-label" for="<?= esc($id) ?>"><?= esc($cat); ?></label>
             </div>
         <?php endforeach; ?>
     </div>

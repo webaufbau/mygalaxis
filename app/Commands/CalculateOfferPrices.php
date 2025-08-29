@@ -26,7 +26,7 @@ class CalculateOfferPrices extends BaseCommand
         $offers = $offerModel
             ->where('type IS NOT NULL')
             ->where('original_type IS NOT NULL')
-            ->where('type', 'tiling') // Test
+            //->where('type', 'tiling') // Test
             ->orderBy('updated_at', 'ASC')
             ->findAll(100); // Die ältesten 100
 
@@ -68,6 +68,6 @@ class CalculateOfferPrices extends BaseCommand
             }
         }
 
-        CLI::write("Preise aktualisiert.", 'cyan');
+        CLI::write(count($offers ?? []) . " Preise aktualisiert.", 'cyan');
     }
 }

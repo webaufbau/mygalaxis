@@ -135,10 +135,7 @@ class Dashboard extends Controller
 
         $offers = $builder->orderBy('offers.created_at', 'desc')->get()->getResultArray();
 
-        $filterOptions = new \App\Config\FilterOptions();
-
         return view('admin/dashboard', [
-            'types' => $filterOptions->types,
             'title' => 'Anfragen-Statistik',
             'offers' => $offers,
             'filter_type' => $type,

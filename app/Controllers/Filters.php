@@ -58,14 +58,14 @@ class Filters extends Controller
 
         $user = auth()->user();
 
-        $filterOptions = new \App\Config\FilterOptions();
+        $categoryOptions = new \Config\CategoryOptions();
+        $appConfig = new \Config\App();
 
         $data = [
             'cantons' => $cantons,
-            'categories' => $filterOptions->categories,
-            'types' => $filterOptions->types,
-            'languages' => $filterOptions->languages,
-            'services' => $filterOptions->services,
+            'categories' => $categoryOptions->categoryTypes,
+            'types' => $categoryOptions->categoryTypes,
+            'languages' => $appConfig->supportedLocales,
             'user_filters' => [
                 'filter_categories' => explode(',', $user->filter_categories ?? ''),
                 'filter_cantons' => explode(',', $user->filter_cantons ?? ''),
