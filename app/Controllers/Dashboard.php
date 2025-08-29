@@ -18,6 +18,21 @@ class Dashboard extends Controller
 
         $user = auth()->user();
 
+
+        // Prüfen, ob der User noch keine Filter gesetzt hat
+        $hasFilters =
+            !empty($user->filter_categories) ||
+            !empty($user->filter_cantons) ||
+            !empty($user->filter_regions) ||
+            !empty($user->min_rooms) ||
+            !empty($user->filter_custom_zip);
+
+        if (!$hasFilters) {
+            // Weiterleiten zur Filter-Seite
+            return redirect()->to('/filters');
+        }
+
+
         if ($user->inGroup('admin')) {
             return $this->index_admin();
         } elseif ($user->inGroup('user')) {
