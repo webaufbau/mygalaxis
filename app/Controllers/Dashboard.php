@@ -29,7 +29,7 @@ class Dashboard extends Controller
 
         if (!$hasFilters) {
             // Weiterleiten zur Filter-Seite
-            return redirect()->to('/filters');
+            return redirect()->to('/filter');
         }
 
 
