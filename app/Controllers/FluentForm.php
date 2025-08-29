@@ -169,7 +169,7 @@ class FluentForm extends BaseController
             'verified'      => $verified,
             'verify_type'   => $verifyType,
             'uuid'          => $uuid,
-            'created_at'    => date('Y-m-d H:i:s'),
+            //'created_at'    => date('Y-m-d H:i:s'),
             'status'        => 'available',
             'price'         => $category_option['price'] ?? 0,
             'buyers'        => 0,
