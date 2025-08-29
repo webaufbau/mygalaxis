@@ -176,34 +176,43 @@ class CategoryOptions extends BaseConfig
         ],
 
         'flooring' => [
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 0],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 0],
-            ['key' => 'mfh', 'label' => 'MFH', 'price' => 0],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 0],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 0],
-            ['key' => 'belag_entfernen', 'label' => 'Belag entfernen', 'price' => 0],
-            ['key' => 'belag_verlegen', 'label' => 'Belag verlegen', 'price' => 0],
-            ['key' => 'parkett_schleifen', 'label' => 'Parkett schleifen', 'price' => 0],
-            ['key' => 'parkett_lackieren', 'label' => 'Parkett lackieren', 'price' => 0],
-            ['key' => 'andere_2', 'label' => 'Andere', 'price' => 0],
+            // Art Objekt
+            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
+            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
+            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
+            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
+
+            // Step 2 Arbeiten
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
+            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
+
+            // Step 3 Arbeiten / Beläge
+            ['key' => 'belag_entfernen', 'label' => 'Belag entfernen', 'price' => 19],
+            ['key' => 'belag_verlegen', 'label' => 'Belag verlegen', 'price' => 19],
+            ['key' => 'parkett_schleifen', 'label' => 'Parkett schleifen', 'price' => 9],
+            ['key' => 'parkett_lackieren', 'label' => 'Parkett lackieren', 'price' => 9],
+            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 9],
         ],
 
         'tiling' => [
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 0],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 0],
-            ['key' => 'mfh', 'label' => 'MFH', 'price' => 0],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 0],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 0],
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 0],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 0],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 0],
-            ['key' => 'platten_entfernen', 'label' => 'Platten entfernen', 'price' => 0],
-            ['key' => 'platten_verlegen', 'label' => 'Platten verlegen', 'price' => 0],
-            ['key' => 'andere_2', 'label' => 'Andere', 'price' => 0],
+            // --- Art Objekt ---
+            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
+            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
+            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
+            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
+            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
+
+            // --- Arbeiten Platten ---
+            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
+            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
+            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
+            ['key' => 'platten_entfernen', 'label' => 'Platten entfernen', 'price' => 19],
+            ['key' => 'platten_verlegen', 'label' => 'Platten verlegen', 'price' => 19],
+            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
         ],
+
     ];
 
 

@@ -26,7 +26,7 @@ class CalculateOfferPrices extends BaseCommand
         $offers = $offerModel
             ->where('type IS NOT NULL')
             ->where('original_type IS NOT NULL')
-            ->where('type', 'heating') // Test
+            ->where('type', 'tiling') // Test
             ->orderBy('updated_at', 'ASC')
             ->findAll(100); // Die ältesten 100
 
@@ -43,8 +43,7 @@ class CalculateOfferPrices extends BaseCommand
             $originalType = $offer['original_type'] ?? null;
 
             // Basispreis berechnen
-            $price = $calculator->calculatePrice($detectedType, $originalType, $formFields, $formFieldsCombo);
-            dd($price);
+            $price = $calculator->calculatePrice($detectedType ?? '', $originalType ?? '', $formFields ?? [], $formFieldsCombo ?? []);
             $updateData = [];
 
             if ($price > 0) {

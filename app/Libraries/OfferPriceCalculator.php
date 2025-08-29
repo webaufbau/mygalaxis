@@ -23,7 +23,7 @@ class OfferPriceCalculator
     /**
      * Berechnet den Basispreis
      */
-    public function calculatePrice(string $type, string $originalType, array $fields, array $fields_combo = null): float
+    public function calculatePrice(string $type, string $originalType, array $fields, array $fields_combo): float
     {
         $price = 0;
         $category = $this->categoryPrices[$type] ?? null;
@@ -345,75 +345,86 @@ class OfferPriceCalculator
                     }
                 }
 
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
+                break;
+
+            case 'flooring':
+                $category = $this->categoryPrices['flooring'] ?? [];
+                $price = 0;
+
+                // --- Art Objekt ---
+                if (!empty($fields['art_objekt'])) {
+                    $aKey = strtolower($fields['art_objekt']);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Arbeiten Boden ---
+                foreach ($fields['arbeiten_boden'] ?? [] as $arbeit) {
+                    $aKey = strtolower($arbeit);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
+                break;
+
+            case 'tiling':
+                $category = $this->categoryPrices['tiling'] ?? [];
+                $price = 0;
+
+                // --- Art Objekt ---
+                if (!empty($fields['art_objekt'])) {
+                    $aKey = strtolower($fields['art_objekt']);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Arbeiten Platten ---
+                foreach ($fields['arbeiten_platten'] ?? [] as $arbeit) {
+                    $aKey = strtolower($arbeit);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
+                    }
+                }
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $price = $maxPrice;
+                }
+
                 break;
 
 
 
+
         }
-
-
-dd($price);
-
-
-
-
-
-
-        // Beispiel für move / move_cleaning
-        if ($type === 'move' || $type === 'move_cleaning') {
-            $zimmer = $fields['zimmer_size'] ?? null;
-            foreach ($category['options'] as $opt) {
-                if ($opt['label'] === $zimmer) {
-                    $price += $opt['price'];
-                    break;
-                }
-            }
-        }
-
-        // Wiederkehrend
-        if (!empty($fields['recurring'])) $price += 20;
-
-        // Fenster / Fassaden / Hauswartung
-        if (!empty($fields['fenster'])) $price += 19;
-        if (!empty($fields['fassade'])) $price += 39;
-        if (!empty($fields['hauswartung'])) $price += 79;
-
-        // Maler
-        if ($type === 'painting') {
-            // Standard Grundpreis 19;
-            $price = 19;
-
-            // Wenn Anfangs Andere
-            if(isset($field['art_objeke']) && $field['art_objeke']=='Andere') {
-                $price = 39;
-            }
-
-            // Oder bei Gewerbe Andere
-            if(isset($field['art_gewerbe']) && $field['art_gewerbe']=='Andere') {
-                $price = 39;
-            }
-
-            dd($category);
-
-            foreach ($fields['arbeiten_wohnung'] ?? [] as $arbeit) {
-                foreach ($category['options'] as $opt) {
-                    if ($opt['label'] === $arbeit) {
-                        $price += $opt['price'];
-                        break;
-                    }
-                }
-            }
-            $zimmer = $fields['zimmer_size'] ?? null;
-            foreach ($category['options'] as $opt) {
-                if ($opt['label'] === $zimmer) {
-                    $price += $opt['price'];
-                    break;
-                }
-            }
-            if (!empty($fields['trennwaende'])) $price += 15;
-        }
-
-        // TODO: weitere Kategorien
 
         return $price;
     }
@@ -436,9 +447,9 @@ dd($price);
     /**
      * Berechnet sowohl Preis als auch discounted_price
      */
-    public function calculateWithDiscount(string $type, array $fields, float|int $hoursDiff): array
+    public function calculateWithDiscount(string $type, string $originalType, array $fields, array $fields_combo, float|int $hoursDiff): array
     {
-        $price = $this->calculatePrice($type, $fields);
+        $price = $this->->calculatePrice($type, $originalType , $fields, $fields_combo);
         $discountedPrice = $this->applyDiscount($price, $hoursDiff);
 
         return [
