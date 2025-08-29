@@ -135,7 +135,11 @@ class Dashboard extends Controller
 
         $offers = $builder->orderBy('offers.created_at', 'desc')->get()->getResultArray();
 
+        $categoryOptions = new \Config\CategoryOptions();
+        $appConfig = new \Config\App();
+
         return view('admin/dashboard', [
+            'types' => $categoryOptions->categoryTypes,
             'title' => 'Anfragen-Statistik',
             'offers' => $offers,
             'filter_type' => $type,
