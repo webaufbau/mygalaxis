@@ -449,7 +449,7 @@ class OfferPriceCalculator
      */
     public function calculateWithDiscount(string $type, string $originalType, array $fields, array $fields_combo, float|int $hoursDiff): array
     {
-        $price = $this->->calculatePrice($type, $originalType , $fields, $fields_combo);
+        $price = $this->calculatePrice($type, $originalType , $fields, $fields_combo);
         $discountedPrice = $this->applyDiscount($price, $hoursDiff);
 
         return [
