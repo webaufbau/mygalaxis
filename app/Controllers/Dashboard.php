@@ -29,7 +29,7 @@ class Dashboard extends Controller
 
         if (!$hasFilters) {
             // Weiterleiten zur Filter-Seite
-            return redirect()->to('/filter');
+            return redirect()->to('/filter')->with('warning', 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.');
         }
 
 

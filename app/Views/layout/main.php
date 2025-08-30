@@ -176,6 +176,12 @@ if ($currentLocale !== 'de') {
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
     <?php endif; ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <?= esc(session()->getFlashdata('warning')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
 
     <?= $this->renderSection('content') ?>
 </main>
