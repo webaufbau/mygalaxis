@@ -590,6 +590,8 @@ return [
         'login_required' => 'Veuillez vous connecter pour voir vos demandes.',
         'not_enough_balance' => 'Solde insuffisant ou carte de crédit non valide.',
         'invalid_link' => 'Lien invalide.',
+        'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
+
     ],
 
     'messages' => [

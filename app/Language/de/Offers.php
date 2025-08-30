@@ -586,6 +586,8 @@ return [
         'login_required' => 'Bitte einloggen, um Ihre Anfragen zu sehen.',
         'not_enough_balance' => 'Nicht genügend Guthaben oder keine gültige Kreditkarte.',
         'invalid_link' => 'Ungültiger Link.',
+        'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
+
     ],
 
     'messages' => [

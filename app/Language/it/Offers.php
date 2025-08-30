@@ -590,6 +590,8 @@ return [
         'login_required' => 'Effettua il login per vedere le tue richieste.',
         'not_enough_balance' => 'Credito insufficiente o nessuna carta di credito valida.',
         'invalid_link' => 'Link non valido.',
+        'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
+
     ],
 
     'messages' => [

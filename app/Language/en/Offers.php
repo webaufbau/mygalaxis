@@ -590,6 +590,8 @@ return [
         'login_required' => 'Please log in to view your requests.',
         'not_enough_balance' => 'Insufficient balance or no valid credit card.',
         'invalid_link' => 'Invalid link.',
+        'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
+
     ],
 
     'messages' => [
