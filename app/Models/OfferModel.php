@@ -113,8 +113,8 @@ class OfferModel extends Model
 
         if (!empty($originalType) && (($original['type'] ?? null) !== 'move_cleaning')) {
             if (str_contains($originalType, '_')) {
-                // alles nach dem Unterstrich
-                $data['sub_type'] = trim(strstr($originalType, "_", false), "_");
+                // alles nach dem ersten Unterstrich
+                $data['sub_type'] = substr($originalType, strpos($originalType, "_") + 1);
             } else {
                 // kein Unterstrich → sub_type = original_type
                 $data['sub_type'] = $originalType;
