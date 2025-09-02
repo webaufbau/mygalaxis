@@ -107,7 +107,7 @@ class CheckOffers extends BaseCommand
             }
 
             if (!empty($updateData)) {
-                CLI::write("Daten aktualisiert " . print_r($updateData, true), 'yellow');
+                CLI::write("Daten ".$offer['id']." aktualisiert " . print_r($updateData, true), 'yellow');
                 $offerModel->update($offer['id'], $updateData);
             }
 
