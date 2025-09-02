@@ -75,7 +75,10 @@ class SendDailyNewOffers extends BaseCommand
         $services = is_string($user->filter_absences) ? json_decode($user->filter_absences, true) ?? [] : [];
         $customZips = is_string($user->filter_custom_zip) ? explode(',', $user->filter_custom_zip) : [];
 
-        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($cantons, $regions);
+        // $zipcodeService = new \App\Libraries\ZipcodeService();
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($cantons, $regions, $siteCountry);
         $allZips = array_unique(array_merge($relevantZips, $customZips));
 
         if (!empty($allZips) && count($allZips) > 0 && !empty($allZips[0])) {

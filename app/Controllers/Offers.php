@@ -65,7 +65,9 @@ class Offers extends BaseController
 
         // PLZ aus Kantonen & Regionen
         $zipcodeService = new \App\Libraries\ZipcodeService();
-        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($userCantons, $userRegions);
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($userCantons, $userRegions, $siteCountry);
 
         $allZips = array_merge($relevantZips, $userCustomZips);
         $allZips = array_unique($allZips);

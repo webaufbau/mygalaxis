@@ -90,7 +90,9 @@ class OfferAutoBuy extends BaseCommand
         $customZips = is_string($user->filter_custom_zip) ? explode(',', $user->filter_custom_zip) : [];
 
         $zipcodeService = new \App\Libraries\ZipcodeService();
-        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($cantons, $regions);
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($cantons, $regions, $siteCountry);
         $allZips = array_unique(array_merge($relevantZips, $customZips));
 
         if (!empty($allZips)) {
