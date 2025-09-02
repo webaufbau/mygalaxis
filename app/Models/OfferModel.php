@@ -112,14 +112,10 @@ class OfferModel extends Model
         }
 
         if (!empty($originalType) && (($original['type'] ?? null) !== 'move_cleaning')) {
-            if (str_contains($originalType, '_')) {
-                // alles nach dem ersten Unterstrich
-                $data['sub_type'] = substr($originalType, strpos($originalType, "_") + 1);
-            } else {
-                // kein Unterstrich → sub_type = original_type
-                $data['sub_type'] = $originalType;
-            }
+            $parts = explode('_', $originalType, 2); // in maximal 2 Teile aufteilen
+            $data['sub_type'] = $parts[1] ?? $parts[0]; // falls kein Unterstrich, nimm das Original
         }
+
 
         $data['city'] = $address['city'];
         $data['zip'] = $address['zip'];
