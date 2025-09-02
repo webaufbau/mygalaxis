@@ -111,11 +111,14 @@ class OfferModel extends Model
             $data['original_type'] = strtolower(trim($exactType));
         }
 
-        if (!empty($originalType)
-            && str_contains($originalType, '_')
-            && (($original['type'] ?? null) !== 'move_cleaning')) {
-
-            $data['sub_type'] = trim(strstr($data['original_type'], "_", false) ?? '', "_") ?? null;
+        if (!empty($originalType) && (($original['type'] ?? null) !== 'move_cleaning')) {
+            if (str_contains($originalType, '_')) {
+                // alles nach dem Unterstrich
+                $data['sub_type'] = trim(strstr($originalType, "_", false), "_");
+            } else {
+                // kein Unterstrich → sub_type = original_type
+                $data['sub_type'] = $originalType;
+            }
         }
 
         $data['city'] = $address['city'];
