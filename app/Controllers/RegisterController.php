@@ -189,8 +189,10 @@ class RegisterController extends ShieldRegister {
             $zip = $this->request->getPost('company_zip');
 
             // PLZ-Region suchen
+            $siteConfig = siteconfig();
+            $siteCountry = $siteConfig->siteCountry ?? null;
             $zipResult = $db->table('zipcodes')
-                ->where('country_code', 'CH')
+                ->where('country_code', $siteCountry)
                 ->where('zipcode', $zip)
                 ->get()
                 ->getRow();

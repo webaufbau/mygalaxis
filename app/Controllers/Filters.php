@@ -15,9 +15,11 @@ class Filters extends Controller
         $db = \Config\Database::connect();
 
         // Alle Zeilen aus zipcodes holen, sortiert nach state und province
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
         $query = $db->table('zipcodes')
             ->select('canton, state, state_code, province, community')
-            ->where('country_code', 'CH')
+            ->where('country_code', $siteCountry)
             ->orderBy('canton', 'ASC')
             ->orderBy('province', 'ASC')
             ->get();
