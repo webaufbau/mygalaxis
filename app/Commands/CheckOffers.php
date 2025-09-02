@@ -18,7 +18,7 @@ class CheckOffers extends BaseCommand
     public function run(array $params)
     {
         $offerModel = new OfferModel();
-        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->orWhere('platform IS NULL')->orWhere('country IS NULL')->findAll(100);
+        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->orWhere('platform IS NULL')->orWhere('country IS NULL')->orWhere('sub_type IS NULL')->findAll(100);
 
         // Modell dynamisch laden (nach Typ)
         $modelClassMap = [
