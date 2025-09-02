@@ -56,7 +56,7 @@ class Offers extends ResourceController
         ];
 
         // ---- Query bauen ----
-        $model = $this->model->select('offers.*');
+        $model = $this->model->orderBy('offers.id', 'ASC')->select('offers.*');
         $db    = $this->model->db; // DB-Connection
 
         foreach ($subTables as $table) {
