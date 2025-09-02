@@ -111,7 +111,6 @@ class OfferModel extends Model
             $data['original_type'] = strtolower(trim($exactType));
         }
 
-        var_dump($originalType);
         if (!empty($originalType) && (($original['type'] ?? null) !== 'move_cleaning')) {
             $parts = explode('_', $originalType, 2); // in maximal 2 Teile aufteilen
             $data['sub_type'] = $parts[1] ?? $parts[0]; // falls kein Unterstrich, nimm das Original
