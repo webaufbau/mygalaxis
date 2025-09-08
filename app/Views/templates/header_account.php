@@ -115,6 +115,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-normal" href="/admin/regions">
+                                <i class="bi bi-geo-alt me-1"></i> Regionen
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-normal" href="/admin/review">
                                 <i class="bi bi-star me-1"></i> Bewertungen
                             </a>

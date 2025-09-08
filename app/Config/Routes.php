@@ -223,6 +223,9 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
 // Campaign Übersicht / Liste (GET + POST)
     $routes->match(['GET', 'POST'], 'campaign', 'Admin\Campaign::index', ['filter' => 'auth']);
 
+// Campaign Übersicht / Liste (GET + POST)
+    $routes->match(['GET', 'POST'], 'regions', 'Admin\Regions::index', ['filter' => 'auth']);
+
 // Campaign Formular (neu / edit) (GET + POST)
     $routes->match(['GET', 'POST'], 'campaign/form', 'Admin\Campaign::form', ['filter' => 'auth']);
     $routes->match(['GET', 'POST'], 'campaign/form/(:num)', 'Admin\Campaign::form/$1', ['filter' => 'auth']);
