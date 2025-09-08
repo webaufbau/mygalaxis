@@ -31,7 +31,7 @@ class FluentForm extends BaseController
 
         log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
 
-        // Speichern
+        // Session speichern (Fallback)
         session()->set('uuid', $uuid);
         session()->set('next_url', $next_url);
         session()->set('additional_service', $additional_service);
@@ -45,7 +45,7 @@ class FluentForm extends BaseController
 
         if($additional_service == 'Nein') {
             log_message('debug', 'Weiterleitung zur Verifikation mit UUID '.$uuid.' ' .  print_r($_SESSION, true));
-            return redirect()->to('processing');
+            return redirect()->to('processing?uuid=' . urlencode($uuid));
         }
 
         // Aktuelle Sprache aus Helper holen

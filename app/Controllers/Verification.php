@@ -80,15 +80,19 @@ class Verification extends BaseController
 
     public function processing()
     {
+        $uuid = $this->request->getGet('uuid') ?? session()->get('uuid');
+
         log_message('info', 'Verifizierung processing: Warte auf Datensatz');
         return view('processing_request', [
             'siteConfig' => $this->siteConfig,
+            'uuid'       => $uuid,
         ]);
     }
 
     public function checkSession()
     {
-        $uuid = session()->get('uuid');
+        $uuid = $this->request->getGet('uuid') ?? session()->get('uuid');
+
         if (!$uuid) {
             log_message('info', 'Verifizierung checkSession: waiting');
             return $this->response->setJSON(['status' => 'waiting']);

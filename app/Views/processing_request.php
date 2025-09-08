@@ -71,6 +71,7 @@
 
 <script>
     const locale = '<?= esc($locale) ?>';
+    const uuid   = '<?= esc($uuid) ?>';
 
     function buildUrl(path) {
         if (locale === 'de') {
@@ -81,11 +82,11 @@
 
     async function checkSession() {
         try {
-            const response = await fetch(buildUrl('verification/check-session'));
+            const response = await fetch(buildUrl('verification/check-session?uuid=' + encodeURIComponent(uuid)));
             const data = await response.json();
 
             if (data.status === 'ok') {
-                window.location.href = buildUrl('verification');
+                window.location.href = buildUrl('verification?uuid=' + encodeURIComponent(uuid));
             } else {
                 setTimeout(checkSession, 2000);
             }
