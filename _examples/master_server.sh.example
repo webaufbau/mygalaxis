@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# */10 * * * * /home/user/scripts/master_server.sh
+
+LOCKFILE="/tmp/rsync_backup.lock"
+SSH_KEY="~/.ssh/id_rsync_passive"
+SSH_PORT=22
+DST_USER="backupuser"
+DST_HOST="zweiter.server.tld"
+SRC_PATH="/usr/home/offerv/public_html/my_offertenaustria_at/"
+DST_PATH="/usr/home/offerr/public_html/my_offertenaustria_at/"
+LOGFILE="/var/log/rsync_backup.log"
+
+# Lock prüfen
+if [ -e "$LOCKFILE" ] && kill -0 "$(cat $LOCKFILE)" 2>/dev/null; then
+  echo "[$(date)] Backup läuft bereits, beende..." >> $LOGFILE
+  exit 1
+fi
+echo $$ > "$LOCKFILE"
+
+# rsync starten
+echo "[$(date)] Starte rsync von $SRC_PATH → $DST_USER@$DST_HOST:$DST_PATH" >> $LOGFILE
+rsync -az --delete --partial --inplace \
+  -e "ssh -i $SSH_KEY -p $SSH_PORT" \
+  "$SRC_PATH" "$DST_USER@$DST_HOST:$DST_PATH"
+
+if [ $? -eq 0 ]; then
+  echo "[$(date)] rsync erfolgreich abgeschlossen." >> $LOGFILE
+else
+  echo "[$(date)] ⚠ Fehler bei rsync!" >> $LOGFILE
+fi
+
+rm -f "$LOCKFILE"
