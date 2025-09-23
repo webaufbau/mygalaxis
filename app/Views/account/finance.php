@@ -18,7 +18,7 @@
     <div class="d-flex align-items-end mb-3" style="gap: 1rem;">
         <div class="flex-grow-1">
             <label for="amount" class="form-label mb-1"><?= esc(lang('Finance.amountCHF')) ?></label>
-            <input type="number" step="0.01" min="20" name="amount" id="amount" class="form-control form-control-sm" value="100" required>
+            <input type="number" step="0.01" min="1" name="amount" id="amount" class="form-control form-control-sm" value="100" required>
         </div>
 
         <div>
