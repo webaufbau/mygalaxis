@@ -18,9 +18,9 @@ $routes->get('/', function () {
 });
 
 function defineAppRoutes($routes) {
-    $routes->get('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginView');
-    $routes->post('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginAction');
-    $routes->get('magic-link/verify/(:segment)', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify/$1');
+    $routes->get('magic-link', 'CustomMagicLinkController::loginView');
+    $routes->post('magic-link', 'CustomMagicLinkController::loginAction');
+    $routes->get('magic-link/verify/(:segment)', 'CustomMagicLinkController::verify/$1');
 
     // Auth-Routen von Shield aktivieren (stellt /login, /register etc. bereit)
 
