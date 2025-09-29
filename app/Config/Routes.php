@@ -20,6 +20,7 @@ $routes->get('/', function () {
 function defineAppRoutes($routes) {
     $routes->get('magic-link', 'CustomMagicLinkController::loginView');
     $routes->post('magic-link', 'CustomMagicLinkController::loginAction');
+    $routes->get('verify-magic-link', 'CustomMagicLinkController::verify');
     $routes->get('magic-link/verify/(:segment)', 'CustomMagicLinkController::verify/$1');
 
     // Auth-Routen von Shield aktivieren (stellt /login, /register etc. bereit)
