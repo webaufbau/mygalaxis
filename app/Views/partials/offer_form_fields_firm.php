@@ -7,6 +7,7 @@ $excludeKeys = [
     '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
     'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
     'vorname', 'nachname', 'email', 'phone', 'additional_service', 'referrer',
+    'terms-n-condition', 'type', 'lang'
 
 ];
 
@@ -31,6 +32,7 @@ if (!empty($full)) {
         '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
         'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
         'additional_service', 'referrer',
+        'terms-n-condition', 'type', 'lang'
     ];
     $formFields = array_filter($formFields, function ($key) use ($excludeKeys) {
         if (in_array($key, $excludeKeys)) return false;
