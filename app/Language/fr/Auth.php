@@ -35,6 +35,7 @@ return [
     'companyPhoneRequired'    => 'Veuillez saisir un numéro de téléphone valide au format %s.',
     'companyWebsite'          => 'Site web',
     'companyWebsiteRequired'  => 'Veuillez saisir une URL valide.',
+    'selectAtLeastOneCategory'=> 'Please select at least one category.',
     'registerButton'          => 'S\'inscrire',
 
     // Messages

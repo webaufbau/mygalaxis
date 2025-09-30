@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Filter einstellen',
-    'categories' => 'Kategorien',
+    'categories' => 'Branchen',
     'cantonsRegions' => 'Kantone / Regionen',
     'customZip' => 'Individuelle PLZ',
     'customZipPlaceholder' => 'z.B. 3000, 3012',

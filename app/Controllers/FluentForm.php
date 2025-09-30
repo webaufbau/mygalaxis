@@ -277,95 +277,9 @@ class FluentForm extends BaseController
             $typeModel->insert($typeData);
         }
 
-        $this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType);
+        //$this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType); später senden erst nach Verifikation
 
         return $this->response->setJSON(['success' => true]);
-    }
-
-    protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void
-    {
-        helper('text'); // für esc()
-
-        // Sprache aus Offer-Daten setzen
-        $language = $data['lang'] ?? 'de'; // Fallback: Deutsch
-        log_message('debug', 'language aus offerte/fallback: ' . $language);
-        $request = service('request');
-        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
-            service('language')->setLocale($language);
-        } else {
-            $request->setLocale($language);
-        }
-
-        $languageService = service('language');
-        $languageService->setLocale($language);
-
-
-
-        // Admins
-        $adminEmails = [$this->siteConfig->email];
-        $bccString = implode(',', $adminEmails);
-
-        // Formularverfasser
-        $userEmail = $data['email'] ?? null;
-
-        $formular_page = null;
-        if(isset($data['_wp_http_referer'])) {
-            $formular_page = $data['_wp_http_referer'];
-            $formular_page_exploder = explode('?', $formular_page);
-            $formular_page = $formular_page_exploder[0];
-            $formular_page = str_replace('-', ' ', $formular_page);
-            $formular_page = str_replace('/', ' ', $formular_page);
-            $formular_page = ucwords($formular_page);
-            $formular_page = trim($formular_page);
-        }
-
-        // Technische Felder rausfiltern
-        $filteredFields = array_filter($data, function ($key) {
-            $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
-            if (in_array($key, $excludeKeys)) return false;
-            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
-            return true;
-        }, ARRAY_FILTER_USE_KEY);
-
-        // Tracking-Felder entfernen
-        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
-        $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
-            return !in_array($key, $utmKeys);
-        }, ARRAY_FILTER_USE_KEY);
-
-        // Maildaten für View
-        $emailData = [
-            'formName'       => $formName,
-            'formular_page' => $formular_page,
-            'uuid'           => $uuid,
-            'verifyType'     => $verifyType,
-            'filteredFields' => $filteredFields,
-            'data'           => $data,
-        ];
-
-        // HTML-Ansicht generieren
-        $message = view('emails/offer_notification', $emailData);
-
-        $view = \Config\Services::renderer();
-        $fullEmail = $view->setData([
-            'title' => 'Ihre Anfrage',
-            'content' => $message,
-        ])->render('emails/layout');
-
-        // Maildienst starten
-        $email = \Config\Services::email();
-
-        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
-        $email->setTo($userEmail);            // Kunde als To
-        $email->setBCC($bccString);         // Admins als BCC
-        $email->setSubject(lang('Email.offer_added_email_subject'));
-        $email->setMessage($fullEmail);
-        $email->setMailType('html');
-
-        if (!$email->send()) {
-            log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
-        }
-
     }
 
 

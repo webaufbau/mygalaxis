@@ -87,22 +87,73 @@
             });
         });
 
-        // Kanton Checkbox togglen
+// Kanton Checkbox togglen
         $('input[name="cantons[]"]').on('change', function () {
             const cantonBox = $(this).closest('.kanton-box');
             const isChecked = $(this).is(':checked');
+
+            // Nur den Status setzen, NICHT triggern
             cantonBox.find('input[name="regions[]"]').prop('checked', isChecked);
+
+            saveFilters(); // direkt speichern
         });
 
-        // Region Checkbox togglen
+// Region Checkbox togglen
         $('input[name="regions[]"]').on('change', function () {
             const cantonBox = $(this).closest('.kanton-box');
             const isChecked = $(this).is(':checked');
+
+            // Kanton nur abwählen, wenn keine Regionen mehr ausgewählt sind
             if (!isChecked) {
-                cantonBox.find('input[name="cantons[]"]').prop('checked', false);
+                const anyChecked = cantonBox.find('input[name="regions[]"]:checked').length > 0;
+                if (!anyChecked) {
+                    cantonBox.find('input[name="cantons[]"]').prop('checked', false);
+                }
             }
+
+            saveFilters(); // speichern
         });
+
+
+
+
+        // Custom ZIP sofort speichern
+        $('#custom_zip').on('input', function () {
+            saveFilters();
+        });
+
+        // Kategorien sofort speichern
+        $('input[name="filter_categories[]"]').on('change', function () {
+            saveFilters();
+        });
+
+        // Funktion für AJAX speichern
+        function saveFilters() {
+            const formData = $('form').serialize();
+
+            $.ajax({
+                url: "<?= site_url('/filter/save') ?>",
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        console.log('Filter gespeichert');
+
+                        // CSRF-Token aktualisieren
+                        $('input[name="<?= csrf_token() ?>"]').val(res.csrf_hash);
+                    } else {
+                        console.error('Fehler beim Speichern');
+                    }
+                },
+                error: function (xhr) {
+                    console.error('AJAX Fehler', xhr.responseText);
+                }
+            });
+        }
+
     });
+
 </script>
 
 <?= $this->endSection() ?>

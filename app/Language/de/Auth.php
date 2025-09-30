@@ -35,6 +35,9 @@ return [
     'companyPhoneRequired'    => 'Bitte geben Sie eine gültige Telefonnummer im Format %s ein.',
     'companyWebsite'          => 'Website',
     'companyWebsiteRequired'  => 'Bitte geben Sie eine gültige URL ein.',
+    'contactPerson'           => 'Kontaktperson',
+    'contactPersonRequired'   => 'Bitte geben Sie die Kontaktperson ein.',
+    'selectAtLeastOneCategory'=> 'Bitte wählen Sie mindestens eine Branche aus.',
     'registerButton'          => 'Registrieren',
 
     // Messages

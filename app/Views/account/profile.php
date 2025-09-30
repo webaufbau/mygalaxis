@@ -188,6 +188,21 @@ elseif($siteConfig->phoneCheck == 'de') {
     </div>
 
 
+    <hr class="my-4">
+
+    <h4 class="mt-4"><?= esc(lang('Profile.changePassword')) ?></h4>
+
+    <div class="mb-3">
+        <label class="form-label"><?= esc(lang('Profile.newPassword')) ?></label>
+        <input type="password" name="new_password" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label"><?= esc(lang('Profile.confirmPassword')) ?></label>
+        <input type="password" name="confirm_password" class="form-control">
+    </div>
+
+
     <button type="submit" class="btn btn-primary"><?= esc(lang('Profile.saveButton')) ?></button>
 </form>
 

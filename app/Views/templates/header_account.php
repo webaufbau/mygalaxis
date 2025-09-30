@@ -74,7 +74,7 @@
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'filter' ? 'active' : '' ?>" href="/filter">Filter</a>
                         </li>
-                        <li class="nav-item dropdown">
+                        <!--<li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle <?= $segment1 === 'offers' ? 'active' : '' ?>" href="#" id="offersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Anfragen
                             </a>
@@ -82,6 +82,9 @@
                                 <li><a class="dropdown-item" href="/offers">Offene Anfragen</a></li>
                                 <li><a class="dropdown-item" href="/offers/mine">Gekaufte Anfragen</a></li>
                             </ul>
+                        </li>-->
+                        <li class="nav-item">
+                            <a class="nav-link <?= $segment1 === 'offers' ? 'active' : '' ?>" href="/offers">Anfragen</a>
                         </li>
 
 
@@ -164,6 +167,22 @@
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <?= esc(session()->getFlashdata('error')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                    <li><?= esc($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <?= esc(session()->getFlashdata('warning')) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
     <?php endif; ?>

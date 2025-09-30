@@ -84,5 +84,12 @@ return [
     'emailFooter'                 => 'Cordiali saluti,<br>{0}', // Sitename
 
 
+    'priceUpdateIntro'   => 'Desideriamo informarvi che il prezzo della seguente offerta è cambiato:',
+    'oldPrice'           => 'Prezzo precedente',
+    'newPrice'           => 'Nuovo prezzo',
+    'discountApplied'    => 'Sconto applicato',
+
+
+
 
 ];

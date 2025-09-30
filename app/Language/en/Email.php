@@ -84,5 +84,12 @@ return [
     'emailFooter'                 => 'Best regards,<br>{0}', // Sitename
 
 
+    'priceUpdateIntro'   => 'We would like to inform you that the price for the following offer has changed:',
+    'oldPrice'           => 'Old price',
+    'newPrice'           => 'New price',
+    'discountApplied'    => 'Discount applied',
+
+
+
 
 ];

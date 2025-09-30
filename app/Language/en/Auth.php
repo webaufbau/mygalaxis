@@ -35,6 +35,7 @@ return [
     'companyPhoneRequired'    => 'Please enter a valid phone number in the format %s.',
     'companyWebsite'          => 'Website',
     'companyWebsiteRequired'  => 'Please enter a valid URL.',
+    'selectAtLeastOneCategory'=> 'Please select at least one category.',
     'registerButton'          => 'Register',
 
     // Messages

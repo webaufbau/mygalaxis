@@ -198,13 +198,22 @@ class RegisterController extends ShieldRegister {
                 ->getRow();
 
             if ($zipResult) {
-                $region = $zipResult->province;
-                $canton = $zipResult->canton;
-
-                // Filter speichern
+                // Nach dem Speichern des Users und dem Ermitteln von Region/Canton
                 $userModel = new \App\Models\UserModel();
+
+                // Filter aus Post-Daten holen
+                $postData = $this->request->getPost();
+
+                // Branchen-Kategorien aus Checkboxen
+                $filterCategories = isset($postData['filter_categories']) ? implode(',', $postData['filter_categories']) : '';
+
+                // Kantone/Regionen aus PLZ ermitteln
+                $region = $zipResult->province ?? '';
+                $canton = $zipResult->canton ?? '';
+
                 $userModel->save([
                     'id' => $user->id,
+                    'filter_categories' => $filterCategories,
                     'filter_regions' => $region,
                     'filter_cantons' => $canton,
                 ]);

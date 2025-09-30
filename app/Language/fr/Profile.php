@@ -18,4 +18,10 @@ return [
 
     'language'           => 'Langue',
     'languageAccountEmail' => 'Langue du compte et des e-mails',
+
+    'changePassword'   => 'Changer le mot de passe',
+    'newPassword'      => 'Nouveau mot de passe',
+    'confirmPassword'  => 'Confirmer le mot de passe',
+    'passwordMismatch' => 'Les mots de passe ne correspondent pas.',
+
 ];

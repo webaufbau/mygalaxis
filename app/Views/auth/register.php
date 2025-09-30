@@ -124,6 +124,27 @@ elseif($siteConfig->phoneCheck == 'de') {
 
         <h4 class="mb-3"><?= lang('Auth.companyDataTitle') ?></h4>
 
+        <div class="mb-4">
+            <label class="form-label"><?= esc(lang('Filter.categories')) ?> *</label>
+            <div class="row">
+                <?php
+                $categoryOptions = new \Config\CategoryOptions();
+                $types = $categoryOptions->categoryTypes;
+                foreach ($types as $type_id => $cat):
+                    $id = 'cat_' . strtolower(str_replace([' ', '+'], ['_', 'plus'], $cat));
+                    $checked = in_array($type_id, $user_filters['filter_categories'] ?? []) ? 'checked' : '';
+                    ?>
+                    <div class="col-md-4 col-lg-3">
+                        <div class="form-check">
+                            <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="<?= esc($type_id) ?>" id="<?= esc($id) ?>" <?= $checked ?>>
+                            <label class="form-check-label" for="<?= esc($id) ?>"><?= lang('Offers.type.'.$type_id); ?></label>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+
         <div class="mb-3">
             <label for="company_name" class="form-label"><?= lang('Auth.companyName') ?> *</label>
             <input type="text" name="company_name" id="company_name" class="form-control" required>
@@ -271,6 +292,27 @@ elseif($siteConfig->phoneCheck == 'de') {
                         pwdConfirm.setCustomValidity("");
                     }
 
+
+                    // Prüfen, ob mindestens eine Kategorie gewählt ist
+                    var categoriesChecked = form.querySelectorAll('input[name="filter_categories[]"]:checked').length;
+                    if (categoriesChecked === 0) {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        // Fehlermeldung unter dem Label anzeigen
+                        var categoryGroup = form.querySelector('.mb-4');
+                        var feedback = categoryGroup.querySelector('.invalid-feedback');
+                        if (!feedback) {
+                            feedback = document.createElement('div');
+                            feedback.className = 'invalid-feedback d-block';
+                            feedback.innerText = "<?= lang('Auth.selectAtLeastOneCategory') ?>";
+                            categoryGroup.appendChild(feedback);
+                        }
+                        categoryGroup.classList.add('was-validated');
+                        return false;
+                    }
+
+
                     if (!form.checkValidity()) {
                         event.preventDefault()
                         event.stopPropagation()
@@ -278,7 +320,9 @@ elseif($siteConfig->phoneCheck == 'de') {
 
                     form.classList.add('was-validated')
                 }, false)
+
             })
+
     })()
 });
 </script>

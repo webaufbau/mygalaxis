@@ -4,8 +4,7 @@ namespace App\Controllers;
 
 use App\Libraries\TwilioService;
 
-class Verification extends BaseController
-{
+class Verification extends BaseController {
     public function index() {
         $maxWaitTime = 5; // Sekunden
         $waited = 0;
@@ -78,19 +77,17 @@ class Verification extends BaseController
         }
     }
 
-    public function processing()
-    {
+    public function processing() {
         $uuid = $this->request->getGet('uuid') ?? session()->get('uuid');
 
         log_message('info', 'Verifizierung processing: Warte auf Datensatz');
         return view('processing_request', [
             'siteConfig' => $this->siteConfig,
-            'uuid'       => $uuid,
+            'uuid' => $uuid,
         ]);
     }
 
-    public function checkSession()
-    {
+    public function checkSession() {
         $uuid = $this->request->getGet('uuid') ?? session()->get('uuid');
 
         if (!$uuid) {
@@ -115,8 +112,7 @@ class Verification extends BaseController
         return $this->response->setJSON(['status' => 'waiting']);
     }
 
-    public function send()
-    {
+    public function send() {
         $request = service('request');
 
         $phone = session()->get('phone');
@@ -204,8 +200,7 @@ class Verification extends BaseController
         return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
     }
 
-    public function confirm()
-    {
+    public function confirm() {
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode == '') {
             log_message('info', 'Verifizierung Confirm verificationCode fehlt.');
@@ -317,6 +312,23 @@ class Verification extends BaseController
 
                 session()->remove('verification_code');
 
+
+                // ---- NEU: E-Mail erst jetzt senden ----
+                $offerModel = new \App\Models\OfferModel();
+                $offerData = $offerModel->where('uuid', $uuid)->first();
+                if ($offerData) {
+                    $type = $offerData['type'] ?? 'unknown';
+                    $this->sendOfferNotificationEmail(
+                        json_decode($offerData['form_fields'], true) ?? [],
+                        $type,
+                        $uuid,
+                        $offerData['verify_type'] ?? null
+                    );
+                }
+
+                log_message('info', 'Verifizierung abgeschlossen: E-Mail gesendet.');
+
+
                 log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? $this->siteConfig->thankYouUrl['de']));
                 return view('verification_success', [
                     'siteConfig' => $this->siteConfig,
@@ -386,8 +398,7 @@ class Verification extends BaseController
         return redirect()->to($prefix . '/verification/send');
     }
 
-    private function normalizePhone(string $phone): string
-    {
+    private function normalizePhone(string $phone): string {
         $phone = preg_replace('/\D+/', '', $phone); // Nur Zahlen
         if (str_starts_with($phone, '0')) {
             $phone = '+41' . substr($phone, 1); // 0781234512 → +41781234512
@@ -395,6 +406,91 @@ class Verification extends BaseController
             $phone = '+' . $phone;
         }
         return $phone;
+    }
+
+
+    protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void {
+        helper('text'); // für esc()
+
+        // Sprache aus Offer-Daten setzen
+        $language = $data['lang'] ?? 'de'; // Fallback: Deutsch
+        log_message('debug', 'language aus offerte/fallback: ' . $language);
+        $request = service('request');
+        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+            service('language')->setLocale($language);
+        } else {
+            $request->setLocale($language);
+        }
+
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+
+        // Admins
+        $adminEmails = [$this->siteConfig->email];
+        $bccString = implode(',', $adminEmails);
+
+        // Formularverfasser
+        $userEmail = $data['email'] ?? null;
+
+        $formular_page = null;
+        if (isset($data['_wp_http_referer'])) {
+            $formular_page = $data['_wp_http_referer'];
+            $formular_page_exploder = explode('?', $formular_page);
+            $formular_page = $formular_page_exploder[0];
+            $formular_page = str_replace('-', ' ', $formular_page);
+            $formular_page = str_replace('/', ' ', $formular_page);
+            $formular_page = ucwords($formular_page);
+            $formular_page = trim($formular_page);
+        }
+
+        // Technische Felder rausfiltern
+        $filteredFields = array_filter($data, function ($key) {
+            $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
+            if (in_array($key, $excludeKeys)) return false;
+            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
+            return true;
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Tracking-Felder entfernen
+        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
+        $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
+            return !in_array($key, $utmKeys);
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Maildaten für View
+        $emailData = [
+            'formName' => $formName,
+            'formular_page' => $formular_page,
+            'uuid' => $uuid,
+            'verifyType' => $verifyType,
+            'filteredFields' => $filteredFields,
+            'data' => $data,
+        ];
+
+        // HTML-Ansicht generieren
+        $message = view('emails/offer_notification', $emailData);
+
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title' => 'Ihre Anfrage',
+            'content' => $message,
+        ])->render('emails/layout');
+
+        // Maildienst starten
+        $email = \Config\Services::email();
+
+        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
+        $email->setTo($userEmail);            // Kunde als To
+        $email->setBCC($bccString);         // Admins als BCC
+        $email->setSubject(lang('Email.offer_added_email_subject'));
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        if (!$email->send()) {
+            log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+        }
+
     }
 
 }
