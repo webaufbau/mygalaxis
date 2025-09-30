@@ -326,6 +326,11 @@ class Verification extends BaseController {
                     );
                 }
 
+                if ($offerData) {
+                    $updater = new \App\Libraries\OfferPriceUpdater();
+                    $updater->updateOfferAndNotify($offerData);
+                }
+
                 log_message('info', 'Verifizierung abgeschlossen: E-Mail gesendet.');
 
 
