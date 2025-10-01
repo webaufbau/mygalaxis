@@ -318,6 +318,16 @@ class Verification extends BaseController {
                 $offerData = $offerModel->where('uuid', $uuid)->first();
                 if ($offerData) {
                     $type = $offerData['type'] ?? 'unknown';
+
+                    // Stelle sicher, dass Preis berechnet ist
+                    if (empty($offerData['price']) || $offerData['price'] <= 0) {
+                        $updater = new \App\Libraries\OfferPriceUpdater();
+                        $updater->updateOfferAndNotify($offerData);
+
+                        // frisch aus DB holen (mit Preis)
+                        $offerData = $offerModel->find($offerData['id']);
+                    }
+
                     $this->sendOfferNotificationEmail(
                         json_decode($offerData['form_fields'], true) ?? [],
                         $type,
