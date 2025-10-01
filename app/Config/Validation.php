@@ -119,6 +119,9 @@ class Validation extends BaseConfig
                 'max_length[254]',
                 'valid_email',
                 'rules' => 'required|valid_email|emailUniqueWithPortal',
+                'errors' => [
+                    'emailUniqueWithPortal' => 'Auth.isUniqueEmail', // nur Key, keine lang()!
+                ],
             ],
         ],
         'password' => [
