@@ -328,6 +328,7 @@ class Verification extends BaseController {
                         $offerData = $offerModel->find($offerData['id']);
                     }
 
+                    // Dann Offer an Offertensteller und Admins senden
                     $this->sendOfferNotificationEmail(
                         json_decode($offerData['form_fields'], true) ?? [],
                         $type,
