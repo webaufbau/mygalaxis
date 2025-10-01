@@ -26,9 +26,6 @@
 <a href="<?= siteconfig()->backendUrl . lang_url('verify-magic-link') ?>?token=<?= $token ?>" style="word-break: break-all;">
     <?= siteconfig()->backendUrl . lang_url('verify-magic-link') ?>?token=<?= $token ?>
 </a>
-<br>
-<br>
-<?= siteconfig()->backendUrl . lang_url('verify-magic-link') ?>?token=<?= $token ?>
 
 
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="width: 100%;" width="100%">
