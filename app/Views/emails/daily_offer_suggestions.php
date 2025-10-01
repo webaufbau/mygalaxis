@@ -1,4 +1,4 @@
-<p><?= lang('Email.greeting', [$firma->company_name, $firma->contact_person]) ?></p>
+<p><?= lang('Email.greeting', [$firma->contact_person]) ?></p>
 
 <p><?= lang('Email.intro') ?></p>
 

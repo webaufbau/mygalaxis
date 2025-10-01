@@ -15,7 +15,7 @@ return [
 
 
     'dailyOffersSubject' => 'Neue Offerten für Sie bei {0}', // Sitename wird gesetzt
-    'greeting' => 'Guten Tag {0} {1},', // Vorname Nachname
+    'greeting' => 'Guten Tag {0},', // Vorname Nachname
     'intro' => 'Hier sind neue Offerten, die kürzlich bei uns eingegangen sind und zu Ihren Filterkriterien passen:',
     'viewNow' => 'Jetzt ansehen',
     'successWishes' => 'Wir wünschen viel Erfolg bei der Auswahl passender Aufträge!',
