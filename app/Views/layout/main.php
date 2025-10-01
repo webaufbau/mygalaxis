@@ -180,12 +180,12 @@ if ($currentLocale !== 'de') {
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
     <?php endif; ?>
-    <!--<?php if (session()->getFlashdata('error')): ?>
+    <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <?= esc(session()->getFlashdata('error')) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
-    <?php endif; ?>-->
+    <?php endif; ?>
     <?php if (session()->getFlashdata('errors')): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <ul class="mb-0">
