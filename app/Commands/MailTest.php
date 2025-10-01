@@ -29,6 +29,10 @@ class MailTest extends BaseCommand
         $email->setSubject('Test-Mail von CodeIgniter');
         $email->setMessage('Dies ist eine Testmail, gesendet am ' . date('Y-m-d H:i:s'));
 
+        // --- Wichtige Ergänzung: Header mit korrekter Zeitzone ---
+        date_default_timezone_set('Europe/Zurich'); // falls noch nicht gesetzt
+        $email->setHeader('Date', date('r')); // RFC2822-konforme aktuelle lokale Zeit
+
         if ($email->send()) {
             CLI::write('✅ Testmail erfolgreich an ' . implode(', ', $recipients) . ' gesendet!', 'green');
         } else {

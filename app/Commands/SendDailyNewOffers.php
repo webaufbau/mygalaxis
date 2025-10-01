@@ -164,6 +164,10 @@ class SendDailyNewOffers extends BaseCommand
         $email->setMessage($fullEmail);
         $email->setMailType('html');
 
+        // --- Wichtige Ergänzung: Header mit korrekter Zeitzone ---
+        date_default_timezone_set('Europe/Zurich'); // falls noch nicht gesetzt
+        $email->setHeader('Date', date('r')); // RFC2822-konforme aktuelle lokale Zeit
+
         if (!$email->send()) {
             log_message('error', 'Fehler beim Senden an ' . $to . ': ' . print_r($email->printDebugger(), true));
             return false;
