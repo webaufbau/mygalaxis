@@ -3,10 +3,20 @@ namespace App\Validation;
 
 class MyGalaxisRules
 {
-    public static function emailUniqueWithPortal(string $str, string $fields, array $data): bool
+    /**
+     * Prüft, ob die E-Mail bereits existiert und gibt eine mehrsprachige Meldung zurück
+     */
+    public function emailUniqueWithPortal(string $value, array $data, ?string &$error = null): bool
     {
         $db = \Config\Database::connect();
         $builder = $db->table('auth_identities');
-        return $builder->where('secret', $str)->countAllResults() === 0;
+
+        if ($builder->where('secret', $value)->countAllResults() > 0) {
+            // Fehlermeldung aus den Sprachdateien holen
+            $error = lang('Auth.isUniqueEmail');
+            return false;
+        }
+
+        return true;
     }
 }

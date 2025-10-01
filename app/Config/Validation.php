@@ -25,7 +25,6 @@ class Validation extends BaseConfig
         FormatRules::class,
         FileRules::class,
         CreditCardRules::class,
-        \App\Validation\MyGalaxisRules::class,
     ];
 
     /**
@@ -118,10 +117,10 @@ class Validation extends BaseConfig
                 'required',
                 'max_length[254]',
                 'valid_email',
-                'rules' => 'required|valid_email|emailUniqueWithPortal',
-                'errors' => [
-                    'emailUniqueWithPortal' => 'Auth.isUniqueEmail', // nur Key, keine lang()!
-                ],
+                'is_unique[auth_identities.secret]',
+            ],
+            'errors' => [
+                'is_unique' => 'Wir betreiben mehrere Portale. Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
             ],
         ],
         'password' => [
