@@ -162,4 +162,8 @@ return [
     // AGB
     'acceptAGBRequired' => 'Die AGB müssen akzeptiert werden.',
 
+
+    'linkNotClickable' => 'Falls der Link in Ihrem E-Mail-Programm nicht klickbar ist, kopieren Sie bitte den folgenden Link in die Adresszeile Ihres Browsers:',
+
+
 ];

@@ -159,4 +159,8 @@ return [
 
     // AGB
     'acceptAGBRequired' => 'Les CGV doivent être acceptées.',
+
+
+    'linkNotClickable' => 'If the link is not clickable in your email client, please copy and paste the following link into your browser:',
+
 ];
