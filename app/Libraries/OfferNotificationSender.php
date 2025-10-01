@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Libraries;
+
+use App\Models\UserModel;
+use App\Entities\User;
+use App\Libraries\ZipcodeService;
+
+class OfferNotificationSender
+{
+    protected UserModel $userModel;
+    protected ZipcodeService $zipcodeService;
+
+    public function __construct()
+    {
+        $this->userModel = new UserModel();
+        $this->zipcodeService = new ZipcodeService();
+    }
+
+    /**
+     * E-Mail an alle passenden Firmen senden
+     */
+    public function notifyMatchingUsers(array $offer): void
+    {
+        $users = $this->userModel->findAll();
+
+        foreach ($users as $user) {
+            if (!$user->inGroup('user')) continue;
+            if ($this->doesOfferMatchUser($offer, $user)) {
+                $this->sendOfferEmail($user, $offer);
+            }
+        }
+    }
+
+    protected function doesOfferMatchUser(array $offer, User $user): bool
+    {
+        $cantons = is_string($user->filter_cantons) ? explode(',', $user->filter_cantons) : [];
+        $regions = is_string($user->filter_regions) ? explode(',', $user->filter_regions) : [];
+        $categories = is_string($user->filter_categories) ? explode(',', $user->filter_categories) : [];
+        $languages = is_string($user->filter_languages) ? json_decode($user->filter_languages, true) ?? [] : [];
+        $customZips = is_string($user->filter_custom_zip) ? explode(',', $user->filter_custom_zip) : [];
+
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
+
+        $relevantZips = $this->zipcodeService->getZipsByCantonAndRegion($cantons, $regions, $siteCountry);
+        $allZips = array_unique(array_merge($relevantZips, $customZips));
+
+        if (!empty($allZips) && !in_array($offer['zip'], $allZips)) return false;
+        if (!empty($categories) && !in_array($offer['type'], $categories)) return false;
+        if (!empty($languages) && !in_array($offer['language'], $languages)) return false;
+
+        return true;
+    }
+
+    protected function sendOfferEmail(User $user, array $offer): void
+    {
+        $siteConfig = siteconfig();
+
+        $subject = "Neue passende Offerte #{$offer['id']}";
+        $message = view('emails/offer_new', [
+            'firma' => $user,
+            'offer' => $offer,
+            'siteConfig' => $siteConfig,
+        ]);
+
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title'   => 'Neue passende Offerten',
+            'content' => $message,
+        ])->render('emails/layout');
+
+        $email = \Config\Services::email();
+        $email->setTo($siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail());
+        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setSubject($subject);
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        if (!$email->send()) {
+            log_message('error', 'Fehler beim Senden an ' . $user->getEmail() . ': ' . print_r($email->printDebugger(), true));
+        }
+    }
+}

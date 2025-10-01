@@ -324,11 +324,10 @@ class Verification extends BaseController {
                         $uuid,
                         $offerData['verify_type'] ?? null
                     );
-                }
 
-                if ($offerData) {
-                    $updater = new \App\Libraries\OfferPriceUpdater();
-                    $updater->updateOfferAndNotify($offerData);
+                    // E-Mail an passende Firmen (nur einmal, unabhängig vom Rabatt)
+                    $notifier = new \App\Libraries\OfferNotificationSender();
+                    $notifier->notifyMatchingUsers($offerData);
                 }
 
                 log_message('info', 'Verifizierung abgeschlossen: E-Mail gesendet.');

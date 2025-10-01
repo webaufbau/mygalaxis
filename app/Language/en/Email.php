@@ -90,6 +90,9 @@ return [
     'discountApplied'    => 'Discount applied',
 
 
+    'newOfferIntro' => 'We have a new offer that matches your profile:',
+
+
 
 
 ];

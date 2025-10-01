@@ -90,6 +90,7 @@ return [
     'discountApplied'    => 'Rabatt angewendet',
 
 
+    'newOfferIntro' => 'Wir haben eine neue Offerte, die zu Ihnen passt:',
 
 
 ];
