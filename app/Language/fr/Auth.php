@@ -163,4 +163,6 @@ return [
 
     'linkNotClickable' => 'If the link is not clickable in your email client, please copy and paste the following link into your browser:',
 
+    'isUniqueEmail' => 'Nous exploitons plusieurs portails. Votre adresse e-mail est déjà associée à un compte. Vous pouvez vous connecter avec votre e-mail ou demander un accès direct à votre compte existant via le lien magique.',
+
 ];

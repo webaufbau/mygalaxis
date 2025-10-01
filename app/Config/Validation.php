@@ -25,6 +25,7 @@ class Validation extends BaseConfig
         FormatRules::class,
         FileRules::class,
         CreditCardRules::class,
+        \App\Validation\MyGalaxisRules::class,
     ];
 
     /**
@@ -117,10 +118,7 @@ class Validation extends BaseConfig
                 'required',
                 'max_length[254]',
                 'valid_email',
-                'is_unique[auth_identities.secret]',
-            ],
-            'errors' => [
-                'is_unique' => 'Diese E-Mail-Adresse wird bereits verwendet. Wenn Sie bereits ein Konto haben, melden Sie sich bitte an.',
+                'rules' => 'required|valid_email|emailUniqueWithPortal',
             ],
         ],
         'password' => [

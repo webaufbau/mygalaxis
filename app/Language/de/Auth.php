@@ -165,5 +165,7 @@ return [
 
     'linkNotClickable' => 'Falls der Link in Ihrem E-Mail-Programm nicht klickbar ist, kopieren Sie bitte den folgenden Link in die Adresszeile Ihres Browsers:',
 
+    'isUniqueEmail' => 'Wir betreiben mehrere Portale. Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
+
 
 ];
