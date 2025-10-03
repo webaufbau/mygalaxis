@@ -91,7 +91,7 @@ class FluentForm extends BaseController
         $formName = $data['form_name'] ?? null;
         unset($data['form_name']);
 
-        $uuid = $data['uuid'] ?? bin2hex(random_bytes(8)); // fallback falls nicht mitgeliefert
+        $uuid = $data['uuid'] ?? $data['uuid_value'] ?? bin2hex(random_bytes(8)); // fallback falls nicht mitgeliefert
 
         $verifyType = $data['verified_method'] ?? null;
         $verified = in_array($verifyType, ['sms', 'phone']) ? 1 : 0;
