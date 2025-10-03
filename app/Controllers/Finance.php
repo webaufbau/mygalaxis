@@ -374,9 +374,24 @@ class Finance extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        // Rechnungsnummer: RE{LAND}{ID} z.B. RECH123
         $invoice_name = 'RE' . strtoupper(siteconfig()->siteCountry) . $id;
 
-        $html = view('account/pdf_invoice', ['user' => $user, 'booking' => $booking, 'invoice_name' => $invoice_name]);
+        // Land aus User-Platform extrahieren (z.B. my_offertenheld_ch -> CH)
+        $country = '';
+        if (!empty($user->platform)) {
+            // my_offertenheld_ch -> ch
+            $parts = explode('_', $user->platform);
+            $countryCode = strtoupper(end($parts)); // CH, DE, etc.
+            $country = $countryCode;
+        }
+
+        $html = view('account/pdf_invoice', [
+            'user' => $user,
+            'booking' => $booking,
+            'invoice_name' => $invoice_name,
+            'country' => $country
+        ]);
 
         $mpdf = new \Mpdf\Mpdf(['default_font' => 'helvetica']);
         $mpdf->WriteHTML($html);
@@ -386,6 +401,58 @@ class Finance extends BaseController
             ->setBody($mpdf->Output($invoice_name.".pdf", 'S'));
     }
 
+    public function monthlyInvoice($year, $month)
+    {
+        $user = auth()->user();
+        $bookingModel = new BookingModel();
+
+        // Alle offer_purchase Bookings des Monats holen
+        $bookings = $bookingModel
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->where('YEAR(created_at)', $year)
+            ->where('MONTH(created_at)', $month)
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        if (empty($bookings)) {
+            return redirect()->back()->with('error', lang('Finance.noBookingsForMonth'));
+        }
+
+        // Rechnungsnummer für Monatrechnung: RE{LAND}M-{JAHR}-{MONAT} z.B. RECHM-2024-03
+        $invoice_name = 'RE' . strtoupper(siteconfig()->siteCountry) . 'M-' . $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+
+        // Land aus User-Platform extrahieren
+        $country = '';
+        if (!empty($user->platform)) {
+            $parts = explode('_', $user->platform);
+            $countryCode = strtoupper(end($parts));
+            $country = $countryCode;
+        }
+
+        // Gesamtbetrag berechnen
+        $total = 0;
+        foreach ($bookings as $booking) {
+            $total += abs($booking['amount']);
+        }
+
+        $html = view('account/pdf_monthly_invoice', [
+            'user' => $user,
+            'bookings' => $bookings,
+            'invoice_name' => $invoice_name,
+            'country' => $country,
+            'year' => $year,
+            'month' => $month,
+            'total' => $total
+        ]);
+
+        $mpdf = new \Mpdf\Mpdf(['default_font' => 'helvetica']);
+        $mpdf->WriteHTML($html);
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output($invoice_name . ".pdf", 'S'));
+    }
 
 
 

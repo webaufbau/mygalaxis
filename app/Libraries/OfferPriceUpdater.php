@@ -109,13 +109,17 @@ class OfferPriceUpdater
         $siteConfig = siteconfig();
 
         $type = lang('Offers.type.' . $offer['type']);
-        $subject = "Preisänderung für Angebot #{$offer['id']} – {$type}";
+        $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
+
+        // Format: "Rabatt 50% für Angebot #32 Heizung PLZ Ort"
+        $subject = "Rabatt {$discount}% für Angebot #{$offer['id']} {$type} {$offer['zip']} {$offer['city']}";
+
         $message = view('emails/price_update', [
             'firma' => $user,
             'offer' => $offer,
             'oldPrice' => $oldPrice,
             'newPrice' => $newPrice,
-            'discount' => round(($oldPrice - $newPrice) / $oldPrice * 100, 2),
+            'discount' => $discount,
             'siteConfig' => $siteConfig,
         ]);
 

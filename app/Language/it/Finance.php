@@ -11,6 +11,7 @@ return [
     'showButton'      => 'Mostra',
     'pdfExport'       => 'Esporta PDF',
     'noBookings'      => 'Nessuna prenotazione trovata.',
+    'noBookingsForMonth' => 'Nessuna prenotazione trovata per questo mese.',
     'date'            => 'Data',
     'type'            => 'Tipo',
     'description'     => 'Descrizione',
@@ -34,6 +35,18 @@ return [
 
     // PDF
     'pdf_title'    => 'Prenotazioni',
+
+    // Monatrechnung
+    'monthlyInvoice' => 'Fattura mensile',
+    'invoiceDate' => 'Data fattura',
+    'invoiceNumber' => 'Numero fattura',
+    'billingPeriod' => 'Periodo di fatturazione',
+    'bookingNr' => 'N. prenotazione',
+    'totalAmount' => 'Importo totale',
+    'customer' => 'Cliente',
+    'invoice' => 'Fattura',
+    'paymentNote' => 'Questa fattura è già stata completamente pagata in anticipo tramite Saferpay.',
+    'thankYou' => 'La ringraziamo per il suo acquisto e la sua fiducia.',
 
     // Für topupFail View
     'topupFailTitle'   => 'Pagamento fallito',

@@ -141,6 +141,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->group('finance', ['filter' => 'auth'], function($routes) {
         $routes->get('', 'Finance::index');
         $routes->get('invoice/(:num)', 'Finance::invoice/$1');
+        $routes->get('monthly-invoice/(:num)/(:num)', 'Finance::monthlyInvoice/$1/$2');
         $routes->match(['GET', 'POST'], 'topup', 'Finance::topup');
         $routes->match(['GET', 'POST'], 'startAddPaymentMethodAjax', 'Finance::startAddPaymentMethodAjax');
         $routes->get('pdf', 'Finance::pdf');

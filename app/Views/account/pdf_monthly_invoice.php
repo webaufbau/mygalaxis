@@ -2,7 +2,7 @@
 <html lang="<?= service('request')->getLocale() ?>">
 <head>
     <meta charset="UTF-8">
-    <title><?= lang('Finance.invoice') ?> <?= esc($invoice_name) ?></title>
+    <title><?= lang('Finance.monthlyInvoice') ?> <?= esc($invoice_name) ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,32 +73,38 @@
             <?= esc($user->company_phone) ?>
         </p>
     </div>
-
 </div>
 
-<h1><?= lang('Finance.invoice') ?> <?= esc($invoice_name) ?></h1>
+<h1><?= lang('Finance.monthlyInvoice') ?> <?= esc($invoice_name) ?></h1>
 
 <div class="details">
-    <p><strong><?= lang('Finance.invoiceDate') ?>:</strong> <?= date('d.m.Y', strtotime($booking['created_at'])) ?></p>
+    <p><strong><?= lang('Finance.invoiceDate') ?>:</strong> <?= date('d.m.Y') ?></p>
     <p><strong><?= lang('Finance.invoiceNumber') ?>:</strong> <?= esc($invoice_name) ?></p>
+    <p><strong><?= lang('Finance.billingPeriod') ?>:</strong> <?= str_pad($month, 2, '0', STR_PAD_LEFT) ?>.<?= $year ?></p>
 </div>
 
 <table>
     <thead>
     <tr>
+        <th><?= lang('Finance.date') ?></th>
+        <th><?= lang('Finance.bookingNr') ?></th>
         <th><?= lang('Finance.description') ?></th>
         <th style="width: 100px;"><?= lang('Finance.amount') ?> (CHF)</th>
     </tr>
     </thead>
     <tbody>
+    <?php foreach ($bookings as $booking): ?>
     <tr>
+        <td><?= date('d.m.Y', strtotime($booking['created_at'])) ?></td>
+        <td><?= esc($booking['id']) ?></td>
         <td><?= esc($booking['description']) ?></td>
         <td><?= number_format(abs($booking['amount']), 2, ".", "'") ?></td>
     </tr>
+    <?php endforeach; ?>
     </tbody>
 </table>
 
-<p class="total"><?= lang('Finance.totalAmount') ?>: <?= number_format(abs($booking['amount']), 2, ".", "'") ?> CHF</p>
+<p class="total"><?= lang('Finance.totalAmount') ?>: <?= number_format($total, 2, ".", "'") ?> CHF</p>
 
 <div class="footer" style="margin-top: 40px; font-size: 12px; color: #555; line-height: 1.5;">
     <p><strong><?= lang('Finance.invoice') ?>:</strong> <?= lang('Finance.paymentNote') ?></p>

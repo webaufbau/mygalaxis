@@ -35,6 +35,8 @@ return [
     'companyPhoneRequired'    => 'Please enter a valid phone number in the format %s.',
     'companyWebsite'          => 'Website',
     'companyWebsiteRequired'  => 'Please enter a valid URL.',
+    'contactPerson'           => 'Contact person',
+    'contactPersonRequired'   => 'Please enter the contact person.',
     'selectAtLeastOneCategory'=> 'Please select at least one category.',
     'registerButton'          => 'Register',
 
@@ -46,6 +48,7 @@ return [
     'resetPasswordMessage' => "Hello,\n\nPlease click the following link to reset your password:\n%s\n\nThe link is valid for 1 hour.",
     'enterEmail' => 'Please enter your email address.',
     'userNotFound' => 'User not found.',
+    'adminOnly' => 'This login is for administrators only. Please use the regular login for companies.',
     'invalidOrExpiredLink' => 'Invalid or expired link.',
     'invalidRequest' => 'Invalid request.',
     'passwordsDontMatch' => 'Passwords do not match.',

@@ -35,6 +35,8 @@ return [
     'companyPhoneRequired'    => 'Veuillez saisir un numéro de téléphone valide au format %s.',
     'companyWebsite'          => 'Site web',
     'companyWebsiteRequired'  => 'Veuillez saisir une URL valide.',
+    'contactPerson'           => 'Personne de contact',
+    'contactPersonRequired'   => 'Veuillez saisir la personne de contact.',
     'selectAtLeastOneCategory'=> 'Please select at least one category.',
     'registerButton'          => 'S\'inscrire',
 
@@ -46,6 +48,7 @@ return [
     'resetPasswordMessage' => "Bonjour,\n\nVeuillez cliquer sur le lien suivant pour réinitialiser votre mot de passe :\n%s\n\nLe lien est valable pendant 1 heure.",
     'enterEmail' => 'Veuillez saisir votre adresse e-mail.',
     'userNotFound' => 'Utilisateur non trouvé.',
+    'adminOnly' => 'Cette connexion est réservée aux administrateurs. Veuillez utiliser la connexion normale pour les entreprises.',
     'invalidOrExpiredLink' => 'Lien invalide ou expiré.',
     'invalidRequest' => 'Requête invalide.',
     'passwordsDontMatch' => 'Les mots de passe ne correspondent pas.',

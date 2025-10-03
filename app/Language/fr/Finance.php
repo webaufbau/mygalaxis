@@ -11,6 +11,7 @@ return [
     'showButton'      => 'Afficher',
     'pdfExport'       => 'Export PDF',
     'noBookings'      => 'Aucune transaction trouvée.',
+    'noBookingsForMonth' => 'Aucune transaction trouvée pour ce mois.',
     'date'            => 'Date',
     'type'            => 'Type',
     'description'     => 'Description',
@@ -34,6 +35,18 @@ return [
 
     // PDF
     'pdf_title'    => 'Transactions',
+
+    // Monatrechnung
+    'monthlyInvoice' => 'Facture mensuelle',
+    'invoiceDate' => 'Date de facturation',
+    'invoiceNumber' => 'Numéro de facture',
+    'billingPeriod' => 'Période de facturation',
+    'bookingNr' => 'N° de réservation',
+    'totalAmount' => 'Montant total',
+    'customer' => 'Client',
+    'invoice' => 'Facture',
+    'paymentNote' => 'Cette facture a déjà été entièrement payée à l\'avance via Saferpay.',
+    'thankYou' => 'Nous vous remercions pour votre achat et votre confiance.',
 
     // Für topupFail View
     'topupFailTitle'   => 'Échec du paiement',

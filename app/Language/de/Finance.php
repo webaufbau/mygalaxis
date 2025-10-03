@@ -11,6 +11,7 @@ return [
     'showButton'      => 'Anzeigen',
     'pdfExport'       => 'Buchungen PDF Export',
     'noBookings'      => 'Keine Buchungen gefunden.',
+    'noBookingsForMonth' => 'Keine Buchungen für diesen Monat gefunden.',
     'date'            => 'Datum',
     'type'            => 'Typ',
     'description'     => 'Beschreibung',
@@ -35,6 +36,17 @@ return [
 
     // PDF
     'pdf_title'    => 'Buchungen',
+
+    // Monatrechnung
+    'monthlyInvoice' => 'Monatsrechnung',
+    'invoiceDate' => 'Rechnungsdatum',
+    'invoiceNumber' => 'Rechnungsnummer',
+    'billingPeriod' => 'Abrechnungszeitraum',
+    'bookingNr' => 'Booking-Nr.',
+    'totalAmount' => 'Gesamtbetrag',
+    'customer' => 'Kunde',
+    'paymentNote' => 'Diese Rechnung wurde bereits vollständig im Voraus über Saferpay beglichen.',
+    'thankYou' => 'Wir danken Ihnen für Ihren Einkauf und Ihr Vertrauen.',
 
     // Für topupFail View
     'topupFailTitle'   => 'Zahlung fehlgeschlagen',

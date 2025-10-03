@@ -76,6 +76,14 @@
        class="btn btn-sm btn-secondary">
         <i class="bi bi-file-earmark-pdf"></i> <?= esc(lang('Finance.pdfExport')) ?>
     </a>
+
+    <!-- Monatrechnung -->
+    <?php if (!empty($currentMonth) && !empty($currentYear)): ?>
+        <a href="<?= site_url('finance/monthly-invoice/' . $currentYear . '/' . $currentMonth) ?>"
+           class="btn btn-sm btn-success">
+            <i class="bi bi-file-earmark-text"></i> Monatsrechnung
+        </a>
+    <?php endif; ?>
 </form>
 
 <!-- Tabelle -->

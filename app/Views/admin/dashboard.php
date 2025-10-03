@@ -146,8 +146,8 @@
         ?>
     <tr>
         <?php
-        $date = new DateTime($o['created_at'], new DateTimeZone('UTC')); // oder ohne 2. Parameter, wenn CI4 es als UTC liefert
-        $date->setTimezone(new DateTimeZone('Europe/Zurich'));
+        // DateTime direkt aus DB-Wert erstellen ohne Timezone-Konvertierung
+        $date = new DateTime($o['created_at']);
         ?>
         <td data-order="<?= $date->format('Y-m-d-H-i-s') ?>">
             <?= $date->format('d.m.Y H:i') ?>
