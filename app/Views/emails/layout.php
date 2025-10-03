@@ -68,8 +68,17 @@
     <?= $content ?? '' ?>
 
     <div class="footer">
-        <?= lang('Email.automaticGenerated') ?> <?= date('d.m.Y H:i') ?>.<br>
-        <?=lang('Email.greetings');?>
+        <?php
+        $signature = siteconfig()->emailSignature ?? '';
+        if (!empty($signature)):
+        ?>
+            <p><?= nl2br(esc($signature)) ?></p>
+        <?php else: ?>
+            <p><?= lang('Email.greetings', [siteconfig()->name]) ?></p>
+        <?php endif; ?>
+        <p style="font-size: 0.85em; color: #999; margin-top: 20px;">
+            <?= lang('Email.automaticGenerated') ?> <?= date('d.m.Y H:i') ?>.
+        </p>
     </div>
 
 </div>

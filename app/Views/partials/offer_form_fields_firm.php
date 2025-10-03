@@ -34,8 +34,11 @@ if (!empty($full)) {
         'additional_service', 'referrer',
         'terms-n-condition', 'type', 'lang'
     ];
-    $formFields = array_filter($formFields, function ($key) use ($excludeKeys) {
+    $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
+
+    $formFields = array_filter($formFields, function ($key) use ($excludeKeys, $utmKeys) {
         if (in_array($key, $excludeKeys)) return false;
+        if (in_array($key, $utmKeys)) return false;
         if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
         return true;
     }, ARRAY_FILTER_USE_KEY);
