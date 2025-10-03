@@ -54,6 +54,7 @@ return [
     'passwordChangedSuccess' => 'Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden.',
     'emailAlreadyRegistered' => 'E-Mail ist bereits registriert.',
     'registrationSuccess' => 'Registrierung erfolgreich. Du kannst dich jetzt einloggen.',
+    'adminOnly' => 'Dieser Login ist nur für Administratoren. Bitte verwenden Sie den regulären Login für Firmen.',
 
     // Exceptions
     'unknownAuthenticator'  => '{0} ist kein gültiger Authentifikator.',

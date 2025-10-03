@@ -433,11 +433,29 @@ class Auth extends ShieldAuth
     /**
      * Returns the URL that a user should be redirected
      * to after a successful login.
+     * Redirects based on user group (admin vs user)
      */
     public function loginRedirect(): string
     {
         $session = session();
-        $url     = $session->getTempdata('beforeLoginUrl') ?? setting('Auth.redirects')['login'];
+
+        // Group-based redirect
+        if (auth()->loggedIn()) {
+            $user = auth()->user();
+
+            // Admin users go to admin user list
+            if ($user->inGroup('admin')) {
+                return '/admin/user';
+            }
+
+            // Regular users go to user dashboard
+            if ($user->inGroup('user')) {
+                return '/dashboard';
+            }
+        }
+
+        // Fallback to default redirect
+        $url = $session->getTempdata('beforeLoginUrl') ?? setting('Auth.redirects')['login'];
 
         return $this->getUrl($url);
     }

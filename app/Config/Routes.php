@@ -28,9 +28,14 @@ function defineAppRoutes($routes) {
     $routes->match(['POST'], 'register', 'RegisterController::myregisterAction');
 
     service('auth')->routes($routes);
-    // Login
+
+    // Company Login
     $routes->get('login', '\CodeIgniter\Shield\Controllers\LoginController::loginView');
     $routes->post('login', '\CodeIgniter\Shield\Controllers\LoginController::loginAction');
+
+    // Admin Login (separate URL)
+    $routes->get('admin/login', 'Auth::adminLoginView', ['as' => 'admin-login']);
+    $routes->post('admin/login', 'Auth::adminLoginAttempt', ['as' => 'admin-login-attempt']);
 
     // Register
     $routes->get('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerView');

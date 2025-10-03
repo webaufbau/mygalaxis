@@ -70,18 +70,6 @@ elseif($siteConfig->phoneCheck == 'de') {
 
 ?>
 
-
-
-<?php if (session()->has('errors')) : ?>
-    <div class="alert alert-danger">
-        <ul>
-            <?php foreach (session('errors') as $error) : ?>
-                <li><?= esc($error) ?></li>
-            <?php endforeach ?>
-        </ul>
-    </div>
-<?php endif ?>
-
 <div class="p-4 border rounded-2 bg-light">
     <h2 class="my-4"><?= lang('Auth.registerTitle') ?></h2>
 
