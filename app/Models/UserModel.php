@@ -51,6 +51,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'email_text',
             'stripe_customer_id',
             'language',
+            'welcome_email_sent',
         ];
     }
 

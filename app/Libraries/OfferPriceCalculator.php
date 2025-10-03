@@ -60,7 +60,7 @@ class OfferPriceCalculator
                 break;
 
             case 'cleaning':
-                // Sonderfälle über $originalType
+                // Sonderfälle über $originalType (exklusive Reinigungsarten)
                 if (in_array($originalType, ['reinigung_nur_fenster', 'reinigung_fassaden', 'reinigung_hauswartung'])) {
                     switch ($originalType) {
                         case 'reinigung_nur_fenster':
@@ -71,6 +71,10 @@ class OfferPriceCalculator
                             break;
                         case 'reinigung_hauswartung':
                             $price = $category['options']['hauswartung']['price'];
+                            // Wiederkehrend/täglich hinzufügen
+                            if (!empty($fields['ausfuehrung']) && strtolower($fields['ausfuehrung']) === 'täglich') {
+                                $price += $category['options']['wiederkehrend']['price'];
+                            }
                             break;
                     }
                 }
@@ -99,6 +103,16 @@ class OfferPriceCalculator
                     // Wiederkehrend hinzufügen
                     if (!empty($fields['reinigungsart_wiederkehrend']) && $fields['reinigungsart_wiederkehrend']=='Wiederkehrend') {
                         $price += $category['options']['wiederkehrend']['price'];
+                    }
+
+                    // Fensterreinigung als Zusatz (wenn normale Wohnung + Fenster gewünscht)
+                    if (!empty($fields['fensterreinigung']) && strtolower($fields['fensterreinigung']) === 'ja') {
+                        $price += $category['options']['nur_fenster']['price'];
+                    }
+
+                    // Fassadenreinigung als Zusatz (wenn normale Wohnung + Fassade gewünscht)
+                    if (!empty($fields['fassadenreinigung']) && strtolower($fields['fassadenreinigung']) === 'ja') {
+                        $price += $category['options']['nur_fassaden']['price'];
                     }
 
                 }
@@ -298,17 +312,6 @@ class OfferPriceCalculator
                 $category = $this->categoryPrices['heating'] ?? [];
                 $price = 0;
 
-                // --- Art Objekt ---
-                if (!empty($fields['art_objekt'])) {
-                    $aKey = strtolower($fields['art_objekt']);
-                    $aKey = convert_umlaute($aKey);
-                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
-
-                    if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
-                    }
-                }
-
                 // --- Step 2 Arbeiten (Neubau, Renovierung, Umbau) ---
                 $step2Keys = ['neubau', 'renovierung', 'umbau'];
                 $selectedStep2 = [];
@@ -325,12 +328,14 @@ class OfferPriceCalculator
                 }
 
                 // --- Step 3 Arbeiten (Neue Anlagen / Heizkörper / Andere) ---
+                $hasStep3 = false;
                 foreach ($fields['arbeiten_heizung'] ?? [] as $arbeit) {
                     $aKey = strtolower($arbeit);
                     $aKey = convert_umlaute($aKey);
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!in_array($aKey, $step2Keys) && !empty($category['options'][$aKey])) {
+                        $hasStep3 = true;
                         $additionalPrice = $category['options'][$aKey]['price'] ?? 0;
 
                         // Wenn Step2-Arbeiten gewählt wurden, ziehen wir die Basis ab
@@ -342,6 +347,19 @@ class OfferPriceCalculator
                         }
 
                         $price += $additionalPrice;
+                    }
+                }
+
+                // --- Art Objekt ---
+                // Objektart wird NUR addiert, wenn Step 3 (neue Anlagen etc.) gewählt wurde
+                // Bei nur Step 2 (Neubau/Renovierung/Umbau) wird die Objektart NICHT addiert
+                if ($hasStep3 && !empty($fields['art_objekt'])) {
+                    $aKey = strtolower($fields['art_objekt']);
+                    $aKey = convert_umlaute($aKey);
+                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+
+                    if (!empty($category['options'][$aKey])) {
+                        $price += $category['options'][$aKey]['price'];
                     }
                 }
 

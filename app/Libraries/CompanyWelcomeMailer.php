@@ -42,6 +42,14 @@ class CompanyWelcomeMailer
             return false;
         }
 
+        // Mark email as sent in database
+        $userModel = new \App\Models\UserModel();
+        $userModel->update($user->id, [
+            'welcome_email_sent' => date('Y-m-d H:i:s')
+        ]);
+
+        log_message('info', 'Willkommens-Mail erfolgreich gesendet an: ' . $user->getEmail());
+
         return true;
     }
 }

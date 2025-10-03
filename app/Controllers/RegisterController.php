@@ -169,6 +169,12 @@ class RegisterController extends ShieldRegister {
             $user->language = $locale;
             $user->setAttribute('language', $locale);
 
+            // Platform aus Hostname ermitteln (z.B. my_offertenheld_ch)
+            $hostname = $_SERVER['HTTP_HOST'] ?? 'unknown';
+            $platform = str_replace(['.', '-'], '_', $hostname);
+            $user->platform = $platform;
+            $user->setAttribute('platform', $platform);
+
             try {
                 /*d($this->request->getPost());
                 d($this->request->getPost($allowedPostFields));
@@ -240,16 +246,9 @@ class RegisterController extends ShieldRegister {
 
             $authenticator->completeLogin($user);
 
-            // Success!
-            /*$response = [
-                'message' => lang('Auth.registerSuccess'),
-                'redirect' => config('Auth')->registerRedirect(),
-                'success' => true,
-            ];
-            return $this->response->setJSON($response);*/
-
-        // Proceed with Shield's login attempt
-        return parent::registerAction();
+            // Success! Redirect to the configured page
+            session()->setFlashdata('message', lang('Auth.registerSuccess'));
+            return redirect()->to(config('Auth')->registerRedirect());
 
 
     }
