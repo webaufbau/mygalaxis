@@ -61,6 +61,39 @@ class SiteConfigLoader
     }
 
     /**
+     * Lädt SiteConfig für eine bestimmte Plattform
+     * @param string|null $platform z.B. 'my_offertenheld_ch'
+     * @return SiteConfigLoader
+     */
+    public static function loadForPlatform(?string $platform = null): self
+    {
+        if (empty($platform)) {
+            // Fallback zur aktuellen Plattform
+            return siteconfig();
+        }
+
+        // Erstelle neue Instanz mit custom JSON-Pfad
+        $instance = new self();
+
+        // Pfad zur anderen Plattform konstruieren
+        // z.B. /var/www/my_offertenheld_ch/writable/config/site_settings.json
+        $currentRoot = ROOTPATH; // z.B. /var/www/my_offertenschweiz_ch/
+        $parentDir = dirname(rtrim($currentRoot, '/'));  // /var/www/
+        $platformJsonPath = $parentDir . '/' . $platform . '/writable/config/site_settings.json';
+
+        // Falls Pfad existiert, lade Settings
+        if (file_exists($platformJsonPath)) {
+            $instance->jsonPath = $platformJsonPath;
+            $instance->loadValues();
+        } else {
+            // Fallback: Nutze aktuelle Config
+            log_message('warning', "SiteConfig für Platform '{$platform}' nicht gefunden: {$platformJsonPath}. Nutze aktuelle Config.");
+        }
+
+        return $instance;
+    }
+
+    /**
      * Speichern: Berücksichtige Mehrsprachigkeit
      *
      * @param array $data Post-Daten aus Formular, evtl. mehrsprachige Felder als Array

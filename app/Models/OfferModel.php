@@ -129,7 +129,21 @@ class OfferModel extends Model
             $data['language'] = 'de';
         }
 
-        $data['platform'] = $formFields['platform'] ?? null;
+        // Platform normalisieren: Domain-Format zu Ordner-Format
+        // z.B. offertenheld.ch -> my_offertenheld_ch
+        // z.B. renovoscout24.de -> my_renovoscout24_de
+        $platformRaw = $formFields['platform'] ?? null;
+        if ($platformRaw) {
+            // Wenn schon im Ordner-Format (beginnt mit my_), direkt übernehmen
+            if (strpos($platformRaw, 'my_') === 0) {
+                $data['platform'] = $platformRaw;
+            } else {
+                // Domain-Format: Punkte durch Underscores ersetzen und my_ voranstellen
+                $data['platform'] = 'my_' . str_replace('.', '_', $platformRaw);
+            }
+        } else {
+            $data['platform'] = null;
+        }
 
         $data['firstname'] = $formFields['vorname'] ?? $userInputs['vorname'] ?? null;
         $data['lastname'] = $formFields['nachname'] ?? $userInputs['nachname'] ?? null;

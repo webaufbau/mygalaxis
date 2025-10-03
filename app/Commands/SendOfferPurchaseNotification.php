@@ -87,7 +87,8 @@ class SendOfferPurchaseNotification extends BaseCommand
 
     protected function sendEmailToCompany(User $company, array $offer, array $customer): void
     {
-        $siteConfig = siteconfig();
+        // Lade SiteConfig basierend auf Company-Platform
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($company->platform);
 
         // Sprache aus Offer-Daten setzen
         $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
@@ -111,12 +112,13 @@ class SendOfferPurchaseNotification extends BaseCommand
         $subject = lang('Email.offerPurchasedCompanySubject', [$offer['title']]);
         $message = view('emails/offer_purchase_to_company', $data);
 
-        $this->sendEmail($company->email, $subject, $message);
+        $this->sendEmail($company->email, $subject, $message, $siteConfig);
     }
 
     protected function sendEmailToCustomer(array $customer, User $company, array $offer): void
     {
-        $siteConfig = siteconfig();
+        // Lade SiteConfig basierend auf Company-Platform
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($company->platform);
 
         // Sprache aus Offer-Daten setzen
         $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
@@ -154,12 +156,14 @@ class SendOfferPurchaseNotification extends BaseCommand
             $emailTo = $originalEmail;
         }
 
-        $this->sendEmail($emailTo, $subject, $message);
+        $this->sendEmail($emailTo, $subject, $message, $siteConfig);
     }
 
-    protected function sendEmail(string $to, string $subject, string $message): bool
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
     {
-        $siteConfig = siteconfig();
+        if (!$siteConfig) {
+            $siteConfig = siteconfig();
+        }
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([

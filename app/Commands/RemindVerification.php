@@ -64,16 +64,19 @@ class RemindVerification extends BaseCommand
 
             $verifyLink = site_url('verification/verify-offer/' . $offer['id'] . '/' . $offer['verification_token']);
 
+            // Lade SiteConfig basierend auf Offer-Platform
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
+
             $emailData = [
                 'data' => $formFields,
                 'verifyLink' => $verifyLink,
-                'siteConfig' => siteconfig(),
+                'siteConfig' => $siteConfig,
             ];
 
             $htmlMessage = view('emails/verification_reminder', $emailData);
             $subject = 'Bitte bestätige deine Telefonnummer für deine Anfrage';
 
-            if ($this->sendEmail($email, $subject, $htmlMessage)) {
+            if ($this->sendEmail($email, $subject, $htmlMessage, $siteConfig)) {
                 CLI::write("Erinnerung an {$email} gesendet (Offer-ID {$offer['id']}).", 'green');
                 $offerModel->update($offer['id'], ['reminder_sent_at' => date('Y-m-d H:i:s')]);
             } else {
@@ -83,9 +86,11 @@ class RemindVerification extends BaseCommand
 
     }
 
-    protected function sendEmail(string $to, string $subject, string $message): bool
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
     {
-        $siteConfig = siteconfig();
+        if (!$siteConfig) {
+            $siteConfig = siteconfig();
+        }
 
         $email = \Config\Services::email();
         $email->setTo($to);

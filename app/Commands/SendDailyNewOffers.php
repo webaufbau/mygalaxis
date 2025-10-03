@@ -114,7 +114,8 @@ class SendDailyNewOffers extends BaseCommand
 
     protected function sendEmailToCompany(User $user, array $offers): void
     {
-        $siteConfig = siteconfig();
+        // Lade SiteConfig basierend auf User-Platform
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
         // Sprache aus Offer-Daten setzen
         $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
@@ -126,7 +127,7 @@ class SendDailyNewOffers extends BaseCommand
         }
 
         $data = [
-            'siteConfig' => siteconfig(),
+            'siteConfig' => $siteConfig,
             'firma'  => $user,
             'offers' => $offers,
         ];

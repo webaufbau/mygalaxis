@@ -55,7 +55,8 @@ class OfferNotificationSender
 
     protected function sendOfferEmail(User $user, array $offer): void
     {
-        $siteConfig = siteconfig();
+        // Lade SiteConfig basierend auf User-Platform
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
         $subject = "Neue passende Offerte #{$offer['id']}";
         $message = view('emails/offer_new', [

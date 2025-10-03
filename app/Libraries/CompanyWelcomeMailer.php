@@ -8,7 +8,8 @@ class CompanyWelcomeMailer
 {
     public function sendWelcomeEmail(User $user): bool
     {
-        $siteConfig = siteconfig();
+        // Lade SiteConfig basierend auf User-Platform
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
         $subject = "Danke für Ihre Anmeldung als Firma";
         $message = view('emails/company_welcome', [
