@@ -133,7 +133,7 @@ class OfferModel extends Model
 
         $data['firstname'] = $formFields['vorname'] ?? $userInputs['vorname'] ?? null;
         $data['lastname'] = $formFields['nachname'] ?? $userInputs['nachname'] ?? null;
-        $data['email'] = $formFields['email'] ?? $userInputs['email'] ?? null;
+        $data['email'] = $formFields['email'] ?? $userInputs['email'] ?? $formFields['email_firma'] ?? $userInputs['email_firma'] ?? null;
         $data['phone'] = $formFields['phone'] ?? $userInputs['phone'] ?? null;
         $data['additional_service'] = $formFields['additional_service'] ?? null;
         $data['service_url'] = $formFields['service_url'] ?? null;

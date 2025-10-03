@@ -91,6 +91,7 @@
                 <th><?= esc(lang('Finance.type')) ?></th>
                 <th><?= esc(lang('Finance.description')) ?></th>
                 <th class="text-end"><?= esc(lang('Finance.amount')) ?></th>
+                <th><?= esc(lang('Finance.invoice')) ?></th>
             </tr>
             </thead>
             <tbody>
@@ -101,6 +102,14 @@
                     <td><?= esc($entry['description']) ?></td>
                     <td class="text-end <?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
                         <?= number_format($entry['amount'], 2, ".", "'") ?> CHF
+                    </td>
+                    <td>
+                        <?php if ($entry['amount'] < 0): ?>
+                            <a href="<?= site_url('finance/invoice/'.$entry['id']) ?>"
+                               class="btn btn-sm btn-secondary">
+                                <i class="bi bi-file-earmark-pdf"></i> RE<?=strtoupper(siteconfig()->siteCountry);?><?=$entry['id'];?>
+                            </a>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>

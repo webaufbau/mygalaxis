@@ -112,7 +112,7 @@ class FluentForm extends BaseController
 
             if ($data['additional_service'] !== 'Nein') {
                 session()->set('group_email', $data['email'] ?? null);
-                session()->set('group_uuid', $data['uuid'] ?? null);
+                session()->set('group_uuid', $data['uuid'] ?? $data['uuid_value'] ?? null);
                 session()->set('group_additional_service', $data['additional_service'] ?? null);
                 session()->set('group_date', time());
 
@@ -192,10 +192,10 @@ class FluentForm extends BaseController
 
         if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
             $other_type_has_to_be = $enriched['type'] == 'move' ? 'cleaning' : 'move';
-            $userEmail = $data['email'] ?? null;
+            $userEmail = $data['email'] ?? $data['email_firma'] ?? null;
             $offerFindModel = new OfferModel();
             $matchingOffers = $offerFindModel
-                ->where('email', $data['email'] ?? $userEmail)
+                ->where('email', $data['email'] ?? $data['email_firma'] ?? $userEmail)
                 ->where('type', $other_type_has_to_be)
                 ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-3600 minutes')))
                 ->orderBy('created_at', 'DESC')

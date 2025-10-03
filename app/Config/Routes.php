@@ -135,11 +135,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
     $routes->group('finance', ['filter' => 'auth'], function($routes) {
         $routes->get('', 'Finance::index');
+        $routes->get('invoice/(:num)', 'Finance::invoice/$1');
         $routes->match(['GET', 'POST'], 'topup', 'Finance::topup');
-        //$routes->get('userpaymentmethods', 'Finance::userPaymentMethods');
-        //$routes->match(['GET', 'POST'], 'userpaymentmethods/add', 'Finance::addUserPaymentMethod');
         $routes->match(['GET', 'POST'], 'startAddPaymentMethodAjax', 'Finance::startAddPaymentMethodAjax');
-        //$routes->get('userpaymentmethods/delete/(:num)', 'Finance::deleteUserPaymentMethod/$1');
         $routes->get('pdf', 'Finance::pdf');
     });
 

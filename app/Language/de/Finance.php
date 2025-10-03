@@ -9,12 +9,13 @@ return [
     'allYears'        => 'Alle Jahre',
     'month'           => 'Monat',
     'showButton'      => 'Anzeigen',
-    'pdfExport'       => 'PDF Export',
+    'pdfExport'       => 'Buchungen PDF Export',
     'noBookings'      => 'Keine Buchungen gefunden.',
     'date'            => 'Datum',
     'type'            => 'Typ',
     'description'     => 'Beschreibung',
     'amount'          => 'Betrag',
+    'invoice' => 'Rechnung',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Ungültiger Betrag.',

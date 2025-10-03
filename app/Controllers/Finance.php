@@ -359,6 +359,34 @@ class Finance extends BaseController
             ->setBody($mpdf->Output('', 'S'));
     }
 
+    public function invoice($id)
+    {
+        $user = auth()->user();
+        $bookingModel = new BookingModel();
+
+        $booking = $bookingModel
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->first();
+
+        if (!$booking) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $invoice_name = 'RE' . strtoupper(siteconfig()->siteCountry) . $id;
+
+        $html = view('account/pdf_invoice', ['user' => $user, 'booking' => $booking, 'invoice_name' => $invoice_name]);
+
+        $mpdf = new \Mpdf\Mpdf(['default_font' => 'helvetica']);
+        $mpdf->WriteHTML($html);
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output($invoice_name.".pdf", 'S'));
+    }
+
+
 
 
 }

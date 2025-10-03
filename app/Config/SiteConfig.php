@@ -8,6 +8,8 @@ class SiteConfig extends BaseConfig
     // Basisvariablen
     public string $name = 'Offertenschweiz';
     public string $email = 'info@offertenschweiz.ch';
+    public string $address = '';
+    public string $emailSignature = '';
     public bool $testMode = false;
     public string $testEmail = 'testbenutzer@offertenschweiz.ch';
     public string $frontendUrl = 'https://offertenschweiz.ch';
@@ -31,6 +33,16 @@ class SiteConfig extends BaseConfig
         'email' => [
             'type' => 'email',
             'label' => 'Standard E-Mail',
+        ],
+        'address' => [
+            'type' => 'textarea',
+            'label' => 'Adressdaten Website',
+            'placeholder' => 'Für Rechnungskopf',
+        ],
+        'emailSignature' => [
+            'type' => 'textarea',
+            'label' => 'E-Mail-Signatur Text',
+            'placeholder' => '',
         ],
         'thankYouUrl' => [
             'type' => 'url',
