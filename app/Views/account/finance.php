@@ -59,7 +59,7 @@
         <select id="month" name="month" class="form-select form-select-sm" onchange="this.form.submit();">
             <option value=""><?= esc(lang('Calendar.allMonths')) ?></option>
             <?php
-            $months = lang('Calendar.months');
+            $months = lang('Calendar.monthNames');
             for ($m = 1; $m <= 12; $m++): ?>
                 <option value="<?= $m ?>" <?= $currentMonth == $m ? 'selected' : '' ?>>
                     <?= esc($months[$m]) ?>
