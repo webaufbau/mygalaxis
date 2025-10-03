@@ -15,9 +15,10 @@ class SendWelcomeEmails extends BaseCommand
 
     public function run(array $params)
     {
-        // Aktuelle Platform aus Hostname ermitteln
-        $hostname = $_SERVER['HTTP_HOST'] ?? gethostname();
-        $currentPlatform = str_replace(['.', '-'], '_', $hostname);
+        // Aktuelle Platform aus Ordnername ermitteln
+        // z.B. /var/www/my_offertenheld_ch/ -> my_offertenheld_ch
+        $rootPath = ROOTPATH; // z.B. /var/www/my_offertenheld_ch/
+        $currentPlatform = basename(rtrim($rootPath, '/'));
 
         CLI::write('Platform: ' . $currentPlatform, 'cyan');
         CLI::write('Suche nach Firmen ohne Willkommens-Email...', 'yellow');

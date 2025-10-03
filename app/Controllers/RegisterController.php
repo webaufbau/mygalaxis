@@ -169,9 +169,16 @@ class RegisterController extends ShieldRegister {
             $user->language = $locale;
             $user->setAttribute('language', $locale);
 
-            // Platform aus Hostname ermitteln (z.B. my_offertenheld_ch)
-            $hostname = $_SERVER['HTTP_HOST'] ?? 'unknown';
+            // Platform ermitteln: Erst HTTP_HOST, falls leer/ungültig dann Ordnername als Fallback
+            $hostname = $_SERVER['HTTP_HOST'] ?? '';
             $platform = str_replace(['.', '-'], '_', $hostname);
+
+            // Fallback: Wenn HTTP_HOST leer oder ungültig (z.B. localhost, IP), nutze Ordnername
+            if (empty($platform) || $platform === 'localhost' || preg_match('/^\d+_\d+_\d+_\d+/', $platform)) {
+                $rootPath = ROOTPATH; // z.B. /var/www/my_offertenheld_ch/
+                $platform = basename(rtrim($rootPath, '/'));
+            }
+
             $user->platform = $platform;
             $user->setAttribute('platform', $platform);
 
