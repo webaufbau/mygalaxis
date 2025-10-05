@@ -14,4 +14,4 @@
 
 <p><?= lang('Email.successWishes') ?></p>
 
-<p><?= lang('Email.greetings') ?></p>
+<p><?= lang('Email.greetings', [siteconfig()->name]) ?></p>

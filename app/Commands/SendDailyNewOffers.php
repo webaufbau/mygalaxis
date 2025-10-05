@@ -117,6 +117,11 @@ class SendDailyNewOffers extends BaseCommand
         // Lade SiteConfig basierend auf User-Platform
         $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
+        if($user->platform == 'my_offertenheld_ch') {
+            //var_dump($user->platform);
+            //dd($user);
+        }
+
         // Sprache aus Offer-Daten setzen
         $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
         $request = service('request');
@@ -145,17 +150,18 @@ class SendDailyNewOffers extends BaseCommand
             $emailTo = $originalEmail;
         }
 
-        $this->sendEmail($emailTo, $subject, $message);
+        $this->sendEmail($emailTo, $subject, $message, $siteConfig);
     }
 
-    protected function sendEmail(string $to, string $subject, string $message): bool
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
     {
-        $siteConfig = siteconfig();
+        $siteConfig = $siteConfig ?? siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title'   => 'Neue passende Offerten',
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();

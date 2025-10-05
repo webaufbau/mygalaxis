@@ -74,6 +74,9 @@ class SendReviewReminder extends BaseCommand
             // Review-Link generieren: öffnet Seite für Anbieter (mit offer hash)
             $reviewLink = site_url('offer/interested/' . $offer['access_hash']);
 
+            // Lade SiteConfig basierend auf Offer-Platform
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
+
             // Maildaten
             $emailData = [
                 'offerTitle' => $offer['title'],
@@ -81,12 +84,13 @@ class SendReviewReminder extends BaseCommand
                 'creatorLastname' => $offer['lastname'] ?? '',
                 'reviewLink' => $reviewLink,
                 'bookingDate' => $booking['created_at'],
+                'siteConfig' => $siteConfig,
             ];
 
             $subject = lang('Reviews.emailSubject', [$offer['title']]);
             $message = view('emails/review_reminder', $emailData);
 
-            if ($this->sendEmail($creatorEmail, $subject, $message)) {
+            if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
                 CLI::write(lang('Reviews.reminderSent', [$creatorEmail, $booking['id']]), 'green');
 
                 $this->bookingModel->update($booking['id'], ['review_reminder_sent_at' => date('Y-m-d H:i:s')]);
@@ -96,14 +100,15 @@ class SendReviewReminder extends BaseCommand
         }
     }
 
-    protected function sendEmail(string $to, string $subject, string $message): bool
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
     {
-        $siteConfig = siteconfig();
+        $siteConfig = $siteConfig ?? siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title' => lang('Reviews.emailTitle'),
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();

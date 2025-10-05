@@ -69,6 +69,7 @@ class OfferNotificationSender
         $fullEmail = $view->setData([
             'title'   => 'Neue passende Offerten',
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();

@@ -69,12 +69,14 @@
 
     <div class="footer">
         <?php
-        $signature = siteconfig()->emailSignature ?? '';
+        // Verwende übergebene $siteConfig oder Fallback zu siteconfig()
+        $config = $siteConfig ?? siteconfig();
+        $signature = $config->emailSignature ?? '';
         if (!empty($signature)):
         ?>
             <p><?= nl2br(esc($signature)) ?></p>
         <?php else: ?>
-            <p><?= lang('Email.greetings', [siteconfig()->name]) ?></p>
+            <p><?= lang('Email.greetings', [$config->name]) ?></p>
         <?php endif; ?>
         <p style="font-size: 0.85em; color: #999; margin-top: 20px;">
             <?= lang('Email.automaticGenerated') ?> <?= date('d.m.Y H:i') ?>.

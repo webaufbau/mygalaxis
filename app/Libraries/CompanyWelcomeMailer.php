@@ -26,6 +26,7 @@ class CompanyWelcomeMailer
         $fullEmail = $view->setData([
             'title' => 'Willkommen bei ' . $siteConfig->name,
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();

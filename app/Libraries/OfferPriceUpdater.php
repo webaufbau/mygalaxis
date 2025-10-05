@@ -106,7 +106,8 @@ class OfferPriceUpdater
 
     protected function sendPriceUpdateEmail(User $user, array $offer, float $oldPrice, float $newPrice): void
     {
-        $siteConfig = siteconfig();
+        // Lade SiteConfig basierend auf User-Platform
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
         $type = lang('Offers.type.' . $offer['type']);
         $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
@@ -125,18 +126,19 @@ class OfferPriceUpdater
 
         $to = $siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail();
 
-        $this->sendEmail($to, $subject, $message);
+        $this->sendEmail($to, $subject, $message, $siteConfig);
     }
 
 
-    protected function sendEmail(string $to, string $subject, string $message): bool
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
     {
-        $siteConfig = siteconfig();
+        $siteConfig = $siteConfig ?? siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title'   => 'Neue passende Offerten',
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();

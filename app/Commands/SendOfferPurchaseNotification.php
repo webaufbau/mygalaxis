@@ -169,6 +169,7 @@ class SendOfferPurchaseNotification extends BaseCommand
         $fullEmail = $view->setData([
             'title' => 'Ihre Anfrage',
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();

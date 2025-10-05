@@ -490,6 +490,7 @@ class Verification extends BaseController {
         $fullEmail = $view->setData([
             'title' => 'Ihre Anfrage',
             'content' => $message,
+            'siteConfig' => $this->siteConfig,
         ])->render('emails/layout');
 
         // Maildienst starten
