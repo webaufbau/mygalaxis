@@ -177,26 +177,24 @@ class Dashboard extends Controller
         $offerModel = new \App\Models\OfferModel();
 
         // Gekaufte Angebote via Buchungen
-        $bookings = $bookingModel
+        $allBookings = $bookingModel
             ->where('user_id', $user->id)
             ->where('type', 'offer_purchase')
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        // IDs der gekauften Angebote
-        $purchasedOfferIds = array_column($bookings, 'reference_id');
-
-        // Gekaufte Angebote mit Offer-Infos
+        // Nur Buchungen behalten, deren Angebote noch existieren
+        $bookings = [];
         $purchasedOffers = [];
-        foreach ($purchasedOfferIds as $offerId) {
-            $offer = $offerModel->find($offerId);
+
+        foreach ($allBookings as $booking) {
+            $offer = $offerModel->find($booking['reference_id']);
             if ($offer) {
-                $offer['price_paid'] = $bookingModel
-                    ->where('user_id', $user->id)
-                    ->where('reference_id', $offerId)
-                    ->where('type', 'offer_purchase')
-                    ->orderBy('created_at', 'DESC')
-                    ->first()['amount'] ?? 0;
+                // Angebot existiert noch - Buchung behalten
+                $bookings[] = $booking;
+
+                // Offer-Info für Statistik hinzufügen
+                $offer['price_paid'] = abs($booking['amount']);
                 $purchasedOffers[] = $offer;
             }
         }
