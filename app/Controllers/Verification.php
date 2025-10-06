@@ -137,16 +137,14 @@ class Verification extends BaseController {
         // Wenn kein Mobile, dann nur Anruf zulassen
         if (!$isMobile && $method !== 'call') {
             log_message('error', "SEND: Festnetz erkannt aber Methode ist {$method}");
-            $locale = getCurrentLocale();
-            $prefix = ($locale === 'de') ? '' : '/' . $locale;
-            return redirect()->to($prefix . '/verification')->with('error', lang('Verification.fixedLineOnlyCall'));
+            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            return redirect()->to($nextUrl)->with('error', lang('Verification.fixedLineOnlyCall'));
         }
 
         if (!$method) {
             log_message('error', 'SEND: Methode fehlt in Session!');
-            $locale = getCurrentLocale();
-            $prefix = ($locale === 'de') ? '' : '/' . $locale;
-            return redirect()->to($prefix . '/verification')->with('error', lang('Verification.chooseMethod'));
+            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            return redirect()->to($nextUrl)->with('error', lang('Verification.chooseMethod'));
         }
 
         //$method = 'call';
@@ -181,7 +179,8 @@ class Verification extends BaseController {
                 return redirect()->to($prefix . '/verification/confirm');
             } else {
                 log_message('error', "Infobip SMS Fehler an $phone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
-                return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
+                $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
             }
         } elseif ($method === 'call') {
             //$phone = '+436505711660';
@@ -195,11 +194,13 @@ class Verification extends BaseController {
                 return redirect()->to($prefix . '/verification/confirm');
             } else {
                 log_message('error', "Twilio Call Fehler an $phone.");
-                return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
+                $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
             }
         }
 
-        return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
+        $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+        return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
     }
 
     public function confirm() {
@@ -284,7 +285,7 @@ class Verification extends BaseController {
                     return redirect()->to($prefix . '/verification/confirm');
                 } else {
                     log_message('error', "Infobip SMS Fehler an $normalizedPhone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
-                    return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
+                    return redirect()->to($prefix . '/verification/confirm')->with('error', lang('Verification.errorSendingCode'));
                 }
             }
 
@@ -298,7 +299,7 @@ class Verification extends BaseController {
                 }
             }
 
-            return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
+            return redirect()->to($prefix . '/verification/confirm')->with('error', lang('Verification.errorSendingCode'));
         }
 
         // --- FALL 2: Benutzer gibt Bestätigungscode ein ---
@@ -333,7 +334,8 @@ class Verification extends BaseController {
                             log_message('error', 'Offer ID ' . $offerData['id'] . ' konnte nicht verifiziert werden: Preis ist 0');
                             // Verifizierung rückgängig machen
                             $builder->where('uuid', $uuid)->update(['verified' => 0]);
-                            return redirect()->to($prefix . '/verification')->with('error', 'Das Angebot konnte nicht verifiziert werden. Bitte kontaktieren Sie den Support.');
+                            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                            return redirect()->to($nextUrl)->with('error', 'Das Angebot konnte nicht verifiziert werden. Bitte kontaktieren Sie den Support.');
                         }
                     }
 

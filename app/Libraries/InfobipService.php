@@ -54,8 +54,11 @@ class InfobipService
 
                 log_message('info', "SMS gesendet an $to – Status: $statusName – ID: $messageId");
 
+                // Erfolgreiche Status: PENDING_* und DELIVERED_*
+                $successStatuses = ['PENDING_ACCEPTED', 'PENDING_ENROUTE', 'DELIVERED_TO_HANDSET', 'DELIVERED'];
+
                 return [
-                    'success'    => in_array($statusName, ['PENDING_ENROUTE', 'DELIVERED_TO_HANDSET']),
+                    'success'    => in_array($statusName, $successStatuses),
                     'status'     => $statusName,
                     'group'      => $statusGroup,
                     'messageId'  => $messageId,
