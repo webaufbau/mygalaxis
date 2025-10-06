@@ -7,7 +7,7 @@
         <strong><?= esc($offer['title'] ?? $offer['type']) ?></strong><br>
         <?= esc($offer['zip']) ?> <?= esc($offer['city'] ?? '') ?><br>
         Preis: <?= esc(number_format($offer['price'] ?? 0, 2)) ?> <?= esc($offer['currency'] ?? 'CHF') ?><br>
-        <a href="<?= site_url('/offers#details-' . $offer['id']) ?>"><?= lang('Email.viewNow') ?></a>
+        <a href="<?= site_url('/offers/' . $offer['id']) ?>"><?= lang('Email.viewNow') ?></a>
     </li>
 </ul>
 

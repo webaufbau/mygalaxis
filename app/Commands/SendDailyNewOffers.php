@@ -123,7 +123,7 @@ class SendDailyNewOffers extends BaseCommand
         }
 
         // Sprache aus Offer-Daten setzen
-        $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
+        $language = $user->language ?? $offers[0]['language'] ?? 'de'; // Fallback: Deutsch
         $request = service('request');
         if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
             service('language')->setLocale($language);

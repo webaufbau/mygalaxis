@@ -92,7 +92,7 @@
                         <?php if (!$isPurchased && $status === 'available' && $displayPrice > 0): ?>
                             <a href="<?= site_url('offers/buy/' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= lang('Offers.buyButton') ?></a>
                         <?php elseif ($isPurchased): ?>
-                            <a href="<?= site_url('offers/mine#detailsview-' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= $btnText; ?></a>
+                            <a href="<?= site_url('offers/' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= $btnText; ?></a>
                         <?php elseif ($displayPrice <= 0): ?>
                             <button type="button" class="btn btn-secondary btn-sm mt-2" disabled><?= lang('Offers.priceNotAvailable') ?></button>
                         <?php else: ?>

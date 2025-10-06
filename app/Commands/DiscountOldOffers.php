@@ -99,10 +99,15 @@ class DiscountOldOffers extends BaseCommand
         $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
         $type = lang('Offers.type.' . $offer['type']);
+        // Fallback falls Übersetzung fehlt
+        if (str_starts_with($type, 'Offers.')) {
+            $type = ucfirst(strtolower(str_replace(['_', '-'], ' ', $offer['type'])));
+        }
+
         $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
 
-        // Format: "Rabatt 50% für Angebot #32 Heizung PLZ Ort"
-        $subject = "Rabatt {$discount}% für Angebot #{$offer['id']} {$type} {$offer['zip']} {$offer['city']}";
+        // Format: "20% Rabatt auf Angebot #32 Heizung 3000 Bern"
+        $subject = "{$discount}% Rabatt auf Angebot #{$offer['id']} {$type} {$offer['zip']} {$offer['city']}";
 
         $message = view('emails/price_update', [
             'firma' => $user,

@@ -148,6 +148,44 @@ class Offers extends BaseController
 
     }
 
+    public function show($id)
+    {
+        helper('auth');
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->to('/login')->with('error', lang('Offers.errors.login_required'));
+        }
+
+        $offerModel = new \App\Models\OfferModel();
+        $offer = $offerModel->find($id);
+
+        if (!$offer) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Prüfen ob User das Angebot gekauft hat
+        $bookingModel = new \App\Models\BookingModel();
+        $booking = $bookingModel
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->where('reference_id', $id)
+            ->first();
+
+        $isPurchased = !empty($booking);
+
+        if ($isPurchased && $booking) {
+            $offer['purchased_price'] = abs($booking['amount']);
+            $offer['purchased_at'] = $booking['created_at'];
+        }
+
+        return view('offers/show', [
+            'offer' => $offer,
+            'isPurchased' => $isPurchased,
+            'title' => $offer['title']
+        ]);
+    }
+
     public function mine()
     {
         helper('auth');
@@ -221,7 +259,7 @@ class Offers extends BaseController
         $result = $purchaseService->purchase($user, $id);
 
         if ($result === true) {
-            return redirect()->to('/offers/mine#detailsview-' . $id)->with('message', lang('Offers.messages.purchase_success'));
+            return redirect()->to('/offers/' . $id)->with('message', lang('Offers.messages.purchase_success'));
         }
 
         if (is_array($result) && !$result['success']) {
