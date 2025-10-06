@@ -156,10 +156,24 @@ class FluentForm extends BaseController
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
         $type = $enriched['type'] ?? $data['type'] ?? 'unknown';
+        $originalType = $enriched['original_type'] ?? $type;
 
-        $categoryManager = new \App\Libraries\CategoryManager();
-        $categories = $categoryManager->getAll();
-        $category_option = $categories[$type] ?? null;
+        // Preis mit OfferPriceCalculator berechnen (konsistent mit Cronjob)
+        $priceCalculator = new \App\Libraries\OfferPriceCalculator();
+        $calculatedPrice = $priceCalculator->calculatePrice(
+            $type,
+            $originalType,
+            $data,
+            [] // form_fields_combo ist leer bei neuen Angeboten
+        );
+
+        // Fallback auf CategoryManager nur wenn OfferPriceCalculator 0 zurückgibt
+        if ($calculatedPrice === 0) {
+            $categoryManager = new \App\Libraries\CategoryManager();
+            $categories = $categoryManager->getAll();
+            $category_option = $categories[$type] ?? null;
+            $calculatedPrice = $category_option['price'] ?? 0;
+        }
 
         $insertData = array_merge([
             'form_name'     => $formName,
@@ -171,7 +185,7 @@ class FluentForm extends BaseController
             'uuid'          => $uuid,
             //'created_at'    => date('Y-m-d H:i:s'),
             'status'        => 'available',
-            'price'         => $category_option['price'] ?? 0,
+            'price'         => $calculatedPrice,
             'buyers'        => 0,
             'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
@@ -208,17 +222,34 @@ class FluentForm extends BaseController
                 // Neuen Typ setzen
                 $type = 'move_cleaning';
 
-                $categoryManager = new \App\Libraries\CategoryManager();
-                $categories = $categoryManager->getAll();
-                $category_option = $categories[$type] ?? null;
+                // Preis mit OfferPriceCalculator berechnen für move_cleaning
+                $comboPrice = $priceCalculator->calculatePrice(
+                    $type,
+                    $type,
+                    $data,
+                    $previousFormFields
+                );
+
+                // Fallback auf CategoryManager
+                if ($comboPrice === 0) {
+                    $categoryManager = new \App\Libraries\CategoryManager();
+                    $categories = $categoryManager->getAll();
+                    $category_option = $categories[$type] ?? null;
+                    $comboPrice = $category_option['price'] ?? 0;
+                }
 
                 $insertData['type'] = $type;
-                $insertData['price'] = $category_option['price'] ?? 0;
+                $insertData['price'] = $comboPrice;
                 $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
 
                 // vorige Anfrage $matchingOffers löschen
                 $offerModel->delete($previousOffer['id']);
             }
+        }
+
+        // Warnung loggen wenn Preis 0 ist
+        if ($insertData['price'] === 0 || $insertData['price'] === '0') {
+            log_message('warning', 'Offer created with price 0! Type: ' . $type . ', OriginalType: ' . $originalType . ', Data: ' . json_encode($data));
         }
 
         log_message('debug', 'insertdata: ' . print_r($insertData, true));
@@ -232,6 +263,13 @@ class FluentForm extends BaseController
         $offerId = $offerModel->getInsertID();
         $formFields = $data;
 
+        // Titel generieren nach dem Insert (damit wir die ID haben)
+        $savedOffer = $offerModel->find($offerId);
+        if ($savedOffer) {
+            $titleGenerator = new \App\Libraries\OfferTitleGenerator();
+            $generatedTitle = $titleGenerator->generateTitle($savedOffer);
+            $offerModel->update($offerId, ['title' => $generatedTitle]);
+        }
 
         // Typ-spezifische Speicherung:
         $typeModelMap = [

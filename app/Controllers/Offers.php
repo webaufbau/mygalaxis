@@ -62,6 +62,8 @@ class Offers extends BaseController
         $offerModel = new \App\Models\OfferModel();
         $builder = $offerModel->builder();
         $builder->where('verified', 1);
+        // Nur Angebote mit gültigem Preis anzeigen
+        $builder->where('price >', 0);
 
         // PLZ aus Kantonen & Regionen
         $zipcodeService = new \App\Libraries\ZipcodeService();
@@ -205,6 +207,14 @@ class Offers extends BaseController
     {
         helper('auth');
         $user = auth()->user();
+
+        // Prüfe ob Angebot gültigen Preis hat
+        $offerModel = new \App\Models\OfferModel();
+        $offer = $offerModel->find($id);
+
+        if (!$offer || $offer['price'] <= 0) {
+            return redirect()->to('/offers')->with('error', lang('Offers.errors.invalid_price'));
+        }
 
         $purchaseService = new \App\Services\OfferPurchaseService();
 

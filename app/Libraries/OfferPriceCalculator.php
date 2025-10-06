@@ -32,7 +32,16 @@ class OfferPriceCalculator
         switch ($type) {
 
             case 'move':
-                $selected = $fields['auszug_zimmer'] ?? null; // z.B. "1", "2", ..., "6"
+                // Unterscheidung zwischen privatem und Firmen-Umzug
+                if ($originalType === 'umzug_firma') {
+                    // Firmen-Umzug: basiert auf Arbeitsplätzen oder Fläche
+                    $selected = $this->mapCompanyMoveToRooms($fields);
+                } else {
+                    // Privat-Umzug: basiert auf Zimmerzahl
+                    $selected = $fields['auszug_zimmer'] ?? null;
+                    $selected = $this->normalizeRoomValue($selected);
+                }
+
                 if($selected && isset($category['options'][$selected])) {
                     $price = $category['options'][$selected]['price'];
                 }
@@ -46,7 +55,21 @@ class OfferPriceCalculator
                 break;
 
             case 'move_cleaning':
-                $selected = $fields['auszug_zimmer'] ?? $fields_combo['auszug_zimmer'] ?? null; // z.B. "1", "2", ..., "6"
+                // Unterscheidung zwischen privatem und Firmen-Umzug + Reinigung
+                if ($originalType === 'umzug_firma') {
+                    // Firmen-Umzug + Reinigung: basiert auf Arbeitsplätzen oder Fläche
+                    $selected = $this->mapCompanyMoveToRooms($fields);
+
+                    // Fallback auf combo fields wenn nicht in fields
+                    if (!$selected) {
+                        $selected = $this->mapCompanyMoveToRooms($fields_combo);
+                    }
+                } else {
+                    // Privat-Umzug + Reinigung: basiert auf Zimmerzahl
+                    $selected = $fields['auszug_zimmer'] ?? $fields_combo['auszug_zimmer'] ?? null;
+                    $selected = $this->normalizeRoomValue($selected);
+                }
+
                 if($selected && isset($category['options'][$selected])) {
                     $price = $category['options'][$selected]['price'];
                 }
@@ -61,7 +84,7 @@ class OfferPriceCalculator
 
             case 'cleaning':
                 // Sonderfälle über $originalType (exklusive Reinigungsarten)
-                if (in_array($originalType, ['reinigung_nur_fenster', 'reinigung_fassaden', 'reinigung_hauswartung'])) {
+                if (in_array($originalType, ['reinigung_nur_fenster', 'reinigung_fassaden', 'reinigung_hauswartung', 'reinigung_andere'])) {
                     switch ($originalType) {
                         case 'reinigung_nur_fenster':
                             $price = $category['options']['nur_fenster']['price'];
@@ -75,6 +98,10 @@ class OfferPriceCalculator
                             if (!empty($fields['ausfuehrung']) && strtolower($fields['ausfuehrung']) === 'täglich') {
                                 $price += $category['options']['wiederkehrend']['price'];
                             }
+                            break;
+                        case 'reinigung_andere':
+                            // Andere Reinigungsarbeiten (z.B. Auto, Boot, etc.)
+                            $price = $category['options']['andere']['price'] ?? 39;
                             break;
                     }
                 }
@@ -474,5 +501,103 @@ class OfferPriceCalculator
             'price' => $price,
             'discounted_price' => $discountedPrice,
         ];
+    }
+
+    /**
+     * Normalisiert den Zimmer-Wert für die Preis-Berechnung
+     * Behandelt Arrays, "X-Zimmer" Strings und "Andere"
+     */
+    protected function normalizeRoomValue($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // Wenn Array, ersten Wert nehmen
+        if (is_array($value)) {
+            $value = $value[0] ?? null;
+            if (empty($value)) {
+                return null;
+            }
+        }
+
+        // Zu String konvertieren
+        $value = (string)$value;
+
+        // "Andere" → "6" (entspricht der Kategorie-Konfiguration)
+        if (strtolower($value) === 'andere') {
+            return '6';
+        }
+
+        // "1-Zimmer", "2-Zimmer" etc. → "1", "2"
+        if (preg_match('/^(\d+)-?zimmer/i', $value, $matches)) {
+            return $matches[1];
+        }
+
+        // Wenn es bereits eine Zahl ist (1, 2, 3, 4, 5, 6)
+        if (is_numeric($value) && $value >= 1 && $value <= 6) {
+            return (string)((int)$value);
+        }
+
+        // Andere Fälle → null (wird nicht gefunden, Preis bleibt 0)
+        return null;
+    }
+
+    /**
+     * Mappt Firmen-Umzug Felder (Arbeitsplätze/Fläche) auf Zimmer-Äquivalente
+     * für die Preis-Berechnung
+     */
+    protected function mapCompanyMoveToRooms(array $fields): ?string
+    {
+        // Primär: Arbeitsplatz-Anzahl
+        $workplaces = $fields['auszug_arbeitsplatz_firma'] ?? null;
+
+        if ($workplaces) {
+            // "1 - 5", "6 - 10", "11 - 15", "16 - 20", "Mehr als 20"
+            if (preg_match('/(\d+)\s*-\s*(\d+)/', $workplaces, $matches)) {
+                $min = (int)$matches[1];
+                $max = (int)$matches[2];
+                $avg = ($min + $max) / 2;
+
+                // Mapping: Arbeitsplätze → Zimmer-Äquivalent
+                if ($avg <= 5) return '2';      // 1-5 Arbeitsplätze → 2 Zimmer (29 CHF)
+                if ($avg <= 10) return '3';     // 6-10 Arbeitsplätze → 3 Zimmer (39 CHF)
+                if ($avg <= 15) return '4';     // 11-15 Arbeitsplätze → 4 Zimmer (45 CHF)
+                if ($avg <= 20) return '5';     // 16-20 Arbeitsplätze → 5 Zimmer (49 CHF)
+                return '6';                     // 20+ Arbeitsplätze → 6 Zimmer/EFH (55 CHF)
+            }
+
+            // "Mehr als 20" oder ähnliche Strings
+            if (preg_match('/mehr|20/i', $workplaces)) {
+                return '6';
+            }
+        }
+
+        // Fallback: Fläche
+        $area = $fields['auszug_flaeche_firma'] ?? null;
+
+        if ($area) {
+            // "0 - 50 m²", "51 - 100 m²", "101 - 150 m²", "151 - 200 m²", "Mehr als 200 m²"
+            if (preg_match('/(\d+)\s*-\s*(\d+)/', $area, $matches)) {
+                $min = (int)$matches[1];
+                $max = (int)$matches[2];
+                $avg = ($min + $max) / 2;
+
+                // Mapping: Fläche → Zimmer-Äquivalent
+                if ($avg <= 50) return '2';     // 0-50 m² → 2 Zimmer
+                if ($avg <= 100) return '3';    // 51-100 m² → 3 Zimmer
+                if ($avg <= 150) return '4';    // 101-150 m² → 4 Zimmer
+                if ($avg <= 200) return '5';    // 151-200 m² → 5 Zimmer
+                return '6';                     // 200+ m² → 6 Zimmer/EFH
+            }
+
+            // "Mehr als 200 m²"
+            if (preg_match('/mehr|200/i', $area)) {
+                return '6';
+            }
+        }
+
+        // Wenn beides fehlt → maximale Kategorie (sicherheitshalber)
+        return '6';
     }
 }

@@ -326,6 +326,14 @@ class Verification extends BaseController {
 
                         // frisch aus DB holen (mit Preis)
                         $offerData = $offerModel->find($offerData['id']);
+
+                        // Prüfe nochmals ob Preis jetzt gesetzt ist
+                        if (empty($offerData['price']) || $offerData['price'] <= 0) {
+                            log_message('error', 'Offer ID ' . $offerData['id'] . ' konnte nicht verifiziert werden: Preis ist 0');
+                            // Verifizierung rückgängig machen
+                            $builder->where('uuid', $uuid)->update(['verified' => 0]);
+                            return redirect()->to($prefix . '/verification')->with('error', 'Das Angebot konnte nicht verifiziert werden. Bitte kontaktieren Sie den Support.');
+                        }
                     }
 
                     // Dann Offer an Offertensteller und Admins senden

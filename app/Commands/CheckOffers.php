@@ -96,14 +96,14 @@ class CheckOffers extends BaseCommand
                 CLI::write("Preis für Angebot {$offer['id']} automatisch gesetzt: {$calculatedPrice} CHF", 'light_green');
             }*/
 
-            $translatedType = lang('Offers.type.' . $detectedType);
+            // Titel generieren (immer, um aussagekräftige Titel zu haben)
+            $titleGenerator = new \App\Libraries\OfferTitleGenerator();
+            $generatedTitle = $titleGenerator->generateTitle($offer);
 
-            // Titel setzen, falls leer
-            if (empty($offer['title']) && $translatedType !== 'Offers.type.' . $detectedType && !empty($enriched['city'])) {
-                $city = ucwords($enriched['city']);
-                $title = "{$translatedType} in {$city}";
-                $updateData['title'] = $title;
-                CLI::write("Titel für Angebot {$offer['id']} gesetzt: {$title}", 'cyan');
+            // Titel setzen oder aktualisieren wenn unterschiedlich
+            if (empty($offer['title']) || $offer['title'] !== $generatedTitle) {
+                $updateData['title'] = $generatedTitle;
+                CLI::write("Titel für Angebot {$offer['id']} gesetzt: {$generatedTitle}", 'cyan');
             }
 
             if (!empty($updateData)) {

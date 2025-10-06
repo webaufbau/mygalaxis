@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:docs.google.com)"
+      "WebFetch(domain:docs.google.com)",
+      "Bash(php spark offers:fix-zero-prices)",
+      "Bash(php:*)",
+      "Bash(mysql:*)",
+      "Bash(cat:*)",
+      "Bash(ddev exec php:*)",
+      "Bash(ddev exec grep:*)"
     ],
     "deny": [],
     "ask": []

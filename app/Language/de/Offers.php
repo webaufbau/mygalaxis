@@ -592,5 +592,8 @@ return [
         'invalid_link' => 'Ungültiger Link.',
         'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
         'purchase_failed' => 'Kauf konnte nicht abgeschlossen werden.',
+        'invalid_price' => 'Dieses Angebot hat keinen gültigen Preis und kann nicht gekauft werden.',
     ],
+
+    'priceNotAvailable' => 'Preis n.v.',
 ];
