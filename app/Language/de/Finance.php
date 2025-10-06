@@ -48,6 +48,18 @@ return [
     'paymentNote' => 'Diese Rechnung wurde bereits vollständig im Voraus über Saferpay beglichen.',
     'thankYou' => 'Wir danken Ihnen für Ihren Einkauf und Ihr Vertrauen.',
 
+    // MWST und Bankdaten
+    'vatNumber' => 'UID-Nummer',
+    'amountExclVat' => 'Betrag exkl. MWST',
+    'vat' => 'MWST',
+    'amountInclVat' => 'Betrag inkl. MWST',
+    'serviceDate' => 'Leistungsdatum',
+    'servicePeriod' => 'Leistungszeitraum',
+    'bankDetails' => 'Bankverbindung',
+    'iban' => 'IBAN',
+    'bank' => 'Bank',
+    'contact' => 'Kontakt',
+
     // Für topupFail View
     'topupFailTitle'   => 'Zahlung fehlgeschlagen',
     'topupFailMessage' => 'Ihre Aufladung konnte leider nicht abgeschlossen werden.',
@@ -56,4 +68,14 @@ return [
     // Sonstige
     'topupDescription' => 'Guthabenaufladung via',
     'onlinePayment'    => 'Online-Zahlung',
+
+    // Auflade-Seite
+    'topupTitle' => 'Guthaben aufladen',
+    'insufficientBalance' => 'Ihr Guthaben reicht für diesen Kauf nicht aus.',
+    'requiredAmount' => 'Benötigter Betrag',
+    'missingAmount' => 'Fehlender Betrag',
+    'topupAmount' => 'Aufladebetrag (CHF)',
+    'minimumTopupAmount' => 'Mindestaufladung: %s CHF',
+    'topupNow' => 'Jetzt aufladen',
+    'backToOffers' => 'Zurück zu Angeboten',
 ];

@@ -153,6 +153,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         return redirect()->to('/finance/userpaymentmethods')->with('error', 'Zahlung wurde abgebrochen.');
     });
 
+    // Auflade-Seite
+    $routes->get('finance/topup-page', 'Finance::topupPage', ['filter' => 'auth']);
+
     // Saferpay Rückleitungen (außerhalb von auth-Filter!)
     $routes->get('finance/topupSuccess', 'Finance::topupSuccess');
     $routes->get('finance/topupFail', 'Finance::topupFail');

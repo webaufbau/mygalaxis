@@ -208,13 +208,21 @@ class Offers extends BaseController
 
         $purchaseService = new \App\Services\OfferPurchaseService();
 
-        $success = $purchaseService->purchase($user, $id);
+        $result = $purchaseService->purchase($user, $id);
 
-        if ($success) {
+        if ($result === true) {
             return redirect()->to('/offers/mine#detailsview-' . $id)->with('message', lang('Offers.messages.purchase_success'));
         }
 
-        return redirect()->to('/finance/topup')->with('error', lang('Offers.errors.not_enough_balance'));
+        if (is_array($result) && !$result['success']) {
+            // Betrag in Session speichern und zur Auflade-Seite weiterleiten
+            session()->set('topup_amount', $result['missing_amount']);
+            session()->set('topup_reason', 'offer_purchase');
+            session()->set('topup_offer_id', $id);
+            return redirect()->to('/finance/topup-page');
+        }
+
+        return redirect()->to('/offers')->with('error', lang('Offers.errors.purchase_failed'));
     }
 
     /**

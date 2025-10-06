@@ -12,7 +12,7 @@ class OfferPurchaseService
     /**
      * @throws \DateMalformedStringException
      */
-    public function purchase($user, $offerId, bool $isAuto = false): bool
+    public function purchase($user, $offerId, bool $isAuto = false): bool|array
     {
         $offerModel = new OfferModel();
         $offer = $offerModel->find($offerId);
@@ -40,39 +40,14 @@ class OfferPurchaseService
             return true;
         }
 
-        // Fallback: Saferpay Alias verwenden
-        $saferpayService = new SaferpayService();
-
-        // z.B. gespeichertes Alias aus DB holen
-        $aliasId = $user->saferpay_alias_id ?? null;
-        if ($aliasId) {
-            try {
-                $refno = 'offer_' . uniqid(); // oder offer_$offerId
-                $saferpayService->authorizeWithAlias($aliasId, $price * 100, $refno); // Saferpay erwartet Rappen
-                $this->finalize($user, $offer, $price, 'saferpay_alias');
-                return true;
-            } catch (\Exception $e) {
-                $message = $e->getMessage();
-                log_message('error', 'Saferpay-Zahlung fehlgeschlagen: ' . $e->getMessage());
-
-                // Prüfe, ob es ein VALIDATION_FAILED wegen Adresse ist
-                if (str_contains($message, 'VALIDATION_FAILED') &&
-                    (str_contains($message, 'BillingAddress.Street') ||
-                        str_contains($message, 'BillingAddress.Zip') ||
-                        str_contains($message, 'BillingAddress.City'))) {
-
-                    // Fehler-Message für den Nutzer setzen (Session-Flash)
-                    session()->setFlashdata('error', 'Ihre Adresse ist unvollständig oder ungültig. Bitte korrigieren Sie diese im Profil.');
-
-                    // Weiterleitung zur Profilseite
-                    return redirect()->to('/profile');
-                }
-
-            }
-        }
-
-        // Keine Zahlungsmöglichkeit
-        return false;
+        // Nicht genug Guthaben - Betrag zurückgeben
+        $missingAmount = $price - $balance;
+        return [
+            'success' => false,
+            'missing_amount' => $missingAmount,
+            'required_amount' => $price,
+            'current_balance' => $balance
+        ];
     }
 
     protected function finalize($user, $offer, $price, $source = 'wallet')

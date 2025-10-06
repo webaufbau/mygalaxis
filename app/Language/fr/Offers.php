@@ -585,16 +585,16 @@ return [
 
     ],
 
+    'messages' => [
+        'purchase_success' => 'Demande achetée avec succès!',
+    ],
+
     'errors' => [
         'admin_view_only' => 'Cette vue /offers est réservée aux utilisateurs d\'entreprise. Veuillez utiliser /dashboard en tant qu\'administrateur.',
         'login_required' => 'Veuillez vous connecter pour voir vos demandes.',
         'not_enough_balance' => 'Solde insuffisant ou carte de crédit non valide.',
         'invalid_link' => 'Lien invalide.',
         'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
-
-    ],
-
-    'messages' => [
-        'purchase_success' => 'Demande achetée avec succès!',
+        'purchase_failed' => 'L\'achat n\'a pas pu être finalisé.',
     ],
 ];

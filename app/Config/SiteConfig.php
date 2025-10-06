@@ -20,6 +20,11 @@ class SiteConfig extends BaseConfig
     public string $companyUidCheck = '';
     public string $phoneCheck = '';
     public string $siteCountry = '';
+    public bool $vatEnabled = false;
+    public float $vatRate = 8.1;
+    public string $vatExemptionText = '';
+    public string $bankIban = '';
+    public string $bankName = '';
 
     /**
      * Meta-Definition für die Felder
@@ -117,6 +122,34 @@ class SiteConfig extends BaseConfig
                 'at'  => 'Österreich',
             ],
             'default' => 'ch'
+        ],
+
+        // MWST
+        'vatEnabled' => [
+            'type' => 'checkbox',
+            'label' => 'Mehrwertsteuer aktivieren',
+        ],
+        'vatRate' => [
+            'type' => 'text',
+            'label' => 'MWST-Satz in %',
+            'placeholder' => '8.1',
+        ],
+        'vatExemptionText' => [
+            'type' => 'textarea',
+            'label' => 'MWST-Befreiungstext (wenn nicht MWST-pflichtig)',
+            'placeholder' => 'Von der Mehrwertsteuer befreit (Kleinunternehmer gemäss Art. 10 Abs. 2 MWSTG).',
+        ],
+
+        // Bankdaten
+        'bankIban' => [
+            'type' => 'text',
+            'label' => 'IBAN',
+            'placeholder' => 'CH93 0076 2011 6238 5295 7',
+        ],
+        'bankName' => [
+            'type' => 'text',
+            'label' => 'Bankname',
+            'placeholder' => 'PostFinance AG',
         ],
     ];
 }

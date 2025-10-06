@@ -585,16 +585,16 @@ return [
 
     ],
 
+    'messages' => [
+        'purchase_success' => 'Richiesta acquistata con successo!',
+    ],
+
     'errors' => [
         'admin_view_only' => 'Questa vista /offers è solo per utenti aziendali. Come admin usa /dashboard.',
         'login_required' => 'Effettua il login per vedere le tue richieste.',
         'not_enough_balance' => 'Credito insufficiente o nessuna carta di credito valida.',
         'invalid_link' => 'Link non valido.',
         'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
-
-    ],
-
-    'messages' => [
-        'purchase_success' => 'Richiesta acquistata con successo!',
+        'purchase_failed' => 'L\'acquisto non può essere completato.',
     ],
 ];

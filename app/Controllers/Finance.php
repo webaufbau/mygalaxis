@@ -73,6 +73,37 @@ class Finance extends BaseController
     }
 
 
+    public function topupPage()
+    {
+        $user = auth()->user();
+        $bookingModel = new BookingModel();
+
+        // Hole Daten aus Session
+        $missingAmount = session()->get('topup_amount') ?? 20;
+        $reason = session()->get('topup_reason');
+        $offerId = session()->get('topup_offer_id');
+
+        // Berechne aktuelles Guthaben
+        $currentBalance = $bookingModel->getUserBalance($user->id);
+
+        // Falls aus Offer-Kauf kommend, berechne Required Amount
+        $requiredAmount = $missingAmount;
+        if ($reason === 'offer_purchase' && $offerId) {
+            $offerModel = new \App\Models\OfferModel();
+            $offer = $offerModel->find($offerId);
+            if ($offer) {
+                $requiredAmount = $offer['discounted_price'] > 0 ? $offer['discounted_price'] : $offer['price'];
+            }
+        }
+
+        return view('finance/topup_page', [
+            'title' => lang('Finance.topupTitle'),
+            'missingAmount' => $missingAmount,
+            'requiredAmount' => $requiredAmount,
+            'currentBalance' => $currentBalance,
+        ]);
+    }
+
     public function topup()
     {
         $amount = (int)(floatval($this->request->getPost('amount') ?? 20) * 100); // CHF → Rappen

@@ -48,6 +48,18 @@ return [
     'paymentNote' => 'This invoice has already been fully paid in advance via Saferpay.',
     'thankYou' => 'Thank you for your purchase and your trust.',
 
+    // VAT and Bank Details
+    'vatNumber' => 'VAT Number',
+    'amountExclVat' => 'Amount excl. VAT',
+    'vat' => 'VAT',
+    'amountInclVat' => 'Amount incl. VAT',
+    'serviceDate' => 'Service Date',
+    'servicePeriod' => 'Service Period',
+    'bankDetails' => 'Bank Details',
+    'iban' => 'IBAN',
+    'bank' => 'Bank',
+    'contact' => 'Contact',
+
     // Für topupFail View
     'topupFailTitle'   => 'Payment failed',
     'topupFailMessage' => 'Unfortunately, your top-up could not be completed.',
@@ -56,4 +68,14 @@ return [
     // Sonstige
     'topupDescription' => 'Top-up via',
     'onlinePayment'    => 'Online payment',
+
+    // Top-up Page
+    'topupTitle' => 'Top up balance',
+    'insufficientBalance' => 'Your balance is insufficient for this purchase.',
+    'requiredAmount' => 'Required amount',
+    'missingAmount' => 'Missing amount',
+    'topupAmount' => 'Top-up amount (CHF)',
+    'minimumTopupAmount' => 'Minimum top-up: %s CHF',
+    'topupNow' => 'Top up now',
+    'backToOffers' => 'Back to offers',
 ];

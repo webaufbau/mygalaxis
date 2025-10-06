@@ -48,6 +48,18 @@ return [
     'paymentNote' => 'Questa fattura è già stata completamente pagata in anticipo tramite Saferpay.',
     'thankYou' => 'La ringraziamo per il suo acquisto e la sua fiducia.',
 
+    // IVA e coordinate bancarie
+    'vatNumber' => 'Partita IVA',
+    'amountExclVat' => 'Importo esclusa IVA',
+    'vat' => 'IVA',
+    'amountInclVat' => 'Importo inclusa IVA',
+    'serviceDate' => 'Data della prestazione',
+    'servicePeriod' => 'Periodo della prestazione',
+    'bankDetails' => 'Coordinate bancarie',
+    'iban' => 'IBAN',
+    'bank' => 'Banca',
+    'contact' => 'Contatto',
+
     // Für topupFail View
     'topupFailTitle'   => 'Pagamento fallito',
     'topupFailMessage' => 'La tua ricarica non è stata completata.',
@@ -56,4 +68,14 @@ return [
     // Sonstige
     'topupDescription' => 'Ricarica saldo via',
     'onlinePayment'    => 'Pagamento online',
+
+    // Pagina di ricarica
+    'topupTitle' => 'Ricarica saldo',
+    'insufficientBalance' => 'Il tuo saldo non è sufficiente per questo acquisto.',
+    'requiredAmount' => 'Importo richiesto',
+    'missingAmount' => 'Importo mancante',
+    'topupAmount' => 'Importo di ricarica (CHF)',
+    'minimumTopupAmount' => 'Ricarica minima: %s CHF',
+    'topupNow' => 'Ricarica ora',
+    'backToOffers' => 'Torna alle offerte',
 ];
