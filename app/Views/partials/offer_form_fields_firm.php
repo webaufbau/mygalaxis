@@ -2,6 +2,10 @@
 // Lade Labels aus Sprachdatei
 $fieldLabels = lang('Offers.labels');
 
+// Standardwerte für optionale Variablen
+$full = $full ?? false;
+$admin = $admin ?? false;
+
 // Form Fields laden
 $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
 if (!empty($full)) {
