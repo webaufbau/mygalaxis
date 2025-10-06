@@ -177,6 +177,12 @@ class RegisterController extends ShieldRegister {
             if (empty($platform) || $platform === 'localhost' || preg_match('/^\d+_\d+_\d+_\d+/', $platform)) {
                 $rootPath = ROOTPATH; // z.B. /var/www/my_offertenheld_ch/
                 $platform = basename(rtrim($rootPath, '/'));
+            } else {
+                // HTTP_HOST Format: Domain -> Ordner-Format mit my_ prefix
+                // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
+                if (strpos($platform, 'my_') !== 0) {
+                    $platform = 'my_' . $platform;
+                }
             }
 
             $user->platform = $platform;

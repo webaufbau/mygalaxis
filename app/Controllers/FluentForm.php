@@ -202,7 +202,9 @@ class FluentForm extends BaseController
         } else {
             $domain = $host;
         }
-        $insertData['platform'] = $domain;
+        // Platform normalisieren: Domain-Format zu Ordner-Format
+        // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
+        $insertData['platform'] = 'my_' . str_replace(['.', '-'], '_', $domain);
 
         if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
             $other_type_has_to_be = $enriched['type'] == 'move' ? 'cleaning' : 'move';

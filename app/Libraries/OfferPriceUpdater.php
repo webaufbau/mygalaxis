@@ -24,8 +24,8 @@ class OfferPriceUpdater
 
     public function updateOfferAndNotify(array $offer): void
     {
-        $formFields = json_decode($offer['form_fields'], true);
-        $formFieldsCombo = json_decode($offer['form_fields_combo'], true);
+        $formFields = json_decode($offer['form_fields'] ?? '{}', true) ?? [];
+        $formFieldsCombo = json_decode($offer['form_fields_combo'] ?? '{}', true) ?? [];
 
         $price = $this->calculator->calculatePrice(
             $offer['type'] ?? '',
