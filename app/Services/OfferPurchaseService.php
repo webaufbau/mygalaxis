@@ -73,7 +73,7 @@ class OfferPurchaseService
 
         $buyerIds = array_column($allBookings, 'user_id');
         $buyerCount = count($buyerIds);
-        $status = $buyerCount >= 3 ? 'out_of_stock' : 'available';
+        $status = $buyerCount >= 4 ? 'out_of_stock' : 'available';
 
         // Angebot aktualisieren
         $offerModel = new OfferModel();

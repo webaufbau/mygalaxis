@@ -115,7 +115,7 @@ class Offers extends BaseController
         }
 
         $filter = $this->request->getGet('filter');
-        if ($filter) {
+        if ($filter && $filter !== 'purchased') {
             $builder->where('status', $filter);
         }
 
@@ -135,6 +135,13 @@ class Offers extends BaseController
 
                 $purchasedOfferIds = array_column($bookings, 'reference_id');
             }
+        }
+
+        // Filter für gekaufte Angebote
+        if ($filter === 'purchased') {
+            $offers = array_filter($offers, function($offer) use ($purchasedOfferIds) {
+                return in_array($offer['id'], $purchasedOfferIds);
+            });
         }
 
 
@@ -297,7 +304,7 @@ class Offers extends BaseController
             ->countAllResults();
 
         // Anfrage als verkauft markieren
-        if ($salesCount >= 3) {
+        if ($salesCount >= 4) {
             $offerModel = new \App\Models\OfferModel();
             $offerModel->update($offer['id'], ['status' => 'sold']);
         }
