@@ -172,11 +172,11 @@ class Verification extends BaseController {
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
                 session()->set('sms_message_id', $infobipResponseArray['messageId']);
 
-                if ($infobipResponseArray) {
+                if ($infobipResponseArray['success']) {
                     log_message('info', "SMS-Code an $phone über Infobip gesendet (Fallback).");
                     return redirect()->to($prefix . '/verification/confirm');
                 } else {
-                    log_message('error', "Infobip SMS Fehler an $phone.");
+                    log_message('error', "Infobip SMS Fehler an $phone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
                 }
             }
         } elseif ($method === 'call') {
@@ -277,14 +277,13 @@ class Verification extends BaseController {
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
                 session()->set('sms_message_id', $infobipResponseArray['messageId']);
 
-                if ($infobipResponseArray) {
+                if ($infobipResponseArray['success']) {
                     log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
                     return redirect()->to($prefix . '/verification/confirm');
                 } else {
-                    log_message('error', "Infobip SMS Fehler an $normalizedPhone.");
+                    log_message('error', "Infobip SMS Fehler an $normalizedPhone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
+                    return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
                 }
-
-                return redirect()->to($prefix . '/verification/confirm');
             }
 
             if ($method === 'call') {

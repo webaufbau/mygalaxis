@@ -39,9 +39,6 @@ class TwilioService
                 'from' => $this->fromSms,
                 'body' => $message
             ]);
-            echo 123;
-
-            var_dump($sms);
 
             // Prüfung, ob SMS erfolgreich gesendet wurde
             if (isset($sms->sid)) {
@@ -52,7 +49,6 @@ class TwilioService
                 return false;
             }
         } catch (\Throwable $e) {
-            dd($e->getMessage());
             log_message('error', "Twilio SMS Fehler an $to: " . $e->getMessage());
             return false;
         }

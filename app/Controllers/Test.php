@@ -17,6 +17,28 @@ class Test extends BaseController
 
     }
 
+    public function testVerification($uuid) {
+        // Prüfe ob Offer existiert
+        $db = \Config\Database::connect();
+        $offer = $db->table('offers')
+            ->where('uuid', $uuid)
+            ->get()
+            ->getRow();
+
+        if (!$offer) {
+            return "Offer mit UUID {$uuid} nicht gefunden.";
+        }
+
+        // Session setzen
+        session()->set('uuid', $uuid);
+        session()->set('next_url', '/dashboard');
+
+        echo "✓ Session gesetzt für UUID: {$uuid}<br>";
+        echo "✓ Verified Status: " . ($offer->verified ? 'Ja' : 'Nein') . "<br>";
+        echo "✓ Telefon: " . (json_decode($offer->form_fields, true)['phone'] ?? 'N/A') . "<br><br>";
+        echo "<a href='/verification'>→ Zum Verification-Prozess</a>";
+    }
+
     private function normalizePhone(string $phone): string
     {
         $phone = preg_replace('/\D+/', '', $phone); // Nur Zahlen

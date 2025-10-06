@@ -62,7 +62,7 @@ if ($currentLocale !== 'de') {
 <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Logo -->
-        <a class="navbar-brand fw-bold text-primary" href="<?= lang_url('login') ?>">
+        <a class="navbar-brand fw-bold text-primary" href="<?= auth()->loggedIn() ? site_url('dashboard') : lang_url('login') ?>">
             <?= esc(siteconfig()->name) ?>
         </a>
 
@@ -128,6 +128,11 @@ if ($currentLocale !== 'de') {
 
                 <ul class="navbar-nav ms-auto">
                     <?php if(auth()->user()->inGroup('admin')) { ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= ($segment1 === '' || $segment1 === 'dashboard') ? 'active' : '' ?>" href="<?= site_url('dashboard') ?>">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link text-normal" href="/admin/user">
                             <i class="bi bi-buildings me-1"></i> Firmen

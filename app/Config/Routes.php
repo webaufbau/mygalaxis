@@ -114,6 +114,7 @@ $routes->get('api/offers', '\App\Controllers\Api\Offers::index');
 
 
 $routes->get('test/testtwilio', '\App\Controllers\Test::testtwilio');
+$routes->get('test/verification/(:any)', '\App\Controllers\Test::testVerification/$1');
 
 
 

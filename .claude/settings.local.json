@@ -7,7 +7,8 @@
       "Bash(mysql:*)",
       "Bash(cat:*)",
       "Bash(ddev exec php:*)",
-      "Bash(ddev exec grep:*)"
+      "Bash(ddev exec grep:*)",
+      "Bash(ddev exec:*)"
     ],
     "deny": [],
     "ask": []
