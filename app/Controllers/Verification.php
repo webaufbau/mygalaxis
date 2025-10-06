@@ -118,9 +118,14 @@ class Verification extends BaseController {
         $phone = session()->get('phone');
         $method = session()->get('verify_method');
 
+        log_message('info', "SEND: Phone from session: " . ($phone ?? 'NULL') . ", Method: " . ($method ?? 'NULL'));
+
         if (!$phone) {
-            log_message('info', 'Verifizierung gesendet: Verifizierung Telefonnummer fehlt.');
-            return redirect()->back()->with('error', lang('Verification.phoneMissing'));
+            log_message('error', 'SEND: Telefonnummer fehlt in Session!');
+            $locale = getCurrentLocale();
+            $prefix = ($locale === 'de') ? '' : '/' . $locale;
+            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            return redirect()->to($nextUrl)->with('error', lang('Verification.phoneMissing'));
         }
 
         $phone = $this->normalizePhone($phone);
@@ -131,11 +136,17 @@ class Verification extends BaseController {
 
         // Wenn kein Mobile, dann nur Anruf zulassen
         if (!$isMobile && $method !== 'call') {
-            return redirect()->back()->with('error', lang('Verification.fixedLineOnlyCall'));
+            log_message('error', "SEND: Festnetz erkannt aber Methode ist {$method}");
+            $locale = getCurrentLocale();
+            $prefix = ($locale === 'de') ? '' : '/' . $locale;
+            return redirect()->to($prefix . '/verification')->with('error', lang('Verification.fixedLineOnlyCall'));
         }
 
         if (!$method) {
-            return redirect()->back()->with('error', lang('Verification.chooseMethod'));
+            log_message('error', 'SEND: Methode fehlt in Session!');
+            $locale = getCurrentLocale();
+            $prefix = ($locale === 'de') ? '' : '/' . $locale;
+            return redirect()->to($prefix . '/verification')->with('error', lang('Verification.chooseMethod'));
         }
 
         //$method = 'call';
