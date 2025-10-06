@@ -147,37 +147,29 @@ class Verification extends BaseController {
         log_message('info', "Verifizierungscode $verificationCode via $method an $phone");
 
         $twilio = new TwilioService();
-        $success = false;
 
         // Hilfsfunktion für korrekte locale-URL
         $locale = getCurrentLocale();
         $prefix = ($locale === 'de') ? '' : '/' . $locale;
 
         if ($method === 'sms') {
-            $success = false; // $twilio->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
+            // SMS über Infobip versenden
+            $infobip = new \App\Libraries\InfobipService();
+            $message = lang('Verification.smsVerificationCode', [
+                'sitename' => $this->siteConfig->name,
+                'code' => $verificationCode
+            ]);
+            $infobipResponseArray = $infobip->sendSms($phone, $message);
 
-            if ($success) {
-                log_message('info', "SMS-Code an $phone gesendet.");
+            session()->set('sms_sent_status', $infobipResponseArray['status']);
+            session()->set('sms_message_id', $infobipResponseArray['messageId']);
+
+            if ($infobipResponseArray['success']) {
+                log_message('info', "SMS-Code an $phone über Infobip gesendet.");
+                return redirect()->to($prefix . '/verification/confirm');
             } else {
-                log_message('error', "Twilio SMS Fehler an $phone.");
-
-                // Fallback: Infobip versuchen
-                $infobip = new \App\Libraries\InfobipService();
-                $message = lang('Verification.smsVerificationCode', [
-                    'sitename' => $this->siteConfig->name,
-                    'code' => $verificationCode
-                ]);
-                $infobipResponseArray = $infobip->sendSms($phone, $message);
-
-                session()->set('sms_sent_status', $infobipResponseArray['status']);
-                session()->set('sms_message_id', $infobipResponseArray['messageId']);
-
-                if ($infobipResponseArray['success']) {
-                    log_message('info', "SMS-Code an $phone über Infobip gesendet (Fallback).");
-                    return redirect()->to($prefix . '/verification/confirm');
-                } else {
-                    log_message('error', "Infobip SMS Fehler an $phone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
-                }
+                log_message('error', "Infobip SMS Fehler an $phone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
+                return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
             }
         } elseif ($method === 'call') {
             //$phone = '+436505711660';
@@ -188,13 +180,11 @@ class Verification extends BaseController {
 
             if ($success) {
                 log_message('info', "Anruf-Code an $phone gestartet.");
+                return redirect()->to($prefix . '/verification/confirm');
             } else {
                 log_message('error', "Twilio Call Fehler an $phone.");
+                return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
             }
-        }
-
-        if ($success) {
-            return redirect()->to($prefix . '/verification/confirm');
         }
 
         return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
