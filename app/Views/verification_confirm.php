@@ -61,7 +61,7 @@
 
     <?php
     $phone = session('phone');
-    $method = session('verify_method');
+    $method = session('verify_method') ?? 'sms'; // Fallback auf SMS
     ?>
 
     <h2><?= lang('Verification.enterCode'); ?></h2>
