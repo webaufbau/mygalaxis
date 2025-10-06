@@ -127,6 +127,7 @@ class Verification extends BaseController {
 
         // Prüfe, ob Mobilnummer
         $isMobile = is_mobile_number($phone);
+        log_message('info', "DEBUG: Phone {$phone} -> isMobile: " . ($isMobile ? 'YES' : 'NO') . " -> method from session: {$method}");
 
         // Wenn kein Mobile, dann nur Anruf zulassen
         if (!$isMobile && $method !== 'call') {
@@ -400,7 +401,7 @@ class Verification extends BaseController {
         $phone = $this->normalizePhone($phone);
 
         $isMobile = is_mobile_number($phone);
-        $method = $isMobile ? 'sms' : 'phone';
+        $method = $isMobile ? 'sms' : 'call';
 
         session()->set('uuid', $offer['uuid']);
         session()->set('phone', $phone);
