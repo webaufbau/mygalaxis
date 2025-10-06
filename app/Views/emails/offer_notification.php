@@ -30,7 +30,25 @@
 
         $missingTranslations = [];
 
+        // Felder, die nicht angezeigt werden sollen
+        $excludedFields = [
+            'terms_n_condition',
+            'terms_and_conditions',
+            'terms',
+            'type',
+            'lang',
+            'language',
+            'csrf_test_name',
+            'submit',
+            'form_token',
+        ];
+
         foreach ($filteredFields as $key => $value):
+            // Skip ausgeschlossene Felder
+            if (in_array(strtolower($key), $excludedFields)) {
+                continue;
+            }
+
             // Übersetzung vorhanden?
             if (isset($labels[$key])) {
                 $label = $labels[$key];
