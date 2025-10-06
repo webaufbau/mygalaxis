@@ -18,24 +18,22 @@ class Dashboard extends Controller
 
         $user = auth()->user();
 
-
-        // Prüfen, ob der User noch keine Filter gesetzt hat
-        $hasFilters =
-            !empty($user->filter_categories) ||
-            !empty($user->filter_cantons) ||
-            !empty($user->filter_regions) ||
-            !empty($user->min_rooms) ||
-            !empty($user->filter_custom_zip);
-
-        if (!$hasFilters) {
-            // Weiterleiten zur Filter-Seite
-            return redirect()->to('/filter')->with('warning', 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.');
-        }
-
-
         if ($user->inGroup('admin')) {
             return $this->index_admin();
         } elseif ($user->inGroup('user')) {
+            // Prüfen, ob der Firmen-User noch keine Filter gesetzt hat
+            $hasFilters =
+                !empty($user->filter_categories) ||
+                !empty($user->filter_cantons) ||
+                !empty($user->filter_regions) ||
+                !empty($user->min_rooms) ||
+                !empty($user->filter_custom_zip);
+
+            if (!$hasFilters) {
+                // Weiterleiten zur Filter-Seite mit Erklärung
+                return redirect()->to('/filter')->with('warning', 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.');
+            }
+
             return $this->index_user();
         }
 

@@ -50,6 +50,42 @@ if ($offer['discounted_price'] > 0) {
     $displayPrice = $offer['discounted_price'];
     $priceWasDiscounted = true;
 }
+
+// Kundeninfos extrahieren wenn gekauft
+$customerInfo = [];
+if ($isPurchased) {
+    $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
+    $contactKeys = [
+        'vorname' => 'Vorname',
+        'firstname' => 'Vorname',
+        'first_name' => 'Vorname',
+        'nachname' => 'Nachname',
+        'lastname' => 'Nachname',
+        'last_name' => 'Nachname',
+        'surname' => 'Nachname',
+        'email' => 'E-Mail',
+        'e_mail' => 'E-Mail',
+        'email_address' => 'E-Mail',
+        'mail' => 'E-Mail',
+        'e_mail_adresse' => 'E-Mail',
+        'telefon' => 'Telefon',
+        'telefonnummer' => 'Telefon',
+        'phone' => 'Telefon',
+        'telephone' => 'Telefon',
+        'phone_number' => 'Telefon',
+        'tel' => 'Telefon'
+    ];
+
+    foreach ($formFields as $key => $value) {
+        $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+        if (isset($contactKeys[$normalizedKey]) && !empty($value)) {
+            $label = $contactKeys[$normalizedKey];
+            if (!isset($customerInfo[$label])) {
+                $customerInfo[$label] = $value;
+            }
+        }
+    }
+}
 ?>
 
 <div class="mb-3">
@@ -60,50 +96,81 @@ if ($offer['discounted_price'] > 0) {
 
 <h2 class="my-4"><?= esc($offer['title']) ?></h2>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-8">
-                <p>
-                    <strong><?= $zipLabel ?>:</strong> <?= esc($offer['zip']) ?><br>
-                    <strong><?= $cityLabel ?>:</strong> <?= esc($offer['city']) ?><br>
-                    <strong><?= $typeLabel ?>:</strong> <?= $typeValue ?><br>
-                    <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
-                </p>
-
-                <?php if ($isPurchased && isset($offer['purchased_at'])): ?>
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle"></i>
-                        <?= $purchasedLabel ?>: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <div class="col-md-4 text-end d-flex flex-column justify-content-center align-items-end">
-                <div class="mb-3">
-                    <?php if ($priceWasDiscounted): ?>
-                        <span class="text-decoration-line-through text-muted d-block"><?= number_format($offer['price'], 2) ?> CHF</span>
-                        <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> CHF</span>
-                    <?php else: ?>
-                        <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> CHF</span>
-                    <?php endif; ?>
+<?php if ($isPurchased && !empty($customerInfo)): ?>
+    <!-- Kundeninformationen prominent anzeigen wenn gekauft -->
+    <div class="card mb-4 border-success">
+        <div class="card-header bg-success bg-opacity-10">
+            <h4 class="mb-0"><i class="bi bi-person-circle text-success"></i> Kundeninformationen</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <?php foreach ($customerInfo as $label => $value): ?>
+                        <p class="mb-2">
+                            <strong><?= esc($label) ?>:</strong>
+                            <?php if ($label === 'E-Mail'): ?>
+                                <a href="mailto:<?= esc($value) ?>"><?= esc($value) ?></a>
+                            <?php elseif ($label === 'Telefon'): ?>
+                                <a href="tel:<?= esc($value) ?>"><?= esc($value) ?></a>
+                            <?php else: ?>
+                                <?= esc($value) ?>
+                            <?php endif; ?>
+                        </p>
+                    <?php endforeach; ?>
                 </div>
-
-                <?php if (!$isPurchased && $status === 'available' && $displayPrice > 0): ?>
-                    <a href="<?= site_url('offers/buy/' . $offer['id']) ?>" class="btn btn-primary">
-                        <i class="bi bi-cart"></i> <?= $buyButtonLabel ?>
-                    </a>
-                <?php elseif ($status === 'sold'): ?>
-                    <button type="button" class="btn btn-success disabled"><?= $statusSoldLabel ?></button>
-                <?php elseif ($status === 'out_of_stock'): ?>
-                    <button type="button" class="btn btn-danger disabled"><?= $statusOutOfStockLabel ?></button>
-                <?php elseif ($displayPrice <= 0): ?>
-                    <button type="button" class="btn btn-secondary disabled"><?= $priceNotAvailableLabel ?></button>
-                <?php endif; ?>
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <strong><?= $zipLabel ?>:</strong> <?= esc($offer['zip']) ?><br>
+                        <strong><?= $cityLabel ?>:</strong> <?= esc($offer['city']) ?><br>
+                        <strong><?= $typeLabel ?>:</strong> <?= $typeValue ?><br>
+                    </p>
+                    <p class="text-muted mb-0">
+                        <small><?= $purchasedLabel ?>: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
-</div>
+<?php else: ?>
+    <!-- Standard-Ansicht für nicht gekaufte Angebote -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <p>
+                        <strong><?= $zipLabel ?>:</strong> <?= esc($offer['zip']) ?><br>
+                        <strong><?= $cityLabel ?>:</strong> <?= esc($offer['city']) ?><br>
+                        <strong><?= $typeLabel ?>:</strong> <?= $typeValue ?><br>
+                        <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
+                    </p>
+                </div>
+
+                <div class="col-md-4 text-end d-flex flex-column justify-content-center align-items-end">
+                    <div class="mb-3">
+                        <?php if ($priceWasDiscounted): ?>
+                            <span class="text-decoration-line-through text-muted d-block"><?= number_format($offer['price'], 2) ?> CHF</span>
+                            <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> CHF</span>
+                        <?php else: ?>
+                            <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> CHF</span>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if (!$isPurchased && $status === 'available' && $displayPrice > 0): ?>
+                        <a href="<?= site_url('offers/buy/' . $offer['id']) ?>" class="btn btn-primary">
+                            <i class="bi bi-cart"></i> <?= $buyButtonLabel ?>
+                        </a>
+                    <?php elseif ($status === 'sold'): ?>
+                        <button type="button" class="btn btn-success disabled"><?= $statusSoldLabel ?></button>
+                    <?php elseif ($status === 'out_of_stock'): ?>
+                        <button type="button" class="btn btn-danger disabled"><?= $statusOutOfStockLabel ?></button>
+                    <?php elseif ($displayPrice <= 0): ?>
+                        <button type="button" class="btn btn-secondary disabled"><?= $priceNotAvailableLabel ?></button>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
 <div class="card">
     <div class="card-header">
