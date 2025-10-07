@@ -79,7 +79,7 @@
         </ul>
 
         <p>
-            <a href="<?= site_url('/offers/' . $offer['id']) ?>" style="display: inline-block; padding: 10px 20px; background-color: #955CE9; color: white; text-decoration: none; border-radius: 5px;">
+            <a href="<?= rtrim($siteConfig->backendUrl, '/') . '/offers/' . $offer['id'] ?>" style="display: inline-block; padding: 10px 20px; background-color: #955CE9; color: white; text-decoration: none; border-radius: 5px;">
                 <?= lang('Email.viewNow') ?>
             </a>
         </p>

@@ -99,7 +99,7 @@ class SendOfferPurchaseNotification extends BaseCommand
             $request->setLocale($language);
         }
 
-        $company_backend_offer_link = site_url('/offers/mine#detailsview-' . $offer['id']);
+        $company_backend_offer_link = rtrim($siteConfig->backendUrl, '/') . '/offers/mine#detailsview-' . $offer['id'];
 
         $data = [
             'siteConfig'        => $siteConfig,
@@ -132,7 +132,7 @@ class SendOfferPurchaseNotification extends BaseCommand
         $accessHash = bin2hex(random_bytes(16));
         $this->offerModel->update($offer['id'], ['access_hash' => $accessHash]);
 
-        $interessentenLink = site_url('offer/interested/' . $accessHash);
+        $interessentenLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $accessHash;
 
         $data = [
             'siteConfig'        => $siteConfig,

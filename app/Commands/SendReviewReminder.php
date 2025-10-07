@@ -71,11 +71,11 @@ class SendReviewReminder extends BaseCommand
                 continue;
             }
 
-            // Review-Link generieren: öffnet Seite für Anbieter (mit offer hash)
-            $reviewLink = site_url('offer/interested/' . $offer['access_hash']);
-
             // Lade SiteConfig basierend auf Offer-Platform
             $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
+
+            // Review-Link generieren: öffnet Seite für Anbieter (mit offer hash)
+            $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $offer['access_hash'];
 
             // Maildaten
             $emailData = [

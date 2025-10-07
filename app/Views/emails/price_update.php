@@ -9,7 +9,7 @@
         <?= lang('Email.oldPrice') ?>: <?= esc($oldPrice) ?> CHF<br>
         <?= lang('Email.newPrice') ?>: <?= esc($newPrice) ?> CHF<br>
         (<?= $discount ?>% <?= lang('Email.discountApplied') ?>)<br>
-        <a href="<?= site_url('/offers/' . $offer['id']) ?>">
+        <a href="<?= rtrim($siteConfig->backendUrl, '/') . '/offers/' . $offer['id'] ?>">
             <?= lang('Email.viewNow') ?>
         </a>
     </li>

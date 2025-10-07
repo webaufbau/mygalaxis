@@ -62,10 +62,10 @@ class RemindVerification extends BaseCommand
                 $offer['verification_token'] = $newToken;
             }
 
-            $verifyLink = site_url('verification/verify-offer/' . $offer['id'] . '/' . $offer['verification_token']);
-
             // Lade SiteConfig basierend auf Offer-Platform
             $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
+
+            $verifyLink = rtrim($siteConfig->backendUrl, '/') . '/verification/verify-offer/' . $offer['id'] . '/' . $offer['verification_token'];
 
             $emailData = [
                 'data' => $formFields,
