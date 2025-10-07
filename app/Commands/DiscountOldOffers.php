@@ -46,11 +46,18 @@ class DiscountOldOffers extends BaseCommand
 
             // Benachrichtige passende Firmen
             $users = $userModel->findAll();
+            $today = date('Y-m-d');
             $notifiedCount = 0;
             foreach ($users as $user) {
                 if (!$user->inGroup('user')) {
                     continue;
                 }
+
+                // Prüfe ob User heute blockiert ist (Agenda/Abwesenheit)
+                if ($this->isUserBlockedToday($user->id, $today)) {
+                    continue;
+                }
+
                 if ($this->doesOfferMatchUser($offer, $user)) {
                     $this->sendPriceUpdateEmail($user, $offer, $oldPrice, $newPrice);
                     $notifiedCount++;
@@ -61,6 +68,18 @@ class DiscountOldOffers extends BaseCommand
         }
 
         CLI::write(count($offers) . ' Offers wurden rabattiert.', 'green');
+    }
+
+    /**
+     * Prüft ob ein User heute blockiert ist (Agenda-Eintrag)
+     */
+    protected function isUserBlockedToday(int $userId, string $today): bool
+    {
+        $blockedModel = model(\App\Models\BlockedDayModel::class);
+        return $blockedModel
+            ->where('user_id', $userId)
+            ->where('date', $today)
+            ->countAllResults() > 0;
     }
 
     protected function doesOfferMatchUser(array $offer, User $user): bool
