@@ -63,6 +63,8 @@ class Offer extends BaseController
         $data['hoursDiff'] = $hoursDiff;
         $data['purchaseCount'] = $purchaseCount;
         $data['calculationDetails'] = $calculationDetails;
+        $data['formFields'] = $formFields;
+        $data['formFieldsCombo'] = $formFieldsCombo;
 
         return view('admin/offer_detail', $data);
     }

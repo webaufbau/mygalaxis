@@ -153,6 +153,18 @@ class OfferPurchaseService
             'meta' => json_encode(['source' => $source]),
         ]);
 
+        // Eintrag in offer_purchases erstellen (wichtig für "gekauft"-Status!)
+        $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+        $offerPurchaseModel->insert([
+            'user_id' => $user->id,
+            'offer_id' => $offer['id'],
+            'price' => $offer['price'],
+            'price_paid' => $price,
+            'payment_method' => $source,
+            'status' => 'completed',
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
         // Alle Buchungen zu diesem Angebot zählen
         $allBookings = $bookingModel
             ->where('type', 'offer_purchase')
@@ -173,9 +185,7 @@ class OfferPurchaseService
             'purchased_at' => date('Y-m-d H:i:s'),
         ]);
 
-        // Benachrichtigung
-        //$mailer = new \App\Libraries\OfferMailer();
-        //$mailer->sendOfferPurchasedToRequester($offer, (array)$user);
+        // E-Mail-Benachrichtigung wird über Command gesendet (offers:send-purchase-notification)
     }
 
 }

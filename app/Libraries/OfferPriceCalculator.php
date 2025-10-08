@@ -26,8 +26,31 @@ class OfferPriceCalculator
     public function calculatePrice(string $type, string $originalType, array $fields, array $fields_combo): float
     {
         $price = 0;
+
+        // Versuche zuerst mit dem Haupttyp
         $category = $this->categoryPrices[$type] ?? null;
-        if (!$category) return 0;
+
+        // Fallback: Wenn type keine Kategorie hat, versuche mit originalType
+        if (!$category) {
+            // Mappe originalType zu category-Namen
+            $typeMapping = [
+                'sanitaer' => 'plumbing',
+                'elektrik' => 'electrician',
+                'heizung' => 'heating',
+                'boden' => 'flooring',
+                'platten' => 'tiling',
+                'maler' => 'painting',
+                'garten' => 'gardening',
+            ];
+
+            $mappedType = $typeMapping[$originalType] ?? $originalType;
+            $category = $this->categoryPrices[$mappedType] ?? null;
+
+            if (!$category) return 0;
+
+            // Verwende den gemappten Typ für die weitere Berechnung
+            $type = $mappedType;
+        }
 
         switch ($type) {
 
@@ -55,6 +78,28 @@ class OfferPriceCalculator
                 break;
 
             case 'move_cleaning':
+                // Wenn original_type nicht umzug/reinigung ist, falle auf original_type zurück
+                if (!in_array($originalType, ['umzug', 'umzug_firma', 'reinigung', 'reinigung_wohnung'])) {
+                    // Mappe originalType zu category-Namen
+                    $typeMapping = [
+                        'sanitaer' => 'plumbing',
+                        'elektrik' => 'electrician',
+                        'heizung' => 'heating',
+                        'boden' => 'flooring',
+                        'platten' => 'tiling',
+                        'maler' => 'painting',
+                        'garten' => 'gardening',
+                    ];
+
+                    $mappedType = $typeMapping[$originalType] ?? $originalType;
+                    $fallbackCategory = $this->categoryPrices[$mappedType] ?? null;
+
+                    if ($fallbackCategory) {
+                        // Rufe diese Methode rekursiv mit dem richtigen Typ auf
+                        return $this->calculatePrice($mappedType, $originalType, $fields, $fields_combo);
+                    }
+                }
+
                 // Unterscheidung zwischen privatem und Firmen-Umzug + Reinigung
                 if ($originalType === 'umzug_firma') {
                     // Firmen-Umzug + Reinigung: basiert auf Arbeitsplätzen oder Fläche

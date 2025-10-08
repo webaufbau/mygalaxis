@@ -1,5 +1,5 @@
 
-    <h1>Willkommen bei <?=$website_name;?>, <?= esc($company_name) ?>!</h1>
+    <h1>Willkommen bei <?=$website_name;?>, <?= esc($contact_person) ?>!</h1>
     <p>Vielen Dank für deine Anmeldung als Firma. Dein Konto ist nun aktiv und du kannst direkt loslegen.</p>
 
     <h2>Dein Firmenbereich im Überblick:</h2>
@@ -11,7 +11,21 @@
     <p>Lege fest, welche Angebote für dich interessant sind:</p>
     <ul>
         <li>Branchen: z.B. Umzug, Reinigung, Maler, Gartenpflege, Sanitär usw.</li>
-        <li>Kantone & Regionen: z.B. Aargau, Basel, Zürich usw.</li>
+        <li><?php
+            $regionLabel = match($country ?? 'ch') {
+                'de' => 'Bundesländer',
+                'at' => 'Bundesländer',
+                default => 'Kantone'
+            };
+            echo $regionLabel;
+        ?> & Regionen: z.B. <?php
+            $examples = match($country ?? 'ch') {
+                'de' => 'Bayern, Baden-Württemberg, Nordrhein-Westfalen usw.',
+                'at' => 'Wien, Niederösterreich, Oberösterreich usw.',
+                default => 'Aargau, Basel, Zürich usw.'
+            };
+            echo $examples;
+        ?></li>
     </ul>
 
     <h3>3️⃣ Offene Anfragen</h3>
@@ -36,7 +50,6 @@
 
     <a href="<?= esc($backend_url) ?>" class="button">Zu deinem Dashboard</a>
 
-    <hr>
     <p style="font-size:12px;color:#888888;">
         <?=$website_name;?> – Dein Portal für passende Firmenanfragen.
         Bei Fragen wende dich an <a href="mailto:<?=esc($website_email);?>"><?=esc($website_email);?></a>.

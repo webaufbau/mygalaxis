@@ -77,6 +77,22 @@
                 <li><strong>Kein Rabatt:</strong> Maximale Verkäufe (4) erreicht</li>
             <?php endif; ?>
         </ul>
+
+        <h5>Relevante Formularfelder für Preisberechnung:</h5>
+        <ul>
+            <?php if (isset($formFields['art_objekt'])): ?>
+                <li><strong>Art Objekt:</strong> <?= esc($formFields['art_objekt']) ?></li>
+            <?php endif; ?>
+            <?php if (isset($formFields['arbeiten_sanitaer'])): ?>
+                <li><strong>Arbeiten Sanitär:</strong> <?= is_array($formFields['arbeiten_sanitaer']) ? implode(', ', $formFields['arbeiten_sanitaer']) : esc($formFields['arbeiten_sanitaer']) ?></li>
+            <?php endif; ?>
+            <?php if (isset($formFields['auszug_zimmer'])): ?>
+                <li><strong>Auszug Zimmer:</strong> <?= esc($formFields['auszug_zimmer']) ?></li>
+            <?php endif; ?>
+            <?php if (isset($formFields['auszug_arbeitsplatz_firma'])): ?>
+                <li><strong>Arbeitsplätze:</strong> <?= esc($formFields['auszug_arbeitsplatz_firma']) ?></li>
+            <?php endif; ?>
+        </ul>
     </div>
 </details>
 

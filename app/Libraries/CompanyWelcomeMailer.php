@@ -11,15 +11,17 @@ class CompanyWelcomeMailer
         // Lade SiteConfig basierend auf User-Platform
         $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
-        $subject = "Danke für Ihre Anmeldung als Firma";
+        $subject = "Danke für deine Anmeldung als Firma";
         $message = view('emails/company_welcome', [
             'user' => $user,
+            'contact_person' => $user->contact_person ?? $user->company_name,
             'company_name' => $user->company_name,
             'company_email' => $user->company_email,
             'siteConfig' => $siteConfig,
             'website_name' => $siteConfig->name,
             'website_email' => $siteConfig->email,
             'backend_url' => $siteConfig->backendUrl,
+            'country' => $siteConfig->siteCountry ?? 'ch',
         ]);
 
         $view = \Config\Services::renderer();
