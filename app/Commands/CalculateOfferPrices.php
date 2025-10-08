@@ -27,10 +27,47 @@ class CalculateOfferPrices extends BaseCommand
             ->where('original_type IS NOT NULL')
             ->findAll(100);
 
+        CLI::write("Starte Preisberechnung für " . count($offers) . " Angebote...", 'yellow');
+        CLI::newLine();
+
         $updater = new \App\Libraries\OfferPriceUpdater();
+        $updated = 0;
+        $skipped = 0;
+        $errors = 0;
 
         foreach ($offers as $offer) {
-            $updater->updateOfferAndNotify($offer);
+            $oldPrice = $offer['price'];
+
+            try {
+                $updater->updateOfferAndNotify($offer);
+
+                // Neu laden um zu sehen ob aktualisiert
+                $updated_offer = $offerModel->find($offer['id']);
+
+                if ($updated_offer['price'] != $oldPrice) {
+                    CLI::write("✓ Offer #{$offer['id']}: {$oldPrice} CHF → {$updated_offer['price']} CHF", 'green');
+                    $updated++;
+                } else {
+                    if ($updated_offer['price'] == 0) {
+                        CLI::write("⚠ Offer #{$offer['id']}: Preis ist 0 (siehe Log)", 'yellow');
+                        $skipped++;
+                    } else {
+                        CLI::write("- Offer #{$offer['id']}: Preis unverändert ({$oldPrice} CHF)", 'blue');
+                        $skipped++;
+                    }
+                }
+            } catch (\Exception $e) {
+                CLI::write("✗ Offer #{$offer['id']}: FEHLER - " . $e->getMessage(), 'red');
+                $errors++;
+            }
+        }
+
+        CLI::newLine();
+        CLI::write("Fertig!", 'green');
+        CLI::write("Aktualisiert: {$updated}", 'green');
+        CLI::write("Übersprungen: {$skipped}", 'blue');
+        if ($errors > 0) {
+            CLI::write("Fehler: {$errors}", 'red');
         }
     }
 

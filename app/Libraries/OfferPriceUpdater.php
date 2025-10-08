@@ -34,6 +34,13 @@ class OfferPriceUpdater
             $formFieldsCombo ?? []
         );
 
+        // Wenn Preis 0 ist, logge Debug-Info und überspringe Update
+        if ($price == 0) {
+            $debugInfo = $this->calculator->getDebugInfo();
+            log_message('warning', "Offer #{$offer['id']}: Preis ist 0. Debug: " . implode(' | ', $debugInfo));
+            return; // Überspringe Update wenn Preis 0 ist
+        }
+
         $updateData = [];
         if ($price > 0) {
             $updateData['price'] = $price;
