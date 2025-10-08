@@ -35,6 +35,9 @@ return [
     'companyPhoneRequired'    => 'Bitte geben Sie eine gültige Telefonnummer im Format %s ein.',
     'companyWebsite'          => 'Website',
     'companyWebsiteRequired'  => 'Bitte geben Sie eine gültige URL ein.',
+    'contactPerson'           => 'Kontaktperson',
+    'contactPersonRequired'   => 'Bitte geben Sie die Kontaktperson ein.',
+    'selectAtLeastOneCategory'=> 'Bitte wählen Sie mindestens eine Branche aus.',
     'registerButton'          => 'Registrieren',
 
     // Messages
@@ -51,6 +54,7 @@ return [
     'passwordChangedSuccess' => 'Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden.',
     'emailAlreadyRegistered' => 'Wir betreiben mehrere Portale (Renovo24, Offertenheld, Offertenschweiz). Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse und Ihrem bestehenden Passwort anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
     'registrationSuccess' => 'Registrierung erfolgreich. Du kannst dich jetzt einloggen.',
+    'adminOnly' => 'Dieser Login ist nur für Administratoren. Bitte verwenden Sie den regulären Login für Firmen.',
 
     // Exceptions
     'unknownAuthenticator'  => '{0} ist kein gültiger Authentifikator.',
@@ -158,5 +162,11 @@ return [
 
     // AGB
     'acceptAGBRequired' => 'Die AGB müssen akzeptiert werden.',
+
+
+    'linkNotClickable' => 'Falls der Link in Ihrem E-Mail-Programm nicht klickbar ist, kopieren Sie bitte den folgenden Link in die Adresszeile Ihres Browsers:',
+
+    'isUniqueEmail' => 'Wir betreiben mehrere Portale. Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
+
 
 ];

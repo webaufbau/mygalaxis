@@ -18,7 +18,7 @@
     <div class="d-flex align-items-end mb-3" style="gap: 1rem;">
         <div class="flex-grow-1">
             <label for="amount" class="form-label mb-1"><?= esc(lang('Finance.amountCHF')) ?></label>
-            <input type="number" step="0.01" min="20" name="amount" id="amount" class="form-control form-control-sm" value="100" required>
+            <input type="number" step="0.01" min="1" name="amount" id="amount" class="form-control form-control-sm" value="100" required>
         </div>
 
         <div>
@@ -59,7 +59,7 @@
         <select id="month" name="month" class="form-select form-select-sm" onchange="this.form.submit();">
             <option value=""><?= esc(lang('Calendar.allMonths')) ?></option>
             <?php
-            $months = lang('Calendar.months');
+            $months = lang('Calendar.monthNames');
             for ($m = 1; $m <= 12; $m++): ?>
                 <option value="<?= $m ?>" <?= $currentMonth == $m ? 'selected' : '' ?>>
                     <?= esc($months[$m]) ?>
@@ -76,6 +76,14 @@
        class="btn btn-sm btn-secondary">
         <i class="bi bi-file-earmark-pdf"></i> <?= esc(lang('Finance.pdfExport')) ?>
     </a>
+
+    <!-- Monatrechnung -->
+    <?php if (!empty($currentMonth) && !empty($currentYear)): ?>
+        <a href="<?= site_url('finance/monthly-invoice/' . $currentYear . '/' . $currentMonth) ?>"
+           class="btn btn-sm btn-success">
+            <i class="bi bi-file-earmark-text"></i> Monatsrechnung
+        </a>
+    <?php endif; ?>
 </form>
 
 <!-- Tabelle -->
@@ -91,6 +99,7 @@
                 <th><?= esc(lang('Finance.type')) ?></th>
                 <th><?= esc(lang('Finance.description')) ?></th>
                 <th class="text-end"><?= esc(lang('Finance.amount')) ?></th>
+                <th><?= esc(lang('Finance.invoice')) ?></th>
             </tr>
             </thead>
             <tbody>
@@ -101,6 +110,14 @@
                     <td><?= esc($entry['description']) ?></td>
                     <td class="text-end <?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
                         <?= number_format($entry['amount'], 2, ".", "'") ?> CHF
+                    </td>
+                    <td>
+                        <?php if ($entry['amount'] < 0): ?>
+                            <a href="<?= site_url('finance/invoice/'.$entry['id']) ?>"
+                               class="btn btn-sm btn-secondary">
+                                <i class="bi bi-file-earmark-pdf"></i> RE<?=strtoupper(siteconfig()->siteCountry);?><?=$entry['id'];?>
+                            </a>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>

@@ -51,6 +51,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'email_text',
             'stripe_customer_id',
             'language',
+            'welcome_email_sent',
         ];
     }
 
@@ -129,6 +130,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'Gruppen',
             'Ansprechsperson',
             'Firma',
+            'Branchen',
             'Ort (Firma)',
             'E-Mail',
             'Autom. Kauf',
@@ -148,12 +150,34 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             $groups .= '<span class="badge group group-' . $group . '">' . lang('Wa.group_' . $group) . '</span>';
         }
 
+
+        // Benutzer Branchen:
+        $filter_categories = $entity->filter_categories;
+        // Wenn NULL, dann "-" ausgeben
+        if (empty($filter_categories)) {
+            $filter_categories_display = '-';
+        } else {
+            $keys = explode(',', $filter_categories);
+
+            // Übersetzung über lang() holen
+            $filter_categories_display = [];
+            foreach ($keys as $key) {
+                // z.B. lang('Filter.' . $key)
+                $translated = lang('Filter.' . $key);
+                $filter_categories_display[] = $translated ?: $key; // fallback auf Key, falls keine Übersetzung
+            }
+
+            $filter_categories_display = implode(', ', $filter_categories_display);
+        }
+
+
         return [
             $entity->id,
             $entity->active ? '<i class="bi bi-check text-success"></i>' : '<i class="bi bi-x text-danger"></i>',
             $groups,
             esc(($entity->contact_person ?? '-')),
             esc($entity->company_name ?? '-'),
+            $filter_categories_display,
             esc(($entity->company_zip ?? '') . ' ' . ($entity->company_city ?? '')),
             esc($entity->getEmail() ?? '-'),
             $entity->auto_purchase ? 'Ja' : 'Nein',

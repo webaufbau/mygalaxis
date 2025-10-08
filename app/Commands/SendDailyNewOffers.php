@@ -75,7 +75,10 @@ class SendDailyNewOffers extends BaseCommand
         $services = is_string($user->filter_absences) ? json_decode($user->filter_absences, true) ?? [] : [];
         $customZips = is_string($user->filter_custom_zip) ? explode(',', $user->filter_custom_zip) : [];
 
-        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($cantons, $regions);
+        // $zipcodeService = new \App\Libraries\ZipcodeService();
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($cantons, $regions, $siteCountry);
         $allZips = array_unique(array_merge($relevantZips, $customZips));
 
         if (!empty($allZips) && count($allZips) > 0 && !empty($allZips[0])) {
@@ -111,10 +114,16 @@ class SendDailyNewOffers extends BaseCommand
 
     protected function sendEmailToCompany(User $user, array $offers): void
     {
-        $siteConfig = siteconfig();
+        // Lade SiteConfig basierend auf User-Platform
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
+
+        if($user->platform == 'my_offertenheld_ch') {
+            //var_dump($user->platform);
+            //dd($user);
+        }
 
         // Sprache aus Offer-Daten setzen
-        $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
+        $language = $user->language ?? $offers[0]['language'] ?? 'de'; // Fallback: Deutsch
         $request = service('request');
         if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
             service('language')->setLocale($language);
@@ -123,7 +132,7 @@ class SendDailyNewOffers extends BaseCommand
         }
 
         $data = [
-            'siteConfig' => siteconfig(),
+            'siteConfig' => $siteConfig,
             'firma'  => $user,
             'offers' => $offers,
         ];
@@ -141,17 +150,18 @@ class SendDailyNewOffers extends BaseCommand
             $emailTo = $originalEmail;
         }
 
-        $this->sendEmail($emailTo, $subject, $message);
+        $this->sendEmail($emailTo, $subject, $message, $siteConfig);
     }
 
-    protected function sendEmail(string $to, string $subject, string $message): bool
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
     {
-        $siteConfig = siteconfig();
+        $siteConfig = $siteConfig ?? siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title'   => 'Neue passende Offerten',
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();
@@ -160,6 +170,10 @@ class SendDailyNewOffers extends BaseCommand
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');
+
+        // --- Wichtige Ergänzung: Header mit korrekter Zeitzone ---
+        date_default_timezone_set('Europe/Zurich'); // falls noch nicht gesetzt
+        $email->setHeader('Date', date('r')); // RFC2822-konforme aktuelle lokale Zeit
 
         if (!$email->send()) {
             log_message('error', 'Fehler beim Senden an ' . $to . ': ' . print_r($email->printDebugger(), true));

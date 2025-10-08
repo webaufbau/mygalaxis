@@ -18,7 +18,7 @@ class CheckOffers extends BaseCommand
     public function run(array $params)
     {
         $offerModel = new OfferModel();
-        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->orWhere('platform IS NULL')->orWhere('country IS NULL')->findAll(100);
+        $offers = $offerModel->where('checked_at IS NULL')->orWhere('type', 'unknown')->orWhere('original_type IS NULL')->orWhere('platform IS NULL')->orWhere('country IS NULL')->orWhere('sub_type IS NULL')->findAll(100);
 
         // Modell dynamisch laden (nach Typ)
         $modelClassMap = [
@@ -89,25 +89,25 @@ class CheckOffers extends BaseCommand
             }
 
             // Preis setzen falls 0
-            $categoryManager = new \App\Libraries\CategoryManager();
-            $categoryPrices = $categoryManager->getAll();
-            if ((empty($offer['price']) || $offer['price']<=0) && isset($categoryPrices[$detectedType]['price']) && $categoryPrices[$detectedType]['price'] > 0) {
-                $updateData['price'] = $categoryPrices[$detectedType]['price'];
-                CLI::write("Preis für Angebot {$offer['id']} automatisch gesetzt: {$updateData['price']} CHF", 'light_green');
-            }
+            /*$calculator = new \App\Libraries\OfferPriceCalculator();
+            $calculatedPrice = $calculator->calculatePrice($detectedType, $formFields);
+            if ($calculatedPrice > 0) {
+                $updateData['price'] = $calculatedPrice;
+                CLI::write("Preis für Angebot {$offer['id']} automatisch gesetzt: {$calculatedPrice} CHF", 'light_green');
+            }*/
 
-            $translatedType = lang('Offers.type.' . $detectedType);
+            // Titel generieren (immer, um aussagekräftige Titel zu haben)
+            $titleGenerator = new \App\Libraries\OfferTitleGenerator();
+            $generatedTitle = $titleGenerator->generateTitle($offer);
 
-            // Titel setzen, falls leer
-            if (empty($offer['title']) && $translatedType !== 'Offers.type.' . $detectedType && !empty($enriched['city'])) {
-                $city = ucwords($enriched['city']);
-                $title = "{$translatedType} in {$city}";
-                $updateData['title'] = $title;
-                CLI::write("Titel für Angebot {$offer['id']} gesetzt: {$title}", 'cyan');
+            // Titel setzen oder aktualisieren wenn unterschiedlich
+            if (empty($offer['title']) || $offer['title'] !== $generatedTitle) {
+                $updateData['title'] = $generatedTitle;
+                CLI::write("Titel für Angebot {$offer['id']} gesetzt: {$generatedTitle}", 'cyan');
             }
 
             if (!empty($updateData)) {
-                CLI::write("Daten aktualisiert " . print_r($updateData, true), 'yellow');
+                CLI::write("Daten ".$offer['id']." aktualisiert " . print_r($updateData, true), 'yellow');
                 $offerModel->update($offer['id'], $updateData);
             }
 

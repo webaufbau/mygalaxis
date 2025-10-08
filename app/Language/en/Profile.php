@@ -18,4 +18,10 @@ return [
 
     'language'             => 'Language',
     'languageAccountEmail' => 'Account and Email Language',
+
+    'changePassword'   => 'Change Password',
+    'newPassword'      => 'New Password',
+    'confirmPassword'  => 'Confirm Password',
+    'passwordMismatch' => 'Passwords do not match.',
+
 ];

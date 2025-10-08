@@ -21,6 +21,19 @@ class Dashboard extends Controller
         if ($user->inGroup('admin')) {
             return $this->index_admin();
         } elseif ($user->inGroup('user')) {
+            // Prüfen, ob der Firmen-User noch keine Filter gesetzt hat
+            $hasFilters =
+                !empty($user->filter_categories) ||
+                !empty($user->filter_cantons) ||
+                !empty($user->filter_regions) ||
+                !empty($user->min_rooms) ||
+                !empty($user->filter_custom_zip);
+
+            if (!$hasFilters) {
+                // Weiterleiten zur Filter-Seite mit Erklärung
+                return redirect()->to('/filter')->with('warning', 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.');
+            }
+
             return $this->index_user();
         }
 
@@ -135,10 +148,11 @@ class Dashboard extends Controller
 
         $offers = $builder->orderBy('offers.created_at', 'desc')->get()->getResultArray();
 
-        $filterOptions = new \App\Config\FilterOptions();
+        $categoryOptions = new \Config\CategoryOptions();
+        $appConfig = new \Config\App();
 
         return view('admin/dashboard', [
-            'types' => $filterOptions->types,
+            'types' => $categoryOptions->categoryTypes,
             'title' => 'Anfragen-Statistik',
             'offers' => $offers,
             'filter_type' => $type,
@@ -161,26 +175,24 @@ class Dashboard extends Controller
         $offerModel = new \App\Models\OfferModel();
 
         // Gekaufte Angebote via Buchungen
-        $bookings = $bookingModel
+        $allBookings = $bookingModel
             ->where('user_id', $user->id)
             ->where('type', 'offer_purchase')
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        // IDs der gekauften Angebote
-        $purchasedOfferIds = array_column($bookings, 'reference_id');
-
-        // Gekaufte Angebote mit Offer-Infos
+        // Nur Buchungen behalten, deren Angebote noch existieren
+        $bookings = [];
         $purchasedOffers = [];
-        foreach ($purchasedOfferIds as $offerId) {
-            $offer = $offerModel->find($offerId);
+
+        foreach ($allBookings as $booking) {
+            $offer = $offerModel->find($booking['reference_id']);
             if ($offer) {
-                $offer['price_paid'] = $bookingModel
-                    ->where('user_id', $user->id)
-                    ->where('reference_id', $offerId)
-                    ->where('type', 'offer_purchase')
-                    ->orderBy('created_at', 'DESC')
-                    ->first()['amount'] ?? 0;
+                // Angebot existiert noch - Buchung behalten
+                $bookings[] = $booking;
+
+                // Offer-Info für Statistik hinzufügen
+                $offer['price_paid'] = abs($booking['amount']);
                 $purchasedOffers[] = $offer;
             }
         }

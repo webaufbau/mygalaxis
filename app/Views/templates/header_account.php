@@ -48,7 +48,7 @@
 <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Logo -->
-        <a class="navbar-brand fw-bold text-primary" href="/">
+        <a class="navbar-brand fw-bold text-primary" href="<?= auth()->loggedIn() ? site_url('dashboard') : '/' ?>">
             <?=$siteConfig->name;?>
         </a>
 
@@ -74,7 +74,7 @@
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'filter' ? 'active' : '' ?>" href="/filter">Filter</a>
                         </li>
-                        <li class="nav-item dropdown">
+                        <!--<li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle <?= $segment1 === 'offers' ? 'active' : '' ?>" href="#" id="offersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Anfragen
                             </a>
@@ -82,6 +82,9 @@
                                 <li><a class="dropdown-item" href="/offers">Offene Anfragen</a></li>
                                 <li><a class="dropdown-item" href="/offers/mine">Gekaufte Anfragen</a></li>
                             </ul>
+                        </li>-->
+                        <li class="nav-item">
+                            <a class="nav-link <?= $segment1 === 'offers' ? 'active' : '' ?>" href="/offers">Anfragen</a>
                         </li>
 
 
@@ -110,8 +113,18 @@
                 <ul class="navbar-nav ms-auto">
                     <?php if(auth()->user()->inGroup('admin')) { ?>
                         <li class="nav-item">
+                            <a class="nav-link <?= ($segment1 === '' || $segment1 === 'dashboard') ? 'active' : '' ?>" href="<?= site_url('dashboard') ?>">
+                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-normal" href="/admin/user">
                                 <i class="bi bi-buildings me-1"></i> Firmen
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-normal" href="/admin/regions">
+                                <i class="bi bi-geo-alt me-1"></i> Regionen
                             </a>
                         </li>
                         <li class="nav-item">
@@ -159,6 +172,22 @@
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <?= esc(session()->getFlashdata('error')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                    <li><?= esc($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <?= esc(session()->getFlashdata('warning')) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
     <?php endif; ?>

@@ -35,6 +35,9 @@ return [
     'companyPhoneRequired'    => 'Please enter a valid phone number in the format %s.',
     'companyWebsite'          => 'Website',
     'companyWebsiteRequired'  => 'Please enter a valid URL.',
+    'contactPerson'           => 'Contact person',
+    'contactPersonRequired'   => 'Please enter the contact person.',
+    'selectAtLeastOneCategory'=> 'Please select at least one category.',
     'registerButton'          => 'Register',
 
     // Messages
@@ -45,6 +48,7 @@ return [
     'resetPasswordMessage' => "Hello,\n\nPlease click the following link to reset your password:\n%s\n\nThe link is valid for 1 hour.",
     'enterEmail' => 'Please enter your email address.',
     'userNotFound' => 'User not found.',
+    'adminOnly' => 'This login is for administrators only. Please use the regular login for companies.',
     'invalidOrExpiredLink' => 'Invalid or expired link.',
     'invalidRequest' => 'Invalid request.',
     'passwordsDontMatch' => 'Passwords do not match.',
@@ -158,5 +162,10 @@ return [
 
     // AGB
     'acceptAGBRequired' => 'The terms and conditions must be accepted.',
+
+
+    'linkNotClickable' => 'If the link is not clickable in your email client, please copy and paste the following link into your browser:',
+
+    'isUniqueEmail' => 'We operate multiple portals. Your email address is already linked to an account. You can log in with your email or request direct access to your existing account via the magic link.',
 
 ];

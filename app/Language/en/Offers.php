@@ -585,14 +585,19 @@ return [
 
     ],
 
+    'messages' => [
+        'purchase_success' => 'Request purchased successfully!',
+    ],
+
     'errors' => [
         'admin_view_only' => 'This /offers view is only for company users. As an admin, please use /dashboard.',
         'login_required' => 'Please log in to view your requests.',
         'not_enough_balance' => 'Insufficient balance or no valid credit card.',
         'invalid_link' => 'Invalid link.',
+        'filter_view_only' => 'Bevor wir Ihnen passende Offerten anzeigen können, stellen Sie bitte die Filter so ein, wie sie für Ihre Dienstleistung zutreffen.',
+        'purchase_failed' => 'Purchase could not be completed.',
+        'invalid_price' => 'This offer has no valid price and cannot be purchased.',
     ],
 
-    'messages' => [
-        'purchase_success' => 'Request purchased successfully!',
-    ],
+    'priceNotAvailable' => 'Price n/a',
 ];

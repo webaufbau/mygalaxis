@@ -18,18 +18,24 @@ $routes->get('/', function () {
 });
 
 function defineAppRoutes($routes) {
-    $routes->get('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginView');
-    $routes->post('magic-link', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginAction');
-    $routes->get('magic-link/verify/(:segment)', '\CodeIgniter\Shield\Controllers\MagicLinkController::verify/$1');
+    $routes->get('magic-link', 'CustomMagicLinkController::loginView');
+    $routes->post('magic-link', 'CustomMagicLinkController::loginAction');
+    $routes->get('verify-magic-link', 'CustomMagicLinkController::verify');
+    $routes->get('magic-link/verify/(:segment)', 'CustomMagicLinkController::verify/$1');
 
     // Auth-Routen von Shield aktivieren (stellt /login, /register etc. bereit)
 
     $routes->match(['POST'], 'register', 'RegisterController::myregisterAction');
 
     service('auth')->routes($routes);
-    // Login
+
+    // Company Login
     $routes->get('login', '\CodeIgniter\Shield\Controllers\LoginController::loginView');
     $routes->post('login', '\CodeIgniter\Shield\Controllers\LoginController::loginAction');
+
+    // Admin Login (separate URL)
+    $routes->get('admin/login', 'Auth::adminLoginView', ['as' => 'admin-login']);
+    $routes->post('admin/login', 'Auth::adminLoginAttempt', ['as' => 'admin-login-attempt']);
 
     // Register
     $routes->get('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerView');
@@ -91,7 +97,6 @@ function defineAppRoutes($routes) {
     $routes->post('rating/submit', 'PublicController::submitRating');
     $routes->get('company/ratings/(:segment)', 'PublicController::companyRatings/$1');
 
-
     $routes->get('live-ticker.js', 'LiveTicker::js');
 
 }
@@ -106,6 +111,10 @@ $routes->group('{locale}', function($routes) {
 
 
 $routes->get('api/offers', '\App\Controllers\Api\Offers::index');
+
+
+$routes->get('test/testtwilio', '\App\Controllers\Test::testtwilio');
+$routes->get('test/verification/(:any)', '\App\Controllers\Test::testVerification/$1');
 
 
 
@@ -131,11 +140,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
     $routes->group('finance', ['filter' => 'auth'], function($routes) {
         $routes->get('', 'Finance::index');
+        $routes->get('invoice/(:num)', 'Finance::invoice/$1');
+        $routes->get('monthly-invoice/(:num)/(:num)', 'Finance::monthlyInvoice/$1/$2');
         $routes->match(['GET', 'POST'], 'topup', 'Finance::topup');
-        //$routes->get('userpaymentmethods', 'Finance::userPaymentMethods');
-        //$routes->match(['GET', 'POST'], 'userpaymentmethods/add', 'Finance::addUserPaymentMethod');
         $routes->match(['GET', 'POST'], 'startAddPaymentMethodAjax', 'Finance::startAddPaymentMethodAjax');
-        //$routes->get('userpaymentmethods/delete/(:num)', 'Finance::deleteUserPaymentMethod/$1');
         $routes->get('pdf', 'Finance::pdf');
     });
 
@@ -144,6 +152,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('finance/paymentCancel', function () {
         return redirect()->to('/finance/userpaymentmethods')->with('error', 'Zahlung wurde abgebrochen.');
     });
+
+    // Auflade-Seite
+    $routes->get('finance/topup-page', 'Finance::topupPage', ['filter' => 'auth']);
 
     // Saferpay Rückleitungen (außerhalb von auth-Filter!)
     $routes->get('finance/topupSuccess', 'Finance::topupSuccess');
@@ -222,6 +233,9 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
 
 // Campaign Übersicht / Liste (GET + POST)
     $routes->match(['GET', 'POST'], 'campaign', 'Admin\Campaign::index', ['filter' => 'auth']);
+
+// Campaign Übersicht / Liste (GET + POST)
+    $routes->match(['GET', 'POST'], 'regions', 'Admin\Regions::index', ['filter' => 'auth']);
 
 // Campaign Formular (neu / edit) (GET + POST)
     $routes->match(['GET', 'POST'], 'campaign/form', 'Admin\Campaign::form', ['filter' => 'auth']);

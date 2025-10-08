@@ -15,11 +15,11 @@ return [
 
 
     'dailyOffersSubject' => 'Neue Offerten für Sie bei {0}', // Sitename wird gesetzt
-    'greeting' => 'Guten Tag {0} {1},', // Vorname Nachname
+    'greeting' => 'Guten Tag {0},', // Vorname Nachname
     'intro' => 'Hier sind neue Offerten, die kürzlich bei uns eingegangen sind und zu Ihren Filterkriterien passen:',
     'viewNow' => 'Jetzt ansehen',
     'successWishes' => 'Wir wünschen viel Erfolg bei der Auswahl passender Aufträge!',
-    'greetings' => 'Freundliche Grüsse',
+    'greetings' => 'Freundliche Grüsse<br>Ihr {0}-Team',
     'automaticGenerated' => 'Diese Nachricht wurde automatisch generiert am', // Datum folgt
 
     // Neue Offerte
@@ -83,6 +83,14 @@ return [
     // Footer
     'emailFooter'                 => 'Mit freundlichen Grüssen,<br>{0}', // Sitename
 
+
+    'priceUpdateIntro'   => 'Wir möchten Sie darüber informieren, dass sich der Preis für folgendes Angebot geändert hat:',
+    'oldPrice'           => 'Alter Preis',
+    'newPrice'           => 'Neuer Preis',
+    'discountApplied'    => 'Rabatt angewendet',
+
+
+    'newOfferIntro' => 'Wir haben eine neue Offerte, die zu Ihnen passt:',
 
 
 ];

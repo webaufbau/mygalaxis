@@ -41,11 +41,27 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
     <?php endif; ?>
+    <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                    <li><?= esc($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <?= esc(session()->getFlashdata('warning')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
 
 
     <?php
     $phone = session('phone');
-    $method = session('verify_method');
+    $method = session('verify_method') ?? 'sms'; // Fallback auf SMS
     ?>
 
     <h2><?= lang('Verification.enterCode'); ?></h2>

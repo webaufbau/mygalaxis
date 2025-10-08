@@ -30,9 +30,11 @@ class User extends Crud {
     }
 
     public function index() {
-        if(!auth()->user()->inGroup('admin')) {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
             return redirect()->to('/');
         }
+
 
         $pager = service('pager');
 

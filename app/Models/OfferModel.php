@@ -111,12 +111,11 @@ class OfferModel extends Model
             $data['original_type'] = strtolower(trim($exactType));
         }
 
-        if (!empty($originalType)
-            && str_contains($originalType, '_')
-            && (($original['type'] ?? null) !== 'move_cleaning')) {
-
-            $data['sub_type'] = trim(strstr($data['original_type'], "_", false) ?? '', "_") ?? null;
+        if (!empty($originalType) && (($original['type'] ?? null) !== 'move_cleaning')) {
+            $parts = explode('_', $originalType, 2); // in maximal 2 Teile aufteilen
+            $data['sub_type'] = $parts[1] ?? $parts[0]; // falls kein Unterstrich, nimm das Original
         }
+
 
         $data['city'] = $address['city'];
         $data['zip'] = $address['zip'];
@@ -130,11 +129,25 @@ class OfferModel extends Model
             $data['language'] = 'de';
         }
 
-        $data['platform'] = $formFields['platform'] ?? null;
+        // Platform normalisieren: Domain-Format zu Ordner-Format
+        // z.B. offertenheld.ch -> my_offertenheld_ch
+        // z.B. renovoscout24.de -> my_renovoscout24_de
+        $platformRaw = $formFields['platform'] ?? null;
+        if ($platformRaw) {
+            // Wenn schon im Ordner-Format (beginnt mit my_), direkt übernehmen
+            if (strpos($platformRaw, 'my_') === 0) {
+                $data['platform'] = $platformRaw;
+            } else {
+                // Domain-Format: Punkte durch Underscores ersetzen und my_ voranstellen
+                $data['platform'] = 'my_' . str_replace('.', '_', $platformRaw);
+            }
+        } else {
+            $data['platform'] = null;
+        }
 
         $data['firstname'] = $formFields['vorname'] ?? $userInputs['vorname'] ?? null;
         $data['lastname'] = $formFields['nachname'] ?? $userInputs['nachname'] ?? null;
-        $data['email'] = $formFields['email'] ?? $userInputs['email'] ?? null;
+        $data['email'] = $formFields['email'] ?? $userInputs['email'] ?? $formFields['email_firma'] ?? $userInputs['email_firma'] ?? null;
         $data['phone'] = $formFields['phone'] ?? $userInputs['phone'] ?? null;
         $data['additional_service'] = $formFields['additional_service'] ?? null;
         $data['service_url'] = $formFields['service_url'] ?? null;

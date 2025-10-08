@@ -73,6 +73,37 @@ class Finance extends BaseController
     }
 
 
+    public function topupPage()
+    {
+        $user = auth()->user();
+        $bookingModel = new BookingModel();
+
+        // Hole Daten aus Session
+        $missingAmount = session()->get('topup_amount') ?? 20;
+        $reason = session()->get('topup_reason');
+        $offerId = session()->get('topup_offer_id');
+
+        // Berechne aktuelles Guthaben
+        $currentBalance = $bookingModel->getUserBalance($user->id);
+
+        // Falls aus Offer-Kauf kommend, berechne Required Amount
+        $requiredAmount = $missingAmount;
+        if ($reason === 'offer_purchase' && $offerId) {
+            $offerModel = new \App\Models\OfferModel();
+            $offer = $offerModel->find($offerId);
+            if ($offer) {
+                $requiredAmount = $offer['discounted_price'] > 0 ? $offer['discounted_price'] : $offer['price'];
+            }
+        }
+
+        return view('finance/topup_page', [
+            'title' => lang('Finance.topupTitle'),
+            'missingAmount' => $missingAmount,
+            'requiredAmount' => $requiredAmount,
+            'currentBalance' => $currentBalance,
+        ]);
+    }
+
     public function topup()
     {
         $amount = (int)(floatval($this->request->getPost('amount') ?? 20) * 100); // CHF → Rappen
@@ -357,6 +388,101 @@ class Finance extends BaseController
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
             ->setBody($mpdf->Output('', 'S'));
+    }
+
+    public function invoice($id)
+    {
+        $user = auth()->user();
+        $bookingModel = new BookingModel();
+
+        $booking = $bookingModel
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->first();
+
+        if (!$booking) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Rechnungsnummer: RE{LAND}{ID} z.B. RECH123
+        $invoice_name = 'RE' . strtoupper(siteconfig()->siteCountry) . $id;
+
+        // Land aus User-Platform extrahieren (z.B. my_offertenheld_ch -> CH)
+        $country = '';
+        if (!empty($user->platform)) {
+            // my_offertenheld_ch -> ch
+            $parts = explode('_', $user->platform);
+            $countryCode = strtoupper(end($parts)); // CH, DE, etc.
+            $country = $countryCode;
+        }
+
+        $html = view('account/pdf_invoice', [
+            'user' => $user,
+            'booking' => $booking,
+            'invoice_name' => $invoice_name,
+            'country' => $country
+        ]);
+
+        $mpdf = new \Mpdf\Mpdf(['default_font' => 'helvetica']);
+        $mpdf->WriteHTML($html);
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output($invoice_name.".pdf", 'S'));
+    }
+
+    public function monthlyInvoice($year, $month)
+    {
+        $user = auth()->user();
+        $bookingModel = new BookingModel();
+
+        // Alle offer_purchase Bookings des Monats holen
+        $bookings = $bookingModel
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->where('YEAR(created_at)', $year)
+            ->where('MONTH(created_at)', $month)
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        if (empty($bookings)) {
+            return redirect()->back()->with('error', lang('Finance.noBookingsForMonth'));
+        }
+
+        // Rechnungsnummer für Monatrechnung: RE{LAND}M-{JAHR}-{MONAT} z.B. RECHM-2024-03
+        $invoice_name = 'RE' . strtoupper(siteconfig()->siteCountry) . 'M-' . $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+
+        // Land aus User-Platform extrahieren
+        $country = '';
+        if (!empty($user->platform)) {
+            $parts = explode('_', $user->platform);
+            $countryCode = strtoupper(end($parts));
+            $country = $countryCode;
+        }
+
+        // Gesamtbetrag berechnen
+        $total = 0;
+        foreach ($bookings as $booking) {
+            $total += abs($booking['amount']);
+        }
+
+        $html = view('account/pdf_monthly_invoice', [
+            'user' => $user,
+            'bookings' => $bookings,
+            'invoice_name' => $invoice_name,
+            'country' => $country,
+            'year' => $year,
+            'month' => $month,
+            'total' => $total
+        ]);
+
+        $mpdf = new \Mpdf\Mpdf(['default_font' => 'helvetica']);
+        $mpdf->WriteHTML($html);
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output($invoice_name . ".pdf", 'S'));
     }
 
 

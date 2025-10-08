@@ -15,6 +15,21 @@ class Offers extends BaseController
         $user = auth()->user();
         $userId = $user->id ?? null;
 
+
+        // Prüfen, ob der User noch keine Filter gesetzt hat
+        $hasFilters =
+            !empty($user->filter_categories) ||
+            !empty($user->filter_cantons) ||
+            !empty($user->filter_regions) ||
+            !empty($user->min_rooms) ||
+            !empty($user->filter_custom_zip);
+
+        if (!$hasFilters) {
+            // Weiterleiten zur Filter-Seite
+            return redirect()->to('/filter')->with('warning', lang('Offers.errors.filter_view_only'));
+        }
+
+
         $userCantons = $user->filter_cantons ?? [];
         $userRegions = $user->filter_regions ?? [];
         $userCategories = $user->filter_categories ?? [];
@@ -47,10 +62,14 @@ class Offers extends BaseController
         $offerModel = new \App\Models\OfferModel();
         $builder = $offerModel->builder();
         $builder->where('verified', 1);
+        // Nur Angebote mit gültigem Preis anzeigen
+        $builder->where('price >', 0);
 
         // PLZ aus Kantonen & Regionen
         $zipcodeService = new \App\Libraries\ZipcodeService();
-        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($userCantons, $userRegions);
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($userCantons, $userRegions, $siteCountry);
 
         $allZips = array_merge($relevantZips, $userCustomZips);
         $allZips = array_unique($allZips);
@@ -96,7 +115,7 @@ class Offers extends BaseController
         }
 
         $filter = $this->request->getGet('filter');
-        if ($filter) {
+        if ($filter && $filter !== 'purchased') {
             $builder->where('status', $filter);
         }
 
@@ -118,6 +137,13 @@ class Offers extends BaseController
             }
         }
 
+        // Filter für gekaufte Angebote
+        if ($filter === 'purchased') {
+            $offers = array_filter($offers, function($offer) use ($purchasedOfferIds) {
+                return in_array($offer['id'], $purchasedOfferIds);
+            });
+        }
+
 
         return view('offers/index', [
             'offers' => $offers,
@@ -127,6 +153,44 @@ class Offers extends BaseController
             'title' => 'Angebote'
         ]);
 
+    }
+
+    public function show($id)
+    {
+        helper('auth');
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->to('/login')->with('error', lang('Offers.errors.login_required'));
+        }
+
+        $offerModel = new \App\Models\OfferModel();
+        $offer = $offerModel->find($id);
+
+        if (!$offer) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Prüfen ob User das Angebot gekauft hat
+        $bookingModel = new \App\Models\BookingModel();
+        $booking = $bookingModel
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->where('reference_id', $id)
+            ->first();
+
+        $isPurchased = !empty($booking);
+
+        if ($isPurchased && $booking) {
+            $offer['purchased_price'] = abs($booking['amount']);
+            $offer['purchased_at'] = $booking['created_at'];
+        }
+
+        return view('offers/show', [
+            'offer' => $offer,
+            'isPurchased' => $isPurchased,
+            'title' => $offer['title']
+        ]);
     }
 
     public function mine()
@@ -189,15 +253,31 @@ class Offers extends BaseController
         helper('auth');
         $user = auth()->user();
 
-        $purchaseService = new \App\Services\OfferPurchaseService();
+        // Prüfe ob Angebot gültigen Preis hat
+        $offerModel = new \App\Models\OfferModel();
+        $offer = $offerModel->find($id);
 
-        $success = $purchaseService->purchase($user, $id);
-
-        if ($success) {
-            return redirect()->to('/offers/mine#detailsview-' . $id)->with('message', lang('Offers.messages.purchase_success'));
+        if (!$offer || $offer['price'] <= 0) {
+            return redirect()->to('/offers')->with('error', lang('Offers.errors.invalid_price'));
         }
 
-        return redirect()->to('/finance/topup')->with('error', lang('Offers.errors.not_enough_balance'));
+        $purchaseService = new \App\Services\OfferPurchaseService();
+
+        $result = $purchaseService->purchase($user, $id);
+
+        if ($result === true) {
+            return redirect()->to('/offers/' . $id)->with('message', lang('Offers.messages.purchase_success'));
+        }
+
+        if (is_array($result) && !$result['success']) {
+            // Betrag in Session speichern und zur Auflade-Seite weiterleiten
+            session()->set('topup_amount', $result['missing_amount']);
+            session()->set('topup_reason', 'offer_purchase');
+            session()->set('topup_offer_id', $id);
+            return redirect()->to('/finance/topup-page');
+        }
+
+        return redirect()->to('/offers')->with('error', lang('Offers.errors.purchase_failed'));
     }
 
     /**
@@ -224,7 +304,7 @@ class Offers extends BaseController
             ->countAllResults();
 
         // Anfrage als verkauft markieren
-        if ($salesCount >= 3) {
+        if ($salesCount >= 4) {
             $offerModel = new \App\Models\OfferModel();
             $offerModel->update($offer['id'], ['status' => 'sold']);
         }

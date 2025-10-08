@@ -1,48 +1,61 @@
 <?php
-$formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
-$formFields += json_decode($offer['form_fields_combo'] ?? '', true) ?? [];
-
-// Diese Keys werden NICHT angezeigt
-$excludeKeys = [
-    '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
-    'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
-    'vorname', 'nachname', 'email', 'phone', 'additional_service', 'referrer',
-
-];
-
-$utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
-
-// Felder filtern
-$formFields = array_filter($formFields, function ($key) use ($excludeKeys, $utmKeys) {
-    if (in_array($key, $excludeKeys)) return false;
-    if (in_array($key, $utmKeys)) return false;
-    if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
-    if (preg_match('/adresse|address/i', $key)) return false;
-    return true;
-}, ARRAY_FILTER_USE_KEY);
-
 // Lade Labels aus Sprachdatei
 $fieldLabels = lang('Offers.labels');
 
+// Standardwerte für optionale Variablen
+$full = $full ?? false;
+$admin = $admin ?? false;
+
+// Form Fields laden
+$formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
 if (!empty($full)) {
-    $formFields = json_decode($offer['form_fields'] ?? '', true);
-
-    $excludeKeys = [
-        '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
-        'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
-        'additional_service', 'referrer',
-    ];
-    $formFields = array_filter($formFields, function ($key) use ($excludeKeys) {
-        if (in_array($key, $excludeKeys)) return false;
-        if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
-        return true;
-    }, ARRAY_FILTER_USE_KEY);
+    // Wenn gekauft: auch combo fields hinzufügen
+    $formFields += json_decode($offer['form_fields_combo'] ?? '', true) ?? [];
+} else {
+    // Wenn nicht gekauft: auch combo fields hinzufügen
+    $formFields += json_decode($offer['form_fields_combo'] ?? '', true) ?? [];
 }
 
-if(!empty($admin)) {
-    $formFields = json_decode($offer['form_fields'] ?? '', true);
+// UTM und technische Keys die IMMER ausgeschlossen werden
+$utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
+$technicalKeys = [
+    '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+    'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+    'additional_service', 'referrer',
+    'terms_n_condition', 'terms_and_conditions', 'terms', 'type', 'lang', 'language',
+    'csrf_test_name', 'submit', 'form_token'
+];
 
-}
+// Kontaktdaten die NUR ausgeschlossen werden wenn NICHT gekauft
+$contactKeys = [
+    'vorname', 'firstname', 'first_name',
+    'nachname', 'lastname', 'last_name', 'surname',
+    'email', 'e_mail', 'email_address', 'mail', 'e_mail_adresse',
+    'telefon', 'telefonnummer', 'phone', 'telephone', 'phone_number', 'tel'
+];
+
+// Felder filtern
+$formFields = array_filter($formFields, function ($key) use ($utmKeys, $technicalKeys, $contactKeys, $full, $admin) {
+    // Normalisiere Key für Vergleich (Leerzeichen und Bindestriche zu Unterstrichen, kleingeschrieben)
+    $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+
+    // Technische Felder immer ausschließen
+    if (in_array($normalizedKey, $technicalKeys)) return false;
+    if (in_array($normalizedKey, $utmKeys)) return false;
+    if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
+
+    // Kontaktdaten nur ausschließen wenn NICHT gekauft UND NICHT Admin
+    if (empty($full) && empty($admin) && in_array($normalizedKey, $contactKeys)) {
+        return false;
+    }
+
+    // Adressfelder nur bei nicht-gekauften ausschließen
+    if (empty($full) && empty($admin) && preg_match('/adresse|address/i', $key)) {
+        return false;
+    }
+
+    return true;
+}, ARRAY_FILTER_USE_KEY);
 
 $fieldConfig = new \Config\FormFieldOptions();
 $fieldsWithImages = $fieldConfig->fieldsWithImages;

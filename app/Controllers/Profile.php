@@ -9,7 +9,6 @@ class Profile extends Controller
 {
     public function index()
     {
-        // Nur für eingeloggte Benutzer
         if (!auth()->loggedIn()) {
             return redirect()->to('/login');
         }
@@ -17,9 +16,9 @@ class Profile extends Controller
         $user = auth()->user();
 
         return view('account/profile', [
-            'title' => 'Mein Konto',
-            'user'  => $user,
-            'errors' => session()->getFlashdata('errors'),
+            'title'   => 'Mein Konto',
+            'user'    => $user,
+            'errors'  => session()->getFlashdata('errors'),
             'success' => session()->getFlashdata('success'),
         ]);
     }
@@ -48,6 +47,19 @@ class Profile extends Controller
 
         $data['auto_purchase'] = $this->request->getPost('auto_purchase') ? 1 : 0;
 
+        // --- Passwortänderung prüfen ---
+        $newPassword     = $this->request->getPost('new_password');
+        $confirmPassword = $this->request->getPost('confirm_password');
+
+        if (!empty($newPassword)) {
+            if ($newPassword !== $confirmPassword) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('errors', ['password' => lang('Profile.passwordMismatch')]);
+            }
+
+            $data['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
+        }
 
         if (!$userModel->update($user->id, $data)) {
             return redirect()->back()

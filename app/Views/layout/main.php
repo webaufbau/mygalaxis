@@ -62,7 +62,7 @@ if ($currentLocale !== 'de') {
 <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Logo -->
-        <a class="navbar-brand fw-bold text-primary" href="<?= lang_url('login') ?>">
+        <a class="navbar-brand fw-bold text-primary" href="<?= auth()->loggedIn() ? site_url('dashboard') : lang_url('login') ?>">
             <?= esc(siteconfig()->name) ?>
         </a>
 
@@ -87,7 +87,7 @@ if ($currentLocale !== 'de') {
                                 <?= esc(lang('Navigation.filter')) ?>
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
+                        <?php /* <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle <?= $segment1 === 'offers' ? 'active' : '' ?>" href="#" id="offersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <?= esc(lang('Navigation.requests')) ?>
                             </a>
@@ -95,6 +95,11 @@ if ($currentLocale !== 'de') {
                                 <li><a class="dropdown-item" href="<?= site_url('offers') ?>"><?= esc(lang('Navigation.openRequests')) ?></a></li>
                                 <li><a class="dropdown-item" href="<?= site_url('offers/mine') ?>"><?= esc(lang('Navigation.purchasedRequests')) ?></a></li>
                             </ul>
+                        </li>*/ ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $segment1 === 'offers' ? 'active' : '' ?>" href="<?= site_url('offers') ?>">
+                                <?= esc(lang('Navigation.openRequests')) ?>
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'finance' ? 'active' : '' ?>" href="<?= site_url('finance') ?>">
@@ -124,10 +129,20 @@ if ($currentLocale !== 'de') {
                 <ul class="navbar-nav ms-auto">
                     <?php if(auth()->user()->inGroup('admin')) { ?>
                     <li class="nav-item">
+                        <a class="nav-link <?= ($segment1 === '' || $segment1 === 'dashboard') ? 'active' : '' ?>" href="<?= site_url('dashboard') ?>">
+                            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-normal" href="/admin/user">
                             <i class="bi bi-buildings me-1"></i> Firmen
                         </a>
                     </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-normal" href="/admin/regions">
+                                    <i class="bi bi-geo-alt me-1"></i> Regionen
+                                </a>
+                            </li>
                     <li class="nav-item">
                         <a class="nav-link text-normal" href="/admin/review">
                             <i class="bi bi-star me-1"></i> Bewertungen
@@ -165,14 +180,36 @@ if ($currentLocale !== 'de') {
 
 <main class="container mb-5">
     <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
             <?= esc(session()->getFlashdata('success')) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
     <?php endif; ?>
+    <?php if (session()->getFlashdata('message')): ?>
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><?= esc(session()->getFlashdata('message')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
     <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
             <?= esc(session()->getFlashdata('error')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <ul class="mb-0">
+                <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                    <li><?= esc($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('warning')): ?>
+        <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+            <?= esc(session()->getFlashdata('warning')) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schliessen"></button>
         </div>
     <?php endif; ?>

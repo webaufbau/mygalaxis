@@ -120,7 +120,7 @@ class Validation extends BaseConfig
                 'is_unique[auth_identities.secret]',
             ],
             'errors' => [
-                'is_unique' => 'Diese E-Mail-Adresse wird bereits verwendet. Wenn Sie bereits ein Konto haben, melden Sie sich bitte an.',
+                'is_unique' => 'Wir betreiben mehrere Portale. Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
             ],
         ],
         'password' => [

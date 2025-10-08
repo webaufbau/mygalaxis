@@ -4,8 +4,7 @@ namespace App\Controllers;
 
 use App\Libraries\TwilioService;
 
-class Verification extends BaseController
-{
+class Verification extends BaseController {
     public function index() {
         $maxWaitTime = 5; // Sekunden
         $waited = 0;
@@ -78,17 +77,19 @@ class Verification extends BaseController
         }
     }
 
-    public function processing()
-    {
+    public function processing() {
+        $uuid = $this->request->getGet('uuid') ?? session()->get('uuid');
+
         log_message('info', 'Verifizierung processing: Warte auf Datensatz');
         return view('processing_request', [
             'siteConfig' => $this->siteConfig,
+            'uuid' => $uuid,
         ]);
     }
 
-    public function checkSession()
-    {
-        $uuid = session()->get('uuid');
+    public function checkSession() {
+        $uuid = $this->request->getGet('uuid') ?? session()->get('uuid');
+
         if (!$uuid) {
             log_message('info', 'Verifizierung checkSession: waiting');
             return $this->response->setJSON(['status' => 'waiting']);
@@ -111,30 +112,39 @@ class Verification extends BaseController
         return $this->response->setJSON(['status' => 'waiting']);
     }
 
-    public function send()
-    {
+    public function send() {
         $request = service('request');
 
         $phone = session()->get('phone');
         $method = session()->get('verify_method');
 
+        log_message('info', "SEND: Phone from session: " . ($phone ?? 'NULL') . ", Method: " . ($method ?? 'NULL'));
+
         if (!$phone) {
-            log_message('info', 'Verifizierung gesendet: Verifizierung Telefonnummer fehlt.');
-            return redirect()->back()->with('error', lang('Verification.phoneMissing'));
+            log_message('error', 'SEND: Telefonnummer fehlt in Session!');
+            $locale = getCurrentLocale();
+            $prefix = ($locale === 'de') ? '' : '/' . $locale;
+            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            return redirect()->to($nextUrl)->with('error', lang('Verification.phoneMissing'));
         }
 
         $phone = $this->normalizePhone($phone);
 
         // Prüfe, ob Mobilnummer
         $isMobile = is_mobile_number($phone);
+        log_message('info', "DEBUG: Phone {$phone} -> isMobile: " . ($isMobile ? 'YES' : 'NO') . " -> method from session: {$method}");
 
         // Wenn kein Mobile, dann nur Anruf zulassen
         if (!$isMobile && $method !== 'call') {
-            return redirect()->back()->with('error', lang('Verification.fixedLineOnlyCall'));
+            log_message('error', "SEND: Festnetz erkannt aber Methode ist {$method}");
+            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            return redirect()->to($nextUrl)->with('error', lang('Verification.fixedLineOnlyCall'));
         }
 
         if (!$method) {
-            return redirect()->back()->with('error', lang('Verification.chooseMethod'));
+            log_message('error', 'SEND: Methode fehlt in Session!');
+            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            return redirect()->to($nextUrl)->with('error', lang('Verification.chooseMethod'));
         }
 
         //$method = 'call';
@@ -147,37 +157,30 @@ class Verification extends BaseController
         log_message('info', "Verifizierungscode $verificationCode via $method an $phone");
 
         $twilio = new TwilioService();
-        $success = false;
 
         // Hilfsfunktion für korrekte locale-URL
         $locale = getCurrentLocale();
         $prefix = ($locale === 'de') ? '' : '/' . $locale;
 
         if ($method === 'sms') {
-            $success = false; // $twilio->sendSms($phone, "Ihr Verifizierungscode lautet: $verificationCode");
+            // SMS über Infobip versenden
+            $infobip = new \App\Libraries\InfobipService();
+            $message = lang('Verification.smsVerificationCode', [
+                'sitename' => $this->siteConfig->name,
+                'code' => $verificationCode
+            ]);
+            $infobipResponseArray = $infobip->sendSms($phone, $message);
 
-            if ($success) {
-                log_message('info', "SMS-Code an $phone gesendet.");
+            session()->set('sms_sent_status', $infobipResponseArray['status']);
+            session()->set('sms_message_id', $infobipResponseArray['messageId']);
+
+            if ($infobipResponseArray['success']) {
+                log_message('info', "SMS-Code an $phone über Infobip gesendet.");
+                return redirect()->to($prefix . '/verification/confirm');
             } else {
-                log_message('error', "Twilio SMS Fehler an $phone.");
-
-                // Fallback: Infobip versuchen
-                $infobip = new \App\Libraries\InfobipService();
-                $message = lang('Verification.smsVerificationCode', [
-                    'sitename' => $this->siteConfig->name,
-                    'code' => $verificationCode
-                ]);
-                $infobipResponseArray = $infobip->sendSms($phone, $message);
-
-                session()->set('sms_sent_status', $infobipResponseArray['status']);
-                session()->set('sms_message_id', $infobipResponseArray['messageId']);
-
-                if ($infobipResponseArray) {
-                    log_message('info', "SMS-Code an $phone über Infobip gesendet (Fallback).");
-                    return redirect()->to($prefix . '/verification/confirm');
-                } else {
-                    log_message('error', "Infobip SMS Fehler an $phone.");
-                }
+                log_message('error', "Infobip SMS Fehler an $phone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
+                $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
             }
         } elseif ($method === 'call') {
             //$phone = '+436505711660';
@@ -188,20 +191,19 @@ class Verification extends BaseController
 
             if ($success) {
                 log_message('info', "Anruf-Code an $phone gestartet.");
+                return redirect()->to($prefix . '/verification/confirm');
             } else {
                 log_message('error', "Twilio Call Fehler an $phone.");
+                $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
             }
         }
 
-        if ($success) {
-            return redirect()->to($prefix . '/verification/confirm');
-        }
-
-        return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
+        $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+        return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
     }
 
-    public function confirm()
-    {
+    public function confirm() {
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode == '') {
             log_message('info', 'Verifizierung Confirm verificationCode fehlt.');
@@ -278,14 +280,13 @@ class Verification extends BaseController
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
                 session()->set('sms_message_id', $infobipResponseArray['messageId']);
 
-                if ($infobipResponseArray) {
+                if ($infobipResponseArray['success']) {
                     log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
                     return redirect()->to($prefix . '/verification/confirm');
                 } else {
-                    log_message('error', "Infobip SMS Fehler an $normalizedPhone.");
+                    log_message('error', "Infobip SMS Fehler an $normalizedPhone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
+                    return redirect()->to($prefix . '/verification/confirm')->with('error', lang('Verification.errorSendingCode'));
                 }
-
-                return redirect()->to($prefix . '/verification/confirm');
             }
 
             if ($method === 'call') {
@@ -298,7 +299,7 @@ class Verification extends BaseController
                 }
             }
 
-            return redirect()->to($prefix . '/verification')->with('error', lang('Verification.errorSendingCode'));
+            return redirect()->to($prefix . '/verification/confirm')->with('error', lang('Verification.errorSendingCode'));
         }
 
         // --- FALL 2: Benutzer gibt Bestätigungscode ein ---
@@ -312,6 +313,47 @@ class Verification extends BaseController
                 ]);
 
                 session()->remove('verification_code');
+
+
+                // ---- NEU: E-Mail erst jetzt senden ----
+                $offerModel = new \App\Models\OfferModel();
+                $offerData = $offerModel->where('uuid', $uuid)->first();
+                if ($offerData) {
+                    $type = $offerData['type'] ?? 'unknown';
+
+                    // Stelle sicher, dass Preis berechnet ist
+                    if (empty($offerData['price']) || $offerData['price'] <= 0) {
+                        $updater = new \App\Libraries\OfferPriceUpdater();
+                        $updater->updateOfferAndNotify($offerData);
+
+                        // frisch aus DB holen (mit Preis)
+                        $offerData = $offerModel->find($offerData['id']);
+
+                        // Prüfe nochmals ob Preis jetzt gesetzt ist
+                        if (empty($offerData['price']) || $offerData['price'] <= 0) {
+                            log_message('error', 'Offer ID ' . $offerData['id'] . ' konnte nicht verifiziert werden: Preis ist 0');
+                            // Verifizierung rückgängig machen
+                            $builder->where('uuid', $uuid)->update(['verified' => 0]);
+                            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                            return redirect()->to($nextUrl)->with('error', 'Das Angebot konnte nicht verifiziert werden. Bitte kontaktieren Sie den Support.');
+                        }
+                    }
+
+                    // Dann Offer an Offertensteller und Admins senden
+                    $this->sendOfferNotificationEmail(
+                        json_decode($offerData['form_fields'], true) ?? [],
+                        $type,
+                        $uuid,
+                        $offerData['verify_type'] ?? null
+                    );
+
+                    // E-Mail an passende Firmen (nur einmal, unabhängig vom Rabatt)
+                    $notifier = new \App\Libraries\OfferNotificationSender();
+                    $notifier->notifyMatchingUsers($offerData);
+                }
+
+                log_message('info', 'Verifizierung abgeschlossen: E-Mail gesendet.');
+
 
                 log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? $this->siteConfig->thankYouUrl['de']));
                 return view('verification_success', [
@@ -372,7 +414,7 @@ class Verification extends BaseController
         $phone = $this->normalizePhone($phone);
 
         $isMobile = is_mobile_number($phone);
-        $method = $isMobile ? 'sms' : 'phone';
+        $method = $isMobile ? 'sms' : 'call';
 
         session()->set('uuid', $offer['uuid']);
         session()->set('phone', $phone);
@@ -382,8 +424,7 @@ class Verification extends BaseController
         return redirect()->to($prefix . '/verification/send');
     }
 
-    private function normalizePhone(string $phone): string
-    {
+    private function normalizePhone(string $phone): string {
         $phone = preg_replace('/\D+/', '', $phone); // Nur Zahlen
         if (str_starts_with($phone, '0')) {
             $phone = '+41' . substr($phone, 1); // 0781234512 → +41781234512
@@ -391,6 +432,96 @@ class Verification extends BaseController
             $phone = '+' . $phone;
         }
         return $phone;
+    }
+
+
+    protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void {
+        helper('text'); // für esc()
+
+        // Sprache aus Offer-Daten setzen
+        $language = $data['lang'] ?? 'de'; // Fallback: Deutsch
+        log_message('debug', 'language aus offerte/fallback: ' . $language);
+        $request = service('request');
+        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+            service('language')->setLocale($language);
+        } else {
+            $request->setLocale($language);
+        }
+
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+
+        // Admins
+        $adminEmails = [$this->siteConfig->email];
+        $bccString = implode(',', $adminEmails);
+
+        // Formularverfasser
+        $userEmail = $data['email'] ?? null;
+
+        $formular_page = null;
+        if (isset($data['_wp_http_referer'])) {
+            $formular_page = $data['_wp_http_referer'];
+            $formular_page_exploder = explode('?', $formular_page);
+            $formular_page = $formular_page_exploder[0];
+            $formular_page = str_replace('-', ' ', $formular_page);
+            $formular_page = str_replace('/', ' ', $formular_page);
+            $formular_page = ucwords($formular_page);
+            $formular_page = trim($formular_page);
+        }
+
+        // Technische Felder rausfiltern
+        $filteredFields = array_filter($data, function ($key) {
+            $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
+            if (in_array($key, $excludeKeys)) return false;
+            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
+            return true;
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Tracking-Felder entfernen
+        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
+        $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
+            return !in_array($key, $utmKeys);
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Maildaten für View
+        $emailData = [
+            'formName' => $formName,
+            'formular_page' => $formular_page,
+            'uuid' => $uuid,
+            'verifyType' => $verifyType,
+            'filteredFields' => $filteredFields,
+            'data' => $data,
+        ];
+
+        // HTML-Ansicht generieren
+        $message = view('emails/offer_notification', $emailData);
+
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title' => 'Ihre Anfrage',
+            'content' => $message,
+            'siteConfig' => $this->siteConfig,
+        ])->render('emails/layout');
+
+        // Maildienst starten
+        $email = \Config\Services::email();
+
+        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
+        $email->setTo($userEmail);            // Kunde als To
+        $email->setBCC($bccString);         // Admins als BCC
+        $email->setSubject(lang('Email.offer_added_email_subject'));
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        // --- Wichtige Ergänzung: Header mit korrekter Zeitzone ---
+        date_default_timezone_set('Europe/Zurich'); // falls noch nicht gesetzt
+        $email->setHeader('Date', date('r')); // RFC2822-konforme aktuelle lokale Zeit
+
+        if (!$email->send()) {
+            log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+        }
+
     }
 
 }

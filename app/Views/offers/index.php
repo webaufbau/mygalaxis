@@ -18,6 +18,7 @@
         <select name="filter" class="form-select">
             <option value=""><?= lang('Offers.allStatuses') ?></option>
             <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.statusAvailable') ?></option>
+            <option value="purchased" <?= ($filter === 'purchased') ? 'selected' : '' ?>><?= lang('Offers.filterPurchased') ?? 'Gekaufte' ?></option>
             <option value="sold" <?= ($filter === 'sold') ? 'selected' : '' ?>><?= lang('Offers.statusSold') ?></option>
             <option value="out_of_stock" <?= ($filter === 'out_of_stock') ? 'selected' : '' ?>><?= lang('Offers.statusOutOfStock') ?></option>
         </select>
@@ -51,10 +52,13 @@
             }
             ?>
 
-            <div class="list-group-item p-3 mb-3 border rounded bg-white">
+            <div class="list-group-item p-3 mb-3 border rounded <?= $isPurchased ? 'bg-success bg-opacity-10 border-success' : 'bg-white' ?>">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="flex-grow-1 me-3">
-                        <span class="title fw-bold d-block"><?= esc($offer['title']) ?></span>
+                        <span class="title fw-bold d-block">
+                            <?= $isPurchased ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '' ?>
+                            <?= esc($offer['title']) ?>
+                        </span>
                         <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
                         <br>
 
@@ -89,10 +93,12 @@
                             <?php endif; ?>
                         </div>
 
-                        <?php if (!$isPurchased && $status === 'available'): ?>
+                        <?php if (!$isPurchased && $status === 'available' && $displayPrice > 0): ?>
                             <a href="<?= site_url('offers/buy/' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= lang('Offers.buyButton') ?></a>
                         <?php elseif ($isPurchased): ?>
-                            <a href="<?= site_url('offers/mine#detailsview-' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= $btnText; ?></a>
+                            <a href="<?= site_url('offers/' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= $btnText; ?></a>
+                        <?php elseif ($displayPrice <= 0): ?>
+                            <button type="button" class="btn btn-secondary btn-sm mt-2" disabled><?= lang('Offers.priceNotAvailable') ?></button>
                         <?php else: ?>
                             <button type="button" class="btn <?= $btnClass ?> btn-sm mt-2" disabled><?= $btnText ?></button>
                         <?php endif; ?>

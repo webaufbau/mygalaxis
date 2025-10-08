@@ -31,7 +31,7 @@ class FluentForm extends BaseController
 
         log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
 
-        // Speichern
+        // Session speichern (Fallback)
         session()->set('uuid', $uuid);
         session()->set('next_url', $next_url);
         session()->set('additional_service', $additional_service);
@@ -45,7 +45,7 @@ class FluentForm extends BaseController
 
         if($additional_service == 'Nein') {
             log_message('debug', 'Weiterleitung zur Verifikation mit UUID '.$uuid.' ' .  print_r($_SESSION, true));
-            return redirect()->to('processing');
+            return redirect()->to('processing?uuid=' . urlencode($uuid));
         }
 
         // Aktuelle Sprache aus Helper holen
@@ -91,7 +91,7 @@ class FluentForm extends BaseController
         $formName = $data['form_name'] ?? null;
         unset($data['form_name']);
 
-        $uuid = $data['uuid'] ?? bin2hex(random_bytes(8)); // fallback falls nicht mitgeliefert
+        $uuid = $data['uuid'] ?? $data['uuid_value'] ?? bin2hex(random_bytes(8)); // fallback falls nicht mitgeliefert
 
         $verifyType = $data['verified_method'] ?? null;
         $verified = in_array($verifyType, ['sms', 'phone']) ? 1 : 0;
@@ -112,7 +112,7 @@ class FluentForm extends BaseController
 
             if ($data['additional_service'] !== 'Nein') {
                 session()->set('group_email', $data['email'] ?? null);
-                session()->set('group_uuid', $data['uuid'] ?? null);
+                session()->set('group_uuid', $data['uuid'] ?? $data['uuid_value'] ?? null);
                 session()->set('group_additional_service', $data['additional_service'] ?? null);
                 session()->set('group_date', time());
 
@@ -156,10 +156,24 @@ class FluentForm extends BaseController
         $enriched = $offerModel->enrichDataFromFormFields($data, ['uuid' => $uuid]);
 
         $type = $enriched['type'] ?? $data['type'] ?? 'unknown';
+        $originalType = $enriched['original_type'] ?? $type;
 
-        $categoryManager = new \App\Libraries\CategoryManager();
-        $categories = $categoryManager->getAll();
-        $category_option = $categories[$type] ?? null;
+        // Preis mit OfferPriceCalculator berechnen (konsistent mit Cronjob)
+        $priceCalculator = new \App\Libraries\OfferPriceCalculator();
+        $calculatedPrice = $priceCalculator->calculatePrice(
+            $type,
+            $originalType,
+            $data,
+            [] // form_fields_combo ist leer bei neuen Angeboten
+        );
+
+        // Fallback auf CategoryManager nur wenn OfferPriceCalculator 0 zurückgibt
+        if ($calculatedPrice === 0) {
+            $categoryManager = new \App\Libraries\CategoryManager();
+            $categories = $categoryManager->getAll();
+            $category_option = $categories[$type] ?? null;
+            $calculatedPrice = $category_option['price'] ?? 0;
+        }
 
         $insertData = array_merge([
             'form_name'     => $formName,
@@ -169,9 +183,9 @@ class FluentForm extends BaseController
             'verified'      => $verified,
             'verify_type'   => $verifyType,
             'uuid'          => $uuid,
-            'created_at'    => date('Y-m-d H:i:s'),
+            //'created_at'    => date('Y-m-d H:i:s'),
             'status'        => 'available',
-            'price'         => $category_option['price'] ?? 0,
+            'price'         => $calculatedPrice,
             'buyers'        => 0,
             'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
@@ -188,14 +202,16 @@ class FluentForm extends BaseController
         } else {
             $domain = $host;
         }
-        $insertData['platform'] = $domain;
+        // Platform normalisieren: Domain-Format zu Ordner-Format
+        // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
+        $insertData['platform'] = 'my_' . str_replace(['.', '-'], '_', $domain);
 
         if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
             $other_type_has_to_be = $enriched['type'] == 'move' ? 'cleaning' : 'move';
-            $userEmail = $data['email'] ?? null;
+            $userEmail = $data['email'] ?? $data['email_firma'] ?? null;
             $offerFindModel = new OfferModel();
             $matchingOffers = $offerFindModel
-                ->where('email', $data['email'] ?? $userEmail)
+                ->where('email', $data['email'] ?? $data['email_firma'] ?? $userEmail)
                 ->where('type', $other_type_has_to_be)
                 ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-3600 minutes')))
                 ->orderBy('created_at', 'DESC')
@@ -208,17 +224,34 @@ class FluentForm extends BaseController
                 // Neuen Typ setzen
                 $type = 'move_cleaning';
 
-                $categoryManager = new \App\Libraries\CategoryManager();
-                $categories = $categoryManager->getAll();
-                $category_option = $categories[$type] ?? null;
+                // Preis mit OfferPriceCalculator berechnen für move_cleaning
+                $comboPrice = $priceCalculator->calculatePrice(
+                    $type,
+                    $type,
+                    $data,
+                    $previousFormFields
+                );
+
+                // Fallback auf CategoryManager
+                if ($comboPrice === 0) {
+                    $categoryManager = new \App\Libraries\CategoryManager();
+                    $categories = $categoryManager->getAll();
+                    $category_option = $categories[$type] ?? null;
+                    $comboPrice = $category_option['price'] ?? 0;
+                }
 
                 $insertData['type'] = $type;
-                $insertData['price'] = $category_option['price'] ?? 0;
+                $insertData['price'] = $comboPrice;
                 $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
 
                 // vorige Anfrage $matchingOffers löschen
                 $offerModel->delete($previousOffer['id']);
             }
+        }
+
+        // Warnung loggen wenn Preis 0 ist
+        if ($insertData['price'] === 0 || $insertData['price'] === '0') {
+            log_message('warning', 'Offer created with price 0! Type: ' . $type . ', OriginalType: ' . $originalType . ', Data: ' . json_encode($data));
         }
 
         log_message('debug', 'insertdata: ' . print_r($insertData, true));
@@ -232,6 +265,13 @@ class FluentForm extends BaseController
         $offerId = $offerModel->getInsertID();
         $formFields = $data;
 
+        // Titel generieren nach dem Insert (damit wir die ID haben)
+        $savedOffer = $offerModel->find($offerId);
+        if ($savedOffer) {
+            $titleGenerator = new \App\Libraries\OfferTitleGenerator();
+            $generatedTitle = $titleGenerator->generateTitle($savedOffer);
+            $offerModel->update($offerId, ['title' => $generatedTitle]);
+        }
 
         // Typ-spezifische Speicherung:
         $typeModelMap = [
@@ -277,95 +317,9 @@ class FluentForm extends BaseController
             $typeModel->insert($typeData);
         }
 
-        $this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType);
+        //$this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType); später senden erst nach Verifikation
 
         return $this->response->setJSON(['success' => true]);
-    }
-
-    protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void
-    {
-        helper('text'); // für esc()
-
-        // Sprache aus Offer-Daten setzen
-        $language = $data['lang'] ?? 'de'; // Fallback: Deutsch
-        log_message('debug', 'language aus offerte/fallback: ' . $language);
-        $request = service('request');
-        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
-            service('language')->setLocale($language);
-        } else {
-            $request->setLocale($language);
-        }
-
-        $languageService = service('language');
-        $languageService->setLocale($language);
-
-
-
-        // Admins
-        $adminEmails = [$this->siteConfig->email];
-        $bccString = implode(',', $adminEmails);
-
-        // Formularverfasser
-        $userEmail = $data['email'] ?? null;
-
-        $formular_page = null;
-        if(isset($data['_wp_http_referer'])) {
-            $formular_page = $data['_wp_http_referer'];
-            $formular_page_exploder = explode('?', $formular_page);
-            $formular_page = $formular_page_exploder[0];
-            $formular_page = str_replace('-', ' ', $formular_page);
-            $formular_page = str_replace('/', ' ', $formular_page);
-            $formular_page = ucwords($formular_page);
-            $formular_page = trim($formular_page);
-        }
-
-        // Technische Felder rausfiltern
-        $filteredFields = array_filter($data, function ($key) {
-            $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
-            if (in_array($key, $excludeKeys)) return false;
-            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
-            return true;
-        }, ARRAY_FILTER_USE_KEY);
-
-        // Tracking-Felder entfernen
-        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
-        $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
-            return !in_array($key, $utmKeys);
-        }, ARRAY_FILTER_USE_KEY);
-
-        // Maildaten für View
-        $emailData = [
-            'formName'       => $formName,
-            'formular_page' => $formular_page,
-            'uuid'           => $uuid,
-            'verifyType'     => $verifyType,
-            'filteredFields' => $filteredFields,
-            'data'           => $data,
-        ];
-
-        // HTML-Ansicht generieren
-        $message = view('emails/offer_notification', $emailData);
-
-        $view = \Config\Services::renderer();
-        $fullEmail = $view->setData([
-            'title' => 'Ihre Anfrage',
-            'content' => $message,
-        ])->render('emails/layout');
-
-        // Maildienst starten
-        $email = \Config\Services::email();
-
-        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
-        $email->setTo($userEmail);            // Kunde als To
-        $email->setBCC($bccString);         // Admins als BCC
-        $email->setSubject(lang('Email.offer_added_email_subject'));
-        $email->setMessage($fullEmail);
-        $email->setMailType('html');
-
-        if (!$email->send()) {
-            log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
-        }
-
     }
 
 

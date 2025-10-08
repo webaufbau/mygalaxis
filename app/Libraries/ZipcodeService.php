@@ -21,12 +21,12 @@ class ZipcodeService
      * @param array $regions  Liste von Regionen (z. B. "Bezirk Arlesheim")
      * @return array Liste der passenden Zipcodes
      */
-    public function getZipsByCantonAndRegion(array $cantons, array $regions): array
+    public function getZipsByCantonAndRegion(array $cantons, array $regions, string $country_code = 'CH'): array
     {
         $builder = $this->db->table('zipcodes')->select('zipcode');
 
         // Country fixieren (CH)
-        $builder->where('country_code', 'CH');
+        $builder->where('country_code', $country_code);
 
         // Nur falls überhaupt etwas vorhanden ist
         if (!empty($cantons)) {

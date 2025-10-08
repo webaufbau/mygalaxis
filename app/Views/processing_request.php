@@ -50,7 +50,7 @@
         <div class="elementor-element elementor-element-817a056 elementor-widget elementor-widget-image" data-id="817a056" data-element_type="widget" data-widget_type="image.default">
             <div class="elementor-widget-container">
                 <a href="<?=$siteConfig->frontendUrl;?>">
-                    <img src="<?=$siteConfig->logoUrl;?>" class="attachment-large size-large wp-image-1581" alt="-logo">
+                    <img src="<?=$siteConfig->logoUrl;?>" class="attachment-large size-large wp-image-1581" alt="-logo" height="<?=$siteConfig->logoHeightPixel ?? '';?>">
                 </a>
             </div>
         </div>
@@ -71,6 +71,7 @@
 
 <script>
     const locale = '<?= esc($locale) ?>';
+    const uuid   = '<?= esc($uuid) ?>';
 
     function buildUrl(path) {
         if (locale === 'de') {
@@ -81,11 +82,11 @@
 
     async function checkSession() {
         try {
-            const response = await fetch(buildUrl('verification/check-session'));
+            const response = await fetch(buildUrl('verification/check-session?uuid=' + encodeURIComponent(uuid)));
             const data = await response.json();
 
             if (data.status === 'ok') {
-                window.location.href = buildUrl('verification');
+                window.location.href = buildUrl('verification?uuid=' + encodeURIComponent(uuid));
             } else {
                 setTimeout(checkSession, 2000);
             }

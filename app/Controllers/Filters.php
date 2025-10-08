@@ -15,9 +15,11 @@ class Filters extends Controller
         $db = \Config\Database::connect();
 
         // Alle Zeilen aus zipcodes holen, sortiert nach state und province
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
         $query = $db->table('zipcodes')
             ->select('canton, state, state_code, province, community')
-            ->where('country_code', 'CH')
+            ->where('country_code', $siteCountry)
             ->orderBy('canton', 'ASC')
             ->orderBy('province', 'ASC')
             ->get();
@@ -58,14 +60,14 @@ class Filters extends Controller
 
         $user = auth()->user();
 
-        $filterOptions = new \App\Config\FilterOptions();
+        $categoryOptions = new \Config\CategoryOptions();
+        $appConfig = new \Config\App();
 
         $data = [
             'cantons' => $cantons,
-            'categories' => $filterOptions->categories,
-            'types' => $filterOptions->types,
-            'languages' => $filterOptions->languages,
-            'services' => $filterOptions->services,
+            'categories' => $categoryOptions->categoryTypes,
+            'types' => $categoryOptions->categoryTypes,
+            'languages' => $appConfig->supportedLocales,
             'user_filters' => [
                 'filter_categories' => explode(',', $user->filter_categories ?? ''),
                 'filter_cantons' => explode(',', $user->filter_cantons ?? ''),
@@ -81,7 +83,7 @@ class Filters extends Controller
     public function save()
     {
         if (!auth()->loggedIn()) {
-            return redirect()->to('/auth');
+            return $this->response->setStatusCode(403)->setJSON(['error' => 'Unauthorized']);
         }
 
         $user = auth()->user();
@@ -91,20 +93,28 @@ class Filters extends Controller
 
         $userModel = new \App\Models\UserModel();
 
-        // Nur Daten, die in allowedFields definiert sind
         $data = [
             'id' => $userId,
             'filter_categories' => isset($postData['filter_categories']) ? implode(',', $postData['filter_categories']) : '',
             'filter_cantons' => isset($postData['cantons']) ? implode(',', $postData['cantons']) : '',
             'filter_regions' => isset($postData['regions']) ? implode(',', $postData['regions']) : '',
-            //'min_rooms' => $postData['min_rooms'] ?? '',
             'filter_custom_zip' => $postData['custom_zip'] ?? '',
-            // Weitere Felder kannst du hier auch hinzufügen...
         ];
 
         $userModel->save($data);
 
+        // Wenn AJAX -> JSON zurückgeben
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => lang('Filter.messageFilterSaved'),
+                'csrf_name' => csrf_token(),       // Token-Name
+                'csrf_hash' => csrf_hash()         // neuer Token-Wert
+            ]);
+        }
+
         return redirect()->to('/filter')->with('message', lang('Filter.messageFilterSaved'));
     }
+
 
 }

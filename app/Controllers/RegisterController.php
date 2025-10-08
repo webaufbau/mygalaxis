@@ -169,6 +169,25 @@ class RegisterController extends ShieldRegister {
             $user->language = $locale;
             $user->setAttribute('language', $locale);
 
+            // Platform ermitteln: Erst HTTP_HOST, falls leer/ungültig dann Ordnername als Fallback
+            $hostname = $_SERVER['HTTP_HOST'] ?? '';
+            $platform = str_replace(['.', '-'], '_', $hostname);
+
+            // Fallback: Wenn HTTP_HOST leer oder ungültig (z.B. localhost, IP), nutze Ordnername
+            if (empty($platform) || $platform === 'localhost' || preg_match('/^\d+_\d+_\d+_\d+/', $platform)) {
+                $rootPath = ROOTPATH; // z.B. /var/www/my_offertenheld_ch/
+                $platform = basename(rtrim($rootPath, '/'));
+            } else {
+                // HTTP_HOST Format: Domain -> Ordner-Format mit my_ prefix
+                // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
+                if (strpos($platform, 'my_') !== 0) {
+                    $platform = 'my_' . $platform;
+                }
+            }
+
+            $user->platform = $platform;
+            $user->setAttribute('platform', $platform);
+
             try {
                 /*d($this->request->getPost());
                 d($this->request->getPost($allowedPostFields));
@@ -189,20 +208,31 @@ class RegisterController extends ShieldRegister {
             $zip = $this->request->getPost('company_zip');
 
             // PLZ-Region suchen
+            $siteConfig = siteconfig();
+            $siteCountry = $siteConfig->siteCountry ?? null;
             $zipResult = $db->table('zipcodes')
-                ->where('country_code', 'CH')
+                ->where('country_code', $siteCountry)
                 ->where('zipcode', $zip)
                 ->get()
                 ->getRow();
 
             if ($zipResult) {
-                $region = $zipResult->province;
-                $canton = $zipResult->canton;
-
-                // Filter speichern
+                // Nach dem Speichern des Users und dem Ermitteln von Region/Canton
                 $userModel = new \App\Models\UserModel();
+
+                // Filter aus Post-Daten holen
+                $postData = $this->request->getPost();
+
+                // Branchen-Kategorien aus Checkboxen
+                $filterCategories = isset($postData['filter_categories']) ? implode(',', $postData['filter_categories']) : '';
+
+                // Kantone/Regionen aus PLZ ermitteln
+                $region = $zipResult->province ?? '';
+                $canton = $zipResult->canton ?? '';
+
                 $userModel->save([
                     'id' => $user->id,
+                    'filter_categories' => $filterCategories,
                     'filter_regions' => $region,
                     'filter_cantons' => $canton,
                 ]);
@@ -229,16 +259,9 @@ class RegisterController extends ShieldRegister {
 
             $authenticator->completeLogin($user);
 
-            // Success!
-            /*$response = [
-                'message' => lang('Auth.registerSuccess'),
-                'redirect' => config('Auth')->registerRedirect(),
-                'success' => true,
-            ];
-            return $this->response->setJSON($response);*/
-
-        // Proceed with Shield's login attempt
-        return parent::registerAction();
+            // Success! Redirect to the configured page
+            session()->setFlashdata('message', lang('Auth.registerSuccess'));
+            return redirect()->to(config('Auth')->registerRedirect());
 
 
     }

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# */5 * * * * /home/user/scripts/backup_server.sh >> /var/log/sync_all_dbs.log 2>&1
+
+LOCKFILE="/tmp/db_sync.lock"
+[ -e "$LOCKFILE" ] && exit 1
+echo $$ > "$LOCKFILE"
+
+# SSH Zugang zum Master
+SSH_HOST="master.server.tld"
+SSH_PORT=22
+
+# Array mit DB-Sync-Konfigurationen
+# Format:
+# src_dbname|src_user|src_pass|dst_dbname|dst_user|dst_pass
+databases=(
+  "wordpress|wpuser|wppass|wordpress|localuser|localpass"
+  "shopdb|shopuser|shoppass|shopdb|localuser|localpass"
+  "crm|crmuser|crmpass|crm|localuser|localpass"
+)
+
+for dbconf in "${databases[@]}"; do
+  IFS='|' read -r SRC_DB SRC_USER SRC_PASS DST_DB DST_USER DST_PASS <<< "$dbconf"
+
+  echo ">>> Synchronisiere DB $SRC_DB@$SSH_HOST → $DST_DB@localhost"
+
+  DUMP_FILE="/tmp/${SRC_DB}_$(date +%F_%H%M).sql"
+
+  # Dump direkt via SSH vom Master holen
+  ssh -p "$SSH_PORT" "$SSH_HOST" \
+    "mysqldump --single-transaction --quick -u $SRC_USER -p'$SRC_PASS' $SRC_DB" > "$DUMP_FILE"
+
+  if [ $? -eq 0 ]; then
+    mysql -u "$DST_USER" -p"$DST_PASS" "$DST_DB" < "$DUMP_FILE"
+    rm -f "$DUMP_FILE"
+    echo "✓ $SRC_DB erfolgreich importiert."
+  else
+    echo "⚠ Fehler beim Dump von $SRC_DB"
+  fi
+
+done
+
+rm -f "$LOCKFILE"

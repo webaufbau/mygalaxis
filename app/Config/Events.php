@@ -6,6 +6,16 @@ use CodeIgniter\Events\Events;
 use CodeIgniter\Exceptions\FrameworkException;
 use CodeIgniter\HotReloader\HotReloader;
 
+
+
+// Event-Listener registrieren
+Events::on('register', function($user) {
+    // E-Mail senden
+    $emailSender = new \App\Libraries\CompanyWelcomeMailer();
+    $emailSender->sendWelcomeEmail($user);
+});
+
+
 /*
  * --------------------------------------------------------------------
  * Application Events

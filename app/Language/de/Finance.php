@@ -9,12 +9,14 @@ return [
     'allYears'        => 'Alle Jahre',
     'month'           => 'Monat',
     'showButton'      => 'Anzeigen',
-    'pdfExport'       => 'PDF Export',
+    'pdfExport'       => 'Buchungen PDF Export',
     'noBookings'      => 'Keine Buchungen gefunden.',
+    'noBookingsForMonth' => 'Keine Buchungen für diesen Monat gefunden.',
     'date'            => 'Datum',
     'type'            => 'Typ',
     'description'     => 'Beschreibung',
     'amount'          => 'Betrag',
+    'invoice' => 'Rechnung',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Ungültiger Betrag.',
@@ -35,6 +37,29 @@ return [
     // PDF
     'pdf_title'    => 'Buchungen',
 
+    // Monatrechnung
+    'monthlyInvoice' => 'Monatsrechnung',
+    'invoiceDate' => 'Rechnungsdatum',
+    'invoiceNumber' => 'Rechnungsnummer',
+    'billingPeriod' => 'Abrechnungszeitraum',
+    'bookingNr' => 'Booking-Nr.',
+    'totalAmount' => 'Gesamtbetrag',
+    'customer' => 'Kunde',
+    'paymentNote' => 'Diese Rechnung wurde bereits vollständig im Voraus über Saferpay beglichen.',
+    'thankYou' => 'Wir danken Ihnen für Ihren Einkauf und Ihr Vertrauen.',
+
+    // MWST und Bankdaten
+    'vatNumber' => 'UID-Nummer',
+    'amountExclVat' => 'Betrag exkl. MWST',
+    'vat' => 'MWST',
+    'amountInclVat' => 'Betrag inkl. MWST',
+    'serviceDate' => 'Leistungsdatum',
+    'servicePeriod' => 'Leistungszeitraum',
+    'bankDetails' => 'Bankverbindung',
+    'iban' => 'IBAN',
+    'bank' => 'Bank',
+    'contact' => 'Kontakt',
+
     // Für topupFail View
     'topupFailTitle'   => 'Zahlung fehlgeschlagen',
     'topupFailMessage' => 'Ihre Aufladung konnte leider nicht abgeschlossen werden.',
@@ -43,4 +68,14 @@ return [
     // Sonstige
     'topupDescription' => 'Guthabenaufladung via',
     'onlinePayment'    => 'Online-Zahlung',
+
+    // Auflade-Seite
+    'topupTitle' => 'Guthaben aufladen',
+    'insufficientBalance' => 'Ihr Guthaben reicht für diesen Kauf nicht aus.',
+    'requiredAmount' => 'Benötigter Betrag',
+    'missingAmount' => 'Fehlender Betrag',
+    'topupAmount' => 'Aufladebetrag (CHF)',
+    'minimumTopupAmount' => 'Mindestaufladung: %s CHF',
+    'topupNow' => 'Jetzt aufladen',
+    'backToOffers' => 'Zurück zu Angeboten',
 ];

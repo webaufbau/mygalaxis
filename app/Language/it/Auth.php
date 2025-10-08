@@ -35,6 +35,9 @@ return [
     'companyPhoneRequired'    => 'Per favore inserisci un numero di telefono valido nel formato %s.',
     'companyWebsite'          => 'Sito web',
     'companyWebsiteRequired'  => 'Per favore inserisci un URL valido.',
+    'contactPerson'           => 'Persona di contatto',
+    'contactPersonRequired'   => 'Per favore inserisci la persona di contatto.',
+    'selectAtLeastOneCategory'=> 'Please select at least one category.',
     'registerButton'          => 'Registrati',
 
     // Messages
@@ -45,6 +48,7 @@ return [
     'resetPasswordMessage'    => "Ciao,\n\nPer favore clicca sul seguente link per reimpostare la tua password:\n%s\n\nIl link è valido per 1 ora.",
     'enterEmail'              => 'Per favore inserisci il tuo indirizzo e-mail.',
     'userNotFound'            => 'Utente non trovato.',
+    'adminOnly'               => 'Questo login è riservato agli amministratori. Si prega di utilizzare il login normale per le aziende.',
     'invalidOrExpiredLink'    => 'Link non valido o scaduto.',
     'invalidRequest'          => 'Richiesta non valida.',
     'passwordsDontMatch'      => 'Le password non corrispondono.',
@@ -158,5 +162,10 @@ return [
 
     // AGB
     'acceptAGBRequired' => 'Devi accettare i termini e condizioni.',
+
+
+    'linkNotClickable' => 'If the link is not clickable in your email client, please copy and paste the following link into your browser:',
+
+    'isUniqueEmail' => 'Gestiamo più portali. Il tuo indirizzo e-mail è già collegato a un account. Puoi accedere con la tua e-mail o richiedere l\'accesso diretto al tuo account esistente tramite il Magic Link.',
 
 ];

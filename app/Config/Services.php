@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Language\CustomLanguage;
+use App\Libraries\CustomEmail;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -46,5 +47,22 @@ class Services extends BaseService
         }
 
         return new CustomLanguage($locale ?? \Config\Services::request()->getLocale());
+    }
+
+    /**
+     * Email service with automatic BCC to logs@webaufbau.com
+     *
+     * @param bool $getShared
+     * @return \CodeIgniter\Email\Email
+     */
+    public static function email($config = null, bool $getShared = true)
+    {
+        if ($getShared) {
+            return static::getSharedInstance('email', $config);
+        }
+
+        $config ??= config('Email');
+
+        return new CustomEmail($config);
     }
 }

@@ -71,8 +71,11 @@ class SendReviewReminder extends BaseCommand
                 continue;
             }
 
+            // Lade SiteConfig basierend auf Offer-Platform
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
+
             // Review-Link generieren: öffnet Seite für Anbieter (mit offer hash)
-            $reviewLink = site_url('offer/interested/' . $offer['access_hash']);
+            $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $offer['access_hash'];
 
             // Maildaten
             $emailData = [
@@ -81,12 +84,13 @@ class SendReviewReminder extends BaseCommand
                 'creatorLastname' => $offer['lastname'] ?? '',
                 'reviewLink' => $reviewLink,
                 'bookingDate' => $booking['created_at'],
+                'siteConfig' => $siteConfig,
             ];
 
             $subject = lang('Reviews.emailSubject', [$offer['title']]);
             $message = view('emails/review_reminder', $emailData);
 
-            if ($this->sendEmail($creatorEmail, $subject, $message)) {
+            if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
                 CLI::write(lang('Reviews.reminderSent', [$creatorEmail, $booking['id']]), 'green');
 
                 $this->bookingModel->update($booking['id'], ['review_reminder_sent_at' => date('Y-m-d H:i:s')]);
@@ -96,14 +100,15 @@ class SendReviewReminder extends BaseCommand
         }
     }
 
-    protected function sendEmail(string $to, string $subject, string $message): bool
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
     {
-        $siteConfig = siteconfig();
+        $siteConfig = $siteConfig ?? siteconfig();
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
             'title' => lang('Reviews.emailTitle'),
             'content' => $message,
+            'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
         $email = \Config\Services::email();
@@ -112,6 +117,10 @@ class SendReviewReminder extends BaseCommand
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');
+
+        // --- Wichtige Ergänzung: Header mit korrekter Zeitzone ---
+        date_default_timezone_set('Europe/Zurich'); // falls noch nicht gesetzt
+        $email->setHeader('Date', date('r')); // RFC2822-konforme aktuelle lokale Zeit
 
         if (!$email->send()) {
             log_message('error', 'Fehler beim Senden der Review-Erinnerung an ' . $to . ': ' . print_r($email->printDebugger(), true));

@@ -11,6 +11,55 @@ class Auth extends Controller
         return view('\CodeIgniter\Shield\Views\login');
     }
 
+    /**
+     * Admin Login View - separate page for administrators
+     */
+    public function adminLoginView()
+    {
+        // If already logged in and is admin, redirect to admin area
+        if (auth()->loggedIn()) {
+            if (auth()->user()->inGroup('admin')) {
+                return redirect()->to('/admin/user');
+            }
+            // If logged in but not admin, logout first
+            auth()->logout();
+        }
+
+        return view('admin/login');
+    }
+
+    /**
+     * Admin Login Attempt - handles admin login submission
+     */
+    public function adminLoginAttempt()
+    {
+        $credentials = $this->request->getPost([
+            'email',
+            'password',
+        ]);
+
+        $credentials = array_filter($credentials);
+        $credentials['email'] = $this->request->getPost('email');
+        $credentials['password'] = $this->request->getPost('password');
+        $remember = (bool) $this->request->getPost('remember');
+
+        // Attempt to login
+        $result = auth()->attempt($credentials, $remember);
+
+        if (!$result->isOK()) {
+            return redirect()->route('admin-login')->with('error', $result->reason());
+        }
+
+        // Check if user is admin
+        if (!auth()->user()->inGroup('admin')) {
+            auth()->logout();
+            return redirect()->route('admin-login')->with('error', lang('Auth.adminOnly'));
+        }
+
+        // Success - redirect to admin user list (or another existing admin page)
+        return redirect()->to('/admin/user')->with('message', lang('Auth.successLogin'));
+    }
+
     public function processLogin()
     {
         $email = $this->request->getPost('email');
