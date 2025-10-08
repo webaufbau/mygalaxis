@@ -115,7 +115,12 @@ class OfferPriceUpdater
             $type = ucfirst(strtolower(str_replace(['_', '-'], ' ', $offer['type'])));
         }
 
-        $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
+        // Division durch 0 vermeiden
+        if ($oldPrice > 0) {
+            $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
+        } else {
+            $discount = 0;
+        }
 
         // Format: "20% Rabatt auf Angebot #32 Heizung 3000 Bern"
         $subject = "{$discount}% Rabatt auf Angebot #{$offer['id']} {$type} {$offer['zip']} {$offer['city']}";

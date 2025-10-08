@@ -5,6 +5,7 @@ class OfferPriceCalculator
 {
     protected array $categoryPrices;
     protected array $discountRules;
+    protected array $debugInfo = [];
 
     public function __construct()
     {
@@ -21,17 +22,28 @@ class OfferPriceCalculator
     }
 
     /**
+     * Gibt Debug-Informationen zurück, warum der Preis 0 ist
+     */
+    public function getDebugInfo(): array
+    {
+        return $this->debugInfo;
+    }
+
+    /**
      * Berechnet den Basispreis
      */
     public function calculatePrice(string $type, string $originalType, array $fields, array $fields_combo): float
     {
         $price = 0;
+        $this->debugInfo = []; // Debug-Info zurücksetzen
 
         // Versuche zuerst mit dem Haupttyp
         $category = $this->categoryPrices[$type] ?? null;
 
         // Fallback: Wenn type keine Kategorie hat, versuche mit originalType
         if (!$category) {
+            $this->debugInfo[] = "Kategorie '{$type}' nicht in category_settings.json gefunden";
+
             // Mappe originalType zu category-Namen
             $typeMapping = [
                 'sanitaer' => 'plumbing',
@@ -46,7 +58,13 @@ class OfferPriceCalculator
             $mappedType = $typeMapping[$originalType] ?? $originalType;
             $category = $this->categoryPrices[$mappedType] ?? null;
 
-            if (!$category) return 0;
+            if (!$category) {
+                $this->debugInfo[] = "Auch nach Mapping ('{$originalType}' → '{$mappedType}') keine Kategorie gefunden";
+                $this->debugInfo[] = "LÖSUNG: Füge Preise für '{$type}' oder '{$mappedType}' in category_settings.json hinzu";
+                return 0;
+            }
+
+            $this->debugInfo[] = "Kategorie '{$type}' nicht gefunden, verwende '{$mappedType}' (von original_type '{$originalType}')";
 
             // Verwende den gemappten Typ für die weitere Berechnung
             $type = $mappedType;
