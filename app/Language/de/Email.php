@@ -19,7 +19,7 @@ return [
     'intro' => 'Hier sind neue Offerten, die kürzlich bei uns eingegangen sind und zu Ihren Filterkriterien passen:',
     'viewNow' => 'Jetzt ansehen',
     'successWishes' => 'Wir wünschen viel Erfolg bei der Auswahl passender Aufträge!',
-    'greetings' => 'Freundliche Grüsse<br>Ihr {0}-Team',
+    'greetings' => 'Freundliche Grüsse<br>Ihr %s-Team',
     'automaticGenerated' => 'Diese Nachricht wurde automatisch generiert am', // Datum folgt
 
     // Neue Offerte
