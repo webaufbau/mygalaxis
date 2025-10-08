@@ -101,7 +101,7 @@ class OfferPriceCalculator
                             break;
                         case 'reinigung_andere':
                             // Andere Reinigungsarbeiten (z.B. Auto, Boot, etc.)
-                            $price = $category['options']['andere']['price'] ?? 39;
+                            $price = $category['options']['andere_arbeiten']['price'] ?? 39;
                             break;
                     }
                 }
@@ -110,7 +110,7 @@ class OfferPriceCalculator
                     if (!empty($fields['wohnung_groesse'])) {
                         $value = $fields['wohnung_groesse']; // z.B. "1-Zimmer", "2-Zimmer", "Andere"
                         if ($value === 'Andere') {
-                            $key = 'andere';
+                            $key = '6';
                         } else {
                             // Zahl vor dem Bindestrich extrahieren
                             preg_match('/^\d+/', $value, $matches);
@@ -123,7 +123,7 @@ class OfferPriceCalculator
                     }
                     elseif (!empty($fields['komplett_anzahlzimmer'])) {
                         $key = $fields['komplett_anzahlzimmer']; // 1..4
-                        $key = $key > 5 ? 'andere' : (string)$key;
+                        $key = $key > 5 ? '6' : (string)$key;
                         $price = $category['options'][$key]['price'] ?? 0;
                     }
 
@@ -138,7 +138,7 @@ class OfferPriceCalculator
                     }
 
                     // Fassadenreinigung als Zusatz (wenn normale Wohnung + Fassade gewünscht)
-                    if (!empty($fields['fassadenreinigung']) && strtolower($fields['fassadenreinigung']) === 'ja') {
+                    if (!empty($fields['aussenfassade']) && strtolower($fields['aussenfassade']) === 'ja') {
                         $price += $category['options']['nur_fassaden']['price'];
                     }
 
