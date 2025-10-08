@@ -22,7 +22,7 @@ class OfferPriceUpdater
         $this->zipcodeService = new ZipcodeService();
     }
 
-    public function updateOfferAndNotify(array $offer): void
+    public function updateOfferAndNotify(array $offer): bool
     {
         $formFields = json_decode($offer['form_fields'] ?? '{}', true) ?? [];
         $formFieldsCombo = json_decode($offer['form_fields_combo'] ?? '{}', true) ?? [];
@@ -38,7 +38,7 @@ class OfferPriceUpdater
         if ($price == 0) {
             $debugInfo = $this->calculator->getDebugInfo();
             log_message('warning', "Offer #{$offer['id']}: Preis ist 0. Debug: " . implode(' | ', $debugInfo));
-            return; // Überspringe Update wenn Preis 0 ist
+            return false; // Return false um anzuzeigen dass nichts aktualisiert wurde
         }
 
         $updateData = [];
@@ -77,6 +77,8 @@ class OfferPriceUpdater
         if (!empty($updateData)) {
             $this->offerModel->update($offer['id'], $updateData);
         }
+
+        return true; // Update erfolgreich
     }
 
     protected function doesOfferMatchUser(array $offer, User $user): bool

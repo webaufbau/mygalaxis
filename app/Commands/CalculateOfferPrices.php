@@ -39,7 +39,14 @@ class CalculateOfferPrices extends BaseCommand
             $oldPrice = $offer['price'];
 
             try {
-                $updater->updateOfferAndNotify($offer);
+                $wasUpdated = $updater->updateOfferAndNotify($offer);
+
+                if (!$wasUpdated) {
+                    // Preis war 0, wurde übersprungen
+                    CLI::write("⚠ Offer #{$offer['id']}: Preis ist 0 - übersprungen (siehe Log für Details)", 'yellow');
+                    $skipped++;
+                    continue;
+                }
 
                 // Neu laden um zu sehen ob aktualisiert
                 $updated_offer = $offerModel->find($offer['id']);
@@ -48,13 +55,8 @@ class CalculateOfferPrices extends BaseCommand
                     CLI::write("✓ Offer #{$offer['id']}: {$oldPrice} CHF → {$updated_offer['price']} CHF", 'green');
                     $updated++;
                 } else {
-                    if ($updated_offer['price'] == 0) {
-                        CLI::write("⚠ Offer #{$offer['id']}: Preis ist 0 (siehe Log)", 'yellow');
-                        $skipped++;
-                    } else {
-                        CLI::write("- Offer #{$offer['id']}: Preis unverändert ({$oldPrice} CHF)", 'blue');
-                        $skipped++;
-                    }
+                    CLI::write("- Offer #{$offer['id']}: Preis unverändert ({$oldPrice} CHF)", 'blue');
+                    $skipped++;
                 }
             } catch (\Exception $e) {
                 CLI::write("✗ Offer #{$offer['id']}: FEHLER - " . $e->getMessage(), 'red');
