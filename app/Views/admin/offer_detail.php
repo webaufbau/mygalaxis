@@ -30,7 +30,16 @@
     <?php endif; ?>
 </table>
 
-<?php if ($offer['price'] != $calculatedPrice): ?>
+<?php if ($calculatedPrice == 0 && !empty($priceDebugInfo)): ?>
+    <p style="background-color: #f8d7da; padding: 10px; border-left: 4px solid #dc3545; margin-bottom: 20px;">
+        ❌ <strong>Preis ist 0 CHF - Diagnose:</strong>
+        <ul style="margin: 10px 0 0 0;">
+            <?php foreach ($priceDebugInfo as $info): ?>
+                <li><?= esc($info) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </p>
+<?php elseif ($offer['price'] != $calculatedPrice): ?>
     <p style="background-color: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
         ⚠️ <strong>Hinweis:</strong> Der gespeicherte Preis (<?= esc($offer['price']) ?> CHF) weicht vom berechneten Preis (<?= esc($calculatedPrice) ?> CHF) ab.
         Führe <code>php spark offers:recalculate-price <?= esc($offer['id']) ?></code> aus, um den Preis zu aktualisieren.

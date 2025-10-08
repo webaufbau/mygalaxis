@@ -68,6 +68,7 @@ class Offer extends BaseController
         $data['calculationDetails'] = $calculationDetails;
         $data['formFields'] = $formFields;
         $data['formFieldsCombo'] = $formFieldsCombo;
+        $data['priceDebugInfo'] = $priceDebugInfo;
 
         return view('admin/offer_detail', $data);
     }
