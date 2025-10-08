@@ -14,17 +14,19 @@ class DiscountOldOffers extends BaseCommand
 {
     protected $group       = 'Offers';
     protected $name        = 'offers:discount-old';
-    protected $description = 'Halbiere Preise von Angeboten, die älter als 3 Tage sind und noch keinen discounted_price haben.';
+    protected $description = 'Wendet graduellen Rabatt an (8h→30%, 14h→50%, 24h→70%). Sendet Email nur bei Preisänderung.';
 
     public function run(array $params)
     {
         $offerModel = new OfferModel();
         $userModel = new UserModel();
+        $calculator = new \App\Libraries\OfferPriceCalculator();
+        $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
 
-        // Hol alle relevanten Offers
+        // Hol alle Offers die nicht ausverkauft sind
         $offers = $offerModel
-            ->where('discounted_price IS NULL')
-            ->where('created_at <', date('Y-m-d H:i:s', strtotime('-3 days')))
+            ->where('status !=', 'out_of_stock')
+            ->where('price >', 0)
             ->findAll();
 
         if (empty($offers)) {
@@ -32,42 +34,82 @@ class DiscountOldOffers extends BaseCommand
             return;
         }
 
+        $updated = 0;
+        $skipped = 0;
+        $now = new DateTime();
+
         foreach ($offers as $offer) {
-            $oldPrice = $offer['price'];
-            $newPrice = $oldPrice / 2;
+            // Prüfe Anzahl Käufe - keine Rabatte wenn >= 4
+            $purchaseCount = $offerPurchaseModel
+                ->where('offer_id', $offer['id'])
+                ->countAllResults();
 
-            // Update Offer
-            $offerModel->update($offer['id'], [
-                'discounted_price' => $newPrice,
-                'discounted_at'    => date('Y-m-d H:i:s'),
-            ]);
-
-            CLI::write("Offer #{$offer['id']} Preis halbiert: {$oldPrice} → {$newPrice}", 'green');
-
-            // Benachrichtige passende Firmen
-            $users = $userModel->findAll();
-            $today = date('Y-m-d');
-            $notifiedCount = 0;
-            foreach ($users as $user) {
-                if (!$user->inGroup('user')) {
-                    continue;
-                }
-
-                // Prüfe ob User heute blockiert ist (Agenda/Abwesenheit)
-                if ($this->isUserBlockedToday($user->id, $today)) {
-                    continue;
-                }
-
-                if ($this->doesOfferMatchUser($offer, $user)) {
-                    $this->sendPriceUpdateEmail($user, $offer, $oldPrice, $newPrice);
-                    $notifiedCount++;
-                }
+            if ($purchaseCount >= 4) {
+                continue;
             }
 
-            CLI::write("  → {$notifiedCount} Firma(n) benachrichtigt", 'cyan');
+            // Berechne Alter in Stunden
+            $createdAt = new DateTime($offer['created_at']);
+            $diff = $createdAt->diff($now);
+            $hoursDiff = $diff->h + ($diff->days * 24);
+
+            // Berechne neuen Rabattpreis basierend auf Regeln
+            $basePrice = $offer['price'];
+            $newDiscountedPrice = $calculator->applyDiscount($basePrice, $hoursDiff);
+
+            // Wenn kein Rabatt anwendbar
+            if ($newDiscountedPrice >= $basePrice) {
+                // Wenn vorher ein Rabatt war, entfernen
+                if ($offer['discounted_price']) {
+                    $offerModel->update($offer['id'], ['discounted_price' => null]);
+                    CLI::write("Offer #{$offer['id']}: Rabatt entfernt (noch zu jung)", 'blue');
+                }
+                $skipped++;
+                continue;
+            }
+
+            // Nur updaten wenn sich Preis geändert hat
+            $currentDiscountedPrice = $offer['discounted_price'] ?? $basePrice;
+
+            if ($newDiscountedPrice != $currentDiscountedPrice) {
+                // Update Offer
+                $offerModel->update($offer['id'], [
+                    'discounted_price' => $newDiscountedPrice,
+                    'discounted_at'    => date('Y-m-d H:i:s'),
+                ]);
+
+                $discount = round(($basePrice - $newDiscountedPrice) / $basePrice * 100);
+                CLI::write("Offer #{$offer['id']}: {$basePrice} → {$newDiscountedPrice} CHF ({$discount}% Rabatt, {$hoursDiff}h alt)", 'green');
+
+                // Benachrichtige passende Firmen
+                $users = $userModel->findAll();
+                $today = date('Y-m-d');
+                $notifiedCount = 0;
+                foreach ($users as $user) {
+                    if (!$user->inGroup('user')) {
+                        continue;
+                    }
+
+                    // Prüfe ob User heute blockiert ist (Agenda/Abwesenheit)
+                    if ($this->isUserBlockedToday($user->id, $today)) {
+                        continue;
+                    }
+
+                    if ($this->doesOfferMatchUser($offer, $user)) {
+                        $this->sendPriceUpdateEmail($user, $offer, $currentDiscountedPrice, $newDiscountedPrice);
+                        $notifiedCount++;
+                    }
+                }
+
+                CLI::write("  → {$notifiedCount} Firma(n) benachrichtigt", 'cyan');
+                $updated++;
+            } else {
+                $skipped++;
+            }
         }
 
-        CLI::write(count($offers) . ' Offers wurden rabattiert.', 'green');
+        CLI::newLine();
+        CLI::write("Fertig! {$updated} Angebote aktualisiert, {$skipped} unverändert.", 'green');
     }
 
     /**
