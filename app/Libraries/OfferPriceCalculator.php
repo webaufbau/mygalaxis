@@ -98,6 +98,17 @@ class OfferPriceCalculator
             case 'move_cleaning':
                 // Wenn original_type nicht umzug/reinigung ist, falle auf original_type zurück
                 if (!in_array($originalType, ['umzug', 'umzug_firma', 'reinigung', 'reinigung_wohnung'])) {
+                    $this->debugInfo[] = "move_cleaning mit unerwarteten original_type '{$originalType}' (erwartet: umzug/umzug_firma/reinigung)";
+
+                    // Prüfe ob es wirklich Umzugsfelder hat
+                    $hasUmzugFields = !empty($fields['auszug_adresse']) || !empty($fields['objekt']) || !empty($fields['auszug_zimmer']);
+
+                    if ($hasUmzugFields) {
+                        $this->debugInfo[] = "FEHLER: Angebot hat Umzugsfelder, aber original_type ist '{$originalType}' statt 'umzug' oder 'umzug_firma'";
+                        $this->debugInfo[] = "LÖSUNG: Korrigiere original_type in der Datenbank auf 'umzug' oder 'umzug_firma'";
+                        return 0;
+                    }
+
                     // Mappe originalType zu category-Namen
                     $typeMapping = [
                         'sanitaer' => 'plumbing',
@@ -106,6 +117,7 @@ class OfferPriceCalculator
                         'boden' => 'flooring',
                         'platten' => 'tiling',
                         'maler' => 'painting',
+                        'maler_andere' => 'painting',
                         'garten' => 'gardening',
                     ];
 
@@ -113,8 +125,11 @@ class OfferPriceCalculator
                     $fallbackCategory = $this->categoryPrices[$mappedType] ?? null;
 
                     if ($fallbackCategory) {
+                        $this->debugInfo[] = "Fallback: Verwende '{$mappedType}' statt move_cleaning (original_type war '{$originalType}')";
                         // Rufe diese Methode rekursiv mit dem richtigen Typ auf
                         return $this->calculatePrice($mappedType, $originalType, $fields, $fields_combo);
+                    } else {
+                        $this->debugInfo[] = "Kein Fallback möglich für '{$originalType}'";
                     }
                 }
 
