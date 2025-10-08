@@ -37,6 +37,9 @@ class Offer extends BaseController
             $formFieldsCombo
         );
 
+        // Debug-Informationen holen
+        $priceDebugInfo = $calculator->getDebugInfo();
+
         // Rabatt berechnen
         $createdAt = new \DateTime($offer['created_at']);
         $now = new \DateTime();
