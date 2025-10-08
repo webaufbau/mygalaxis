@@ -49,7 +49,7 @@ return [
     'invalidRequest' => 'Ungültige Anfrage.',
     'passwordsDontMatch' => 'Passwörter stimmen nicht überein.',
     'passwordChangedSuccess' => 'Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden.',
-    'emailAlreadyRegistered' => 'E-Mail ist bereits registriert.',
+    'emailAlreadyRegistered' => 'Wir betreiben mehrere Portale (Renovo24, Offertenheld, Offertenschweiz). Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse und Ihrem bestehenden Passwort anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
     'registrationSuccess' => 'Registrierung erfolgreich. Du kannst dich jetzt einloggen.',
 
     // Exceptions

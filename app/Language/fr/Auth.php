@@ -49,7 +49,7 @@ return [
     'invalidRequest' => 'Requête invalide.',
     'passwordsDontMatch' => 'Les mots de passe ne correspondent pas.',
     'passwordChangedSuccess' => 'Mot de passe modifié avec succès. Vous pouvez maintenant vous connecter.',
-    'emailAlreadyRegistered' => 'L\'adresse e-mail est déjà enregistrée.',
+    'emailAlreadyRegistered' => 'Nous exploitons plusieurs portails (Renovo24, Offertenheld, Offertenschweiz). Votre adresse e-mail est déjà associée à un compte. Vous pouvez vous connecter avec votre adresse e-mail et votre mot de passe existant ou utiliser le lien mot de passe oublié pour accéder à votre compte existant.',
     'registrationSuccess' => 'Inscription réussie. Vous pouvez maintenant vous connecter.',
 
     // Exceptions
