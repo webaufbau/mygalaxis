@@ -88,4 +88,4 @@
 
 <p><?= lang('Email.successWishes') ?></p>
 
-<p><?= lang('Email.greetings', [siteconfig()->name]) ?></p>
+<p><?= lang('Email.greetings', [$siteConfig->name]) ?></p>
