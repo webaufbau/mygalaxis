@@ -74,10 +74,13 @@ class Offers extends ResourceController
             }
         }
 
-        // Optionaler Filter
+        // Optionaler Filter: Neue UND aktualisierte Einträge seit $since
         $since = $this->request->getGet('since');
         if ($since) {
-            $model->where('offers.updated_at >=', $since);
+            $model->groupStart()
+                  ->where('offers.created_at >=', $since)      // Neue Einträge
+                  ->orWhere('offers.updated_at >=', $since)    // Aktualisierte Einträge
+                  ->groupEnd();
         }
 
         // ---- EINMAL ausführen ----
