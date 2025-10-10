@@ -72,22 +72,62 @@
 
 <h2 class="mt-5 mb-3"><?= lang('Dashboard.purchasedOffers') ?></h2>
 
-<?php if (empty($bookings)): ?>
+<?php if (empty($purchasedOffers)): ?>
     <p class="text-muted"><?= lang('Dashboard.noOffers') ?></p>
 <?php else: ?>
-    <ul class="list-group mb-5">
-        <?php foreach ($bookings as $booking): ?>
-            <li class="list-group-item p-2">
-                <a href="<?= site_url('/offers/mine#detailsview-' . $booking['reference_id']); ?>" class="d-flex justify-content-between align-items-center text-decoration-none w-100">
-                    <div>
-                        <strong><?= esc($booking['description']) ?></strong><br>
-                        <small class="text-muted"><?= lang('Dashboard.purchaseDate') ?>: <?= date('d.m.Y', strtotime($booking['created_at'])) ?></small>
+    <div class="list-group mb-5">
+        <?php foreach ($purchasedOffers as $offer): ?>
+            <div class="list-group-item p-3 mb-3 border rounded bg-success bg-opacity-10 border-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1 me-3">
+                        <span class="title fw-bold d-block">
+                            <i class="bi bi-check-circle-fill text-success me-1"></i>
+                            <?= esc($offer['title']) ?>
+                        </span>
+                        <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
+                        <br>
+                        <a data-bs-toggle="collapse" href="#details-<?= $offer['id'] ?>" role="button" aria-expanded="false" aria-controls="details-<?= $offer['id'] ?>" data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
+                            <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i> <?= lang('Offers.showDetails') ?>
+                        </a>
                     </div>
-                    <span class="badge bg-primary rounded-pill"><?= number_format($booking['amount'], 2) ?> CHF</span>
-                </a>
-            </li>
+
+                    <div class="text-end" style="min-width: 150px;">
+                        <div class="small">
+                            <?= number_format($offer['price_paid'] ?? $offer['discounted_price'] ?? $offer['price'], 2) ?> CHF
+                        </div>
+                        <a href="<?= site_url('offers/' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= lang('Offers.detailsButton') ?></a>
+                    </div>
+                </div>
+
+                <div class="collapse mt-3" id="details-<?= $offer['id'] ?>">
+                    <div class="card card-body bg-light">
+                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => false]) ?>
+                    </div>
+                </div>
+            </div>
         <?php endforeach; ?>
-    </ul>
+    </div>
 <?php endif; ?>
+
+<script>
+    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(link => {
+        const targetSelector = link.getAttribute('href');
+        const iconSelector = link.getAttribute('data-toggle-icon');
+        const icon = document.querySelector(iconSelector);
+        const target = document.querySelector(targetSelector);
+
+        if (!target || !icon) return;
+
+        target.addEventListener('show.bs.collapse', () => {
+            icon.classList.remove('bi-chevron-right');
+            icon.classList.add('bi-chevron-down');
+        });
+
+        target.addEventListener('hide.bs.collapse', () => {
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-right');
+        });
+    });
+</script>
 
 <?= $this->endSection() ?>

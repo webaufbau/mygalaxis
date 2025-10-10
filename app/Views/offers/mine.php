@@ -32,20 +32,16 @@
                         </small>
                         <br>
 
-                        <?php if ($status == 'available'): ?>
-                            <a id="detailsview-<?= $offer['id'] ?>"
-                               data-bs-toggle="collapse"
-                               href="#details-<?= $offer['id'] ?>"
-                               role="button"
-                               aria-expanded="false"
-                               aria-controls="details-<?= $offer['id'] ?>"
-                               data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
-                                <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i>
-                                <?= lang('Offers.show_request_details') ?>
-                            </a>
-                        <?php else: ?>
-                            <p></p>
-                        <?php endif; ?>
+                        <a id="detailsview-<?= $offer['id'] ?>"
+                           data-bs-toggle="collapse"
+                           href="#details-<?= $offer['id'] ?>"
+                           role="button"
+                           aria-expanded="false"
+                           aria-controls="details-<?= $offer['id'] ?>"
+                           data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
+                            <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i>
+                            <?= lang('Offers.show_request_details') ?>
+                        </a>
                     </div>
 
                     <div class="text-end" style="min-width: 150px;">
