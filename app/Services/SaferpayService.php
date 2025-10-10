@@ -12,7 +12,7 @@ class SaferpayService
         $this->config = new Saferpay();
     }
 
-    public function initTransactionWithAlias(string $successUrl, string $failUrl, int $amount, string $refno)
+    public function initTransactionWithAlias(string $successUrl, string $failUrl, int $amount, string $refno, string $notifyUrl = null)
     {
         $url = $this->config->apiBaseUrl . '/Payment/v1/PaymentPage/Initialize';
 
@@ -60,6 +60,13 @@ class SaferpayService
                 "Url" => $successUrl
             ],
         ];
+
+        // NotifyURL hinzufügen (Server-to-Server Benachrichtigung)
+        if ($notifyUrl) {
+            $data["Notification"] = [
+                "NotifyUrl" => $notifyUrl
+            ];
+        }
 
         $response = $this->sendRequest($url, $data);
 
@@ -185,6 +192,32 @@ class SaferpayService
         $db = \Config\Database::connect();
         $row = $db->table('saferpay_transactions')->where('refno', $refno)->get()->getRow();
         return $row ? $row->token : null;
+    }
+
+    /**
+     * Transaktion verbuchen (Capture)
+     * Muss nach erfolgter Autorisierung aufgerufen werden
+     *
+     * @param string $transactionId Die Transaction ID aus Assert Response
+     * @return array Response von Saferpay
+     */
+    public function captureTransaction(string $transactionId): array
+    {
+        $url = $this->config->apiBaseUrl . '/Payment/v1/Transaction/Capture';
+
+        $data = [
+            "RequestHeader" => [
+                "SpecVersion" => "1.35",
+                "CustomerId" => $this->config->customerId,
+                "RequestId" => uniqid(),
+                "RetryIndicator" => 0
+            ],
+            "TransactionReference" => [
+                "TransactionId" => $transactionId
+            ]
+        ];
+
+        return $this->sendRequest($url, $data);
     }
 
 

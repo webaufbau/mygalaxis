@@ -111,9 +111,10 @@ class Finance extends BaseController
 
         $successUrl = site_url("finance/topupSuccess?refno=$refno");
         $failUrl    = site_url("finance/topupFail");
+        $notifyUrl  = site_url("webhook/saferpay/notify"); // Server-to-Server Benachrichtigung
 
         try {
-            $response = $this->saferpay->initTransactionWithAlias($successUrl, $failUrl, $amount, $refno);
+            $response = $this->saferpay->initTransactionWithAlias($successUrl, $failUrl, $amount, $refno, $notifyUrl);
             return redirect()->to($response['RedirectUrl']);
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
@@ -157,6 +158,21 @@ class Finance extends BaseController
             if (isset($response['Transaction']) && $response['Transaction']['Status'] === 'AUTHORIZED') {
                 $amount = $response['Transaction']['Amount']['Value']; // in Rappen
                 $currency = $response['Transaction']['Amount']['CurrencyCode'];
+                $transactionId = $response['Transaction']['Id'];
+
+                // 2.1 WICHTIG: Transaktion verbuchen (Capture)
+                // Dies zieht das Geld tatsächlich von der Karte ab
+                try {
+                    $captureResponse = $saferpay->captureTransaction($transactionId);
+                    log_message('info', 'Saferpay Capture erfolgreich: ' . json_encode($captureResponse));
+
+                    // Status auf CAPTURED aktualisieren
+                    $captureStatus = $captureResponse['Status'] ?? 'CAPTURED';
+                } catch (\Exception $captureError) {
+                    log_message('error', 'Saferpay Capture fehlgeschlagen: ' . $captureError->getMessage());
+                    // Weiter mit AUTHORIZED Status, aber loggen
+                    $captureStatus = 'AUTHORIZED';
+                }
 
                 // 3. Guthaben gutschreiben (eigene Logik)
                 // Guthaben gutschreiben
@@ -188,7 +204,7 @@ class Finance extends BaseController
 
                     $transaction_data = [
                         'transaction_id' => $transaction['Id'] ?? 0,
-                        'status'         => $transaction['Status'] ?? '',
+                        'status'         => $captureStatus, // CAPTURED statt AUTHORIZED
                         'amount'         => $transaction['Amount']['Value'] ?? '',
                         'currency'       => $transaction['Amount']['CurrencyCode'] ?? '',
                     ];

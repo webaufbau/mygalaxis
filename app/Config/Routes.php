@@ -64,6 +64,7 @@ function defineAppRoutes($routes) {
         $routes->post('fluentform', '\App\Controllers\FluentForm::webhook');
         $routes->get('fluentform/handle', '\App\Controllers\FluentForm::handle');
         $routes->post('payrexx', '\App\Controllers\WebhookController::payrexx');
+        $routes->post('saferpay/notify', '\App\Controllers\WebhookController::saferpayNotify');
         $routes->post('deploy', '\App\Controllers\Deploy::webhook');
     });
 

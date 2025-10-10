@@ -442,6 +442,133 @@ class WebhookController extends BaseController
     }
 
 
+    /**
+     * SaferPay NotifyURL Webhook (Server-to-Server Benachrichtigung)
+     * Wird von SaferPay aufgerufen, wenn eine Zahlung erfolgreich war
+     * WICHTIG: Funktioniert unabhängig vom Browser-Redirect (SuccessUrl)
+     */
+    public function saferpayNotify(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        // JSON-Payload von SaferPay empfangen
+        $json = $this->request->getJSON(true);
+
+        if (!$json) {
+            log_message('error', 'SaferPay NotifyURL: Ungültiges JSON erhalten');
+            return $this->response->setStatusCode(400)->setBody('Ungültiges JSON');
+        }
+
+        // Payload loggen für Debugging
+        log_message('info', 'SaferPay NotifyURL empfangen', ['payload' => $json]);
+
+        // SaferPay sendet bei Erfolg das Token und ggf. weitere Infos
+        if (!isset($json['Token'])) {
+            log_message('error', 'SaferPay NotifyURL: Token fehlt', ['payload' => $json]);
+            return $this->response->setStatusCode(400)->setBody('Token fehlt');
+        }
+
+        $token = $json['Token'];
+
+        try {
+            $saferpay = new \App\Services\SaferpayService();
+
+            // Assert Transaction um Details zu holen
+            $response = $saferpay->assertTransaction($token);
+
+            if (!isset($response['Transaction']) || $response['Transaction']['Status'] !== 'AUTHORIZED') {
+                log_message('error', 'SaferPay NotifyURL: Transaktion nicht autorisiert', ['response' => $response]);
+                return $this->response->setStatusCode(400)->setBody('Transaktion nicht autorisiert');
+            }
+
+            $transaction = $response['Transaction'];
+            $transactionId = $transaction['Id'];
+            $amount = $transaction['Amount']['Value'];
+            $currency = $transaction['Amount']['CurrencyCode'];
+            $orderId = $transaction['OrderId'] ?? null;
+
+            // Capture durchführen (Geld tatsächlich abbuchen)
+            try {
+                $captureResponse = $saferpay->captureTransaction($transactionId);
+                log_message('info', 'SaferPay NotifyURL: Capture erfolgreich', ['response' => $captureResponse]);
+                $captureStatus = $captureResponse['Status'] ?? 'CAPTURED';
+            } catch (\Exception $captureError) {
+                log_message('error', 'SaferPay NotifyURL: Capture fehlgeschlagen', ['error' => $captureError->getMessage()]);
+                return $this->response->setStatusCode(500)->setBody('Capture fehlgeschlagen');
+            }
+
+            // User anhand OrderId finden (falls möglich)
+            $db = \Config\Database::connect();
+            $transactionRow = $db->table('saferpay_transactions')
+                ->where('token', $token)
+                ->get()
+                ->getRow();
+
+            if (!$transactionRow) {
+                log_message('error', 'SaferPay NotifyURL: Token nicht in DB gefunden', ['token' => $token]);
+                return $this->response->setStatusCode(404)->setBody('Token nicht gefunden');
+            }
+
+            $userId = $transactionRow->user_id;
+
+            // Guthaben gutschreiben
+            $bookingModel = new \App\Models\BookingModel();
+            $bookingModel->insert([
+                'user_id' => $userId,
+                'type' => 'topup',
+                'description' => 'SaferPay Top-up (NotifyURL) - ' . ($transaction['AcquirerName'] ?? 'Online-Zahlung'),
+                'amount' => $amount / 100, // Rappen → CHF
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            // Alias sichern, falls vorhanden
+            if (isset($transaction['PaymentMeans']['Alias'])) {
+                $aliasId = $transaction['PaymentMeans']['Alias']['Id'];
+                $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
+
+                // Prüfen ob Alias bereits existiert
+                $existing = $paymentMethodModel
+                    ->where('user_id', $userId)
+                    ->where('payment_method_code', 'saferpay')
+                    ->first();
+
+                if (!$existing) {
+                    $paymentMethodModel->save([
+                        'user_id' => $userId,
+                        'payment_method_code' => 'saferpay',
+                        'provider_data' => json_encode(['alias_id' => $aliasId]),
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            // Transaktion-Status aktualisieren
+            $saferpay->updateTransaction($token, [
+                'transaction_id' => $transactionId,
+                'status' => $captureStatus,
+                'amount' => $amount,
+                'currency' => $currency,
+                'transaction_data' => json_encode($transaction),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            log_message('info', 'SaferPay NotifyURL: Verarbeitung erfolgreich', [
+                'user_id' => $userId,
+                'amount' => $amount / 100,
+                'transaction_id' => $transactionId
+            ]);
+
+            // SaferPay erwartet HTTP 200 OK
+            return $this->response->setStatusCode(200)->setBody('OK');
+
+        } catch (\Exception $e) {
+            log_message('error', 'SaferPay NotifyURL: Fehler bei Verarbeitung', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->response->setStatusCode(500)->setBody('Interner Fehler');
+        }
+    }
+
     /*private function sendCancellationEmails($user_subscription): void {
         $user = (new \App\Models\UserModel())->find($user_subscription->user_id);
 
