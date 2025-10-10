@@ -111,6 +111,11 @@
 
                     <?php if (!$alreadyRated): ?>
                         <hr>
+
+                        <div class="alert alert-info mb-3" role="alert">
+                            <i class="bi bi-info-circle"></i> <?= lang('InterestedCompanies.ratingNotice') ?>
+                        </div>
+
                         <form method="post" action="<?= site_url('/rating/submit') ?>" class="mt-3">
                             <?= csrf_field() ?>
 

@@ -20,4 +20,5 @@ return [
     'comment'               => 'Kommentar',
     'submitRating'          => 'Bewertung abgeben',
     'backToHomepage'        => 'Zurück zur Startseite',
+    'ratingNotice'          => 'Hinweis: Für eine veröffentlichte Offerte erhalten Sie verschiedene Firmen-Interessenten. Sie sollen jedoch nur die Firma bewerten, für welche Sie sich entschieden haben. Sie können nicht mehrere Firmen bewerten – nur eine Bewertung pro Offerte ist möglich.',
 ];

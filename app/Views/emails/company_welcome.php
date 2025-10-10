@@ -1,14 +1,14 @@
 
     <h1>Willkommen bei <?=$website_name;?>, <?= esc($contact_person) ?>!</h1>
-    <p>Vielen Dank für deine Anmeldung als Firma. Dein Konto ist nun aktiv und du kannst direkt loslegen.</p>
+    <p>Vielen Dank für Ihre Anmeldung als Firma. Ihr Konto ist nun aktiv und Sie können direkt loslegen.</p>
 
-    <h2>Dein Firmenbereich im Überblick:</h2>
+    <h2>Ihr Firmenbereich im Überblick:</h2>
 
     <h3>1️⃣ Übersicht</h3>
-    <p>Hier siehst du alle Aktivitäten deines Kontos, gekaufte Angebote, Kaufdatum und Beträge.</p>
+    <p>Hier sehen Sie alle Aktivitäten Ihres Kontos, gekaufte Angebote, Kaufdatum und Beträge.</p>
 
     <h3>2️⃣ Filter</h3>
-    <p>Lege fest, welche Angebote für dich interessant sind:</p>
+    <p>Legen Sie fest, welche Angebote für Sie interessant sind:</p>
     <ul>
         <li>Branchen: z.B. Umzug, Reinigung, Maler, Gartenpflege, Sanitär usw.</li>
         <li><?php
@@ -29,30 +29,30 @@
     </ul>
 
     <h3>3️⃣ Offene Anfragen</h3>
-    <p>Alle aktuellen Angebote, die noch verfügbar sind. Sieh dir Details, Ort, Datum und Preis an und kaufe passende Anfragen.</p>
+    <p>Alle aktuellen Angebote, die noch verfügbar sind. Sehen Sie sich Details, Ort, Datum und Preis an und kaufen Sie passende Anfragen.</p>
 
     <h3>4️⃣ Finanzen</h3>
-    <p>Verwalte dein Guthaben, sieh deine Transaktionen und behalte Ausgaben und Einnahmen im Blick.</p>
+    <p>Verwalten Sie Ihr Guthaben, sehen Sie Ihre Transaktionen und behalten Sie Ausgaben und Einnahmen im Blick.</p>
 
     <h3>5️⃣ Agenda</h3>
-    <p>Plane deine Aktivitäten und blockiere E-Mails an bestimmten Tagen, z.B. Wochenenden oder Urlaub.</p>
+    <p>Planen Sie Ihre Aktivitäten und blockieren Sie E-Mails an bestimmten Tagen, z.B. Wochenenden oder Urlaub.</p>
 
     <h3>6️⃣ Mein Konto</h3>
-    <p>Verwalte deine Firmeninformationen, Spracheinstellungen und aktiviere oder deaktiviere den automatischen Kauf passender Angebote.</p>
+    <p>Verwalten Sie Ihre Firmeninformationen, Spracheinstellungen und aktivieren oder deaktivieren Sie den automatischen Kauf passender Angebote.</p>
 
     <h3>7️⃣ Bewertungen</h3>
-    <p>Erhalte Feedback von Kunden, sieh deine durchschnittliche Bewertung und die Anzahl der gekauften Anfragen.</p>
+    <p>Erhalten Sie Feedback von Kunden, sehen Sie Ihre durchschnittliche Bewertung und die Anzahl der gekauften Anfragen.</p>
 
     <h3>8️⃣ Abmelden</h3>
-    <p>Logge dich sicher aus deinem Konto aus.</p>
+    <p>Loggen Sie sich sicher aus Ihrem Konto aus.</p>
 
-    <p>Wir wünschen dir viel Erfolg mit <?=$website_name;?>! 💼</p>
+    <p>Wir wünschen Ihnen viel Erfolg mit <?=$website_name;?>! 💼</p>
 
-    <a href="<?= esc($backend_url) ?>" class="button">Zu deinem Dashboard</a>
+    <a href="<?= esc($backend_url) ?>" class="button">Zu Ihrem Dashboard</a>
 
     <p style="font-size:12px;color:#888888;">
-        <?=$website_name;?> – Dein Portal für passende Firmenanfragen.
-        Bei Fragen wende dich an <a href="mailto:<?=esc($website_email);?>"><?=esc($website_email);?></a>.
+        <?=$website_name;?> – Ihr Portal für passende Firmenanfragen.
+        Bei Fragen wenden Sie sich an <a href="mailto:<?=esc($website_email);?>"><?=esc($website_email);?></a>.
     </p>
 
 <style>

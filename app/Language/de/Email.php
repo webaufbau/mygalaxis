@@ -23,18 +23,18 @@ return [
     'automaticGenerated' => 'Diese Nachricht wurde automatisch generiert am', // Datum folgt
 
     // Neue Offerte
-    'offer_added_email_subject' => '🎉 Wir bestätigen Dir deine Anfrage/Offerte',
-    'offer_added_greeting' => 'Hallo {0} {1},', // Vorname Nachname
-    'offer_added_thank_you' => 'Herzlichen Dank für deine Anfrage für <strong>{service}</strong>.',
-    'offer_added_info_1' => 'In Kürze wirst du <strong>bis zu 3 unverbindliche Offerten</strong> von passenden Anbietern aus deiner Region erhalten.',
+    'offer_added_email_subject' => '🎉 Wir bestätigen Ihnen Ihre Anfrage/Offerte',
+    'offer_added_greeting' => 'Guten Tag {0} {1},', // Vorname Nachname
+    'offer_added_thank_you' => 'Herzlichen Dank für Ihre Anfrage für <strong>{service}</strong>.',
+    'offer_added_info_1' => 'In Kürze werden Sie <strong>bis zu 3 unverbindliche Offerten</strong> von passenden Anbietern aus Ihrer Region erhalten.',
     'offer_added_info_2' => 'Je nach Saison kann es vorkommen, dass die Firmen für den gewünschten Zeitraum schon ausgebucht sind und daher keine Angebote unterbreiten.',
     'offer_added_ow_it_works' => "So funktioniert's:",
-    'offer_added_how_1' => 'Du erhältst Angebote per E-Mail – oft innerhalb von 1–2 Werktagen',
-    'offer_added_how_2' => 'Anbieter können dich kontaktieren, falls Rückfragen bestehen',
-    'offer_added_how_3' => 'Du entscheidest in Ruhe, welches Angebot am besten passt',
-    'offer_added_note' => 'Hinweis: Prüfe auch deinen Spam-/Werbungsordner, falls du keine E-Mail erhältst.',
-    'offer_added_additional_services' => 'Du hast weitere Dienstleistungen angefragt:',
-    'offer_added_summary' => 'Zusammenfassung deiner Anfrage',
+    'offer_added_how_1' => 'Sie erhalten Angebote per E-Mail – oft innerhalb von 1–2 Werktagen',
+    'offer_added_how_2' => 'Anbieter können Sie kontaktieren, falls Rückfragen bestehen',
+    'offer_added_how_3' => 'Sie entscheiden in Ruhe, welches Angebot am besten passt',
+    'offer_added_note' => 'Hinweis: Prüfen Sie auch Ihren Spam-/Werbungsordner, falls Sie keine E-Mail erhalten.',
+    'offer_added_additional_services' => 'Sie haben weitere Dienstleistungen angefragt:',
+    'offer_added_summary' => 'Zusammenfassung Ihrer Anfrage',
     'offer_added_no_comment' => 'Kein Kommentar.',
     'offer_added_how_it_works' => 'So funktioniert\'s:',
 
@@ -56,13 +56,13 @@ return [
     'see_companies_text'  => 'Sie können hier die Firmen sehen, die Ihre Anfrage gekauft haben, und diese nach Abschluss der Arbeiten bewerten:',
 
     // Verifikation Erinnerung
-    'verifyPhoneTitle'   => '👋 Bitte bestätige deine Telefonnummer',
-    'helloName'          => 'Hallo %s,',
-    'phoneVerifyIntro'   => 'Du hast kürzlich eine Anfrage über %s gestellt, aber die Verifizierung deiner Telefonnummer wurde noch nicht abgeschlossen.',
-    'phoneVerifyWarning' => 'Ohne diese Bestätigung kann deine Anfrage nicht weiterverarbeitet werden.',
-    'clickToVerify'      => 'Klicke bitte auf den folgenden Button, um zur Verifizierungsseite zu gelangen:',
+    'verifyPhoneTitle'   => '👋 Bitte bestätigen Sie Ihre Telefonnummer',
+    'helloName'          => 'Guten Tag %s,',
+    'phoneVerifyIntro'   => 'Sie haben kürzlich eine Anfrage über %s gestellt, aber die Verifizierung Ihrer Telefonnummer wurde noch nicht abgeschlossen.',
+    'phoneVerifyWarning' => 'Ohne diese Bestätigung kann Ihre Anfrage nicht weiterverarbeitet werden.',
+    'clickToVerify'      => 'Klicken Sie bitte auf den folgenden Button, um zur Verifizierungsseite zu gelangen:',
     'verifyNow'          => 'Jetzt bestätigen',
-    'thankYou'           => 'Vielen Dank für deine Mithilfe!',
+    'thankYou'           => 'Vielen Dank für Ihre Mithilfe!',
     'generatedAt'        => 'Diese Nachricht wurde automatisch generiert am %s.',
 
     // Allgemeine Betreffzeilen

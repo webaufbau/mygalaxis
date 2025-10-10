@@ -165,13 +165,13 @@ class OfferPurchaseService
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        // Alle Buchungen zu diesem Angebot zählen
-        $allBookings = $bookingModel
-            ->where('type', 'offer_purchase')
-            ->where('reference_id', $offer['id'])
+        // Alle COMPLETED Purchases zu diesem Angebot zählen (aus offer_purchases Tabelle!)
+        $allPurchases = $offerPurchaseModel
+            ->where('offer_id', $offer['id'])
+            ->where('status', 'completed')
             ->findAll();
 
-        $buyerIds = array_column($allBookings, 'user_id');
+        $buyerIds = array_column($allPurchases, 'user_id');
         $buyerCount = count($buyerIds);
         $status = $buyerCount >= 4 ? 'out_of_stock' : 'available';
 
@@ -185,7 +185,149 @@ class OfferPurchaseService
             'purchased_at' => date('Y-m-d H:i:s'),
         ]);
 
-        // E-Mail-Benachrichtigung wird über Command gesendet (offers:send-purchase-notification)
+        // E-Mails SOFORT nach dem Kauf versenden
+        $this->sendPurchaseNotifications($user, $offer, $bookingModel);
+    }
+
+    /**
+     * Sendet E-Mail-Benachrichtigungen nach dem Kauf
+     */
+    protected function sendPurchaseNotifications($user, array $offer, BookingModel $bookingModel)
+    {
+        try {
+            // Lade SiteConfig basierend auf User-Platform
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
+
+            // Sprache setzen
+            $language = $user->language ?? $offer['language'] ?? 'de';
+            service('language')->setLocale($language);
+
+            // 1. E-Mail an Firma (Käufer) - mit Kundendaten
+            $this->sendEmailToCompany($user, $offer, $siteConfig);
+
+            // 2. E-Mail an Kunde - mit Firmendaten
+            $this->sendEmailToCustomer($user, $offer, $siteConfig);
+
+            // Booking als "Benachrichtigung versendet" markieren
+            $booking = $bookingModel
+                ->where('user_id', $user->id)
+                ->where('type', 'offer_purchase')
+                ->where('reference_id', $offer['id'])
+                ->orderBy('created_at', 'DESC')
+                ->first();
+
+            if ($booking) {
+                $bookingModel->update($booking['id'], [
+                    'offer_notification_sent_at' => date('Y-m-d H:i:s'),
+                ]);
+            }
+
+            log_message('info', "Purchase notifications sent for Offer #{$offer['id']} to User #{$user->id}");
+        } catch (\Exception $e) {
+            log_message('error', "Failed to send purchase notifications for Offer #{$offer['id']}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sendet E-Mail an die Firma (Käufer)
+     */
+    protected function sendEmailToCompany($company, array $offer, $siteConfig)
+    {
+        $customerData = [
+            'firstname' => $offer['firstname'] ?? '',
+            'lastname'  => $offer['lastname'] ?? '',
+            'email'     => $offer['email'] ?? '',
+            'phone'     => $offer['phone'] ?? '',
+        ];
+
+        $company_backend_offer_link = rtrim($siteConfig->backendUrl, '/') . '/offers/mine#detailsview-' . $offer['id'];
+
+        $data = [
+            'siteConfig' => $siteConfig,
+            'kunde'      => $customerData,
+            'firma'      => $company,
+            'offer'      => $offer,
+            'company_backend_offer_link' => $company_backend_offer_link,
+        ];
+
+        $subject = lang('Email.offerPurchasedCompanySubject', [$offer['title']]);
+        $message = view('emails/offer_purchase_to_company', $data);
+
+        $this->sendEmail($company->email, $subject, $message, $siteConfig);
+    }
+
+    /**
+     * Sendet E-Mail an den Kunden
+     */
+    protected function sendEmailToCustomer($company, array $offer, $siteConfig)
+    {
+        $customerData = [
+            'firstname' => $offer['firstname'] ?? '',
+            'lastname'  => $offer['lastname'] ?? '',
+            'email'     => $offer['email'] ?? '',
+            'phone'     => $offer['phone'] ?? '',
+        ];
+
+        // Access Hash generieren falls noch nicht vorhanden
+        if (empty($offer['access_hash'])) {
+            $accessHash = bin2hex(random_bytes(16));
+            $offerModel = new OfferModel();
+            $offerModel->update($offer['id'], ['access_hash' => $accessHash]);
+            $offer['access_hash'] = $accessHash;
+        }
+
+        $interessentenLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $offer['access_hash'];
+
+        $data = [
+            'siteConfig'        => $siteConfig,
+            'kunde'             => $customerData,
+            'firma'             => $company,
+            'offer'             => $offer,
+            'interessentenLink' => $interessentenLink,
+        ];
+
+        $subject = lang('Email.offerPurchasedSubject', [$offer['title']]);
+        $message = view('emails/offer_purchase_to_customer', $data);
+
+        $originalEmail = $customerData['email'];
+
+        // Testmodus-Prüfung
+        if ($siteConfig->testMode) {
+            $emailTo = $siteConfig->testEmail;
+            $subject = 'TEST EMAIL – NICHT AN ECHTEN BENUTZER! (eigentlich an: ' . $originalEmail . ') – ' . $subject;
+        } else {
+            $emailTo = $originalEmail;
+        }
+
+        $this->sendEmail($emailTo, $subject, $message, $siteConfig);
+    }
+
+    /**
+     * Hilfsmethode zum E-Mail-Versand
+     */
+    protected function sendEmail(string $to, string $subject, string $message, $siteConfig): bool
+    {
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title'      => $subject,
+            'content'    => $message,
+            'siteConfig' => $siteConfig,
+        ])->render('emails/layout');
+
+        $email = \Config\Services::email();
+        $email->setTo($to);
+        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setSubject($subject);
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', 'Failed to send email to ' . $to . ': ' . print_r($email->printDebugger(), true));
+            return false;
+        }
+
+        return true;
     }
 
 }

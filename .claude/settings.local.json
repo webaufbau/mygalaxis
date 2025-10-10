@@ -9,7 +9,11 @@
       "Bash(ddev exec php:*)",
       "Bash(ddev exec grep:*)",
       "Bash(ddev exec:*)",
-      "Bash(crontab:*)"
+      "Bash(crontab:*)",
+      "Bash(ddev status:*)",
+      "Bash(for id in 72 77 78 80 81 83 84)",
+      "Bash(do ddev exec php spark offers:recalculate-price:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

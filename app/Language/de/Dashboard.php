@@ -6,11 +6,11 @@ return [
     'status'                => 'Status',
     'active'                => 'Aktiv',
     'inactive'              => 'Inaktiv',
-    'automaticPurchaseInfo' => 'Um keine Anfragen mehr zu verpassen, kannst du in deinem',
+    'automaticPurchaseInfo' => 'Um keine Anfragen mehr zu verpassen, können Sie in Ihrem',
     'profile'               => 'Profil',
     'automaticPurchaseOption'=> 'die Option <strong>„automatisch kaufen"</strong> aktivieren.',
     'purchasedOffers'       => 'Gekaufte Angebote',
-    'noOffers'              => 'Du hast noch keine Angebote gekauft.',
+    'noOffers'              => 'Sie haben noch keine Angebote gekauft.',
     'purchaseDate'          => 'Kaufdatum',
 
     // Anleitung für neue Benutzer

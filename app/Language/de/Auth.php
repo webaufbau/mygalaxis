@@ -42,18 +42,18 @@ return [
 
     // Messages
     'loginFailed' => 'Login fehlgeschlagen',
-    'messageInvalidEmail' => 'Bitte gib eine gültige E-Mail-Adresse ein.',
-    'resetLinkSentIfRegistered' => 'Falls die E-Mail registriert ist, erhältst du einen Link zum Zurücksetzen.',
+    'messageInvalidEmail' => 'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+    'resetLinkSentIfRegistered' => 'Falls die E-Mail registriert ist, erhalten Sie einen Link zum Zurücksetzen.',
     'resetPasswordSubject' => 'Passwort zurücksetzen',
-    'resetPasswordMessage' => "Hallo,\n\nBitte klicke auf folgenden Link, um dein Passwort zurückzusetzen:\n%s\n\nDer Link ist 1 Stunde gültig.",
-    'enterEmail' => 'Bitte gib deine E-Mail-Adresse ein.',
+    'resetPasswordMessage' => "Guten Tag,\n\nBitte klicken Sie auf folgenden Link, um Ihr Passwort zurückzusetzen:\n%s\n\nDer Link ist 1 Stunde gültig.",
+    'enterEmail' => 'Bitte geben Sie Ihre E-Mail-Adresse ein.',
     'userNotFound' => 'Benutzer wurde nicht gefunden.',
     'invalidOrExpiredLink' => 'Ungültiger oder abgelaufener Link.',
     'invalidRequest' => 'Ungültige Anfrage.',
     'passwordsDontMatch' => 'Passwörter stimmen nicht überein.',
-    'passwordChangedSuccess' => 'Passwort wurde erfolgreich geändert. Du kannst dich jetzt anmelden.',
+    'passwordChangedSuccess' => 'Passwort wurde erfolgreich geändert. Sie können sich jetzt anmelden.',
     'emailAlreadyRegistered' => 'Wir betreiben mehrere Portale (Renovo24, Offertenheld, Offertenschweiz). Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse und Ihrem bestehenden Passwort anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
-    'registrationSuccess' => 'Registrierung erfolgreich. Du kannst dich jetzt einloggen.',
+    'registrationSuccess' => 'Registrierung erfolgreich. Sie können sich jetzt einloggen.',
     'adminOnly' => 'Dieser Login ist nur für Administratoren. Bitte verwenden Sie den regulären Login für Firmen.',
 
     // Exceptions

@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Verifizierung erfolgreich',
-    'successMessage' => '✅ Deine Telefonnummer wurde erfolgreich verifiziert!',
+    'successMessage' => '✅ Ihre Telefonnummer wurde erfolgreich verifiziert!',
     'continue' => 'Weiter',
 
     // Gemeinsame Keys
@@ -45,6 +45,6 @@ return [
     'callVerificationCode' => 'Ihr Verifizierungscode für {sitename} lautet',
 
     // Optional für Weiterleitungen etc.
-    'verificationSuccess' => '✅ Deine Telefonnummer wurde erfolgreich verifiziert!',
+    'verificationSuccess' => '✅ Ihre Telefonnummer wurde erfolgreich verifiziert!',
 
 ];

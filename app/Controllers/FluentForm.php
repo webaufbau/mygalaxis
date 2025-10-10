@@ -206,46 +206,56 @@ class FluentForm extends BaseController
         // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
         $insertData['platform'] = 'my_' . str_replace(['.', '-'], '_', $domain);
 
+        // Combo-Logik nur für move und cleaning
         if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
-            $other_type_has_to_be = $enriched['type'] == 'move' ? 'cleaning' : 'move';
-            $userEmail = $data['email'] ?? $data['email_firma'] ?? null;
-            $offerFindModel = new OfferModel();
-            $matchingOffers = $offerFindModel
-                ->where('email', $data['email'] ?? $data['email_firma'] ?? $userEmail)
-                ->where('type', $other_type_has_to_be)
-                ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-3600 minutes')))
-                ->orderBy('created_at', 'DESC')
-                ->findAll(1); // nur das letzte holen
+            $currentType = $enriched['type'] ?? $type;
 
-            if (!empty($matchingOffers)) {
-                $previousOffer = $matchingOffers[0];
-                $previousFormFields = json_decode($previousOffer['form_fields'], true) ?? [];
+            // Nur fortfahren wenn aktueller Typ 'move' oder 'cleaning' ist
+            if (in_array($currentType, ['move', 'cleaning'])) {
+                $other_type_has_to_be = $currentType == 'move' ? 'cleaning' : 'move';
+                $userEmail = $data['email'] ?? $data['email_firma'] ?? null;
+                $offerFindModel = new OfferModel();
+                $matchingOffers = $offerFindModel
+                    ->where('email', $data['email'] ?? $data['email_firma'] ?? $userEmail)
+                    ->where('type', $other_type_has_to_be)
+                    ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-3600 minutes')))
+                    ->orderBy('created_at', 'DESC')
+                    ->findAll(1); // nur das letzte holen
 
-                // Neuen Typ setzen
-                $type = 'move_cleaning';
+                if (!empty($matchingOffers)) {
+                    $previousOffer = $matchingOffers[0];
+                    $previousFormFields = json_decode($previousOffer['form_fields'], true) ?? [];
 
-                // Preis mit OfferPriceCalculator berechnen für move_cleaning
-                $comboPrice = $priceCalculator->calculatePrice(
-                    $type,
-                    $type,
-                    $data,
-                    $previousFormFields
-                );
+                    // Neuen Typ setzen
+                    $type = 'move_cleaning';
 
-                // Fallback auf CategoryManager
-                if ($comboPrice === 0) {
-                    $categoryManager = new \App\Libraries\CategoryManager();
-                    $categories = $categoryManager->getAll();
-                    $category_option = $categories[$type] ?? null;
-                    $comboPrice = $category_option['price'] ?? 0;
+                    // Preis mit OfferPriceCalculator berechnen für move_cleaning
+                    $comboPrice = $priceCalculator->calculatePrice(
+                        $type,
+                        $type,
+                        $data,
+                        $previousFormFields
+                    );
+
+                    // Fallback auf CategoryManager
+                    if ($comboPrice === 0) {
+                        $categoryManager = new \App\Libraries\CategoryManager();
+                        $categories = $categoryManager->getAll();
+                        $category_option = $categories[$type] ?? null;
+                        $comboPrice = $category_option['price'] ?? 0;
+                    }
+
+                    $insertData['type'] = $type;
+                    $insertData['price'] = $comboPrice;
+                    $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
+
+                    // vorige Anfrage $matchingOffers löschen
+                    $offerModel->delete($previousOffer['id']);
+
+                    log_message('info', "Combo offer created: move_cleaning from {$currentType} + {$other_type_has_to_be}, deleted offer #{$previousOffer['id']}");
                 }
-
-                $insertData['type'] = $type;
-                $insertData['price'] = $comboPrice;
-                $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
-
-                // vorige Anfrage $matchingOffers löschen
-                $offerModel->delete($previousOffer['id']);
+            } else {
+                log_message('debug', "Combo logic skipped: current type '{$currentType}' is not 'move' or 'cleaning'");
             }
         }
 
