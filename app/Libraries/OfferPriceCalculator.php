@@ -349,26 +349,46 @@ class OfferPriceCalculator
 
                 // --- Art Objekt ---
                 if (!empty($fields['art_objekt'])) {
-                    // Normierung wie bei Painting / Gardening
                     $aKey = strtolower($fields['art_objekt']);
                     $aKey = convert_umlaute($aKey);
-                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+                    $aKey = preg_replace('/[^a-z0-9]+/i', '_', $aKey);
+                    $aKey = trim($aKey, '_');
 
                     if (!empty($category['options'][$aKey])) {
                         $price += $category['options'][$aKey]['price'];
                     }
                 }
 
-                // --- Arbeiten (Mehrfach möglich) ---
+                // --- Arbeiten ---
+                // Große Arbeiten (nur EINE zählt, höchster Preis wird genommen)
+                $grosseArbeiten = ['neubau', 'renovierung', 'umbau', 'kompl_sanierung', 'solaranlage', 'alarmanlage'];
+                $maxGrosseArbeit = 0;
+
+                // Kleine Arbeiten (werden alle addiert)
+                $kleineArbeitenPrice = 0;
+
                 foreach ($fields['arbeiten_elektriker'] ?? [] as $arbeit) {
                     $aKey = strtolower($arbeit);
                     $aKey = convert_umlaute($aKey);
-                    $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
+                    $aKey = preg_replace('/[^a-z0-9]+/i', '_', $aKey);
+                    $aKey = trim($aKey, '_');
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $arbeitPrice = $category['options'][$aKey]['price'];
+
+                        // Prüfen ob es eine "große Arbeit" ist
+                        if (in_array($aKey, $grosseArbeiten)) {
+                            // Nur den höchsten Preis merken
+                            $maxGrosseArbeit = max($maxGrosseArbeit, $arbeitPrice);
+                        } else {
+                            // Kleine Arbeiten werden addiert
+                            $kleineArbeitenPrice += $arbeitPrice;
+                        }
                     }
                 }
+
+                // Große Arbeit (max) + Kleine Arbeiten (Summe) hinzufügen
+                $price += $maxGrosseArbeit + $kleineArbeitenPrice;
 
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
