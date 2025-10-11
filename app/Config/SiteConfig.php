@@ -25,6 +25,7 @@ class SiteConfig extends BaseConfig
     public string $vatExemptionText = '';
     public string $bankIban = '';
     public string $bankName = '';
+    public int $phoneVerificationValidityHours = 24;
 
     /**
      * Meta-Definition für die Felder
@@ -150,6 +151,14 @@ class SiteConfig extends BaseConfig
             'type' => 'text',
             'label' => 'Bankname',
             'placeholder' => 'PostFinance AG',
+        ],
+
+        // Telefon-Verifizierung
+        'phoneVerificationValidityHours' => [
+            'type' => 'text',
+            'label' => 'Gültigkeitsdauer Telefon-Verifizierung (Stunden)',
+            'placeholder' => '24',
+            'help' => 'Nach wie vielen Stunden muss eine Telefonnummer erneut verifiziert werden? (Standard: 24 Stunden)',
         ],
     ];
 }

@@ -13,7 +13,8 @@
       "Bash(ddev status:*)",
       "Bash(for id in 72 77 78 80 81 83 84)",
       "Bash(do ddev exec php spark offers:recalculate-price:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(ddev start:*)"
     ],
     "deny": [],
     "ask": []

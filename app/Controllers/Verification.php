@@ -54,12 +54,38 @@ class Verification extends BaseController {
         // form_fields ist JSON, decode es:
         $fields = json_decode($row->form_fields, true);
         $phone = $fields['phone'] ?? '';
+        $email = $fields['email'] ?? '';
 
         $phone = $this->normalizePhone($phone);
 
         $isMobile = is_mobile_number($phone);
 
         $method = $isMobile ? 'sms' : 'call';
+
+        // NEUE LOGIK: Prüfe ob Telefonnummer bereits verifiziert wurde
+        $verifiedPhoneModel = new \App\Models\VerifiedPhoneModel();
+        $validityHours = $this->siteConfig->phoneVerificationValidityHours ?? 24;
+        $isAlreadyVerified = $verifiedPhoneModel->isPhoneVerified($phone, null, $validityHours);
+
+        if ($isAlreadyVerified) {
+            log_message('info', "Telefonnummer $phone bereits verifiziert (innerhalb {$validityHours}h). Überspringe Verifizierung für UUID $uuid");
+
+            // Markiere Offerte als verifiziert
+            $builder->where('uuid', $uuid)->update([
+                'verified' => 1,
+                'verify_type' => 'auto_verified' // kennzeichnet automatische Verifizierung
+            ]);
+
+            // Sende E-Mails direkt (wie nach manueller Verifizierung)
+            $this->handlePostVerification($uuid, $row);
+
+            // Weiterleitung zur Erfolgsseite
+            return view('verification_success', [
+                'siteConfig' => $this->siteConfig,
+                'next_url' => session('next_url') ?? $this->siteConfig->thankYouUrl['de'],
+                'auto_verified' => true // Flag für View
+            ]);
+        }
 
         // In Session schreiben
         session()->set('phone', $phone);
@@ -314,6 +340,27 @@ class Verification extends BaseController {
 
                 session()->remove('verification_code');
 
+                // NEUE LOGIK: Telefonnummer in verified_phones speichern
+                $phone = session()->get('phone');
+                $verifyMethod = session()->get('verify_method');
+
+                if ($phone) {
+                    $offerModel = new \App\Models\OfferModel();
+                    $offerData = $offerModel->where('uuid', $uuid)->first();
+                    $email = null;
+                    $platform = null;
+
+                    if ($offerData) {
+                        $fields = json_decode($offerData['form_fields'], true);
+                        $email = $fields['email'] ?? null;
+                        $platform = $offerData['platform'] ?? null;
+                    }
+
+                    $verifiedPhoneModel = new \App\Models\VerifiedPhoneModel();
+                    $verifiedPhoneModel->addVerifiedPhone($phone, $email, $verifyMethod, $platform);
+
+                    log_message('info', "Telefonnummer $phone als verifiziert gespeichert (Methode: $verifyMethod)");
+                }
 
                 // ---- NEU: E-Mail erst jetzt senden ----
                 $offerModel = new \App\Models\OfferModel();
@@ -434,6 +481,48 @@ class Verification extends BaseController {
         return $phone;
     }
 
+
+    /**
+     * Hilfsmethode für Post-Verifizierungs-Aktionen
+     * Wird aufgerufen wenn Telefonnummer bereits verifiziert war
+     */
+    private function handlePostVerification(string $uuid, object $row): void {
+        $offerModel = new \App\Models\OfferModel();
+        $offerData = $offerModel->where('uuid', $uuid)->first();
+
+        if ($offerData) {
+            $type = $offerData['type'] ?? 'unknown';
+
+            // Stelle sicher, dass Preis berechnet ist
+            if (empty($offerData['price']) || $offerData['price'] <= 0) {
+                $updater = new \App\Libraries\OfferPriceUpdater();
+                $updater->updateOfferAndNotify($offerData);
+
+                // frisch aus DB holen (mit Preis)
+                $offerData = $offerModel->find($offerData['id']);
+
+                // Prüfe nochmals ob Preis jetzt gesetzt ist
+                if (empty($offerData['price']) || $offerData['price'] <= 0) {
+                    log_message('error', 'Offer ID ' . $offerData['id'] . ' konnte nicht verifiziert werden: Preis ist 0');
+                    return;
+                }
+            }
+
+            // Dann Offer an Offertensteller und Admins senden
+            $this->sendOfferNotificationEmail(
+                json_decode($offerData['form_fields'], true) ?? [],
+                $type,
+                $uuid,
+                $offerData['verify_type'] ?? null
+            );
+
+            // E-Mail an passende Firmen
+            $notifier = new \App\Libraries\OfferNotificationSender();
+            $notifier->notifyMatchingUsers($offerData);
+
+            log_message('info', 'Auto-Verifizierung abgeschlossen: E-Mails gesendet für UUID ' . $uuid);
+        }
+    }
 
     protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void {
         helper('text'); // für esc()
