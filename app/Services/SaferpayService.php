@@ -20,7 +20,7 @@ class SaferpayService
 
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.35",
+                "SpecVersion" => "1.23",
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid(),
                 "RetryIndicator" => 0
@@ -159,7 +159,7 @@ class SaferpayService
 
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.47", // nutze die aktuellste Version aus Doku
+                "SpecVersion" => "1.23",
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid('', true),
                 "RetryIndicator" => $retryIndicator,
@@ -207,7 +207,7 @@ class SaferpayService
 
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.35",
+                "SpecVersion" => "1.23",
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid(),
                 "RetryIndicator" => 0
