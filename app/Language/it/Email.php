@@ -57,13 +57,13 @@ return [
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Ti preghiamo di confermare il tuo numero di telefono',
-    'helloName'          => 'Ciao %s,',
-    'phoneVerifyIntro'   => 'Hai recentemente effettuato una richiesta su %s, ma la verifica del tuo numero di telefono non è ancora stata completata.',
+    'helloName'          => 'Ciao {0},', // Nome
+    'phoneVerifyIntro'   => 'Hai recentemente effettuato una richiesta su {0}, ma la verifica del tuo numero di telefono non è ancora stata completata.', // Nome del sito
     'phoneVerifyWarning' => 'Senza questa conferma la tua richiesta non può essere elaborata ulteriormente.',
     'clickToVerify'      => 'Clicca sul pulsante sottostante per accedere alla pagina di verifica:',
     'verifyNow'          => 'Conferma ora',
     'thankYou'           => 'Grazie per la tua collaborazione!',
-    'generatedAt'        => 'Questo messaggio è stato generato automaticamente il %s.',
+    'generatedAt'        => 'Questo messaggio è stato generato automaticamente il {0}.', // Data
 
     // Allgemeine Betreffzeilen
     'offerPurchasedSubject'       => 'La tua offerta "{0}" è stata acquistata con successo',

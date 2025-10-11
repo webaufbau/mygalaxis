@@ -19,7 +19,7 @@ return [
     'intro' => 'Hier sind neue Offerten, die kürzlich bei uns eingegangen sind und zu Ihren Filterkriterien passen:',
     'viewNow' => 'Jetzt ansehen',
     'successWishes' => 'Wir wünschen viel Erfolg bei der Auswahl passender Aufträge!',
-    'greetings' => 'Freundliche Grüsse<br>Ihr %s-Team',
+    'greetings' => 'Freundliche Grüsse<br>Ihr {0}-Team', // Sitename
     'automaticGenerated' => 'Diese Nachricht wurde automatisch generiert am', // Datum folgt
 
     // Neue Offerte
@@ -57,13 +57,13 @@ return [
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Bitte bestätigen Sie Ihre Telefonnummer',
-    'helloName'          => 'Guten Tag %s,',
-    'phoneVerifyIntro'   => 'Sie haben kürzlich eine Anfrage über %s gestellt, aber die Verifizierung Ihrer Telefonnummer wurde noch nicht abgeschlossen.',
+    'helloName'          => 'Guten Tag {0},', // Name
+    'phoneVerifyIntro'   => 'Sie haben kürzlich eine Anfrage über {0} gestellt, aber die Verifizierung Ihrer Telefonnummer wurde noch nicht abgeschlossen.', // Sitename
     'phoneVerifyWarning' => 'Ohne diese Bestätigung kann Ihre Anfrage nicht weiterverarbeitet werden.',
     'clickToVerify'      => 'Klicken Sie bitte auf den folgenden Button, um zur Verifizierungsseite zu gelangen:',
     'verifyNow'          => 'Jetzt bestätigen',
     'thankYou'           => 'Vielen Dank für Ihre Mithilfe!',
-    'generatedAt'        => 'Diese Nachricht wurde automatisch generiert am %s.',
+    'generatedAt'        => 'Diese Nachricht wurde automatisch generiert am {0}.', // Datum
 
     // Allgemeine Betreffzeilen
     'offerPurchasedSubject'       => 'Ihr Angebot "{0}" wurde erfolgreich gekauft',

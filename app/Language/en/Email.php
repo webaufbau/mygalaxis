@@ -57,13 +57,13 @@ return [
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Please confirm your phone number',
-    'helloName'          => 'Hello %s,',
-    'phoneVerifyIntro'   => 'You recently submitted a request via %s, but phone number verification has not yet been completed.',
+    'helloName'          => 'Hello {0},', // Name
+    'phoneVerifyIntro'   => 'You recently submitted a request via {0}, but phone number verification has not yet been completed.', // Sitename
     'phoneVerifyWarning' => 'Without this confirmation, your request cannot be processed further.',
     'clickToVerify'      => 'Please click the following button to access the verification page:',
     'verifyNow'          => 'Verify now',
     'thankYou'           => 'Thank you for your cooperation!',
-    'generatedAt'        => 'This message was automatically generated on %s.',
+    'generatedAt'        => 'This message was automatically generated on {0}.', // Date
 
     // Allgemeine Betreffzeilen
     'offerPurchasedSubject'        => 'Your request "{0}" was successfully purchased',

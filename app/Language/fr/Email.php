@@ -58,13 +58,13 @@ return [
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Veuillez confirmer votre numéro de téléphone',
-    'helloName'          => 'Bonjour %s,',
-    'phoneVerifyIntro'   => 'Vous avez récemment soumis une demande via %s, mais la vérification de votre numéro de téléphone n\'a pas encore été complétée.',
+    'helloName'          => 'Bonjour {0},', // Nom
+    'phoneVerifyIntro'   => 'Vous avez récemment soumis une demande via {0}, mais la vérification de votre numéro de téléphone n\'a pas encore été complétée.', // Nom du site
     'phoneVerifyWarning' => 'Sans cette confirmation, votre demande ne peut pas être traitée.',
     'clickToVerify'      => 'Veuillez cliquer sur le bouton ci-dessous pour accéder à la page de vérification:',
     'verifyNow'          => 'Vérifier maintenant',
     'thankYou'           => 'Merci pour votre collaboration!',
-    'generatedAt'        => 'Ce message a été généré automatiquement le %s.',
+    'generatedAt'        => 'Ce message a été généré automatiquement le {0}.', // Date
 
     // Allgemeine Betreffzeilen
     'offerPurchasedSubject'        => 'Votre offre "{0}" a été achetée avec succès',
