@@ -397,7 +397,7 @@ class OfferModel extends Model
 
 
     // z.B. in OfferModel:
-    public function getOffersWithBookingPrice(int $userId = null)
+    public function getOffersWithBookingPrice(?int $userId = null)
     {
         $builder = $this->db->table('offers o')
             ->select('o.*, b.amount AS booking_price')

@@ -71,6 +71,7 @@ function defineAppRoutes($routes) {
     // old:
     $routes->post('form/webhook', '\App\Controllers\FluentForm::webhook');
     $routes->get('form/handle', '\App\Controllers\FluentForm::handle');
+    $routes->get('form/session-data', '\App\Controllers\FluentForm::sessionData');
 
 
 

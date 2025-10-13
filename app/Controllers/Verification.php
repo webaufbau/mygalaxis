@@ -11,9 +11,16 @@ class Verification extends BaseController {
 
         // session()->set('uuid', '640e8804-e219-43d8-b529-faf247c606b3');
 
-        $uuid = session()->get('uuid');
+        // UUID aus GET-Parameter oder Session holen
+        $uuid = $this->request->getGet('uuid') ?? session()->get('uuid');
 
-        while (!$uuid = session()->get('uuid')) {
+        // Falls UUID aus GET kommt, in Session speichern
+        if ($uuid && !session()->get('uuid')) {
+            session()->set('uuid', $uuid);
+        }
+
+        while (!$uuid) {
+            $uuid = session()->get('uuid');
             sleep(1); // 1 Sekunde warten
             $waited++;
 

@@ -70,6 +70,7 @@
         <div id="sms-status-box" class="alert alert-info">
             <?= str_replace('{phone}', esc($phone), lang('Verification.smsSending')); ?>
         </div>
+        <span id="sms-number" style="display:none;"><?= esc($phone) ?></span>
 
         <script>
             const smsNumber = document.getElementById('sms-number').textContent;
@@ -138,7 +139,11 @@
         <p><?= str_replace('{phone}', esc($phone), lang('Verification.callSending')); ?></p>
     <?php endif; ?>
 
-    <form method="post" action="<?= site_url('/verification/verify') ?>">
+    <?php
+    $locale = getCurrentLocale();
+    $prefix = ($locale === 'de') ? '' : '/' . $locale;
+    ?>
+    <form method="post" action="<?= site_url($prefix . '/verification/verify') ?>">
         <?= csrf_field() ?>
 
         <div class="mb-3">

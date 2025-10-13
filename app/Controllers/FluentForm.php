@@ -73,6 +73,36 @@ class FluentForm extends BaseController
      * @throws RandomException
      * @throws \ReflectionException
      */
+    /**
+     * API Endpoint für FluentForm um Session-Daten abzurufen
+     * Gibt zurück ob User bereits Daten ausgefüllt hat
+     */
+    public function sessionData()
+    {
+        $this->response->setHeader('Access-Control-Allow-Origin', '*');
+        $this->response->setHeader('Content-Type', 'application/json');
+
+        // Session-Daten prüfen
+        $sessionData = [
+            'has_session' => false,
+            'email' => null,
+            'phone' => null,
+            'group_email' => session()->get('group_email'),
+            'group_uuid' => session()->get('group_uuid'),
+            'group_additional_service' => session()->get('group_additional_service'),
+        ];
+
+        // Prüfen ob relevante Session-Daten existieren
+        if (!empty($sessionData['group_email'])) {
+            $sessionData['has_session'] = true;
+            $sessionData['email'] = $sessionData['group_email'];
+        }
+
+        log_message('debug', 'Session Data API called: ' . print_r($sessionData, true));
+
+        return $this->response->setJSON($sessionData);
+    }
+
     public function webhook()
     {
         log_message('debug', 'Webhook called!');
