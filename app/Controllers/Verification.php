@@ -684,6 +684,11 @@ class Verification extends BaseController {
      * @return \CodeIgniter\HTTP\RedirectResponse
      */
     public function redirectWithContactData(string $vorname, string $nachname, string $email, string $telefon, string $targetUrl) {
+        // Ensure siteConfig is initialized (important when controller is instantiated directly)
+        if (!isset($this->siteConfig)) {
+            $this->siteConfig = siteconfig();
+        }
+
         // WordPress REST API URL aus SiteConfig
         $wpApiUrl = rtrim($this->siteConfig->frontendUrl, '/') . '/wp-json/waformsyncapi/v1/create-contact-token';
 
