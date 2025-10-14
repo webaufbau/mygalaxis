@@ -369,47 +369,14 @@ class Verification extends BaseController {
                     log_message('info', "Telefonnummer $phone als verifiziert gespeichert (Methode: $verifyMethod)");
 
                     // NEUE LOGIK: Alle vorherigen unverifizierte Anfragen mit derselben Telefonnummer verifizieren
-                    $this->verifyPreviousRequestsWithSamePhone($phone);
+                    // UND: Sende eine einzige E-Mail für alle Offerten der Gruppe
+                    $offerModel = new \App\Models\OfferModel();
+                    $currentOffer = $offerModel->where('uuid', $uuid)->first();
+
+                    $this->verifyAndNotifyGroupedOffers($phone, $currentOffer);
                 }
 
-                // ---- NEU: E-Mail erst jetzt senden ----
-                $offerModel = new \App\Models\OfferModel();
-                $offerData = $offerModel->where('uuid', $uuid)->first();
-                if ($offerData) {
-                    $type = $offerData['type'] ?? 'unknown';
-
-                    // Stelle sicher, dass Preis berechnet ist
-                    if (empty($offerData['price']) || $offerData['price'] <= 0) {
-                        $updater = new \App\Libraries\OfferPriceUpdater();
-                        $updater->updateOfferAndNotify($offerData);
-
-                        // frisch aus DB holen (mit Preis)
-                        $offerData = $offerModel->find($offerData['id']);
-
-                        // Prüfe nochmals ob Preis jetzt gesetzt ist
-                        if (empty($offerData['price']) || $offerData['price'] <= 0) {
-                            log_message('error', 'Offer ID ' . $offerData['id'] . ' konnte nicht verifiziert werden: Preis ist 0');
-                            // Verifizierung rückgängig machen
-                            $builder->where('uuid', $uuid)->update(['verified' => 0]);
-                            $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
-                            return redirect()->to($nextUrl)->with('error', 'Das Angebot konnte nicht verifiziert werden. Bitte kontaktieren Sie den Support.');
-                        }
-                    }
-
-                    // Dann Offer an Offertensteller und Admins senden
-                    $this->sendOfferNotificationEmail(
-                        json_decode($offerData['form_fields'], true) ?? [],
-                        $type,
-                        $uuid,
-                        $offerData['verify_type'] ?? null
-                    );
-
-                    // E-Mail an passende Firmen (nur einmal, unabhängig vom Rabatt)
-                    $notifier = new \App\Libraries\OfferNotificationSender();
-                    $notifier->notifyMatchingUsers($offerData);
-                }
-
-                log_message('info', 'Verifizierung abgeschlossen: E-Mail gesendet.');
+                log_message('info', 'Verifizierung abgeschlossen: E-Mail(s) gesendet.');
 
 
                 log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? $this->siteConfig->thankYouUrl['de']));
@@ -534,6 +501,114 @@ class Verification extends BaseController {
         }
     }
 
+    /**
+     * Sendet eine gruppierte E-Mail für mehrere Offerten
+     * @param array $offers Array von Offerten
+     * @return void
+     */
+    protected function sendGroupedOfferNotificationEmail(array $offers): void {
+        if (empty($offers)) {
+            return;
+        }
+
+        helper('text');
+
+        // Verwende die erste Offerte für allgemeine Daten
+        $firstOffer = $offers[0];
+        $formFields = json_decode($firstOffer['form_fields'], true);
+
+        // Sprache aus Offer-Daten setzen
+        $language = $formFields['lang'] ?? 'de';
+        $request = service('request');
+        if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
+            service('language')->setLocale($language);
+        } else {
+            $request->setLocale($language);
+        }
+
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+        // Admins
+        $adminEmails = [$this->siteConfig->email];
+        $bccString = implode(',', $adminEmails);
+
+        // Formularverfasser
+        $userEmail = $formFields['email'] ?? null;
+
+        if (!$userEmail) {
+            log_message('error', 'Gruppierte E-Mail: E-Mail-Adresse fehlt');
+            return;
+        }
+
+        // Bereite Offerten-Daten auf
+        $offersData = [];
+        foreach ($offers as $offer) {
+            $offerFields = json_decode($offer['form_fields'], true);
+            $type = $offer['type'] ?? 'unknown';
+
+            // Technische Felder rausfiltern
+            $filteredFields = array_filter($offerFields, function ($key) {
+                $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
+                if (in_array($key, $excludeKeys)) return false;
+                if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
+                return true;
+            }, ARRAY_FILTER_USE_KEY);
+
+            // Tracking-Felder entfernen
+            $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
+            $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
+                return !in_array($key, $utmKeys);
+            }, ARRAY_FILTER_USE_KEY);
+
+            $offersData[] = [
+                'uuid' => $offer['uuid'],
+                'type' => $type,
+                'verifyType' => $offer['verify_type'] ?? null,
+                'filteredFields' => $filteredFields,
+                'data' => $offerFields,
+            ];
+        }
+
+        $emailData = [
+            'offers' => $offersData,
+            'isMultiple' => count($offersData) > 1,
+            'data' => $formFields, // Für allgemeine Daten (Name, etc.)
+        ];
+
+        // HTML-Ansicht generieren (neue View für gruppierte Offerten)
+        $message = view('emails/grouped_offer_notification', $emailData);
+
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title' => count($offersData) > 1 ? 'Ihre Anfragen' : 'Ihre Anfrage',
+            'content' => $message,
+            'siteConfig' => $this->siteConfig,
+        ])->render('emails/layout');
+
+        // Maildienst starten
+        $email = \Config\Services::email();
+        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
+        $email->setTo($userEmail);
+        $email->setBCC($bccString);
+        $email->setSubject(
+            count($offersData) > 1
+                ? '🎉 Wir bestätigen Ihnen Ihre Anfragen/Offerten'
+                : lang('Email.offer_added_email_subject')
+        );
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', 'Gruppierte Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+        } else {
+            log_message('info', "Gruppierte E-Mail gesendet an $userEmail für " . count($offersData) . " Offerten");
+        }
+    }
+
     protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void {
         helper('text'); // für esc()
 
@@ -624,48 +699,122 @@ class Verification extends BaseController {
     }
 
     /**
-     * Verifiziert alle vorherigen unverifizierte Anfragen mit derselben Telefonnummer
+     * Verifiziert alle unverifizierte Anfragen mit derselben Telefonnummer
+     * und sendet gruppierte E-Mails (eine E-Mail pro group_id)
      *
      * @param string $phone Normalisierte Telefonnummer
+     * @param array $currentOffer Die gerade verifizierte Offerte
      * @return void
      */
-    private function verifyPreviousRequestsWithSamePhone(string $phone): void {
+    private function verifyAndNotifyGroupedOffers(string $phone, array $currentOffer): void {
         $db = \Config\Database::connect();
+        $offerModel = new \App\Models\OfferModel();
 
         // Finde alle unverifizierte Offerten mit derselben Telefonnummer
-        $offerModel = new \App\Models\OfferModel();
-        $unverifiedOffers = $offerModel
-            ->where('verified', 0)
-            ->findAll();
+        $unverifiedOffers = $offerModel->where('verified', 0)->findAll();
 
-        $verifiedCount = 0;
-        $verifyMethod = session()->get('verify_method') ?? 'auto_verified';
+        $offersToVerify = [];
+        $verifyMethod = session()->get('verify_method') ?? 'sms';
 
+        // Sammle alle Offerten mit der gleichen Telefonnummer
         foreach ($unverifiedOffers as $offer) {
-            // Prüfe ob die Telefonnummer in den form_fields mit der verifizierten Nummer übereinstimmt
             $formFields = json_decode($offer['form_fields'], true);
             $offerPhone = $formFields['phone'] ?? '';
             $normalizedOfferPhone = $this->normalizePhone($offerPhone);
 
-            // Wenn die Telefonnummer übereinstimmt, verifiziere diese Offerte
             if ($normalizedOfferPhone === $phone) {
-                $builder = $db->table('offers');
-                $builder->where('id', $offer['id'])->update([
-                    'verified' => 1,
-                    'verify_type' => 'auto_verified_same_phone'
-                ]);
-
-                $verifiedCount++;
-                log_message('info', "Offerte ID {$offer['id']} (UUID: {$offer['uuid']}) automatisch verifiziert durch Telefonnummer $phone");
-
-                // E-Mails für diese Offerte senden
-                $this->handlePostVerification($offer['uuid'], (object)$offer);
+                $offersToVerify[] = $offer;
             }
         }
 
-        if ($verifiedCount > 0) {
-            log_message('info', "Insgesamt $verifiedCount vorherige Anfragen mit Telefonnummer $phone automatisch verifiziert");
+        // Füge die aktuelle Offerte hinzu (falls nicht schon in der Liste)
+        $currentOfferInList = false;
+        foreach ($offersToVerify as $offer) {
+            if ($offer['id'] === $currentOffer['id']) {
+                $currentOfferInList = true;
+                break;
+            }
         }
+        if (!$currentOfferInList) {
+            $offersToVerify[] = $currentOffer;
+        }
+
+        // Gruppiere nach group_id
+        $groupedOffers = [];
+        foreach ($offersToVerify as $offer) {
+            $groupKey = $offer['group_id'] ?? 'individual_' . $offer['id'];
+            if (!isset($groupedOffers[$groupKey])) {
+                $groupedOffers[$groupKey] = [];
+            }
+            $groupedOffers[$groupKey][] = $offer;
+        }
+
+        // Für jede Gruppe: Verifiziere alle Offerten und sende eine E-Mail
+        foreach ($groupedOffers as $groupKey => $offers) {
+            $verifiedOffers = [];
+
+            foreach ($offers as $offer) {
+                // Verifiziere die Offerte in der DB
+                $builder = $db->table('offers');
+                $builder->where('id', $offer['id'])->update([
+                    'verified' => 1,
+                    'verify_type' => ($offer['id'] === $currentOffer['id']) ? $verifyMethod : 'auto_verified_same_phone'
+                ]);
+
+                // Stelle sicher, dass Preis berechnet ist
+                if (empty($offer['price']) || $offer['price'] <= 0) {
+                    $updater = new \App\Libraries\OfferPriceUpdater();
+                    $updater->updateOfferAndNotify($offer);
+                    // Frisch aus DB holen (mit Preis)
+                    $offer = $offerModel->find($offer['id']);
+                }
+
+                // Nur hinzufügen wenn Preis > 0
+                if (!empty($offer['price']) && $offer['price'] > 0) {
+                    $verifiedOffers[] = $offer;
+                    log_message('info', "Offerte ID {$offer['id']} (UUID: {$offer['uuid']}) verifiziert (Gruppe: $groupKey)");
+                } else {
+                    log_message('error', "Offerte ID {$offer['id']} übersprungen - Preis ist 0");
+                }
+            }
+
+            if (empty($verifiedOffers)) {
+                log_message('warning', "Keine gültigen Offerten in Gruppe $groupKey zum Versenden");
+                continue;
+            }
+
+            // Sende eine einzige E-Mail für alle Offerten dieser Gruppe
+            if (count($verifiedOffers) === 1) {
+                // Einzelne Offerte - normale E-Mail
+                $offer = $verifiedOffers[0];
+                $this->sendOfferNotificationEmail(
+                    json_decode($offer['form_fields'], true) ?? [],
+                    $offer['type'] ?? 'unknown',
+                    $offer['uuid'],
+                    $offer['verify_type'] ?? null
+                );
+
+                // E-Mail an passende Firmen
+                $notifier = new \App\Libraries\OfferNotificationSender();
+                $notifier->notifyMatchingUsers($offer);
+
+                log_message('info', "E-Mail gesendet für Offerte ID {$offer['id']}");
+            } else {
+                // Mehrere Offerten - gruppierte E-Mail
+                $this->sendGroupedOfferNotificationEmail($verifiedOffers);
+
+                // E-Mail an passende Firmen für jede Offerte
+                $notifier = new \App\Libraries\OfferNotificationSender();
+                foreach ($verifiedOffers as $offer) {
+                    $notifier->notifyMatchingUsers($offer);
+                }
+
+                $offerIds = array_column($verifiedOffers, 'id');
+                log_message('info', "Gruppierte E-Mail gesendet für Offerten IDs: " . implode(', ', $offerIds));
+            }
+        }
+
+        log_message('info', "Insgesamt " . count($offersToVerify) . " Anfragen mit Telefonnummer $phone verifiziert und E-Mails gesendet");
     }
 
     /**
