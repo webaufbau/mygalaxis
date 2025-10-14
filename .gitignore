@@ -2,6 +2,8 @@
 # Operating Specific Junk Files
 #-------------------------
 
+wavk-form-sync/
+
 # OS X
 .DS_Store
 .AppleDouble
