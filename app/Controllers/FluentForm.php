@@ -21,6 +21,9 @@ class FluentForm extends BaseController
 
         // POST-Daten
         $vorname = $request->getPost('names');
+        $nachname = $request->getPost('nachname');
+        $email = $request->getPost('email');
+        $phone = $request->getPost('phone');
 
         // GET-Daten
         $getParams = $request->getGet(); // alle GET-Parameter
@@ -59,6 +62,24 @@ class FluentForm extends BaseController
 
         // URL zusammensetzen (alle GET-Parameter anhängen)
         if ($next_url) {
+            // Frontend-Domain aus SiteConfig holen
+            $frontendDomain = parse_url($this->siteConfig->frontendUrl, PHP_URL_HOST);
+
+            // Wenn WordPress-URL, dann sichere Token-Weiterleitung
+            if ($frontendDomain && str_contains($next_url, $frontendDomain)) {
+                log_message('info', "Sichere Kontaktdaten-Weiterleitung zu WordPress: $next_url");
+
+                $verification = new \App\Controllers\Verification();
+                return $verification->redirectWithContactData(
+                    $vorname ?? '',
+                    $nachname ?? '',
+                    $email ?? '',
+                    $phone ?? '',
+                    $next_url
+                );
+            }
+
+            // Normale Weiterleitung für andere URLs
             $query = http_build_query($getParams);
             $redirectUrl = $next_url . (str_contains($next_url, '?') ? '&' : '?') . $query;
             return redirect()->to($redirectUrl);

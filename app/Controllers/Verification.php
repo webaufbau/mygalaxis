@@ -367,6 +367,9 @@ class Verification extends BaseController {
                     $verifiedPhoneModel->addVerifiedPhone($phone, $email, $verifyMethod, $platform);
 
                     log_message('info', "Telefonnummer $phone als verifiziert gespeichert (Methode: $verifyMethod)");
+
+                    // NEUE LOGIK: Alle vorherigen unverifizierte Anfragen mit derselben Telefonnummer verifizieren
+                    $this->verifyPreviousRequestsWithSamePhone($phone);
                 }
 
                 // ---- NEU: E-Mail erst jetzt senden ----
@@ -618,6 +621,114 @@ class Verification extends BaseController {
             log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
         }
 
+    }
+
+    /**
+     * Verifiziert alle vorherigen unverifizierte Anfragen mit derselben Telefonnummer
+     *
+     * @param string $phone Normalisierte Telefonnummer
+     * @return void
+     */
+    private function verifyPreviousRequestsWithSamePhone(string $phone): void {
+        $db = \Config\Database::connect();
+
+        // Finde alle unverifizierte Offerten mit derselben Telefonnummer
+        $offerModel = new \App\Models\OfferModel();
+        $unverifiedOffers = $offerModel
+            ->where('verified', 0)
+            ->findAll();
+
+        $verifiedCount = 0;
+        $verifyMethod = session()->get('verify_method') ?? 'auto_verified';
+
+        foreach ($unverifiedOffers as $offer) {
+            // Prüfe ob die Telefonnummer in den form_fields mit der verifizierten Nummer übereinstimmt
+            $formFields = json_decode($offer['form_fields'], true);
+            $offerPhone = $formFields['phone'] ?? '';
+            $normalizedOfferPhone = $this->normalizePhone($offerPhone);
+
+            // Wenn die Telefonnummer übereinstimmt, verifiziere diese Offerte
+            if ($normalizedOfferPhone === $phone) {
+                $builder = $db->table('offers');
+                $builder->where('id', $offer['id'])->update([
+                    'verified' => 1,
+                    'verify_type' => 'auto_verified_same_phone'
+                ]);
+
+                $verifiedCount++;
+                log_message('info', "Offerte ID {$offer['id']} (UUID: {$offer['uuid']}) automatisch verifiziert durch Telefonnummer $phone");
+
+                // E-Mails für diese Offerte senden
+                $this->handlePostVerification($offer['uuid'], (object)$offer);
+            }
+        }
+
+        if ($verifiedCount > 0) {
+            log_message('info', "Insgesamt $verifiedCount vorherige Anfragen mit Telefonnummer $phone automatisch verifiziert");
+        }
+    }
+
+    /**
+     * Erstellt einen sicheren Token für Kontaktdaten und leitet zur WordPress-Seite weiter
+     *
+     * Verwendung:
+     * Nach erfolgreicher Formularübermittlung kann der Benutzer zu einem weiteren
+     * WordPress-Formular weitergeleitet werden, wobei seine Kontaktdaten sicher
+     * übertragen werden (Token-basiert, HMAC-signiert).
+     *
+     * @param string $vorname
+     * @param string $nachname
+     * @param string $email
+     * @param string $telefon
+     * @param string $targetUrl WordPress-URL mit Formular
+     * @return \CodeIgniter\HTTP\RedirectResponse
+     */
+    public function redirectWithContactData(string $vorname, string $nachname, string $email, string $telefon, string $targetUrl) {
+        // WordPress REST API URL aus SiteConfig
+        $wpApiUrl = rtrim($this->siteConfig->frontendUrl, '/') . '/wp-json/waformsyncapi/v1/create-contact-token';
+
+        // API Key aus .env
+        $apiKey = getenv('syncApi.apiKey') ?: '43r3u4grj23b423j4b23mb43bj23bj334rrw';
+
+        try {
+            $client = \Config\Services::curlrequest();
+            $response = $client->request('POST', $wpApiUrl, [
+                'headers' => [
+                    'X-TOKEN-API-KEY' => $apiKey,
+                    'Content-Type' => 'application/json'
+                ],
+                'json' => [
+                    'vorname' => $vorname,
+                    'nachname' => $nachname,
+                    'email' => $email,
+                    'telefon' => $telefon,
+                    'target_url' => $targetUrl
+                ],
+                'http_errors' => false, // Fehler nicht als Exception werfen
+                'timeout' => 10
+            ]);
+
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode === 200) {
+                $result = json_decode($response->getBody(), true);
+
+                if (isset($result['success']) && $result['success'] === true && isset($result['url'])) {
+                    log_message('info', "Kontaktdaten-Token erstellt, Weiterleitung zu: {$result['url']}");
+                    return redirect()->to($result['url']);
+                } else {
+                    log_message('error', 'WordPress Token-API Fehler: ' . print_r($result, true));
+                    return redirect()->to($targetUrl)->with('error', 'Kontaktdaten konnten nicht übertragen werden.');
+                }
+            } else {
+                log_message('error', "WordPress Token-API HTTP-Fehler: Status $statusCode, Body: " . $response->getBody());
+                return redirect()->to($targetUrl)->with('error', 'Verbindung zu WordPress fehlgeschlagen.');
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'Fehler beim Erstellen des Kontaktdaten-Tokens: ' . $e->getMessage());
+            return redirect()->to($targetUrl)->with('error', 'Ein technischer Fehler ist aufgetreten.');
+        }
     }
 
 }
