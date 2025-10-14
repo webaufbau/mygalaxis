@@ -19,7 +19,7 @@ class FluentForm extends BaseController
     {
         $request = service('request');
 
-        // POST-Daten
+        // POST-Daten (meist leer bei Fluent Form Action URLs)
         $vorname = $request->getPost('names');
         $nachname = $request->getPost('nachname');
         $email = $request->getPost('email');
@@ -33,6 +33,15 @@ class FluentForm extends BaseController
         $uuid = $getParams['uuid'] ?? bin2hex(random_bytes(8));
 
         log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
+
+        // Kontaktdaten aus Session holen (vom vorherigen Formular)
+        if (empty($vorname) || empty($email)) {
+            $vorname = session()->get('group_vorname') ?? session()->get('vorname') ?? '';
+            $nachname = session()->get('group_nachname') ?? session()->get('nachname') ?? '';
+            $email = session()->get('group_email') ?? session()->get('email') ?? '';
+            $phone = session()->get('group_phone') ?? session()->get('phone') ?? '';
+            log_message('debug', 'Kontaktdaten aus Session geladen: vorname='.$vorname.', email='.$email);
+        }
 
         // Session speichern (Fallback)
         session()->set('uuid', $uuid);
@@ -161,12 +170,19 @@ class FluentForm extends BaseController
             log_message('debug', 'matching additional_service|'.$data['additional_service'].'|');
 
             if ($data['additional_service'] !== 'Nein') {
+                // Alle Kontaktdaten für spätere Weiterleitung speichern
+                session()->set('group_vorname', $data['names'] ?? $data['vorname'] ?? null);
+                session()->set('group_nachname', $data['nachname'] ?? null);
                 session()->set('group_email', $data['email'] ?? null);
+                session()->set('group_phone', $data['phone'] ?? null);
                 session()->set('group_uuid', $data['uuid'] ?? $data['uuid_value'] ?? null);
                 session()->set('group_additional_service', $data['additional_service'] ?? null);
                 session()->set('group_date', time());
 
+                log_message('debug', 'additional_service group_vorname ' . session()->get('group_vorname'));
+                log_message('debug', 'additional_service group_nachname ' . session()->get('group_nachname'));
                 log_message('debug', 'additional_service group_email ' . session()->get('group_email'));
+                log_message('debug', 'additional_service group_phone ' . session()->get('group_phone'));
                 log_message('debug', 'additional_service group_uuid ' . session()->get('group_uuid'));
                 log_message('debug', 'additional_service group_additional_service ' . session()->get('group_additional_service'));
                 log_message('debug', 'additional_service group_date ' . session()->get('group_date'));

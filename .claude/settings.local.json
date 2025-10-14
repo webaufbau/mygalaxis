@@ -16,7 +16,8 @@
       "Bash(done)",
       "Bash(ddev start:*)",
       "Bash(curl:*)",
-      "Bash(TOKEN=\"eyJ2b3JuYW1lIjoiVGVzdCIsIm5hY2huYW1lIjoiVXNlciIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsInRlbGVmb24iOiIwNzkxMjM0NTY3IiwidGltZXN0YW1wIjoxNzYwNDcxODAyfXxlMGExZTIyNzRlZGU2ODViZjZhM2RjNWQ4ZGYwNDU2YzhkZWJlMDJiMzk3YzY3OTdiNjE5YTIxNjIwZDcwZTFl\")"
+      "Bash(TOKEN=\"eyJ2b3JuYW1lIjoiVGVzdCIsIm5hY2huYW1lIjoiVXNlciIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsInRlbGVmb24iOiIwNzkxMjM0NTY3IiwidGltZXN0YW1wIjoxNzYwNDcxODAyfXxlMGExZTIyNzRlZGU2ODViZjZhM2RjNWQ4ZGYwNDU2YzhkZWJlMDJiMzk3YzY3OTdiNjE5YTIxNjIwZDcwZTFl\")",
+      "Bash(ddev logs:*)"
     ],
     "deny": [],
     "ask": []
