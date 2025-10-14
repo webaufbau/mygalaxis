@@ -31,10 +31,21 @@ class RemindVerification extends BaseCommand
             return;
         }
 
-        foreach ($offers as $offer) {
+        // Gruppiere Offerten nach E-Mail und group_id
+        $groupedOffers = $this->groupOffersByEmail($offers);
+
+        foreach ($groupedOffers as $emailKey => $offerGroup) {
+            $firstOffer = $offerGroup[0];
+            $formFields = json_decode($firstOffer['form_fields'], true);
+            $email = $formFields['email'] ?? $firstOffer['email'] ?? null;
+
+            if (!$email) {
+                CLI::write("Überspringe Gruppe – E-Mail fehlt.", 'red');
+                continue;
+            }
 
             // Sprache aus Offer-Daten setzen
-            $language = $user->language ?? $offer['language'] ?? 'de'; // Fallback: Deutsch
+            $language = $firstOffer['language'] ?? 'de'; // Fallback: Deutsch
             $request = service('request');
             if ($request instanceof \CodeIgniter\HTTP\CLIRequest) {
                 service('language')->setLocale($language);
@@ -42,48 +53,94 @@ class RemindVerification extends BaseCommand
                 $request->setLocale($language);
             }
 
-            $formFields = json_decode($offer['form_fields'], true);
-            $email = $formFields['email'] ?? $offer['email'] ?? null;
-            $vorname = $formFields['firstname'] ?? $offer['firstname'] ?? 'Nutzer';
-
-            if (!$email) {
-                CLI::write("Überspringe Offer-ID {$offer['id']} – E-Mail fehlt.", 'red');
-                continue;
-            }
-
-            // Fallback Token erzeugen, falls nicht vorhanden
-            if (empty($offer['verification_token'])) {
-                $newToken = bin2hex(random_bytes(32)); // 64 Zeichen Token
-
-                // Token in DB speichern
-                $offerModel->update($offer['id'], ['verification_token' => $newToken]);
-
-                // Token auch im aktuellen $offer setzen, damit Link korrekt ist
-                $offer['verification_token'] = $newToken;
-            }
+            $languageService = service('language');
+            $languageService->setLocale($language);
 
             // Lade SiteConfig basierend auf Offer-Platform
-            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($firstOffer['platform']);
 
-            $verifyLink = rtrim($siteConfig->backendUrl, '/') . '/verification/verify-offer/' . $offer['id'] . '/' . $offer['verification_token'];
+            // Erstelle Token und Links für alle Offerten in der Gruppe
+            $offersList = [];
+            foreach ($offerGroup as $offer) {
+                // Fallback Token erzeugen, falls nicht vorhanden
+                if (empty($offer['verification_token'])) {
+                    $newToken = bin2hex(random_bytes(32)); // 64 Zeichen Token
+                    $offerModel->update($offer['id'], ['verification_token' => $newToken]);
+                    $offer['verification_token'] = $newToken;
+                }
+
+                $verifyLink = rtrim($siteConfig->backendUrl, '/') . '/verification/verify-offer/' . $offer['id'] . '/' . $offer['verification_token'];
+                $offerFields = json_decode($offer['form_fields'], true);
+
+                $offersList[] = [
+                    'id' => $offer['id'],
+                    'type' => $offer['type'] ?? 'unknown',
+                    'verifyLink' => $verifyLink,
+                    'formFields' => $offerFields,
+                ];
+            }
 
             $emailData = [
                 'data' => $formFields,
-                'verifyLink' => $verifyLink,
+                'offers' => $offersList,
                 'siteConfig' => $siteConfig,
+                'isMultiple' => count($offersList) > 1,
             ];
 
             $htmlMessage = view('emails/verification_reminder', $emailData);
-            $subject = 'Bitte bestätige deine Telefonnummer für deine Anfrage';
+            $subject = count($offersList) > 1
+                ? 'Bitte bestätigen Sie Ihre Telefonnummer für Ihre Anfragen'
+                : 'Bitte bestätigen Sie Ihre Telefonnummer für Ihre Anfrage';
 
             if ($this->sendEmail($email, $subject, $htmlMessage, $siteConfig)) {
-                CLI::write("Erinnerung an {$email} gesendet (Offer-ID {$offer['id']}).", 'green');
-                $offerModel->update($offer['id'], ['reminder_sent_at' => date('Y-m-d H:i:s')]);
+                $offerIds = array_column($offerGroup, 'id');
+                CLI::write("Erinnerung an {$email} gesendet für " . count($offersList) . " Offerte(n) (IDs: " . implode(', ', $offerIds) . ").", 'green');
+
+                // Markiere ALLE Offerten in der Gruppe als "reminder gesendet"
+                foreach ($offerGroup as $offer) {
+                    $offerModel->update($offer['id'], ['reminder_sent_at' => date('Y-m-d H:i:s')]);
+                }
             } else {
-                CLI::write("Erinnerung an {$email} konnte nicht gesendet werden (Offer-ID {$offer['id']}).", 'red');
+                CLI::write("Erinnerung an {$email} konnte nicht gesendet werden.", 'red');
             }
         }
+    }
 
+    /**
+     * Gruppiert Offerten nach E-Mail (und optional group_id)
+     * @param array $offers
+     * @return array Gruppierte Offerten
+     */
+    private function groupOffersByEmail(array $offers): array
+    {
+        $grouped = [];
+
+        foreach ($offers as $offer) {
+            $formFields = json_decode($offer['form_fields'], true);
+            $email = $formFields['email'] ?? $offer['email'] ?? null;
+
+            if (!$email) {
+                continue;
+            }
+
+            // Gruppierungsschlüssel: E-Mail + group_id (falls vorhanden)
+            // Wenn group_id leer ist, dann jede Offerte separat
+            $groupKey = $email;
+            if (!empty($offer['group_id'])) {
+                $groupKey .= '_' . $offer['group_id'];
+            } else {
+                // Ohne group_id: jede Offerte bekommt eigenen Schlüssel
+                $groupKey .= '_individual_' . $offer['id'];
+            }
+
+            if (!isset($grouped[$groupKey])) {
+                $grouped[$groupKey] = [];
+            }
+
+            $grouped[$groupKey][] = $offer;
+        }
+
+        return $grouped;
     }
 
     protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool
