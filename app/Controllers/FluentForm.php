@@ -74,20 +74,18 @@ class FluentForm extends BaseController
             // Frontend-Domain aus SiteConfig holen
             $frontendDomain = parse_url($this->siteConfig->frontendUrl, PHP_URL_HOST);
 
-            // Wenn WordPress-URL, dann sichere Token-Weiterleitung
+            // Kontaktdaten als GET-Parameter hinzufügen (WordPress Plugin kann diese abfangen)
             if ($frontendDomain && str_contains($next_url, $frontendDomain)) {
-                log_message('info', "Sichere Kontaktdaten-Weiterleitung zu WordPress: $next_url");
+                log_message('info', "Weiterleitung zu WordPress mit Kontaktdaten: $next_url");
 
-                return $this->redirectWithContactData(
-                    $vorname ?? '',
-                    $nachname ?? '',
-                    $email ?? '',
-                    $phone ?? '',
-                    $next_url
-                );
+                // Kontaktdaten zu GET-Parametern hinzufügen
+                $getParams['vorname'] = $vorname ?? '';
+                $getParams['nachname'] = $nachname ?? '';
+                $getParams['email'] = $email ?? '';
+                $getParams['phone'] = $phone ?? '';
             }
 
-            // Normale Weiterleitung für andere URLs
+            // Weiterleitung mit allen GET-Parametern
             $query = http_build_query($getParams);
             $redirectUrl = $next_url . (str_contains($next_url, '?') ? '&' : '?') . $query;
             return redirect()->to($redirectUrl);
@@ -396,77 +394,6 @@ class FluentForm extends BaseController
         //$this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType); später senden erst nach Verifikation
 
         return $this->response->setJSON(['success' => true]);
-    }
-
-    /**
-     * Erstellt einen sicheren Token für Kontaktdaten und leitet zur WordPress-Seite weiter
-     *
-     * Verwendung:
-     * Nach erfolgreicher Formularübermittlung kann der Benutzer zu einem weiteren
-     * WordPress-Formular weitergeleitet werden, wobei seine Kontaktdaten sicher
-     * übertragen werden (Token-basiert, HMAC-signiert).
-     *
-     * @param string $vorname
-     * @param string $nachname
-     * @param string $email
-     * @param string $telefon
-     * @param string $targetUrl WordPress-URL mit Formular
-     * @return \CodeIgniter\HTTP\RedirectResponse
-     */
-    private function redirectWithContactData(string $vorname, string $nachname, string $email, string $telefon, string $targetUrl) {
-        // WordPress REST API URL aus SiteConfig
-        $wpApiUrl = rtrim($this->siteConfig->frontendUrl, '/') . '/wp-json/waformsyncapi/v1/create-contact-token';
-
-        // API Key aus .env
-        $apiKey = getenv('syncApi.apiKey') ?: '43r3u4grj23b423j4b23mb43bj23bj334rrw';
-
-        log_message('debug', "redirectWithContactData: API URL: $wpApiUrl");
-        log_message('debug', "redirectWithContactData: API Key (erste 10 Zeichen): " . substr($apiKey, 0, 10) . '...');
-        log_message('debug', "redirectWithContactData: Target URL: $targetUrl");
-
-        try {
-            $client = \Config\Services::curlrequest();
-            $response = $client->request('POST', $wpApiUrl, [
-                'headers' => [
-                    'X-TOKEN-API-KEY' => $apiKey,
-                    'Content-Type' => 'application/json'
-                ],
-                'json' => [
-                    'vorname' => $vorname,
-                    'nachname' => $nachname,
-                    'email' => $email,
-                    'telefon' => $telefon,
-                    'target_url' => $targetUrl
-                ],
-                'http_errors' => false, // Fehler nicht als Exception werfen
-                'timeout' => 10
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $responseBody = $response->getBody();
-
-            log_message('debug', "redirectWithContactData: Response Status: $statusCode");
-            log_message('debug', "redirectWithContactData: Response Body: $responseBody");
-
-            if ($statusCode === 200) {
-                $result = json_decode($responseBody, true);
-
-                if (isset($result['success']) && $result['success'] === true && isset($result['url'])) {
-                    log_message('info', "Kontaktdaten-Token erstellt, Weiterleitung zu: {$result['url']}");
-                    return redirect()->to($result['url']);
-                } else {
-                    log_message('error', 'WordPress Token-API Fehler: ' . print_r($result, true));
-                    return redirect()->to($targetUrl)->with('error', 'Kontaktdaten konnten nicht übertragen werden.');
-                }
-            } else {
-                log_message('error', "WordPress Token-API HTTP-Fehler: Status $statusCode, Body: $responseBody");
-                return redirect()->to($targetUrl)->with('error', 'Verbindung zu WordPress fehlgeschlagen.');
-            }
-
-        } catch (\Exception $e) {
-            log_message('error', 'Fehler beim Erstellen des Kontaktdaten-Tokens: ' . $e->getMessage());
-            return redirect()->to($targetUrl)->with('error', 'Ein technischer Fehler ist aufgetreten.');
-        }
     }
 
 }
