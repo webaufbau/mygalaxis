@@ -249,31 +249,35 @@ class FluentForm extends BaseController
         log_message('debug', 'Webhook HEADERS: ' . print_r($headers, true));
 
         // WICHTIG: Bei zweiter Offerte (skip_kontakt=1) müssen Kontaktdaten geladen werden
-        if (!empty($data['skip_kontakt']) && $data['skip_kontakt'] == '1') {
-            log_message('debug', '[Webhook] skip_kontakt=1 - Lade Kontaktdaten');
+        // Prüfe ob Kontaktdaten fehlen
+        $hasContactData = !empty($data['names']) || !empty($data['vorname']) || !empty($data['email']);
 
-            $uuid = $data['uuid'] ?? $data['uuid_value'] ?? null;
-            if ($uuid) {
-                $db = \Config\Database::connect();
-                $contactData = null;
+        if (!empty($data['skip_kontakt']) && $data['skip_kontakt'] == '1' && !$hasContactData) {
+            log_message('debug', '[Webhook] skip_kontakt=1 und keine Kontaktdaten - Lade aus Session oder DB');
 
-                // METHODE 1: Versuche aus temp_contact_data zu laden
-                $tempData = $db->table('temp_contact_data')
-                    ->where('uuid', $uuid)
-                    ->where('expires_at >=', date('Y-m-d H:i:s'))
-                    ->get()
-                    ->getRow();
+            // METHODE 1: Versuche aus Session zu laden
+            $contactData = [
+                'vorname' => session()->get('group_vorname'),
+                'nachname' => session()->get('group_nachname'),
+                'email' => session()->get('group_email'),
+                'phone' => session()->get('group_phone'),
+                'address_line_1' => session()->get('group_address_line_1'),
+                'address_line_2' => session()->get('group_address_line_2'),
+                'zip' => session()->get('group_zip'),
+                'city' => session()->get('group_city'),
+                'erreichbar' => session()->get('group_erreichbar'),
+            ];
 
-                if ($tempData) {
-                    $contactData = json_decode($tempData->contact_data, true);
-                    log_message('debug', '[Webhook] Kontaktdaten aus temp_contact_data geladen');
+            // Prüfe ob Session Daten hat
+            if (!empty($contactData['email'])) {
+                log_message('debug', '[Webhook] Kontaktdaten aus Session geladen');
+            } else {
+                // METHODE 2: Lade aus vorheriger Offerte mit gleicher UUID
+                log_message('debug', '[Webhook] Session leer - lade aus vorheriger Offerte');
 
-                    // Temp-Daten nach Verwendung löschen
-                    $db->table('temp_contact_data')->where('uuid', $uuid)->delete();
-                } else {
-                    // METHODE 2: Lade aus vorheriger Offerte mit gleicher UUID
-                    log_message('debug', '[Webhook] Keine temp_contact_data - lade aus vorheriger Offerte');
-
+                $uuid = $data['uuid'] ?? $data['uuid_value'] ?? null;
+                if ($uuid) {
+                    $db = \Config\Database::connect();
                     $previousOffer = $db->table('offers')
                         ->where('uuid', $uuid)
                         ->where('email IS NOT NULL')
@@ -313,24 +317,24 @@ class FluentForm extends BaseController
 
                         log_message('debug', '[Webhook] Kontaktdaten aus vorheriger Offerte geladen (ID: ' . $previousOffer->id . ')');
                     } else {
-                        log_message('warning', '[Webhook] skip_kontakt=1 aber keine vorherige Offerte mit Kontaktdaten für UUID: ' . $uuid);
+                        log_message('warning', '[Webhook] skip_kontakt=1 aber keine vorherige Offerte mit Kontaktdaten für UUID: ' . ($uuid ?? 'unknown'));
+                    }
+                }
+            }
+
+            // Kontaktdaten in $data einfügen (nur wenn nicht leer)
+            if (!empty($contactData)) {
+                $contactFields = ['vorname', 'nachname', 'email', 'phone', 'address_line_1', 'address_line_2', 'zip', 'city', 'erreichbar'];
+                foreach ($contactFields as $field) {
+                    if (empty($data[$field]) && !empty($contactData[$field])) {
+                        $data[$field] = $contactData[$field];
+                        log_message('debug', '[Webhook] Übernommen: ' . $field . ' = ' . $contactData[$field]);
                     }
                 }
 
-                // Kontaktdaten in $data einfügen
-                if ($contactData) {
-                    $contactFields = ['vorname', 'nachname', 'email', 'phone', 'address_line_1', 'address_line_2', 'zip', 'city', 'erreichbar'];
-                    foreach ($contactFields as $field) {
-                        if (empty($data[$field]) && !empty($contactData[$field])) {
-                            $data[$field] = $contactData[$field];
-                            log_message('debug', '[Webhook] Übernommen: ' . $field . ' = ' . $contactData[$field]);
-                        }
-                    }
-
-                    // names Feld
-                    if (empty($data['names']) && !empty($contactData['vorname'])) {
-                        $data['names'] = $contactData['vorname'];
-                    }
+                // names Feld
+                if (empty($data['names']) && !empty($contactData['vorname'])) {
+                    $data['names'] = $contactData['vorname'];
                 }
             }
         }
@@ -352,107 +356,84 @@ class FluentForm extends BaseController
             }
         }
 
+        // WICHTIG: Kontaktdaten IMMER in Session speichern wenn sie vorhanden sind (egal ob Ja oder Nein)
+        // Prüfe zuerst ob neue Kontaktdaten vorhanden sind (nicht von skip_kontakt)
+        $hasNewContactData = !empty($data['skip_kontakt']) ? false : (!empty($data['names']) || !empty($data['vorname']) || !empty($data['email']));
+
+        if ($hasNewContactData) {
+            log_message('debug', '[Webhook] Neue Kontaktdaten gefunden - speichere in Session');
+            log_message('debug', '[Webhook] Alle $data Keys: ' . implode(', ', array_keys($data)));
+
+            // Zeige alle address-ähnlichen Felder
+            foreach ($data as $key => $value) {
+                if (stripos($key, 'address') !== false || stripos($key, 'adresse') !== false ||
+                    $key === 'zip' || $key === 'city' || stripos($key, 'stadt') !== false) {
+                    log_message('debug', '[Webhook] Adressfeld gefunden: ' . $key . ' = ' .
+                        (is_array($value) ? json_encode($value) : $value));
+                }
+            }
+
+            // Adresse kann in verschiedenen Formaten vorliegen - extrahiere zuerst
+            $address = $data['address']
+                ?? $data['auszug_adresse']
+                ?? $data['auszug_adresse_firma']
+                ?? [];
+
+            log_message('debug', '[Webhook] Extrahiertes $address Array: ' . (is_array($address) ? json_encode($address) : 'kein Array'));
+
+            $addressLine1 = null;
+            $addressLine2 = null;
+            $zip = null;
+            $city = null;
+
+            if (is_array($address) && !empty($address)) {
+                $addressLine1 = $address['address_line_1'] ?? $address['address'] ?? null;
+                $addressLine2 = $address['address_line_2'] ?? null;
+                $zip = $address['zip'] ?? null;
+                $city = $address['city'] ?? null;
+                log_message('debug', '[Webhook] Adresse aus Array extrahiert - Line1: ' . $addressLine1 . ', Zip: ' . $zip . ', City: ' . $city);
+            } else {
+                // Fallback: direkt aus $data
+                $addressLine1 = $data['address_line_1'] ?? null;
+                $addressLine2 = $data['address_line_2'] ?? null;
+                $zip = $data['zip'] ?? null;
+                $city = $data['city'] ?? null;
+                log_message('debug', '[Webhook] Adresse direkt aus $data - Line1: ' . $addressLine1 . ', Zip: ' . $zip . ', City: ' . $city);
+            }
+
+            // Alle Kontaktdaten in Session speichern - überschreibe vorhandene Daten
+            session()->set('group_vorname', $data['names'] ?? $data['vorname'] ?? null);
+            session()->set('group_nachname', $data['nachname'] ?? null);
+            session()->set('group_email', $data['email'] ?? null);
+            session()->set('group_phone', $data['phone'] ?? null);
+            session()->set('group_address_line_1', $addressLine1);
+            session()->set('group_address_line_2', $addressLine2);
+            session()->set('group_zip', $zip);
+            session()->set('group_city', $city);
+            session()->set('group_erreichbar', $data['erreichbar'] ?? null);
+            session()->set('group_uuid', $data['uuid'] ?? $data['uuid_value'] ?? null);
+            session()->set('group_additional_service', $data['additional_service'] ?? null);
+            session()->set('group_date', time());
+
+            log_message('debug', '[Webhook] Session saved - group_vorname: ' . session()->get('group_vorname'));
+            log_message('debug', '[Webhook] Session saved - group_nachname: ' . session()->get('group_nachname'));
+            log_message('debug', '[Webhook] Session saved - group_email: ' . session()->get('group_email'));
+            log_message('debug', '[Webhook] Session saved - group_phone: ' . session()->get('group_phone'));
+            log_message('debug', '[Webhook] Session saved - group_address_line_1: ' . session()->get('group_address_line_1'));
+            log_message('debug', '[Webhook] Session saved - group_address_line_2: ' . session()->get('group_address_line_2'));
+            log_message('debug', '[Webhook] Session saved - group_zip: ' . session()->get('group_zip'));
+            log_message('debug', '[Webhook] Session saved - group_city: ' . session()->get('group_city'));
+            log_message('debug', '[Webhook] Session saved - group_erreichbar: ' . session()->get('group_erreichbar'));
+            log_message('debug', '[Webhook] Session saved - group_uuid: ' . session()->get('group_uuid'));
+        }
+
         // save for groups
         $groupId = null;
         if(isset($data['additional_service'])) {
             log_message('debug', 'matching additional_service|'.$data['additional_service'].'|');
 
             if ($data['additional_service'] !== 'Nein') {
-                log_message('debug', '[Webhook] Erste Offerte - Extrahiere Adressdaten');
-                log_message('debug', '[Webhook] Alle $data Keys: ' . implode(', ', array_keys($data)));
-
-                // Zeige alle address-ähnlichen Felder
-                foreach ($data as $key => $value) {
-                    if (stripos($key, 'address') !== false || stripos($key, 'adresse') !== false ||
-                        $key === 'zip' || $key === 'city' || stripos($key, 'stadt') !== false) {
-                        log_message('debug', '[Webhook] Adressfeld gefunden: ' . $key . ' = ' .
-                            (is_array($value) ? json_encode($value) : $value));
-                    }
-                }
-
-                // Adresse kann in verschiedenen Formaten vorliegen - extrahiere zuerst
-                $address = $data['address']
-                    ?? $data['auszug_adresse']
-                    ?? $data['auszug_adresse_firma']
-                    ?? [];
-
-                log_message('debug', '[Webhook] Extrahiertes $address Array: ' . (is_array($address) ? json_encode($address) : 'kein Array'));
-
-                $addressLine1 = null;
-                $addressLine2 = null;
-                $zip = null;
-                $city = null;
-
-                if (is_array($address) && !empty($address)) {
-                    $addressLine1 = $address['address_line_1'] ?? $address['address'] ?? null;
-                    $addressLine2 = $address['address_line_2'] ?? null;
-                    $zip = $address['zip'] ?? null;
-                    $city = $address['city'] ?? null;
-                    log_message('debug', '[Webhook] Adresse aus Array extrahiert - Line1: ' . $addressLine1 . ', Zip: ' . $zip . ', City: ' . $city);
-                } else {
-                    // Fallback: direkt aus $data
-                    $addressLine1 = $data['address_line_1'] ?? null;
-                    $addressLine2 = $data['address_line_2'] ?? null;
-                    $zip = $data['zip'] ?? null;
-                    $city = $data['city'] ?? null;
-                    log_message('debug', '[Webhook] Adresse direkt aus $data - Line1: ' . $addressLine1 . ', Zip: ' . $zip . ', City: ' . $city);
-                }
-
-                // Alle Kontaktdaten für spätere Weiterleitung speichern
-                session()->set('group_vorname', $data['names'] ?? $data['vorname'] ?? null);
-                session()->set('group_nachname', $data['nachname'] ?? null);
-                session()->set('group_email', $data['email'] ?? null);
-                session()->set('group_phone', $data['phone'] ?? null);
-                session()->set('group_address_line_1', $addressLine1);
-                session()->set('group_address_line_2', $addressLine2);
-                session()->set('group_zip', $zip);
-                session()->set('group_city', $city);
-                session()->set('group_erreichbar', $data['erreichbar'] ?? null);
-                session()->set('group_uuid', $data['uuid'] ?? $data['uuid_value'] ?? null);
-                session()->set('group_additional_service', $data['additional_service'] ?? null);
-                session()->set('group_date', time());
-
-                log_message('debug', '[Webhook] Session saved - group_vorname: ' . session()->get('group_vorname'));
-                log_message('debug', '[Webhook] Session saved - group_nachname: ' . session()->get('group_nachname'));
-                log_message('debug', '[Webhook] Session saved - group_email: ' . session()->get('group_email'));
-                log_message('debug', '[Webhook] Session saved - group_phone: ' . session()->get('group_phone'));
-                log_message('debug', '[Webhook] Session saved - group_address_line_1: ' . session()->get('group_address_line_1'));
-                log_message('debug', '[Webhook] Session saved - group_address_line_2: ' . session()->get('group_address_line_2'));
-                log_message('debug', '[Webhook] Session saved - group_zip: ' . session()->get('group_zip'));
-                log_message('debug', '[Webhook] Session saved - group_city: ' . session()->get('group_city'));
-                log_message('debug', '[Webhook] Session saved - group_erreichbar: ' . session()->get('group_erreichbar'));
-                log_message('debug', '[Webhook] Session saved - group_uuid: ' . session()->get('group_uuid'));
-
-                // SICHERHEIT: Kontaktdaten auch in temp_contact_data speichern (für Cross-Domain)
-                $contactDataToStore = [
-                    'vorname' => $data['names'] ?? $data['vorname'] ?? null,
-                    'nachname' => $data['nachname'] ?? null,
-                    'email' => $data['email'] ?? null,
-                    'phone' => $data['phone'] ?? null,
-                    'address_line_1' => $addressLine1,
-                    'address_line_2' => $addressLine2,
-                    'zip' => $zip,
-                    'city' => $city,
-                    'erreichbar' => $data['erreichbar'] ?? null,
-                ];
-
-                $uuid = $data['uuid'] ?? $data['uuid_value'] ?? null;
-                if ($uuid) {
-                    $db = \Config\Database::connect();
-
-                    // Lösche alte Einträge für diese UUID (falls vorhanden)
-                    $db->table('temp_contact_data')->where('uuid', $uuid)->delete();
-
-                    // Speichere neue Daten (gültig für 1 Stunde)
-                    $db->table('temp_contact_data')->insert([
-                        'uuid' => $uuid,
-                        'contact_data' => json_encode($contactDataToStore),
-                        'created_at' => date('Y-m-d H:i:s'),
-                        'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour')),
-                    ]);
-
-                    log_message('debug', '[Webhook] Kontaktdaten in temp_contact_data gespeichert für UUID: ' . $uuid);
-                }
+                log_message('debug', '[Webhook] Additional Service = Ja - keine Group-Logik');
 
             } else {
                 log_message('debug', 'matching Nein');
