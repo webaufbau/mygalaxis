@@ -123,7 +123,7 @@ elseif($siteConfig->phoneCheck == 'de') {
 
         <?php if(isset($companyUidPattern)) { echo 'pattern="'.$companyUidPattern.'"'; } ?>
         <?php if(isset($companyUidPlaceholder)) { echo 'placeholder="'.$companyUidPlaceholder.'"'; } ?>
-               title="<?=$companyUidInvalidFeedback; ?>"
+        <?php if(isset($companyUidInvalidFeedback)) { echo 'title="'.$companyUidInvalidFeedback.'"'; } ?>
         >
     </div>
 
@@ -183,7 +183,7 @@ elseif($siteConfig->phoneCheck == 'de') {
                required
             <?php if(isset($companyPhonePattern)) { echo 'pattern="'.$companyPhonePattern.'"'; } ?>
             <?php if(isset($companyPhonePlaceholder)) { echo 'placeholder="'.$companyPhonePlaceholder.'"'; } ?>
-               title="<?=$companyPhoneInvalidFeedback; ?>"
+            <?php if(isset($companyPhoneInvalidFeedback)) { echo 'title="'.$companyPhoneInvalidFeedback.'"'; } ?>
         >
     </div>
 
