@@ -26,6 +26,7 @@ class SiteConfig extends BaseConfig
     public string $bankIban = '';
     public string $bankName = '';
     public int $phoneVerificationValidityHours = 24;
+    public bool $enableMoveCleaningCombo = false; // Umzug + Reinigung Kombi-Offerten aktivieren
 
     /**
      * Meta-Definition für die Felder
@@ -159,6 +160,13 @@ class SiteConfig extends BaseConfig
             'label' => 'Gültigkeitsdauer Telefon-Verifizierung (Stunden)',
             'placeholder' => '24',
             'help' => 'Nach wie vielen Stunden muss eine Telefonnummer erneut verifiziert werden? (Standard: 24 Stunden)',
+        ],
+
+        // Kombi-Offerten
+        'enableMoveCleaningCombo' => [
+            'type' => 'checkbox',
+            'label' => 'Umzug + Reinigung Kombi-Offerten aktivieren',
+            'help' => 'Wenn aktiviert, werden Umzug und Reinigung Anfragen der gleichen Person zu einer Kombi-Offerte zusammengefasst.',
         ],
     ];
 }

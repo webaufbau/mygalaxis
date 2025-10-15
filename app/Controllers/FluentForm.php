@@ -361,8 +361,8 @@ class FluentForm extends BaseController
         // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
         $insertData['platform'] = 'my_' . str_replace(['.', '-'], '_', $domain);
 
-        // Combo-Logik nur für move und cleaning
-        if(isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
+        // Combo-Logik nur für move und cleaning (wenn aktiviert in SiteConfig)
+        if($siteConfig->enableMoveCleaningCombo && isset($data['additional_service']) && $data['additional_service'] == 'Nein') {
             $currentType = $enriched['type'] ?? $type;
 
             // Nur fortfahren wenn aktueller Typ 'move' oder 'cleaning' ist
