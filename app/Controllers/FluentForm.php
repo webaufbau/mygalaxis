@@ -32,15 +32,21 @@ class FluentForm extends BaseController
         unset($getParams['service_url']); // entfernen, damit nicht mit übergeben
         $uuid = $getParams['uuid'] ?? bin2hex(random_bytes(8));
 
-        log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
+        log_message('debug', '[Handle] Form Submit Handle GET: ' . print_r($getParams, true));
+        log_message('debug', '[Handle] UUID: ' . $uuid . ', additional_service: ' . $additional_service);
+        log_message('debug', '[Handle] POST vorname: ' . ($vorname ?: 'leer') . ', POST email: ' . ($email ?: 'leer'));
 
         // Kontaktdaten aus POST-Daten oder Session holen
         if (empty($vorname) || empty($email)) {
+            log_message('debug', '[Handle] POST-Daten leer, versuche aus Session zu laden');
+
             // Zuerst versuchen aus Session zu holen
             $vorname = session()->get('group_vorname') ?? session()->get('vorname') ?? '';
             $nachname = session()->get('group_nachname') ?? session()->get('nachname') ?? '';
             $email = session()->get('group_email') ?? session()->get('email') ?? '';
             $phone = session()->get('group_phone') ?? session()->get('phone') ?? '';
+
+            log_message('debug', '[Handle] Session geladen - vorname: ' . ($vorname ?: 'leer') . ', email: ' . ($email ?: 'leer') . ', phone: ' . ($phone ?: 'leer'));
 
             // Wenn Session leer ist, dann aus Datenbank holen basierend auf UUID
             if (empty($email) && !empty($uuid)) {
@@ -69,6 +75,8 @@ class FluentForm extends BaseController
         $zip = session()->get('group_zip') ?? session()->get('zip') ?? '';
         $city = session()->get('group_city') ?? session()->get('city') ?? '';
         $erreichbar = session()->get('group_erreichbar') ?? session()->get('erreichbar') ?? '';
+
+        log_message('debug', '[Handle] Adressdaten aus Session - Line1: ' . ($addressLine1 ?: 'leer') . ', Zip: ' . ($zip ?: 'leer') . ', City: ' . ($city ?: 'leer'));
 
         // Wenn Session leer ist, auch diese aus Datenbank holen
         if (empty($addressLine1) && !empty($uuid)) {
@@ -102,8 +110,12 @@ class FluentForm extends BaseController
                 }
 
                 $erreichbar = $formFields['erreichbar'] ?? $formFields['erreichbarkeit'] ?? '';
-                log_message('debug', 'Adressdaten aus Datenbank geladen (UUID: '.$uuid.'): address_line_1='.$addressLine1.', zip='.$zip.', city='.$city);
+                log_message('debug', '[Handle] Adressdaten aus Datenbank geladen (UUID: '.$uuid.'): address_line_1='.$addressLine1.', zip='.$zip.', city='.$city);
+            } else {
+                log_message('debug', '[Handle] Keine Offerte in DB gefunden für UUID: ' . $uuid);
             }
+        } else {
+            log_message('debug', '[Handle] Adressdaten aus Session vorhanden, kein DB-Lookup nötig');
         }
 
         // Session speichern (Fallback)
@@ -153,17 +165,17 @@ class FluentForm extends BaseController
                 $getParams['erreichbar'] = $erreichbar ?? '';
                 $getParams['skip_kontakt'] = '1';
 
-                log_message('debug', 'Kontaktdaten für Weiterleitung: ' . print_r([
-                    'vorname' => $vorname,
-                    'nachname' => $nachname,
-                    'email' => $email,
-                    'phone' => $phone,
-                    'address_line_1' => $addressLine1,
-                    'address_line_2' => $addressLine2,
-                    'zip' => $zip,
-                    'city' => $city,
-                    'erreichbar' => $erreichbar
-                ], true));
+                log_message('info', '[Handle] === FINALE KONTAKTDATEN FÜR WEITERLEITUNG ===');
+                log_message('info', '[Handle] Vorname: ' . ($vorname ?: 'LEER'));
+                log_message('info', '[Handle] Nachname: ' . ($nachname ?: 'LEER'));
+                log_message('info', '[Handle] Email: ' . ($email ?: 'LEER'));
+                log_message('info', '[Handle] Phone: ' . ($phone ?: 'LEER'));
+                log_message('info', '[Handle] Address Line 1: ' . ($addressLine1 ?: 'LEER'));
+                log_message('info', '[Handle] Address Line 2: ' . ($addressLine2 ?: 'LEER'));
+                log_message('info', '[Handle] ZIP: ' . ($zip ?: 'LEER'));
+                log_message('info', '[Handle] City: ' . ($city ?: 'LEER'));
+                log_message('info', '[Handle] Erreichbar: ' . ($erreichbar ?: 'LEER'));
+                log_message('info', '[Handle] ========================================');
             }
 
             // Weiterleitung mit allen GET-Parametern
@@ -249,11 +261,25 @@ class FluentForm extends BaseController
             log_message('debug', 'matching additional_service|'.$data['additional_service'].'|');
 
             if ($data['additional_service'] !== 'Nein') {
+                log_message('debug', '[Webhook] Erste Offerte - Extrahiere Adressdaten');
+                log_message('debug', '[Webhook] Alle $data Keys: ' . implode(', ', array_keys($data)));
+
+                // Zeige alle address-ähnlichen Felder
+                foreach ($data as $key => $value) {
+                    if (stripos($key, 'address') !== false || stripos($key, 'adresse') !== false ||
+                        $key === 'zip' || $key === 'city' || stripos($key, 'stadt') !== false) {
+                        log_message('debug', '[Webhook] Adressfeld gefunden: ' . $key . ' = ' .
+                            (is_array($value) ? json_encode($value) : $value));
+                    }
+                }
+
                 // Adresse kann in verschiedenen Formaten vorliegen - extrahiere zuerst
                 $address = $data['address']
                     ?? $data['auszug_adresse']
                     ?? $data['auszug_adresse_firma']
                     ?? [];
+
+                log_message('debug', '[Webhook] Extrahiertes $address Array: ' . (is_array($address) ? json_encode($address) : 'kein Array'));
 
                 $addressLine1 = null;
                 $addressLine2 = null;
@@ -265,12 +291,14 @@ class FluentForm extends BaseController
                     $addressLine2 = $address['address_line_2'] ?? null;
                     $zip = $address['zip'] ?? null;
                     $city = $address['city'] ?? null;
+                    log_message('debug', '[Webhook] Adresse aus Array extrahiert - Line1: ' . $addressLine1 . ', Zip: ' . $zip . ', City: ' . $city);
                 } else {
                     // Fallback: direkt aus $data
                     $addressLine1 = $data['address_line_1'] ?? null;
                     $addressLine2 = $data['address_line_2'] ?? null;
                     $zip = $data['zip'] ?? null;
                     $city = $data['city'] ?? null;
+                    log_message('debug', '[Webhook] Adresse direkt aus $data - Line1: ' . $addressLine1 . ', Zip: ' . $zip . ', City: ' . $city);
                 }
 
                 // Alle Kontaktdaten für spätere Weiterleitung speichern
