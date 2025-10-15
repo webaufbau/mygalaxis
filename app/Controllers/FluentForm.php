@@ -249,32 +249,54 @@ class FluentForm extends BaseController
             log_message('debug', 'matching additional_service|'.$data['additional_service'].'|');
 
             if ($data['additional_service'] !== 'Nein') {
+                // Adresse kann in verschiedenen Formaten vorliegen - extrahiere zuerst
+                $address = $data['address']
+                    ?? $data['auszug_adresse']
+                    ?? $data['auszug_adresse_firma']
+                    ?? [];
+
+                $addressLine1 = null;
+                $addressLine2 = null;
+                $zip = null;
+                $city = null;
+
+                if (is_array($address) && !empty($address)) {
+                    $addressLine1 = $address['address_line_1'] ?? $address['address'] ?? null;
+                    $addressLine2 = $address['address_line_2'] ?? null;
+                    $zip = $address['zip'] ?? null;
+                    $city = $address['city'] ?? null;
+                } else {
+                    // Fallback: direkt aus $data
+                    $addressLine1 = $data['address_line_1'] ?? null;
+                    $addressLine2 = $data['address_line_2'] ?? null;
+                    $zip = $data['zip'] ?? null;
+                    $city = $data['city'] ?? null;
+                }
+
                 // Alle Kontaktdaten für spätere Weiterleitung speichern
                 session()->set('group_vorname', $data['names'] ?? $data['vorname'] ?? null);
                 session()->set('group_nachname', $data['nachname'] ?? null);
                 session()->set('group_email', $data['email'] ?? null);
                 session()->set('group_phone', $data['phone'] ?? null);
-                session()->set('group_address_line_1', $data['address_line_1'] ?? null);
-                session()->set('group_address_line_2', $data['address_line_2'] ?? null);
-                session()->set('group_zip', $data['zip'] ?? null);
-                session()->set('group_city', $data['city'] ?? null);
+                session()->set('group_address_line_1', $addressLine1);
+                session()->set('group_address_line_2', $addressLine2);
+                session()->set('group_zip', $zip);
+                session()->set('group_city', $city);
                 session()->set('group_erreichbar', $data['erreichbar'] ?? null);
                 session()->set('group_uuid', $data['uuid'] ?? $data['uuid_value'] ?? null);
                 session()->set('group_additional_service', $data['additional_service'] ?? null);
                 session()->set('group_date', time());
 
-                log_message('debug', 'additional_service group_vorname ' . session()->get('group_vorname'));
-                log_message('debug', 'additional_service group_nachname ' . session()->get('group_nachname'));
-                log_message('debug', 'additional_service group_email ' . session()->get('group_email'));
-                log_message('debug', 'additional_service group_phone ' . session()->get('group_phone'));
-                log_message('debug', 'additional_service group_address_line_1 ' . session()->get('group_address_line_1'));
-                log_message('debug', 'additional_service group_address_line_2 ' . session()->get('group_address_line_2'));
-                log_message('debug', 'additional_service group_zip ' . session()->get('group_zip'));
-                log_message('debug', 'additional_service group_city ' . session()->get('group_city'));
-                log_message('debug', 'additional_service group_erreichbar ' . session()->get('group_erreichbar'));
-                log_message('debug', 'additional_service group_uuid ' . session()->get('group_uuid'));
-                log_message('debug', 'additional_service group_additional_service ' . session()->get('group_additional_service'));
-                log_message('debug', 'additional_service group_date ' . session()->get('group_date'));
+                log_message('debug', '[Webhook] Session saved - group_vorname: ' . session()->get('group_vorname'));
+                log_message('debug', '[Webhook] Session saved - group_nachname: ' . session()->get('group_nachname'));
+                log_message('debug', '[Webhook] Session saved - group_email: ' . session()->get('group_email'));
+                log_message('debug', '[Webhook] Session saved - group_phone: ' . session()->get('group_phone'));
+                log_message('debug', '[Webhook] Session saved - group_address_line_1: ' . session()->get('group_address_line_1'));
+                log_message('debug', '[Webhook] Session saved - group_address_line_2: ' . session()->get('group_address_line_2'));
+                log_message('debug', '[Webhook] Session saved - group_zip: ' . session()->get('group_zip'));
+                log_message('debug', '[Webhook] Session saved - group_city: ' . session()->get('group_city'));
+                log_message('debug', '[Webhook] Session saved - group_erreichbar: ' . session()->get('group_erreichbar'));
+                log_message('debug', '[Webhook] Session saved - group_uuid: ' . session()->get('group_uuid'));
 
             } else {
                 log_message('debug', 'matching Nein');
