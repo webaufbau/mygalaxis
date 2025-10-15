@@ -51,9 +51,13 @@ class FluentForm extends BaseController
             // Wenn Session leer ist, dann aus Datenbank holen basierend auf UUID
             if (empty($email) && !empty($uuid)) {
                 $offerModel = new OfferModel();
+
+                // WICHTIG: Lade die ERSTE Offerte mit Kontaktdaten, nicht die neueste!
                 $lastOffer = $offerModel
                     ->where('uuid', $uuid)
-                    ->orderBy('created_at', 'DESC')
+                    ->where('email IS NOT NULL')
+                    ->where('phone IS NOT NULL')
+                    ->orderBy('created_at', 'ASC')
                     ->first();
 
                 if ($lastOffer) {
@@ -62,7 +66,9 @@ class FluentForm extends BaseController
                     $nachname = $formFields['nachname'] ?? '';
                     $email = $formFields['email'] ?? '';
                     $phone = $formFields['phone'] ?? '';
-                    log_message('debug', 'Kontaktdaten aus Datenbank geladen (UUID: '.$uuid.'): vorname='.$vorname.', email='.$email);
+                    log_message('debug', '[Handle] Kontaktdaten aus Datenbank geladen (UUID: '.$uuid.', Offer ID: '.$lastOffer['id'].'): vorname='.$vorname.', email='.$email);
+                } else {
+                    log_message('warning', '[Handle] Keine Offerte mit Kontaktdaten gefunden für UUID: '.$uuid);
                 }
             } else {
                 log_message('debug', 'Kontaktdaten aus Session geladen: vorname='.$vorname.', email='.$email);
@@ -81,9 +87,13 @@ class FluentForm extends BaseController
         // Wenn Session leer ist, auch diese aus Datenbank holen
         if (empty($addressLine1) && !empty($uuid)) {
             $offerModel = $offerModel ?? new OfferModel();
+
+            // WICHTIG: Lade die ERSTE Offerte mit Kontaktdaten
             $lastOffer = $lastOffer ?? $offerModel
                 ->where('uuid', $uuid)
-                ->orderBy('created_at', 'DESC')
+                ->where('email IS NOT NULL')
+                ->where('phone IS NOT NULL')
+                ->orderBy('created_at', 'ASC')
                 ->first();
 
             if ($lastOffer) {
@@ -110,9 +120,9 @@ class FluentForm extends BaseController
                 }
 
                 $erreichbar = $formFields['erreichbar'] ?? $formFields['erreichbarkeit'] ?? '';
-                log_message('debug', '[Handle] Adressdaten aus Datenbank geladen (UUID: '.$uuid.'): address_line_1='.$addressLine1.', zip='.$zip.', city='.$city);
+                log_message('debug', '[Handle] Adressdaten aus Datenbank geladen (UUID: '.$uuid.', Offer ID: '.$lastOffer['id'].'): address_line_1='.$addressLine1.', zip='.$zip.', city='.$city);
             } else {
-                log_message('debug', '[Handle] Keine Offerte in DB gefunden für UUID: ' . $uuid);
+                log_message('debug', '[Handle] Keine Offerte mit Adressdaten in DB gefunden für UUID: ' . $uuid);
             }
         } else {
             log_message('debug', '[Handle] Adressdaten aus Session vorhanden, kein DB-Lookup nötig');
@@ -238,13 +248,16 @@ class FluentForm extends BaseController
 
         log_message('debug', 'Webhook HEADERS: ' . print_r($headers, true));
 
-        // WICHTIG: Bei zweiter Offerte (skip_kontakt=1) müssen Kontaktdaten aus temp_contact_data geladen werden
+        // WICHTIG: Bei zweiter Offerte (skip_kontakt=1) müssen Kontaktdaten geladen werden
         if (!empty($data['skip_kontakt']) && $data['skip_kontakt'] == '1') {
-            log_message('debug', '[Webhook] skip_kontakt=1 - Lade Kontaktdaten aus temp_contact_data');
+            log_message('debug', '[Webhook] skip_kontakt=1 - Lade Kontaktdaten');
 
             $uuid = $data['uuid'] ?? $data['uuid_value'] ?? null;
             if ($uuid) {
                 $db = \Config\Database::connect();
+                $contactData = null;
+
+                // METHODE 1: Versuche aus temp_contact_data zu laden
                 $tempData = $db->table('temp_contact_data')
                     ->where('uuid', $uuid)
                     ->where('expires_at >=', date('Y-m-d H:i:s'))
@@ -253,9 +266,59 @@ class FluentForm extends BaseController
 
                 if ($tempData) {
                     $contactData = json_decode($tempData->contact_data, true);
-                    log_message('debug', '[Webhook] Kontaktdaten aus DB geladen: ' . json_encode(array_keys($contactData)));
+                    log_message('debug', '[Webhook] Kontaktdaten aus temp_contact_data geladen');
 
-                    // Kontaktdaten in $data einfügen (nur wenn noch nicht vorhanden)
+                    // Temp-Daten nach Verwendung löschen
+                    $db->table('temp_contact_data')->where('uuid', $uuid)->delete();
+                } else {
+                    // METHODE 2: Lade aus vorheriger Offerte mit gleicher UUID
+                    log_message('debug', '[Webhook] Keine temp_contact_data - lade aus vorheriger Offerte');
+
+                    $previousOffer = $db->table('offers')
+                        ->where('uuid', $uuid)
+                        ->where('email IS NOT NULL')
+                        ->where('phone IS NOT NULL')
+                        ->orderBy('created_at', 'ASC')
+                        ->get()
+                        ->getRow();
+
+                    if ($previousOffer && !empty($previousOffer->form_fields)) {
+                        $formFields = json_decode($previousOffer->form_fields, true) ?? [];
+
+                        // Extrahiere Adresse aus verschachteltem Array
+                        $address = $formFields['address']
+                            ?? $formFields['auszug_adresse']
+                            ?? $formFields['auszug_adresse_firma']
+                            ?? [];
+
+                        $contactData = [
+                            'vorname' => $formFields['names'] ?? $formFields['vorname'] ?? null,
+                            'nachname' => $formFields['nachname'] ?? null,
+                            'email' => $formFields['email'] ?? $previousOffer->email ?? null,
+                            'phone' => $formFields['phone'] ?? $previousOffer->phone ?? null,
+                            'erreichbar' => $formFields['erreichbar'] ?? null,
+                        ];
+
+                        if (is_array($address)) {
+                            $contactData['address_line_1'] = $address['address_line_1'] ?? $address['address'] ?? null;
+                            $contactData['address_line_2'] = $address['address_line_2'] ?? null;
+                            $contactData['zip'] = $address['zip'] ?? null;
+                            $contactData['city'] = $address['city'] ?? null;
+                        } else {
+                            $contactData['address_line_1'] = $formFields['address_line_1'] ?? null;
+                            $contactData['address_line_2'] = $formFields['address_line_2'] ?? null;
+                            $contactData['zip'] = $formFields['zip'] ?? $previousOffer->zip ?? null;
+                            $contactData['city'] = $formFields['city'] ?? $previousOffer->city ?? null;
+                        }
+
+                        log_message('debug', '[Webhook] Kontaktdaten aus vorheriger Offerte geladen (ID: ' . $previousOffer->id . ')');
+                    } else {
+                        log_message('warning', '[Webhook] skip_kontakt=1 aber keine vorherige Offerte mit Kontaktdaten für UUID: ' . $uuid);
+                    }
+                }
+
+                // Kontaktdaten in $data einfügen
+                if ($contactData) {
                     $contactFields = ['vorname', 'nachname', 'email', 'phone', 'address_line_1', 'address_line_2', 'zip', 'city', 'erreichbar'];
                     foreach ($contactFields as $field) {
                         if (empty($data[$field]) && !empty($contactData[$field])) {
@@ -268,12 +331,6 @@ class FluentForm extends BaseController
                     if (empty($data['names']) && !empty($contactData['vorname'])) {
                         $data['names'] = $contactData['vorname'];
                     }
-
-                    // Temp-Daten nach Verwendung löschen
-                    $db->table('temp_contact_data')->where('uuid', $uuid)->delete();
-                    log_message('debug', '[Webhook] Temp-Kontaktdaten gelöscht für UUID: ' . $uuid);
-                } else {
-                    log_message('warning', '[Webhook] skip_kontakt=1 aber keine Kontaktdaten in temp_contact_data für UUID: ' . $uuid);
                 }
             }
         }
