@@ -82,6 +82,31 @@ function makeOptionKey(string $label, array $existingKeys): string
                         </div>
                     </div>
 
+                    <!-- Bewertungs-Email Einstellungen -->
+                    <div class="mb-3 border-top pt-3">
+                        <label><strong>Bewertungs-Email Einstellungen:</strong></label>
+                        <div class="mb-2">
+                            <label>Erste Bewertungs-Email nach (Tage):</label>
+                            <input type="number"
+                                   name="categories[<?= esc($key) ?>][review_email_days]"
+                                   value="<?= esc($cat['review_email_days'] ?? 5) ?>"
+                                   min="0"
+                                   class="form-control"
+                                   style="width:100px; display:inline-block;">
+                            <small class="text-muted">Tage nach Ausführungsdatum</small>
+                        </div>
+                        <div class="mb-2">
+                            <label>Erinnerungs-Email nach (Tage):</label>
+                            <input type="number"
+                                   name="categories[<?= esc($key) ?>][review_reminder_days]"
+                                   value="<?= esc($cat['review_reminder_days'] ?? 10) ?>"
+                                   min="0"
+                                   class="form-control"
+                                   style="width:100px; display:inline-block;">
+                            <small class="text-muted">Tage nach Ausführungsdatum</small>
+                        </div>
+                    </div>
+
 
 
                 </td>

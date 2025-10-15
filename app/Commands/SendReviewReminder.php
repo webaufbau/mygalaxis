@@ -15,12 +15,13 @@ class SendReviewReminder extends BaseCommand
 {
     protected $group       = 'Reviews';
     protected $name        = 'reviews:send-reminder';
-    protected $description = 'Sendet 30 Tage nach Kauf einen Review-Link an den Anbieter (Ersteller des Angebots).';
+    protected $description = 'Sendet Review-Links an den Anbieter basierend auf kategoriespezifischen Einstellungen.';
 
     protected $bookingModel;
     protected $offerModel;
     protected $userModel;
     protected $reviewModel;
+    protected $categoryManager;
 
     public function __construct(LoggerInterface $logger, Commands $commands)
     {
@@ -29,24 +30,39 @@ class SendReviewReminder extends BaseCommand
         $this->offerModel = new OfferModel();
         $this->userModel = new UserModel();
         $this->reviewModel = new ReviewModel();
+        $this->categoryManager = new \App\Libraries\CategoryManager();
     }
 
     public function run(array $params)
     {
-        $xDaysAgo = date('Y-m-d H:i:s', strtotime('-30 days'));
+        // Kategorie-Einstellungen laden
+        $categories = $this->categoryManager->getAll();
 
-        // Buchungen vor mindestens 30 Tagen, wo noch kein Reminder gesendet wurde
-        $bookings = $this->bookingModel
-            ->where('created_at <=', $xDaysAgo)
-            ->where('review_reminder_sent_at', null)
-            ->findAll(100);
+        CLI::write('Starte Review-Reminder Versand basierend auf Kategorie-Einstellungen...', 'yellow');
 
-        if (!$bookings) {
-            CLI::write(lang('Reviews.noBookingsFound'), 'yellow');
-            return;
-        }
+        $sentFirstCount = 0;
+        $sentReminderCount = 0;
 
-        foreach ($bookings as $booking) {
+        // Für jede Kategorie die spezifischen Zeiträume verwenden
+        foreach ($categories['categories'] as $categoryKey => $categorySettings) {
+            $reviewEmailDays = $categorySettings['review_email_days'] ?? 5;
+            $reviewReminderDays = $categorySettings['review_reminder_days'] ?? 10;
+
+            CLI::write("Verarbeite Kategorie: {$categoryKey} (Erste Email: {$reviewEmailDays}d, Erinnerung: {$reviewReminderDays}d)", 'blue');
+
+            // === ERSTE BEWERTUNGS-EMAIL ===
+            // Finde Buchungen die vor X Tagen erstellt wurden für diese Kategorie
+            $targetDate = date('Y-m-d H:i:s', strtotime("-{$reviewEmailDays} days"));
+
+            $bookings = $this->bookingModel
+                ->select('bookings.*')
+                ->join('offers', 'offers.id = bookings.reference_id')
+                ->where('offers.type', $categoryKey)
+                ->where('bookings.created_at <=', $targetDate)
+                ->where('bookings.review_reminder_sent_at', null)
+                ->findAll(100);
+
+            foreach ($bookings as $booking) {
             $offer = $this->offerModel->find($booking['reference_id']);
             if (!$offer) {
                 CLI::write(lang('Reviews.offerNotFound', [$booking['reference_id']]), 'red');
@@ -90,14 +106,70 @@ class SendReviewReminder extends BaseCommand
             $subject = lang('Reviews.emailSubject', [$offer['title']]);
             $message = view('emails/review_reminder', $emailData);
 
-            if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
-                CLI::write(lang('Reviews.reminderSent', [$creatorEmail, $booking['id']]), 'green');
+                if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
+                    CLI::write(lang('Reviews.reminderSent', [$creatorEmail, $booking['id']]), 'green');
 
-                $this->bookingModel->update($booking['id'], ['review_reminder_sent_at' => date('Y-m-d H:i:s')]);
-            } else {
-                CLI::write(lang('Reviews.emailSendFailed', [$creatorEmail, $booking['id']]), 'red');
+                    $this->bookingModel->update($booking['id'], ['review_reminder_sent_at' => date('Y-m-d H:i:s')]);
+                    $sentFirstCount++;
+                } else {
+                    CLI::write(lang('Reviews.emailSendFailed', [$creatorEmail, $booking['id']]), 'red');
+                }
+            }
+
+            // === ERINNERUNGS-EMAIL (ZWEITE EMAIL) ===
+            // Finde Buchungen wo erste Email bereits versendet wurde vor (reminderDays - emailDays) Tagen
+            if ($reviewReminderDays > $reviewEmailDays) {
+                $daysSinceFirst = $reviewReminderDays - $reviewEmailDays;
+                $targetDateReminder = date('Y-m-d H:i:s', strtotime("-{$daysSinceFirst} days"));
+
+                $bookingsForReminder = $this->bookingModel
+                    ->select('bookings.*')
+                    ->join('offers', 'offers.id = bookings.reference_id')
+                    ->where('offers.type', $categoryKey)
+                    ->where('bookings.review_reminder_sent_at IS NOT NULL')
+                    ->where('bookings.review_reminder_sent_at <=', $targetDateReminder)
+                    ->where('bookings.review_second_reminder_sent_at', null)
+                    ->findAll(100);
+
+                foreach ($bookingsForReminder as $booking) {
+                    $offer = $this->offerModel->find($booking['reference_id']);
+                    if (!$offer) continue;
+
+                    $existingReview = $this->reviewModel
+                        ->where('offer_id', $offer['id'])
+                        ->first();
+
+                    if ($existingReview) continue;
+
+                    $creatorEmail = $offer['email'] ?? null;
+                    if (!$creatorEmail) continue;
+
+                    $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
+                    $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $offer['access_hash'];
+
+                    $emailData = [
+                        'offerTitle' => $offer['title'],
+                        'creatorFirstname' => $offer['firstname'] ?? '',
+                        'creatorLastname' => $offer['lastname'] ?? '',
+                        'reviewLink' => $reviewLink,
+                        'bookingDate' => $booking['created_at'],
+                        'siteConfig' => $siteConfig,
+                        'isReminder' => true,
+                    ];
+
+                    $subject = lang('Reviews.emailSubjectReminder', [$offer['title']]);
+                    $message = view('emails/review_reminder', $emailData);
+
+                    if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
+                        CLI::write("Erinnerungs-Email gesendet an {$creatorEmail} für Booking #{$booking['id']}", 'green');
+                        $this->bookingModel->update($booking['id'], ['review_second_reminder_sent_at' => date('Y-m-d H:i:s')]);
+                        $sentReminderCount++;
+                    }
+                }
             }
         }
+
+        CLI::write("\nFertig! {$sentFirstCount} erste Review-Emails und {$sentReminderCount} Erinnerungen versendet.", 'green');
     }
 
     protected function sendEmail(string $to, string $subject, string $message, $siteConfig = null): bool

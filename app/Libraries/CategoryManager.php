@@ -46,6 +46,8 @@ class CategoryManager
             $values['categories'][$catKey] = [
                 'name'    => $values['categories'][$catKey]['name'] ?? $defaultName,
                 'max' => $values['categories'][$catKey]['max'] ?? null,
+                'review_email_days' => $values['categories'][$catKey]['review_email_days'] ?? 5,
+                'review_reminder_days' => $values['categories'][$catKey]['review_reminder_days'] ?? 10,
                 'options' => $options
             ];
         }
@@ -80,6 +82,12 @@ class CategoryManager
                     'max' => (isset($categories[$catKey]['max']) && $categories[$catKey]['max'] !== '')
                         ? intval($categories[$catKey]['max'])
                         : null,
+                    'review_email_days' => isset($categories[$catKey]['review_email_days']) && $categories[$catKey]['review_email_days'] !== ''
+                        ? intval($categories[$catKey]['review_email_days'])
+                        : 5,
+                    'review_reminder_days' => isset($categories[$catKey]['review_reminder_days']) && $categories[$catKey]['review_reminder_days'] !== ''
+                        ? intval($categories[$catKey]['review_reminder_days'])
+                        : 10,
                     'options' => $options
                 ];
             }
