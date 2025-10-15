@@ -27,6 +27,7 @@ class OfferModel extends Model
         'language',
         'firstname',
         'lastname',
+        'company',
         'email',
         'phone',
         'work_start_date',
@@ -109,8 +110,11 @@ class OfferModel extends Model
         // Exakten Typ immer mitschreiben, falls vorhanden
         if ($exactType) {
             $data['original_type'] = strtolower(trim($exactType));
+            // Aktualisiere $originalType für sub_type Extraktion
+            $originalType = $data['original_type'];
         }
 
+        // Sub-Type aus original_type extrahieren (nur wenn nicht move_cleaning)
         if (!empty($originalType) && (($original['type'] ?? null) !== 'move_cleaning')) {
             $parts = explode('_', $originalType, 2); // in maximal 2 Teile aufteilen
             $data['sub_type'] = $parts[1] ?? $parts[0]; // falls kein Unterstrich, nimm das Original
@@ -147,6 +151,7 @@ class OfferModel extends Model
 
         $data['firstname'] = $formFields['vorname'] ?? $userInputs['vorname'] ?? null;
         $data['lastname'] = $formFields['nachname'] ?? $userInputs['nachname'] ?? null;
+        $data['company'] = $formFields['firma'] ?? $formFields['firmenname'] ?? $formFields['company'] ?? $userInputs['firma'] ?? $userInputs['firmenname'] ?? null;
         $data['email'] = $formFields['email'] ?? $userInputs['email'] ?? $formFields['email_firma'] ?? $userInputs['email_firma'] ?? null;
         $data['phone'] = $formFields['phone'] ?? $userInputs['phone'] ?? null;
         $data['additional_service'] = $formFields['additional_service'] ?? null;
@@ -230,6 +235,15 @@ class OfferModel extends Model
 
     protected function extractAddressData(array $fields): array
     {
+        // WICHTIG: Zuerst prüfen ob Felder direkt in $fields vorhanden sind (z.B. von skip_kontakt)
+        if (!empty($fields['city']) && !empty($fields['zip'])) {
+            return [
+                'city' => $fields['city'],
+                'zip' => $fields['zip'],
+            ];
+        }
+
+        // Ansonsten in verschachtelten Arrays suchen
         $candidates = [
             $fields['address'] ?? null,
             $fields['auszug_adresse'] ?? null,

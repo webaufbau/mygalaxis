@@ -259,6 +259,7 @@ class FluentForm extends BaseController
             $contactData = [
                 'vorname' => session()->get('group_vorname'),
                 'nachname' => session()->get('group_nachname'),
+                'firma' => session()->get('group_firma'),
                 'email' => session()->get('group_email'),
                 'phone' => session()->get('group_phone'),
                 'address_line_1' => session()->get('group_address_line_1'),
@@ -298,6 +299,7 @@ class FluentForm extends BaseController
                         $contactData = [
                             'vorname' => $formFields['names'] ?? $formFields['vorname'] ?? null,
                             'nachname' => $formFields['nachname'] ?? null,
+                            'firma' => $formFields['firma'] ?? $formFields['firmenname'] ?? $previousOffer->company ?? null,
                             'email' => $formFields['email'] ?? $previousOffer->email ?? null,
                             'phone' => $formFields['phone'] ?? $previousOffer->phone ?? null,
                             'erreichbar' => $formFields['erreichbar'] ?? null,
@@ -324,7 +326,7 @@ class FluentForm extends BaseController
 
             // Kontaktdaten in $data einfügen (nur wenn nicht leer)
             if (!empty($contactData)) {
-                $contactFields = ['vorname', 'nachname', 'email', 'phone', 'address_line_1', 'address_line_2', 'zip', 'city', 'erreichbar'];
+                $contactFields = ['vorname', 'nachname', 'firma', 'email', 'phone', 'address_line_1', 'address_line_2', 'zip', 'city', 'erreichbar'];
                 foreach ($contactFields as $field) {
                     if (empty($data[$field]) && !empty($contactData[$field])) {
                         $data[$field] = $contactData[$field];
@@ -335,6 +337,11 @@ class FluentForm extends BaseController
                 // names Feld
                 if (empty($data['names']) && !empty($contactData['vorname'])) {
                     $data['names'] = $contactData['vorname'];
+                }
+
+                // firmenname Feld (alternative Feldnamen)
+                if (empty($data['firmenname']) && !empty($contactData['firma'])) {
+                    $data['firmenname'] = $contactData['firma'];
                 }
             }
         }
@@ -404,6 +411,7 @@ class FluentForm extends BaseController
             // Alle Kontaktdaten in Session speichern - überschreibe vorhandene Daten
             session()->set('group_vorname', $data['names'] ?? $data['vorname'] ?? null);
             session()->set('group_nachname', $data['nachname'] ?? null);
+            session()->set('group_firma', $data['firma'] ?? $data['firmenname'] ?? null);
             session()->set('group_email', $data['email'] ?? null);
             session()->set('group_phone', $data['phone'] ?? null);
             session()->set('group_address_line_1', $addressLine1);
@@ -417,6 +425,7 @@ class FluentForm extends BaseController
 
             log_message('debug', '[Webhook] Session saved - group_vorname: ' . session()->get('group_vorname'));
             log_message('debug', '[Webhook] Session saved - group_nachname: ' . session()->get('group_nachname'));
+            log_message('debug', '[Webhook] Session saved - group_firma: ' . session()->get('group_firma'));
             log_message('debug', '[Webhook] Session saved - group_email: ' . session()->get('group_email'));
             log_message('debug', '[Webhook] Session saved - group_phone: ' . session()->get('group_phone'));
             log_message('debug', '[Webhook] Session saved - group_address_line_1: ' . session()->get('group_address_line_1'));
