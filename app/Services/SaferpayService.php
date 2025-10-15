@@ -20,7 +20,7 @@ class SaferpayService
 
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.23",
+                "SpecVersion" => "1.35",
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid(),
                 "RetryIndicator" => 0
@@ -53,20 +53,13 @@ class SaferpayService
                 "JavaEnabled" => false,
                 "ScreenWidth" => 1920,
                 "ScreenHeight" => 1080,
-                "ColorDepth" => '24bits',
+                "ColorDepth" => "24bits",
                 "TimeZoneOffsetMinutes" => -120,
             ],
             "ReturnUrl" => [
                 "Url" => $successUrl
             ],
         ];
-
-        // NotifyURL hinzufügen (Server-to-Server Benachrichtigung)
-        if ($notifyUrl) {
-            $data["Notification"] = [
-                "NotifyUrl" => $notifyUrl
-            ];
-        }
 
         $response = $this->sendRequest($url, $data);
 
@@ -159,7 +152,7 @@ class SaferpayService
 
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.23",
+                "SpecVersion" => "1.35",
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid('', true),
                 "RetryIndicator" => $retryIndicator,
@@ -207,7 +200,7 @@ class SaferpayService
 
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.23",
+                "SpecVersion" => "1.35",
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid(),
                 "RetryIndicator" => 0
