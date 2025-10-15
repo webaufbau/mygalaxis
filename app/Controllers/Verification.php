@@ -282,10 +282,16 @@ class Verification extends BaseController {
 
             // Neue Telefonnummer verarbeiten
             $normalizedPhone = $this->normalizePhone($newPhone);
-            $method = session()->get('verify_method') ?? 'sms';
 
-            // Nummer in Session speichern
+            // WICHTIG: Methode NEU berechnen basierend auf neuer Nummer
+            $isMobile = is_mobile_number($normalizedPhone);
+            $method = $isMobile ? 'sms' : 'call';
+
+            log_message('info', "Telefonnummer geändert zu $normalizedPhone - isMobile: " . ($isMobile ? 'YES' : 'NO') . " - Methode: $method");
+
+            // Nummer und Methode in Session speichern
             session()->set('phone', $normalizedPhone);
+            session()->set('verify_method', $method);
 
             // Neuen Code erzeugen
             $verificationCode = rand(1000, 9999);
