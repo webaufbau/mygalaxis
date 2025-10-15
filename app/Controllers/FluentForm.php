@@ -34,13 +34,59 @@ class FluentForm extends BaseController
 
         log_message('debug', 'Form Submit Handle GET: ' . print_r($getParams, true));
 
-        // Kontaktdaten aus Session holen (vom vorherigen Formular)
+        // Kontaktdaten aus POST-Daten oder Session holen
         if (empty($vorname) || empty($email)) {
+            // Zuerst versuchen aus Session zu holen
             $vorname = session()->get('group_vorname') ?? session()->get('vorname') ?? '';
             $nachname = session()->get('group_nachname') ?? session()->get('nachname') ?? '';
             $email = session()->get('group_email') ?? session()->get('email') ?? '';
             $phone = session()->get('group_phone') ?? session()->get('phone') ?? '';
-            log_message('debug', 'Kontaktdaten aus Session geladen: vorname='.$vorname.', email='.$email);
+
+            // Wenn Session leer ist, dann aus Datenbank holen basierend auf UUID
+            if (empty($email) && !empty($uuid)) {
+                $offerModel = new OfferModel();
+                $lastOffer = $offerModel
+                    ->where('uuid', $uuid)
+                    ->orderBy('created_at', 'DESC')
+                    ->first();
+
+                if ($lastOffer) {
+                    $formFields = json_decode($lastOffer['form_fields'], true) ?? [];
+                    $vorname = $formFields['names'] ?? $formFields['vorname'] ?? '';
+                    $nachname = $formFields['nachname'] ?? '';
+                    $email = $formFields['email'] ?? '';
+                    $phone = $formFields['phone'] ?? '';
+                    log_message('debug', 'Kontaktdaten aus Datenbank geladen (UUID: '.$uuid.'): vorname='.$vorname.', email='.$email);
+                }
+            } else {
+                log_message('debug', 'Kontaktdaten aus Session geladen: vorname='.$vorname.', email='.$email);
+            }
+        }
+
+        // Weitere Kontaktdaten aus Session oder Datenbank holen
+        $addressLine1 = session()->get('group_address_line_1') ?? session()->get('address_line_1') ?? '';
+        $addressLine2 = session()->get('group_address_line_2') ?? session()->get('address_line_2') ?? '';
+        $zip = session()->get('group_zip') ?? session()->get('zip') ?? '';
+        $city = session()->get('group_city') ?? session()->get('city') ?? '';
+        $erreichbar = session()->get('group_erreichbar') ?? session()->get('erreichbar') ?? '';
+
+        // Wenn Session leer ist, auch diese aus Datenbank holen
+        if (empty($addressLine1) && !empty($uuid)) {
+            $offerModel = $offerModel ?? new OfferModel();
+            $lastOffer = $lastOffer ?? $offerModel
+                ->where('uuid', $uuid)
+                ->orderBy('created_at', 'DESC')
+                ->first();
+
+            if ($lastOffer) {
+                $formFields = $formFields ?? json_decode($lastOffer['form_fields'], true) ?? [];
+                $addressLine1 = $formFields['address_line_1'] ?? '';
+                $addressLine2 = $formFields['address_line_2'] ?? '';
+                $zip = $formFields['zip'] ?? '';
+                $city = $formFields['city'] ?? '';
+                $erreichbar = $formFields['erreichbar'] ?? '';
+                log_message('debug', 'Adressdaten aus Datenbank geladen (UUID: '.$uuid.')');
+            }
         }
 
         // Session speichern (Fallback)
@@ -83,6 +129,23 @@ class FluentForm extends BaseController
                 $getParams['nachname'] = $nachname ?? '';
                 $getParams['email'] = $email ?? '';
                 $getParams['phone'] = $phone ?? '';
+                $getParams['address_line_1'] = $addressLine1 ?? '';
+                $getParams['address_line_2'] = $addressLine2 ?? '';
+                $getParams['zip'] = $zip ?? '';
+                $getParams['city'] = $city ?? '';
+                $getParams['erreichbar'] = $erreichbar ?? '';
+
+                log_message('debug', 'Kontaktdaten für Weiterleitung: ' . print_r([
+                    'vorname' => $vorname,
+                    'nachname' => $nachname,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'address_line_1' => $addressLine1,
+                    'address_line_2' => $addressLine2,
+                    'zip' => $zip,
+                    'city' => $city,
+                    'erreichbar' => $erreichbar
+                ], true));
             }
 
             // Weiterleitung mit allen GET-Parametern
@@ -173,6 +236,11 @@ class FluentForm extends BaseController
                 session()->set('group_nachname', $data['nachname'] ?? null);
                 session()->set('group_email', $data['email'] ?? null);
                 session()->set('group_phone', $data['phone'] ?? null);
+                session()->set('group_address_line_1', $data['address_line_1'] ?? null);
+                session()->set('group_address_line_2', $data['address_line_2'] ?? null);
+                session()->set('group_zip', $data['zip'] ?? null);
+                session()->set('group_city', $data['city'] ?? null);
+                session()->set('group_erreichbar', $data['erreichbar'] ?? null);
                 session()->set('group_uuid', $data['uuid'] ?? $data['uuid_value'] ?? null);
                 session()->set('group_additional_service', $data['additional_service'] ?? null);
                 session()->set('group_date', time());
@@ -181,6 +249,11 @@ class FluentForm extends BaseController
                 log_message('debug', 'additional_service group_nachname ' . session()->get('group_nachname'));
                 log_message('debug', 'additional_service group_email ' . session()->get('group_email'));
                 log_message('debug', 'additional_service group_phone ' . session()->get('group_phone'));
+                log_message('debug', 'additional_service group_address_line_1 ' . session()->get('group_address_line_1'));
+                log_message('debug', 'additional_service group_address_line_2 ' . session()->get('group_address_line_2'));
+                log_message('debug', 'additional_service group_zip ' . session()->get('group_zip'));
+                log_message('debug', 'additional_service group_city ' . session()->get('group_city'));
+                log_message('debug', 'additional_service group_erreichbar ' . session()->get('group_erreichbar'));
                 log_message('debug', 'additional_service group_uuid ' . session()->get('group_uuid'));
                 log_message('debug', 'additional_service group_additional_service ' . session()->get('group_additional_service'));
                 log_message('debug', 'additional_service group_date ' . session()->get('group_date'));
