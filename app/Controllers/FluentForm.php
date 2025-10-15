@@ -151,6 +151,7 @@ class FluentForm extends BaseController
                 $getParams['zip'] = $zip ?? '';
                 $getParams['city'] = $city ?? '';
                 $getParams['erreichbar'] = $erreichbar ?? '';
+                $getParams['skip_kontakt'] = '1';
 
                 log_message('debug', 'Kontaktdaten für Weiterleitung: ' . print_r([
                     'vorname' => $vorname,
