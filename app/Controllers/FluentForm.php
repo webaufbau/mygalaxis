@@ -238,6 +238,46 @@ class FluentForm extends BaseController
 
         log_message('debug', 'Webhook HEADERS: ' . print_r($headers, true));
 
+        // WICHTIG: Bei zweiter Offerte (skip_kontakt=1) müssen Kontaktdaten aus temp_contact_data geladen werden
+        if (!empty($data['skip_kontakt']) && $data['skip_kontakt'] == '1') {
+            log_message('debug', '[Webhook] skip_kontakt=1 - Lade Kontaktdaten aus temp_contact_data');
+
+            $uuid = $data['uuid'] ?? $data['uuid_value'] ?? null;
+            if ($uuid) {
+                $db = \Config\Database::connect();
+                $tempData = $db->table('temp_contact_data')
+                    ->where('uuid', $uuid)
+                    ->where('expires_at >=', date('Y-m-d H:i:s'))
+                    ->get()
+                    ->getRow();
+
+                if ($tempData) {
+                    $contactData = json_decode($tempData->contact_data, true);
+                    log_message('debug', '[Webhook] Kontaktdaten aus DB geladen: ' . json_encode(array_keys($contactData)));
+
+                    // Kontaktdaten in $data einfügen (nur wenn noch nicht vorhanden)
+                    $contactFields = ['vorname', 'nachname', 'email', 'phone', 'address_line_1', 'address_line_2', 'zip', 'city', 'erreichbar'];
+                    foreach ($contactFields as $field) {
+                        if (empty($data[$field]) && !empty($contactData[$field])) {
+                            $data[$field] = $contactData[$field];
+                            log_message('debug', '[Webhook] Übernommen: ' . $field . ' = ' . $contactData[$field]);
+                        }
+                    }
+
+                    // names Feld
+                    if (empty($data['names']) && !empty($contactData['vorname'])) {
+                        $data['names'] = $contactData['vorname'];
+                    }
+
+                    // Temp-Daten nach Verwendung löschen
+                    $db->table('temp_contact_data')->where('uuid', $uuid)->delete();
+                    log_message('debug', '[Webhook] Temp-Kontaktdaten gelöscht für UUID: ' . $uuid);
+                } else {
+                    log_message('warning', '[Webhook] skip_kontakt=1 aber keine Kontaktdaten in temp_contact_data für UUID: ' . $uuid);
+                }
+            }
+        }
+
         $formName = $data['form_name'] ?? null;
         unset($data['form_name']);
 
@@ -325,6 +365,37 @@ class FluentForm extends BaseController
                 log_message('debug', '[Webhook] Session saved - group_city: ' . session()->get('group_city'));
                 log_message('debug', '[Webhook] Session saved - group_erreichbar: ' . session()->get('group_erreichbar'));
                 log_message('debug', '[Webhook] Session saved - group_uuid: ' . session()->get('group_uuid'));
+
+                // SICHERHEIT: Kontaktdaten auch in temp_contact_data speichern (für Cross-Domain)
+                $contactDataToStore = [
+                    'vorname' => $data['names'] ?? $data['vorname'] ?? null,
+                    'nachname' => $data['nachname'] ?? null,
+                    'email' => $data['email'] ?? null,
+                    'phone' => $data['phone'] ?? null,
+                    'address_line_1' => $addressLine1,
+                    'address_line_2' => $addressLine2,
+                    'zip' => $zip,
+                    'city' => $city,
+                    'erreichbar' => $data['erreichbar'] ?? null,
+                ];
+
+                $uuid = $data['uuid'] ?? $data['uuid_value'] ?? null;
+                if ($uuid) {
+                    $db = \Config\Database::connect();
+
+                    // Lösche alte Einträge für diese UUID (falls vorhanden)
+                    $db->table('temp_contact_data')->where('uuid', $uuid)->delete();
+
+                    // Speichere neue Daten (gültig für 1 Stunde)
+                    $db->table('temp_contact_data')->insert([
+                        'uuid' => $uuid,
+                        'contact_data' => json_encode($contactDataToStore),
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour')),
+                    ]);
+
+                    log_message('debug', '[Webhook] Kontaktdaten in temp_contact_data gespeichert für UUID: ' . $uuid);
+                }
 
             } else {
                 log_message('debug', 'matching Nein');
