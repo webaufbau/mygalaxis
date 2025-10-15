@@ -80,12 +80,29 @@ class FluentForm extends BaseController
 
             if ($lastOffer) {
                 $formFields = $formFields ?? json_decode($lastOffer['form_fields'], true) ?? [];
-                $addressLine1 = $formFields['address_line_1'] ?? '';
-                $addressLine2 = $formFields['address_line_2'] ?? '';
-                $zip = $formFields['zip'] ?? '';
-                $city = $formFields['city'] ?? '';
-                $erreichbar = $formFields['erreichbar'] ?? '';
-                log_message('debug', 'Adressdaten aus Datenbank geladen (UUID: '.$uuid.')');
+
+                // Adresse kann in verschiedenen Formaten vorliegen
+                $address = $formFields['address']
+                    ?? $formFields['auszug_adresse']
+                    ?? $formFields['auszug_adresse_firma']
+                    ?? [];
+
+                // Wenn address ein Array ist, extrahiere die Felder
+                if (is_array($address)) {
+                    $addressLine1 = $address['address_line_1'] ?? $address['address'] ?? '';
+                    $addressLine2 = $address['address_line_2'] ?? '';
+                    $zip = $address['zip'] ?? '';
+                    $city = $address['city'] ?? '';
+                } else {
+                    // Fallback: direkt aus formFields
+                    $addressLine1 = $formFields['address_line_1'] ?? '';
+                    $addressLine2 = $formFields['address_line_2'] ?? '';
+                    $zip = $formFields['zip'] ?? $lastOffer['zip'] ?? '';
+                    $city = $formFields['city'] ?? $lastOffer['city'] ?? '';
+                }
+
+                $erreichbar = $formFields['erreichbar'] ?? $formFields['erreichbarkeit'] ?? '';
+                log_message('debug', 'Adressdaten aus Datenbank geladen (UUID: '.$uuid.'): address_line_1='.$addressLine1.', zip='.$zip.', city='.$city);
             }
         }
 
