@@ -9,7 +9,7 @@
         <p><?= lang('Email.offer_added_info_1') ?></p>
         <p><?= lang('Email.offer_added_info_2') ?></p>
     <?php else: ?>
-        <p><?= lang('Email.offer_added_thank_you', ['service' => esc($offers[0]['type'] ?? '')]) ?></p>
+        <p><?= lang('Email.offer_added_thank_you', ['service' => esc(lang('Offers.type.' . ($offers[0]['type'] ?? 'other')))]) ?></p>
         <p><?= lang('Email.offer_added_info_1') ?></p>
         <p><?= lang('Email.offer_added_info_2') ?></p>
     <?php endif; ?>
@@ -44,7 +44,7 @@ $excludedFields = [
 
 foreach ($offers as $index => $offer):
     $offerNumber = $index + 1;
-    $typeName = ucfirst($offer['type']);
+    $typeName = lang('Offers.type.' . $offer['type']);
 ?>
 
     <?php if ($isMultiple): ?>

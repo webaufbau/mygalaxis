@@ -4,7 +4,7 @@
 <p><?= lang('Email.offer_added_greeting', [$data['vorname'], $data['nachname']]) ?></p>
 
     <div class="highlight">
-        <p><?= lang('Email.offer_added_thank_you', ['service' => esc($formular_page ?? lang('Offers.no_service'))]) ?></p>
+        <p><?= lang('Email.offer_added_thank_you', ['service' => esc($formular_page ?? lang('Offers.type.' . ($formName ?? 'other')))]) ?></p>
         <p><?= lang('Email.offer_added_info_1') ?></p>
         <p><?= lang('Email.offer_added_info_2') ?></p>
     </div>
