@@ -193,21 +193,31 @@ class OfferPriceCalculator
                 if (in_array($originalType, ['reinigung_nur_fenster', 'reinigung_fassaden', 'reinigung_hauswartung', 'reinigung_andere'])) {
                     switch ($originalType) {
                         case 'reinigung_nur_fenster':
-                            $price = $category['options']['nur_fenster']['price'];
+                            $componentPrice = $category['options']['nur_fenster']['price'];
+                            $price = $componentPrice;
+                            $this->priceComponents[] = ['label' => 'Reinigungsart', 'value' => 'Nur Fenster', 'price' => $componentPrice];
                             break;
                         case 'reinigung_fassaden':
-                            $price = $category['options']['nur_fassaden']['price'];
+                            $componentPrice = $category['options']['nur_fassaden']['price'];
+                            $price = $componentPrice;
+                            $this->priceComponents[] = ['label' => 'Reinigungsart', 'value' => 'Fassaden', 'price' => $componentPrice];
                             break;
                         case 'reinigung_hauswartung':
-                            $price = $category['options']['hauswartung']['price'];
+                            $componentPrice = $category['options']['hauswartung']['price'];
+                            $price = $componentPrice;
+                            $this->priceComponents[] = ['label' => 'Reinigungsart', 'value' => 'Hauswartung', 'price' => $componentPrice];
                             // Wiederkehrend/täglich hinzufügen
                             if (!empty($fields['ausfuehrung']) && strtolower($fields['ausfuehrung']) === 'täglich') {
-                                $price += $category['options']['wiederkehrend']['price'];
+                                $additionalPrice = $category['options']['wiederkehrend']['price'];
+                                $price += $additionalPrice;
+                                $this->priceComponents[] = ['label' => 'Ausführung', 'value' => 'Täglich', 'price' => $additionalPrice];
                             }
                             break;
                         case 'reinigung_andere':
                             // Andere Reinigungsarbeiten (z.B. Auto, Boot, etc.)
-                            $price = $category['options']['andere_arbeiten']['price'] ?? 39;
+                            $componentPrice = $category['options']['andere_arbeiten']['price'] ?? 39;
+                            $price = $componentPrice;
+                            $this->priceComponents[] = ['label' => 'Reinigungsart', 'value' => 'Andere Arbeiten', 'price' => $componentPrice];
                             break;
                     }
                 }
@@ -224,28 +234,53 @@ class OfferPriceCalculator
                         }
 
                         if ($key && isset($category['options'][$key])) {
-                            $price = $category['options'][$key]['price'];
+                            $componentPrice = $category['options'][$key]['price'];
+                            $price = $componentPrice;
+                            $this->priceComponents[] = ['label' => 'Wohnungsgröße', 'value' => $value, 'price' => $componentPrice];
                         }
                     }
                     elseif (!empty($fields['komplett_anzahlzimmer'])) {
-                        $key = $fields['komplett_anzahlzimmer']; // 1..4
-                        $key = $key > 5 ? '6' : (string)$key;
-                        $price = $category['options'][$key]['price'] ?? 0;
+                        // Wenn "Andere" gewählt wurde, prüfe komplett_anzahlzimmer_andere
+                        if ($fields['komplett_anzahlzimmer'] === 'Andere' && !empty($fields['komplett_anzahlzimmer_andere'])) {
+                            $key = $fields['komplett_anzahlzimmer_andere'];
+                            $key = $key > 5 ? '6' : (string)$key;
+                        } else {
+                            $key = $fields['komplett_anzahlzimmer']; // 1..4 oder "Andere"
+                            // Wenn "Andere" aber kein _andere Feld, dann auf "6" mappen
+                            if ($key === 'Andere') {
+                                $key = '6';
+                            } elseif (is_numeric($key)) {
+                                $key = $key > 5 ? '6' : (string)$key;
+                            }
+                        }
+
+                        $componentPrice = $category['options'][$key]['price'] ?? 0;
+                        $price = $componentPrice;
+                        $displayValue = $fields['komplett_anzahlzimmer'] === 'Andere' && !empty($fields['komplett_anzahlzimmer_andere'])
+                            ? $fields['komplett_anzahlzimmer_andere']
+                            : $fields['komplett_anzahlzimmer'];
+                        $this->priceComponents[] = ['label' => 'Anzahl Zimmer', 'value' => $displayValue, 'price' => $componentPrice];
                     }
 
                     // Wiederkehrend hinzufügen
                     if (!empty($fields['reinigungsart_wiederkehrend']) && $fields['reinigungsart_wiederkehrend']=='Wiederkehrend') {
-                        $price += $category['options']['wiederkehrend']['price'];
+                        $additionalPrice = $category['options']['wiederkehrend']['price'];
+                        $price += $additionalPrice;
+                        $this->priceComponents[] = ['label' => 'Reinigungsart', 'value' => 'Wiederkehrend', 'price' => $additionalPrice];
                     }
 
                     // Fensterreinigung als Zusatz (wenn normale Wohnung + Fenster gewünscht)
                     if (!empty($fields['fensterreinigung']) && strtolower($fields['fensterreinigung']) === 'ja') {
-                        $price += $category['options']['nur_fenster']['price'];
+                        $additionalPrice = $category['options']['nur_fenster']['price'];
+                        $price += $additionalPrice;
+                        $this->priceComponents[] = ['label' => 'Fensterreinigung', 'value' => 'Ja', 'price' => $additionalPrice];
                     }
 
                     // Fassadenreinigung als Zusatz (wenn normale Wohnung + Fassade gewünscht)
                     if (!empty($fields['aussenfassade']) && strtolower($fields['aussenfassade']) === 'ja') {
-                        $price += $category['options']['nur_fassaden']['price'];
+                        $additionalPrice = $category['options']['nur_fassaden']['price'];
+                        $price += $additionalPrice;
+                        $this->priceComponents[] = ['label' => 'Aussenfassade', 'value' => 'Ja', 'price' => $additionalPrice];
                     }
 
                 }
@@ -264,21 +299,48 @@ class OfferPriceCalculator
                 $category = $this->categoryPrices['painting'] ?? [];
 
                 if (isset($fields['art_gewerbe']) && $fields['art_gewerbe'] !== 'Andere') { // Wenn art_gewerbe dann Büro / Laden / Lager / Industrie ABER NICHT ANDERE => das ist teuerer
-                    $price = $category['options']['gewerbe_buero_laden_lager_industrie']['price'] ?? 0;
+                    $componentPrice = $category['options']['gewerbe_buero_laden_lager_industrie']['price'] ?? 0;
+                    $price = $componentPrice;
+                    $this->priceComponents[] = [
+                        'label' => 'Art Gewerbe',
+                        'value' => $fields['art_gewerbe'],
+                        'price' => $componentPrice
+                    ];
                 } elseif (isset($fields['art_objekt'])) { // Wenn art_objekt dann Wohnung / Haus / Gewerbe
-                    $price = $category['options']['neubau_renovierung_andere']['price'] ?? 0;
+                    $componentPrice = $category['options']['neubau_renovierung_andere']['price'] ?? 0;
+                    $price = $componentPrice;
+                    $this->priceComponents[] = [
+                        'label' => 'Art des Objekts',
+                        'value' => $fields['art_objekt'],
+                        'price' => $componentPrice
+                    ];
                 } else {
                     // Andere → Fixpreis 39.-
-                    $price = $category['options']['gewerbe_andere']['price'] ?? 0;
+                    $componentPrice = $category['options']['gewerbe_andere']['price'] ?? 0;
+                    $price = $componentPrice;
+                    $this->priceComponents[] = [
+                        'label' => 'Art Gewerbe',
+                        'value' => 'Andere',
+                        'price' => $componentPrice
+                    ];
                 }
 
                 // arbeiten_wohnung
                 // Arbeiten
                 foreach ($fields['arbeiten_wohnung'] ?? [] as $arbeit) {
+                    $arbeitOriginal = $arbeit;               // Original Wert speichern
                     $arbeit = strtolower($arbeit);           // "wände"
                     $arbeit = convert_umlaute($arbeit);      // "waende"
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $arbeit); // "waende"
-                    $price += $category['options'][$aKey]['price'] ?? 0;
+                    $componentPrice = $category['options'][$aKey]['price'] ?? 0;
+                    if ($componentPrice > 0) {
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Arbeiten Wohnung',
+                            'value' => $arbeitOriginal,
+                            'price' => $componentPrice
+                        ];
+                    }
                 }
 
                 // Malerarbeiten Übersicht (Innenräume / Fassade / Andere)
@@ -289,7 +351,17 @@ class OfferPriceCalculator
                         'andere' => 'arbeiten_andere',
                         default => null
                     };
-                    if ($key) $price += $category['options'][$key]['price'] ?? 0;
+                    if ($key) {
+                        $componentPrice = $category['options'][$key]['price'] ?? 0;
+                        if ($componentPrice > 0) {
+                            $price += $componentPrice;
+                            $this->priceComponents[] = [
+                                'label' => 'Malerarbeiten Übersicht',
+                                'value' => $arbeit,
+                                'price' => $componentPrice
+                            ];
+                        }
+                    }
                 }
 
                 // Zimmergrößen für Wände
@@ -301,7 +373,18 @@ class OfferPriceCalculator
                         preg_match('/^\d+/', $wandAnzahl, $matches);
                         $key = $matches[0] ?? null;
                     }
-                    if ($key) $price += $category['options'][$key]['price'] ?? 0;
+                    if ($key) {
+                        $componentPrice = $category['options'][$key]['price'] ?? 0;
+                        if ($componentPrice > 0) {
+                            $price += $componentPrice;
+                            $wandType = isset($fields['wand_komplett_anzahl']) ? 'komplett' : 'teil';
+                            $this->priceComponents[] = [
+                                'label' => 'Wände (' . $wandType . ')',
+                                'value' => $wandAnzahl,
+                                'price' => $componentPrice
+                            ];
+                        }
+                    }
                 }
 
                 // Zimmergrößen für Decken
@@ -313,12 +396,31 @@ class OfferPriceCalculator
                         preg_match('/^\d+/', $deckenAnzahl, $matches);
                         $key = $matches[0] ?? null;
                     }
-                    if ($key) $price += $category['options'][$key]['price'] ?? 0;
+                    if ($key) {
+                        $componentPrice = $category['options'][$key]['price'] ?? 0;
+                        if ($componentPrice > 0) {
+                            $price += $componentPrice;
+                            $deckenType = isset($fields['decken_komplett_anzahl']) ? 'komplett' : 'teil';
+                            $this->priceComponents[] = [
+                                'label' => 'Decken (' . $deckenType . ')',
+                                'value' => $deckenAnzahl,
+                                'price' => $componentPrice
+                            ];
+                        }
+                    }
                 }
 
                 // Trennwände
                 if (!empty($fields['wand_option_trennwand']) && $fields['wand_option_trennwand'] === 'Ja') {
-                    $price += $category['options']['trennwaende']['price'] ?? 0;
+                    $componentPrice = $category['options']['trennwaende']['price'] ?? 0;
+                    if ($componentPrice > 0) {
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Trennwände',
+                            'value' => 'Ja',
+                            'price' => $componentPrice
+                        ];
+                    }
                 }
 
                 // --- Maximalpreis berücksichtigen ---
@@ -335,31 +437,54 @@ class OfferPriceCalculator
                 $category = $this->categoryPrices['gardening'] ?? [];
 
                 // --- Basis: Mieter / Eigentümer / Verwaltung / Andere ---
-                $price = $category['options']['mieter_eigentuemer_verwaltung_andere']['price'] ?? 0;
+                $componentPrice = $category['options']['mieter_eigentuemer_verwaltung_andere']['price'] ?? 0;
+                $price = $componentPrice;
+                if ($componentPrice > 0) {
+                    $this->priceComponents[] = [
+                        'label' => 'Basispreis',
+                        'value' => 'Mieter / Eigentümer / Verwaltung / Andere',
+                        'price' => $componentPrice
+                    ];
+                }
 
                 // --- Garten anlegen (Mehrfachauswahl) ---
                 foreach ($fields['garten_anlegen'] ?? [] as $arbeit) {
                     // Normierung wie bei Painting
+                    $arbeitOriginal = $arbeit;  // Original Wert speichern
                     $aKey = strtolower($arbeit);
                     $aKey = convert_umlaute($aKey);
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (isset($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Garten anlegen',
+                            'value' => $arbeitOriginal,
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
                 // --- Wiederkehrende Arbeiten ---
                 $wiederkehrendFields = [
-                    'teich_reinigung_intervall',
-                    'hecke_schneiden_einmalig',
-                    'baum_schneiden_einmalig',
-                    'rasen_maehen_einmalig',
+                    'teich_reinigung_intervall' => 'Teich Reinigung',
+                    'hecke_schneiden_einmalig' => 'Hecke schneiden',
+                    'baum_schneiden_einmalig' => 'Baum schneiden',
+                    'rasen_maehen_einmalig' => 'Rasen mähen',
                 ];
 
-                foreach ($wiederkehrendFields as $fieldKey) {
+                foreach ($wiederkehrendFields as $fieldKey => $fieldLabel) {
                     if (!empty($fields[$fieldKey]) && $fields[$fieldKey] === 'Wiederkehrend') {
-                        $price += $category['options']['wiederkehrend']['price'] ?? 0;
+                        $componentPrice = $category['options']['wiederkehrend']['price'] ?? 0;
+                        if ($componentPrice > 0) {
+                            $price += $componentPrice;
+                            $this->priceComponents[] = [
+                                'label' => $fieldLabel,
+                                'value' => 'Wiederkehrend',
+                                'price' => $componentPrice
+                            ];
+                        }
                     }
                 }
 

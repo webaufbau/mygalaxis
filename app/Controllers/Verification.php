@@ -517,6 +517,20 @@ class Verification extends BaseController {
             return;
         }
 
+        // Prüfe ob für alle Offerten bereits confirmation_sent_at gesetzt ist
+        $allAlreadySent = true;
+        foreach ($offers as $offer) {
+            if (empty($offer['confirmation_sent_at'])) {
+                $allAlreadySent = false;
+                break;
+            }
+        }
+
+        if ($allAlreadySent) {
+            log_message('info', 'Gruppierte E-Mail wurde bereits versendet für Offerten IDs: ' . implode(', ', array_column($offers, 'id')));
+            return;
+        }
+
         helper('text');
 
         // Verwende die erste Offerte für allgemeine Daten
@@ -612,11 +626,29 @@ class Verification extends BaseController {
             log_message('error', 'Gruppierte Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
         } else {
             log_message('info', "Gruppierte E-Mail gesendet an $userEmail für " . count($offersData) . " Offerten");
+
+            // Setze confirmation_sent_at für alle Offerten
+            $db = \Config\Database::connect();
+            $builder = $db->table('offers');
+            $offerIds = array_column($offers, 'id');
+            $builder->whereIn('id', $offerIds)->update([
+                'confirmation_sent_at' => date('Y-m-d H:i:s')
+            ]);
+            log_message('info', 'confirmation_sent_at gesetzt für Offerten IDs: ' . implode(', ', $offerIds));
         }
     }
 
     protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void {
         helper('text'); // für esc()
+
+        // Prüfe ob Bestätigungsmail bereits versendet wurde
+        $offerModel = new \App\Models\OfferModel();
+        $offer = $offerModel->where('uuid', $uuid)->first();
+
+        if ($offer && !empty($offer['confirmation_sent_at'])) {
+            log_message('info', "Bestätigungsmail wurde bereits versendet für Angebot ID {$offer['id']} (UUID: $uuid)");
+            return;
+        }
 
         // Sprache aus Offer-Daten setzen
         $language = $data['lang'] ?? 'de'; // Fallback: Deutsch
@@ -700,6 +732,16 @@ class Verification extends BaseController {
 
         if (!$email->send()) {
             log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+        } else {
+            // Setze confirmation_sent_at
+            if ($offer && $offer['id']) {
+                $db = \Config\Database::connect();
+                $builder = $db->table('offers');
+                $builder->where('id', $offer['id'])->update([
+                    'confirmation_sent_at' => date('Y-m-d H:i:s')
+                ]);
+                log_message('info', "confirmation_sent_at gesetzt für Angebot ID {$offer['id']} (UUID: $uuid)");
+            }
         }
 
     }
