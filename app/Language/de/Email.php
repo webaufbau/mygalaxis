@@ -24,8 +24,10 @@ return [
 
     // Neue Offerte
     'offer_added_email_subject' => '🎉 Wir bestätigen Ihnen Ihre Anfrage/Offerte',
+    'offer_added_multiple_subject' => '🎉 Wir bestätigen Ihnen Ihre Anfragen/Offerten',
     'offer_added_greeting' => 'Guten Tag {0} {1},', // Vorname Nachname
     'offer_added_thank_you' => 'Herzlichen Dank für Ihre Anfrage für <strong>{service}</strong>.',
+    'offer_added_multiple_thank_you' => 'Herzlichen Dank für Ihre {0} Anfragen über {1}.',
     'offer_added_info_1' => 'In Kürze werden Sie <strong>bis zu 3 unverbindliche Offerten</strong> von passenden Anbietern aus Ihrer Region erhalten.',
     'offer_added_info_2' => 'Je nach Saison kann es vorkommen, dass die Firmen für den gewünschten Zeitraum schon ausgebucht sind und daher keine Angebote unterbreiten.',
     'offer_added_ow_it_works' => "So funktioniert's:",
@@ -37,6 +39,10 @@ return [
     'offer_added_summary' => 'Zusammenfassung Ihrer Anfrage',
     'offer_added_no_comment' => 'Kein Kommentar.',
     'offer_added_how_it_works' => 'So funktioniert\'s:',
+    'offer_added_requests_overview' => 'Ihre Anfragen im Überblick:',
+    'offer_added_request_number' => 'Anfrage {0}: {1}',
+    'offer_added_requests_title' => 'Ihre Anfragen',
+    'offer_added_request_title' => 'Ihre Anfrage',
 
     // Offerte Kauf an Firmen
     'title_firm_interest' => 'Eine Firma interessiert sich für Ihre Anfrage',

@@ -6,6 +6,7 @@ class OfferPriceCalculator
     protected array $categoryPrices;
     protected array $discountRules;
     protected array $debugInfo = [];
+    protected array $priceComponents = [];
 
     public function __construct()
     {
@@ -30,12 +31,21 @@ class OfferPriceCalculator
     }
 
     /**
+     * Gibt die Preiskomponenten zurück (was wurde wie berechnet)
+     */
+    public function getPriceComponents(): array
+    {
+        return $this->priceComponents;
+    }
+
+    /**
      * Berechnet den Basispreis
      */
     public function calculatePrice(string $type, string $originalType, array $fields, array $fields_combo): float
     {
         $price = 0;
         $this->debugInfo = []; // Debug-Info zurücksetzen
+        $this->priceComponents = []; // Preiskomponenten zurücksetzen
 
         // Versuche zuerst mit dem Haupttyp
         $category = $this->categoryPrices[$type] ?? null;
@@ -77,14 +87,23 @@ class OfferPriceCalculator
                 if ($originalType === 'umzug_firma') {
                     // Firmen-Umzug: basiert auf Arbeitsplätzen oder Fläche
                     $selected = $this->mapCompanyMoveToRooms($fields);
+                    $label = 'Firmen-Umzug';
+                    $value = $fields['auszug_arbeitsplatz_firma'] ?? $fields['auszug_flaeche_firma'] ?? 'Unbekannt';
                 } else {
                     // Privat-Umzug: basiert auf Zimmerzahl
                     $selected = $fields['auszug_zimmer'] ?? null;
                     $selected = $this->normalizeRoomValue($selected);
+                    $label = 'Auszug Zimmer';
+                    $value = $fields['auszug_zimmer'] ?? 'Unbekannt';
                 }
 
                 if($selected && isset($category['options'][$selected])) {
                     $price = $category['options'][$selected]['price'];
+                    $this->priceComponents[] = [
+                        'label' => $label,
+                        'value' => $value,
+                        'price' => $price
+                    ];
                 }
 
                 // --- Maximalpreis berücksichtigen ---
@@ -142,14 +161,23 @@ class OfferPriceCalculator
                     if (!$selected) {
                         $selected = $this->mapCompanyMoveToRooms($fields_combo);
                     }
+                    $label = 'Firmen-Umzug + Reinigung';
+                    $value = $fields['auszug_arbeitsplatz_firma'] ?? $fields_combo['auszug_arbeitsplatz_firma'] ?? $fields['auszug_flaeche_firma'] ?? $fields_combo['auszug_flaeche_firma'] ?? 'Unbekannt';
                 } else {
                     // Privat-Umzug + Reinigung: basiert auf Zimmerzahl
                     $selected = $fields['auszug_zimmer'] ?? $fields_combo['auszug_zimmer'] ?? null;
                     $selected = $this->normalizeRoomValue($selected);
+                    $label = 'Auszug Zimmer';
+                    $value = $fields['auszug_zimmer'] ?? $fields_combo['auszug_zimmer'] ?? 'Unbekannt';
                 }
 
                 if($selected && isset($category['options'][$selected])) {
                     $price = $category['options'][$selected]['price'];
+                    $this->priceComponents[] = [
+                        'label' => $label,
+                        'value' => $value,
+                        'price' => $price
+                    ];
                 }
 
                 // --- Maximalpreis berücksichtigen ---
@@ -355,7 +383,13 @@ class OfferPriceCalculator
                     $aKey = trim($aKey, '_');
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Art des Objekts',
+                            'value' => $fields['art_objekt'],
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -363,9 +397,10 @@ class OfferPriceCalculator
                 // Große Arbeiten (nur EINE zählt, höchster Preis wird genommen)
                 $grosseArbeiten = ['neubau', 'renovierung', 'umbau', 'kompl_sanierung', 'solaranlage', 'alarmanlage'];
                 $maxGrosseArbeit = 0;
+                $maxGrosseArbeitName = '';
 
                 // Kleine Arbeiten (werden alle addiert)
-                $kleineArbeitenPrice = 0;
+                $kleineArbeitenComponents = [];
 
                 foreach ($fields['arbeiten_elektriker'] ?? [] as $arbeit) {
                     $aKey = strtolower($arbeit);
@@ -379,16 +414,36 @@ class OfferPriceCalculator
                         // Prüfen ob es eine "große Arbeit" ist
                         if (in_array($aKey, $grosseArbeiten)) {
                             // Nur den höchsten Preis merken
-                            $maxGrosseArbeit = max($maxGrosseArbeit, $arbeitPrice);
+                            if ($arbeitPrice > $maxGrosseArbeit) {
+                                $maxGrosseArbeit = $arbeitPrice;
+                                $maxGrosseArbeitName = $arbeit;
+                            }
                         } else {
                             // Kleine Arbeiten werden addiert
-                            $kleineArbeitenPrice += $arbeitPrice;
+                            $kleineArbeitenComponents[] = [
+                                'label' => 'Arbeiten Elektriker',
+                                'value' => $arbeit,
+                                'price' => $arbeitPrice
+                            ];
                         }
                     }
                 }
 
-                // Große Arbeit (max) + Kleine Arbeiten (Summe) hinzufügen
-                $price += $maxGrosseArbeit + $kleineArbeitenPrice;
+                // Große Arbeit hinzufügen (nur die mit dem höchsten Preis)
+                if ($maxGrosseArbeit > 0) {
+                    $this->priceComponents[] = [
+                        'label' => 'Arbeiten Elektriker',
+                        'value' => $maxGrosseArbeitName,
+                        'price' => $maxGrosseArbeit
+                    ];
+                    $price += $maxGrosseArbeit;
+                }
+
+                // Kleine Arbeiten hinzufügen
+                foreach ($kleineArbeitenComponents as $component) {
+                    $this->priceComponents[] = $component;
+                    $price += $component['price'];
+                }
 
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
@@ -409,7 +464,13 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Art des Objekts',
+                            'value' => $fields['art_objekt'],
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -420,7 +481,13 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Arbeiten Sanitär',
+                            'value' => $arbeit,
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -447,8 +514,14 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (in_array($aKey, $step2Keys)) {
-                        $price += $category['options'][$aKey]['price'] ?? 0;
+                        $componentPrice = $category['options'][$aKey]['price'] ?? 0;
+                        $price += $componentPrice;
                         $selectedStep2[] = $aKey;
+                        $this->priceComponents[] = [
+                            'label' => 'Arbeiten Heizung',
+                            'value' => $arbeit,
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -472,6 +545,11 @@ class OfferPriceCalculator
                         }
 
                         $price += $additionalPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Arbeiten Heizung',
+                            'value' => $arbeit,
+                            'price' => $additionalPrice
+                        ];
                     }
                 }
 
@@ -484,7 +562,13 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Art des Objekts',
+                            'value' => $fields['art_objekt'],
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -507,7 +591,13 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Art des Objekts',
+                            'value' => $fields['art_objekt'],
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -518,7 +608,13 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Arbeiten Boden',
+                            'value' => $arbeit,
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -541,7 +637,13 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Art des Objekts',
+                            'value' => $fields['art_objekt'],
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 
@@ -552,7 +654,13 @@ class OfferPriceCalculator
                     $aKey = preg_replace('/[^a-z0-9]/i', '_', $aKey);
 
                     if (!empty($category['options'][$aKey])) {
-                        $price += $category['options'][$aKey]['price'];
+                        $componentPrice = $category['options'][$aKey]['price'];
+                        $price += $componentPrice;
+                        $this->priceComponents[] = [
+                            'label' => 'Arbeiten Platten',
+                            'value' => $arbeit,
+                            'price' => $componentPrice
+                        ];
                     }
                 }
 

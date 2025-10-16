@@ -175,6 +175,23 @@ class FluentForm extends BaseController
                 $getParams['erreichbar'] = $erreichbar ?? '';
                 $getParams['skip_kontakt'] = '1';
 
+                // Prüfe ob umzug_reinigung = "Reinigung & Umzug" in vorheriger Offerte
+                if (!empty($uuid)) {
+                    $offerModel = $offerModel ?? new OfferModel();
+                    $previousOffer = $offerModel
+                        ->where('uuid', $uuid)
+                        ->orderBy('created_at', 'DESC')
+                        ->first();
+
+                    if ($previousOffer) {
+                        $formFields = json_decode($previousOffer['form_fields'], true) ?? [];
+                        if (isset($formFields['umzug_reinigung']) && $formFields['umzug_reinigung'] === 'Reinigung & Umzug') {
+                            $getParams['skip_reinigung_umzug'] = '1';
+                            log_message('info', '[Handle] umzug_reinigung = "Reinigung & Umzug" gefunden - setze skip_reinigung_umzug=1');
+                        }
+                    }
+                }
+
                 log_message('info', '[Handle] === FINALE KONTAKTDATEN FÜR WEITERLEITUNG ===');
                 log_message('info', '[Handle] Vorname: ' . ($vorname ?: 'LEER'));
                 log_message('info', '[Handle] Nachname: ' . ($nachname ?: 'LEER'));

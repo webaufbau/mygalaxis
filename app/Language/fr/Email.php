@@ -24,8 +24,10 @@ return [
 
     // Neue Offerte
     'offer_added_email_subject' => '🎉 Nous confirmons ta demande/offre',
+    'offer_added_multiple_subject' => '🎉 Nous confirmons tes demandes/offres',
     'offer_added_greeting' => 'Bonjour {0} {1},', // Vorname Nachname
     'offer_added_thank_you' => 'Merci beaucoup pour ta demande pour <strong>{service}</strong>.',
+    'offer_added_multiple_thank_you' => 'Merci beaucoup pour tes {0} demandes via {1}.',
     'offer_added_info_1' => 'Tu recevras sous peu <strong>jusqu\'à 3 offres sans engagement</strong> de prestataires de ta région.',
     'offer_added_info_2' => 'Selon la saison, il est possible que certaines entreprises soient déjà complètes et ne puissent pas proposer d\'offre.',
     'offer_added_ow_it_works' => 'Voici comment cela fonctionne:',
@@ -36,6 +38,10 @@ return [
     'offer_added_additional_services' => 'Tu as demandé d\'autres prestations:',
     'offer_added_summary' => 'Résumé de ta demande',
     'offer_added_no_comment' => 'Aucun commentaire.',
+    'offer_added_requests_overview' => 'Aperçu de tes demandes:',
+    'offer_added_request_number' => 'Demande {0}: {1}',
+    'offer_added_requests_title' => 'Tes demandes',
+    'offer_added_request_title' => 'Ta demande',
 
 
     // Offerte Kauf an Firmen

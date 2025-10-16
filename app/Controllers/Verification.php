@@ -587,7 +587,7 @@ class Verification extends BaseController {
 
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
-            'title' => count($offersData) > 1 ? 'Ihre Anfragen' : 'Ihre Anfrage',
+            'title' => count($offersData) > 1 ? lang('Email.offer_added_requests_title') : lang('Email.offer_added_request_title'),
             'content' => $message,
             'siteConfig' => $this->siteConfig,
         ])->render('emails/layout');
@@ -599,7 +599,7 @@ class Verification extends BaseController {
         $email->setBCC($bccString);
         $email->setSubject(
             count($offersData) > 1
-                ? '🎉 Wir bestätigen Ihnen Ihre Anfragen/Offerten'
+                ? lang('Email.offer_added_multiple_subject')
                 : lang('Email.offer_added_email_subject')
         );
         $email->setMessage($fullEmail);

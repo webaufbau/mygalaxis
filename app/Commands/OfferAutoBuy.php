@@ -20,8 +20,8 @@ class OfferAutoBuy extends BaseCommand
         $blockedTable = $db->table('blocked_days');
 
         $users = $userTable
-            ->select('id, email_text')
-            ->where('auto_offer_buy', 1)
+            ->select('id, email_text, filter_cantons, filter_regions, filter_categories, filter_languages, filter_absences, filter_custom_zip')
+            ->where('auto_purchase', 1)
             ->get()
             ->getResult();
 

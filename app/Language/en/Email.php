@@ -24,8 +24,10 @@ return [
 
     // Neue Offerte
     'offer_added_email_subject' => '🎉 We confirm your request/offer',
+    'offer_added_multiple_subject' => '🎉 We confirm your requests/offers',
     'offer_added_greeting' => 'Hello {0} {1},', // Vorname Nachname
     'offer_added_thank_you' => 'Thank you very much for your request for <strong>{service}</strong>.',
+    'offer_added_multiple_thank_you' => 'Thank you very much for your {0} requests via {1}.',
     'offer_added_info_1' => 'You will soon receive <strong>up to 3 non-binding offers</strong> from suitable providers in your region.',
     'offer_added_info_2' => 'Depending on the season, it may happen that companies are already fully booked and cannot provide an offer.',
     'offer_added_ow_it_works' => "Here's how it works:",
@@ -37,6 +39,10 @@ return [
     'offer_added_summary' => 'Summary of your request',
     'offer_added_no_comment' => 'No comment.',
     'offer_added_how_it_works' => 'This is how it works:',
+    'offer_added_requests_overview' => 'Overview of your requests:',
+    'offer_added_request_number' => 'Request {0}: {1}',
+    'offer_added_requests_title' => 'Your requests',
+    'offer_added_request_title' => 'Your request',
 
     // Offerte Kauf an Firmen
     'title_firm_interest' => 'A company is interested in your request',

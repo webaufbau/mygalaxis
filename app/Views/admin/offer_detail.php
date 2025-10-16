@@ -87,21 +87,49 @@
             <?php endif; ?>
         </ul>
 
-        <h5>Relevante Formularfelder für Preisberechnung:</h5>
-        <ul>
-            <?php if (isset($formFields['art_objekt'])): ?>
-                <li><strong>Art Objekt:</strong> <?= esc($formFields['art_objekt']) ?></li>
-            <?php endif; ?>
-            <?php if (isset($formFields['arbeiten_sanitaer'])): ?>
-                <li><strong>Arbeiten Sanitär:</strong> <?= is_array($formFields['arbeiten_sanitaer']) ? implode(', ', $formFields['arbeiten_sanitaer']) : esc($formFields['arbeiten_sanitaer']) ?></li>
-            <?php endif; ?>
-            <?php if (isset($formFields['auszug_zimmer'])): ?>
-                <li><strong>Auszug Zimmer:</strong> <?= esc($formFields['auszug_zimmer']) ?></li>
-            <?php endif; ?>
-            <?php if (isset($formFields['auszug_arbeitsplatz_firma'])): ?>
-                <li><strong>Arbeitsplätze:</strong> <?= esc($formFields['auszug_arbeitsplatz_firma']) ?></li>
-            <?php endif; ?>
-        </ul>
+        <?php if (!empty($priceComponents)): ?>
+            <h5>Preisberechnung im Detail:</h5>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                <thead>
+                    <tr style="background-color: #f5f5f5;">
+                        <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Feld</th>
+                        <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Wert</th>
+                        <th style="padding: 8px; text-align: right; border: 1px solid #ddd;">Preis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($priceComponents as $component): ?>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong><?= esc($component['label']) ?></strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><?= esc($component['value']) ?></td>
+                            <td style="padding: 8px; text-align: right; border: 1px solid #ddd;"><?= esc($component['price']) ?> CHF</td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr style="background-color: #e8f4f8; font-weight: bold;">
+                        <td colspan="2" style="padding: 8px; border: 1px solid #ddd; text-align: right;">Summe:</td>
+                        <td style="padding: 8px; text-align: right; border: 1px solid #ddd;"><?= esc($calculatedPrice) ?> CHF</td>
+                    </tr>
+                </tfoot>
+            </table>
+        <?php else: ?>
+            <h5>Relevante Formularfelder für Preisberechnung:</h5>
+            <ul>
+                <?php if (isset($formFields['art_objekt'])): ?>
+                    <li><strong>Art Objekt:</strong> <?= esc($formFields['art_objekt']) ?></li>
+                <?php endif; ?>
+                <?php if (isset($formFields['arbeiten_sanitaer'])): ?>
+                    <li><strong>Arbeiten Sanitär:</strong> <?= is_array($formFields['arbeiten_sanitaer']) ? implode(', ', $formFields['arbeiten_sanitaer']) : esc($formFields['arbeiten_sanitaer']) ?></li>
+                <?php endif; ?>
+                <?php if (isset($formFields['auszug_zimmer'])): ?>
+                    <li><strong>Auszug Zimmer:</strong> <?= esc($formFields['auszug_zimmer']) ?></li>
+                <?php endif; ?>
+                <?php if (isset($formFields['auszug_arbeitsplatz_firma'])): ?>
+                    <li><strong>Arbeitsplätze:</strong> <?= esc($formFields['auszug_arbeitsplatz_firma']) ?></li>
+                <?php endif; ?>
+            </ul>
+        <?php endif; ?>
     </div>
 </details>
 

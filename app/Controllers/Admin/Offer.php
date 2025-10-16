@@ -40,6 +40,9 @@ class Offer extends BaseController
         // Debug-Informationen holen
         $priceDebugInfo = $calculator->getDebugInfo();
 
+        // Preiskomponenten holen
+        $priceComponents = $calculator->getPriceComponents();
+
         // Rabatt berechnen
         $createdAt = new \DateTime($offer['created_at']);
         $now = new \DateTime();
@@ -69,6 +72,7 @@ class Offer extends BaseController
         $data['formFields'] = $formFields;
         $data['formFieldsCombo'] = $formFieldsCombo;
         $data['priceDebugInfo'] = $priceDebugInfo;
+        $data['priceComponents'] = $priceComponents;
 
         return view('admin/offer_detail', $data);
     }

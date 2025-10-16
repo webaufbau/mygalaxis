@@ -24,8 +24,10 @@ return [
 
     // Neue Offerte
     'offer_added_email_subject' => '🎉 Confermiamo la tua richiesta/offerta',
+    'offer_added_multiple_subject' => '🎉 Confermiamo le tue richieste/offerte',
     'offer_added_greeting' => 'Ciao {0} {1},', // Vorname Nachname
     'offer_added_thank_you' => 'Grazie per la tua richiesta per <strong>{service}</strong>.',
+    'offer_added_multiple_thank_you' => 'Grazie mille per le tue {0} richieste tramite {1}.',
     'offer_added_info_1' => 'A breve riceverai <strong>fino a 3 offerte non vincolanti</strong> da fornitori adatti nella tua zona.',
     'offer_added_info_2' => 'A seconda della stagione può capitare che le aziende siano già al completo per il periodo desiderato e quindi non possano fare offerte.',
     'offer_added_ow_it_works' => 'Ecco come funziona:',
@@ -37,6 +39,10 @@ return [
     'offer_added_summary' => 'Riepilogo della tua richiesta',
     'offer_added_no_comment' => 'Nessun commento.',
     'offer_added_how_it_works' => 'Ecco come funziona:',
+    'offer_added_requests_overview' => 'Panoramica delle tue richieste:',
+    'offer_added_request_number' => 'Richiesta {0}: {1}',
+    'offer_added_requests_title' => 'Le tue richieste',
+    'offer_added_request_title' => 'La tua richiesta',
 
     // Offerte Kauf an Firmen
     'title_firm_interest' => 'Un\'azienda è interessata alla tua richiesta',

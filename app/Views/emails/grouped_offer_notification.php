@@ -1,15 +1,15 @@
 
-<h2><?= $isMultiple ? '🎉 Wir bestätigen Ihnen Ihre Anfragen/Offerten' : lang('Email.offer_added_email_subject') ?></h2>
+<h2><?= $isMultiple ? lang('Email.offer_added_multiple_subject') : lang('Email.offer_added_email_subject') ?></h2>
 
 <p><?= lang('Email.offer_added_greeting', [$data['vorname'] ?? $data['names'] ?? '', $data['nachname'] ?? '']) ?></p>
 
 <div class="highlight">
     <?php if ($isMultiple): ?>
-        <p>Herzlichen Dank für Ihre <?= count($offers) ?> Anfragen über <?= esc($siteConfig->name) ?>.</p>
+        <p><?= lang('Email.offer_added_multiple_thank_you', [count($offers), esc($siteConfig->name)]) ?></p>
         <p><?= lang('Email.offer_added_info_1') ?></p>
         <p><?= lang('Email.offer_added_info_2') ?></p>
     <?php else: ?>
-        <p><?= lang('Email.offer_added_thank_you', ['service' => esc($offers[0]['type'] ?? 'Ihre Dienstleistung')]) ?></p>
+        <p><?= lang('Email.offer_added_thank_you', ['service' => esc($offers[0]['type'] ?? '')]) ?></p>
         <p><?= lang('Email.offer_added_info_1') ?></p>
         <p><?= lang('Email.offer_added_info_2') ?></p>
     <?php endif; ?>
@@ -25,7 +25,7 @@
 <p><strong><?= lang('Email.offer_added_note') ?></strong></p>
 
 <?php if ($isMultiple): ?>
-    <h3>Ihre Anfragen im Überblick:</h3>
+    <h3><?= lang('Email.offer_added_requests_overview') ?></h3>
 <?php endif; ?>
 
 <?php
@@ -49,7 +49,7 @@ foreach ($offers as $index => $offer):
 
     <?php if ($isMultiple): ?>
         <div style="border: 2px solid #007bff; padding: 20px; margin: 20px 0; border-radius: 8px; background-color: #f8f9fa;">
-            <h4 style="color: #007bff; margin-top: 0;">Anfrage <?= $offerNumber ?>: <?= esc($typeName) ?></h4>
+            <h4 style="color: #007bff; margin-top: 0;"><?= lang('Email.offer_added_request_number', [$offerNumber, esc($typeName)]) ?></h4>
     <?php else: ?>
         <h3><?= lang('Email.offer_added_summary') ?></h3>
     <?php endif; ?>
