@@ -8,6 +8,10 @@ return [
     'showComment'        => 'Mostra commento',
     'noComment'          => 'Nessun commento.',
 
+    'emailSubject'         => 'Per favore valuta la tua esperienza con "{0}"',
+    'emailSubjectReminder' => 'Promemoria: Per favore valuta la tua esperienza con "{0}"',
+    'emailTitle'           => 'Promemoria di valutazione',
+
     'reminderTitle'      => 'Richiesta di valutazione',
     'helloName'          => 'Ciao {0},',
     'reminderIntro'      => 'per la tua offerta "{0}" su {1} vogliamo ricordarti che alcune aziende hanno acquistato la tua offerta 30 giorni fa.',

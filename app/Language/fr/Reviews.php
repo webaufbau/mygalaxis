@@ -8,6 +8,10 @@ return [
     'showComment'        => 'Afficher le commentaire',
     'noComment'          => 'Pas de commentaire.',
 
+    'emailSubject'         => 'Veuillez évaluer votre expérience avec "{0}"',
+    'emailSubjectReminder' => 'Rappel : Veuillez évaluer votre expérience avec "{0}"',
+    'emailTitle'           => 'Rappel d\'évaluation',
+
     'reminderTitle'      => 'Demande d\'avis',
     'helloName'          => 'Bonjour {0},',
     'reminderIntro'      => 'pour votre offre "{0}" sur {1}, nous souhaitons vous rappeler que certaines entreprises ont acheté votre offre il y a 30 jours.',

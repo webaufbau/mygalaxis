@@ -8,6 +8,10 @@ return [
     'showComment'        => 'Kommentar anzeigen',
     'noComment'          => 'Kein Kommentar.',
 
+    'emailSubject'         => 'Bitte bewerten Sie Ihre Erfahrung mit "{0}"',
+    'emailSubjectReminder' => 'Erinnerung: Bitte bewerten Sie Ihre Erfahrung mit "{0}"',
+    'emailTitle'           => 'Bewertungs-Erinnerung',
+
     'reminderTitle'    => 'Bitte um Bewertung',
     'helloName'        => 'Guten Tag {0},',
     'reminderIntro'    => 'für Ihr Angebot "{0}" auf {1} möchten wir Sie daran erinnern, dass einige Firmen Ihre Offerte vor 30 Tagen gekauft haben.',

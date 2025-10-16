@@ -8,6 +8,10 @@ return [
     'showComment'        => 'Show Comment',
     'noComment'          => 'No comment.',
 
+    'emailSubject'         => 'Please review your experience with "{0}"',
+    'emailSubjectReminder' => 'Reminder: Please review your experience with "{0}"',
+    'emailTitle'           => 'Review Reminder',
+
     'reminderTitle'    => 'Reminder to Leave a Review',
     'helloName'        => 'Hello {0},',
     'reminderIntro'    => 'for your offer "{0}" on {1}, we\'d like to remind you that some companies purchased your request 30 days ago.',
