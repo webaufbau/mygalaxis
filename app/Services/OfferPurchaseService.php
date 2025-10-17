@@ -153,6 +153,20 @@ class OfferPurchaseService
             'meta' => json_encode(['source' => $source]),
         ]);
 
+        // Berechne discount_type basierend auf dem Rabatt-Prozentsatz
+        $discountType = 'normal';
+        $originalPrice = (float)$offer['price'];
+
+        if ($originalPrice > 0 && $price < $originalPrice) {
+            $discountPercent = (($originalPrice - $price) / $originalPrice) * 100;
+
+            if ($discountPercent > 20) {
+                $discountType = 'discount_2'; // > 20%
+            } else {
+                $discountType = 'discount_1'; // <= 20%
+            }
+        }
+
         // Eintrag in offer_purchases erstellen (wichtig für "gekauft"-Status!)
         $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
         $offerPurchaseModel->insert([
@@ -160,15 +174,16 @@ class OfferPurchaseService
             'offer_id' => $offer['id'],
             'price' => $offer['price'],
             'price_paid' => $price,
+            'discount_type' => $discountType,
             'payment_method' => $source,
-            'status' => 'completed',
+            'status' => 'paid',
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        // Alle COMPLETED Purchases zu diesem Angebot zählen (aus offer_purchases Tabelle!)
+        // Alle PAID Purchases zu diesem Angebot zählen (aus offer_purchases Tabelle!)
         $allPurchases = $offerPurchaseModel
             ->where('offer_id', $offer['id'])
-            ->where('status', 'completed')
+            ->where('status', 'paid')
             ->findAll();
 
         $buyerIds = array_column($allPurchases, 'user_id');

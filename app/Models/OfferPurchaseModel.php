@@ -14,6 +14,7 @@ class OfferPurchaseModel extends Model
         'offer_id',
         'price',
         'price_paid',
+        'discount_type',
         'payment_method',
         'review',       // neu
         'review',       // neu
