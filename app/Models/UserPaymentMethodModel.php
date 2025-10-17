@@ -16,12 +16,21 @@ class UserPaymentMethodModel extends Model
     public function __construct()
     {
         parent::__construct();
-        $this->encryption = \Config\Services::encrypter();
+        // Lazy loading: Encrypter nur initialisieren wenn benötigt
+        // $this->encryption wird in getEncryption() initialisiert
+    }
+
+    protected function getEncryption()
+    {
+        if ($this->encryption === null) {
+            $this->encryption = \Config\Services::encrypter();
+        }
+        return $this->encryption;
     }
 
     public function saveEncryptedToken(int $userId, string $methodCode, string $token): bool
     {
-        $encrypted = base64_encode($this->encryption->encrypt($token));
+        $encrypted = base64_encode($this->getEncryption()->encrypt($token));
 
         return $this->insert([
             'user_id' => $userId,
@@ -41,6 +50,6 @@ class UserPaymentMethodModel extends Model
         $data = json_decode($method['provider_data'], true);
         if (!isset($data['token'])) return null;
 
-        return $this->encryption->decrypt(base64_decode($data['token']));
+        return $this->getEncryption()->decrypt(base64_decode($data['token']));
     }
 }

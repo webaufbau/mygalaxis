@@ -16,6 +16,7 @@ class OfferPurchaseModel extends Model
         'price_paid',
         'discount_type',
         'payment_method',
+        'is_auto_purchase',
         'review',       // neu
         'review',       // neu
         'status',

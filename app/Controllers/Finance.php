@@ -195,27 +195,32 @@ class Finance extends BaseController
 
                     log_message('info', "Saferpay Alias gefunden und wird gespeichert: $aliasId (Lifetime: $aliasLifetime Tage) für User #{$user->id}");
 
-                    // Speichere auch PaymentMeans für bessere Anzeige
-                    $paymentMeans = $response['PaymentMeans'] ?? [];
-                    $card = $paymentMeans['Card'] ?? [];
+                    try {
+                        // Speichere auch PaymentMeans für bessere Anzeige
+                        $paymentMeans = $response['PaymentMeans'] ?? [];
+                        $card = $paymentMeans['Card'] ?? [];
 
-                    $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
-                    $paymentMethodModel->save([
-                        'user_id' => $user->id,
-                        'payment_method_code' => 'saferpay',
-                        'provider_data' => json_encode([
-                            'alias_id' => $aliasId,
-                            'alias_lifetime' => $aliasLifetime,
-                            'card_masked' => $paymentMeans['DisplayText'] ?? null,
-                            'card_brand' => $paymentMeans['Brand']['Name'] ?? null,
-                            'card_exp_month' => $card['ExpMonth'] ?? null,
-                            'card_exp_year' => $card['ExpYear'] ?? null,
-                        ]),
-                        'created_at' => date('Y-m-d H:i:s'),
-                        'updated_at' => date('Y-m-d H:i:s'),
-                    ]);
+                        $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
+                        $paymentMethodModel->save([
+                            'user_id' => $user->id,
+                            'payment_method_code' => 'saferpay',
+                            'provider_data' => json_encode([
+                                'alias_id' => $aliasId,
+                                'alias_lifetime' => $aliasLifetime,
+                                'card_masked' => $paymentMeans['DisplayText'] ?? null,
+                                'card_brand' => $paymentMeans['Brand']['Name'] ?? null,
+                                'card_exp_month' => $card['ExpMonth'] ?? null,
+                                'card_exp_year' => $card['ExpYear'] ?? null,
+                            ]),
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s'),
+                        ]);
 
-                    log_message('info', "Saferpay Alias erfolgreich gespeichert für User #{$user->id}");
+                        log_message('info', "Saferpay Alias erfolgreich gespeichert für User #{$user->id}");
+                    } catch (\Exception $aliasError) {
+                        // Fehler beim Speichern des Alias loggen, aber nicht die gesamte Zahlung abbrechen
+                        log_message('error', "Fehler beim Speichern des Saferpay Alias für User #{$user->id}: " . $aliasError->getMessage());
+                    }
                 } else {
                     log_message('warning', "Kein Saferpay Alias in Response gefunden für User #{$user->id}");
                 }
@@ -255,12 +260,10 @@ class Finance extends BaseController
             log_message('error', 'Saferpay API Fehler: ' . $errorMessage);
 
             // Benutzerfreundliche Meldung mit genauer Erklärung
-            $userMessage = lang('Finance.errorPaymentCheck');
-
             if (strpos($errorMessage, 'AUTHORIZATION_AMOUNT_EXCEEDED') !== false) {
                 $userMessage = lang('Finance.errorAmountExceeded');
             } else {
-                $userMessage .= lang('Finance.errorPaymentCheck');
+                $userMessage = lang('Finance.errorPaymentCheck');
             }
 
             // Weiterleitung mit Flash-Message (wenn dein Framework das unterstützt)

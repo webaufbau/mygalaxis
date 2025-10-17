@@ -20,7 +20,8 @@
       "Bash(ddev logs:*)",
       "Bash(for file in app/Views/emails/*.php)",
       "Bash(do echo \"=== $file ===\")",
-      "Read(//var/www/html/writable/**)"
+      "Read(//var/www/html/writable/**)",
+      "Read(//private/var/www/html/**)"
     ],
     "deny": [],
     "ask": []

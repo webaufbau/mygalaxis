@@ -45,7 +45,7 @@ class OfferPurchaseService
 
         if ($balance >= $price) {
             // Aus Guthaben bezahlen
-            $this->finalize($user, $offer, $price, 'wallet');
+            $this->finalize($user, $offer, $price, 'wallet', $isAuto);
             return true;
         }
 
@@ -54,7 +54,7 @@ class OfferPurchaseService
 
         if ($charged) {
             // Erfolgreich von Karte abgebucht - Kauf direkt abschließen (ohne Guthaben)
-            $this->finalize($user, $offer, $price, 'credit_card');
+            $this->finalize($user, $offer, $price, 'credit_card', $isAuto);
             return true;
         }
 
@@ -209,7 +209,7 @@ class OfferPurchaseService
         }
     }
 
-    protected function finalize($user, $offer, $price, $source = 'wallet')
+    protected function finalize($user, $offer, $price, $source = 'wallet', $isAuto = false)
     {
         $bookingModel = new BookingModel();
 
@@ -259,6 +259,7 @@ class OfferPurchaseService
             'price_paid' => $price,
             'discount_type' => $discountType,
             'payment_method' => $source,
+            'is_auto_purchase' => $isAuto ? 1 : 0,
             'status' => 'paid',
             'company_name' => $user->company_name ?? null,
             'external_user_id' => $user->id,
