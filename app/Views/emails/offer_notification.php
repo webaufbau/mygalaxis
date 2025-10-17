@@ -14,9 +14,10 @@
         <li><?= lang('Email.offer_added_how_1') ?></li>
         <li><?= lang('Email.offer_added_how_2') ?></li>
         <li><?= lang('Email.offer_added_how_3') ?></li>
+        <li><?= lang('Email.offer_added_how_4') ?></li>
     </ul>
 
-    <p><strong><?= lang('Email.offer_added_note') ?></strong></p>
+    <p><strong><?= lang('Email.offer_added_how_note') ?></strong></p>
 
     <?php if (!empty($data['additional_service']) && ! $data['additional_service'] == 'Nein'): ?>
         <p><strong><?= lang('Email.offer_added_additional_services') ?></strong> <?= esc($data['additional_service']) ?></p>

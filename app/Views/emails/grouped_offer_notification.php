@@ -20,9 +20,10 @@
     <li><?= lang('Email.offer_added_how_1') ?></li>
     <li><?= lang('Email.offer_added_how_2') ?></li>
     <li><?= lang('Email.offer_added_how_3') ?></li>
+    <li><?= lang('Email.offer_added_how_4') ?></li>
 </ul>
 
-<p><strong><?= lang('Email.offer_added_note') ?></strong></p>
+<p><strong><?= lang('Email.offer_added_how_note') ?></strong></p>
 
 <?php if ($isMultiple): ?>
     <h3><?= lang('Email.offer_added_requests_overview') ?></h3>

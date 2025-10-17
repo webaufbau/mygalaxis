@@ -228,7 +228,7 @@ return [
         'boden_grundflaeche_ja' => 'Grundfläche (m²)',
         'boden_zimmer'          => 'Zimmeranzahl angeben?',
         'boden_zimmer_anzahl'   => 'Anzahl Zimmer',
-        'details_art'           => 'Art des Auftrags (Privat/Öffentlich)',
+        'details_art'           => 'Auftrag erteilt:',
 
 
         // Neue
@@ -389,7 +389,7 @@ return [
         'art_objekt_1' => 'Art des Objekts',
         'ausbesserungsumfang' => 'Ausbesserungsumfang',
         'objekt_andere_1' => 'Bitte beschreibe die Art des Objekts',
-        'arbeiten_wohnung' => 'Welche Arbeiten sollen gemacht werden? (Mehrfachauswahl möglich)',
+        'arbeiten_wohnung' => 'Welche Arbeiten sollen gemacht werden',
         'wand_teil_komplett' => 'Möchten Sie die komplette Wohnung streichen lassen oder nur Teile davon?',
         'wand_komplett_anzahl' => 'Wie gross ist die Wohnung?',
         'wand_komplett_andere' => 'Bitte Wohnungsgrösse angeben',
@@ -554,7 +554,7 @@ return [
         'fassaden_hinweis_1' => 'Sonstige Hinweise',
         'malerarbeiten_uebersicht' => 'Um welche Malerarbeiten handelt es sich? (Mehrfachauswahl)',
         'objekt_andere' => 'Bitte beschreibe die Art des Objekts',
-        'arbeiten_wohnung_1' => 'Welche Arbeiten sollen gemacht werden? (Mehrfachauswahl möglich)',
+        'arbeiten_wohnung_1' => 'Welche Arbeiten sollen gemacht werden',
         'fassaden_hinweis' => 'Sonstige Hinweise',
         'fenster_material_1' => 'Aus welchem Material sind die Fensterrahmen?',
         'fenster_material_andere_1' => 'Bitte Material angeben',
