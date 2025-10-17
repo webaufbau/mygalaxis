@@ -55,7 +55,9 @@ class Verification extends BaseController {
             log_message('info', 'Verifikation kann nicht gemacht werden kein Datensatz mit der UUID ' . $uuid . ': ' . print_r($_SESSION, true));
             log_message('info', 'Abfrage: ' . $builder->db()->getLastQuery());
 
-            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'])->with('error', lang('Verification.noOfferFound'));
+            $redirectUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'];
+            log_message('info', '[VERIFICATION REDIRECT] Kein Datensatz gefunden → Weiterleitung zu: ' . $redirectUrl);
+            return redirect()->to($redirectUrl)->with('error', lang('Verification.noOfferFound'));
         }
 
         // form_fields ist JSON, decode es:
@@ -87,9 +89,11 @@ class Verification extends BaseController {
             $this->handlePostVerification($uuid, $row);
 
             // Weiterleitung zur Erfolgsseite
+            $nextUrl = session('next_url') ?? $this->siteConfig->thankYouUrl['de'];
+            log_message('info', '[VERIFICATION REDIRECT] Auto-Verifizierung erfolgreich → Erfolgsseite mit next_url: ' . $nextUrl);
             return view('verification_success', [
                 'siteConfig' => $this->siteConfig,
-                'next_url' => session('next_url') ?? $this->siteConfig->thankYouUrl['de'],
+                'next_url' => $nextUrl,
                 'auto_verified' => true // Flag für View
             ]);
         }
@@ -103,9 +107,11 @@ class Verification extends BaseController {
 
         if ($locale === 'de') {
             // Deutsch ohne Prefix
+            log_message('info', '[VERIFICATION REDIRECT] Weiterleitung zu /verification/send (Locale: de)');
             return redirect()->to('/verification/send');
         } else {
             // Andere Sprachen mit Prefix
+            log_message('info', "[VERIFICATION REDIRECT] Weiterleitung zu /{$locale}/verification/send (Locale: {$locale})");
             return redirect()->to("/{$locale}/verification/send");
         }
     }
@@ -158,6 +164,7 @@ class Verification extends BaseController {
             $locale = getCurrentLocale();
             $prefix = ($locale === 'de') ? '' : '/' . $locale;
             $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            log_message('error', '[VERIFICATION REDIRECT] Telefonnummer fehlt → Weiterleitung zu: ' . $nextUrl);
             return redirect()->to($nextUrl)->with('error', lang('Verification.phoneMissing'));
         }
 
@@ -171,12 +178,14 @@ class Verification extends BaseController {
         if (!$isMobile && $method !== 'call') {
             log_message('error', "SEND: Festnetz erkannt aber Methode ist {$method}");
             $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            log_message('error', '[VERIFICATION REDIRECT] Festnetz aber falsche Methode → Weiterleitung zu: ' . $nextUrl);
             return redirect()->to($nextUrl)->with('error', lang('Verification.fixedLineOnlyCall'));
         }
 
         if (!$method) {
             log_message('error', 'SEND: Methode fehlt in Session!');
             $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+            log_message('error', '[VERIFICATION REDIRECT] Methode fehlt → Weiterleitung zu: ' . $nextUrl);
             return redirect()->to($nextUrl)->with('error', lang('Verification.chooseMethod'));
         }
 
@@ -209,10 +218,13 @@ class Verification extends BaseController {
 
             if ($infobipResponseArray['success']) {
                 log_message('info', "SMS-Code an $phone über Infobip gesendet.");
-                return redirect()->to($prefix . '/verification/confirm');
+                $redirectUrl = $prefix . '/verification/confirm';
+                log_message('info', '[VERIFICATION REDIRECT] SMS erfolgreich gesendet → Weiterleitung zu: ' . $redirectUrl);
+                return redirect()->to($redirectUrl);
             } else {
                 log_message('error', "Infobip SMS Fehler an $phone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
                 $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                log_message('error', '[VERIFICATION REDIRECT] SMS Fehler → Weiterleitung zu: ' . $nextUrl);
                 return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
             }
         } elseif ($method === 'call') {
@@ -224,15 +236,19 @@ class Verification extends BaseController {
 
             if ($success) {
                 log_message('info', "Anruf-Code an $phone gestartet.");
-                return redirect()->to($prefix . '/verification/confirm');
+                $redirectUrl = $prefix . '/verification/confirm';
+                log_message('info', '[VERIFICATION REDIRECT] Anruf erfolgreich gestartet → Weiterleitung zu: ' . $redirectUrl);
+                return redirect()->to($redirectUrl);
             } else {
                 log_message('error', "Twilio Call Fehler an $phone.");
                 $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+                log_message('error', '[VERIFICATION REDIRECT] Anruf Fehler → Weiterleitung zu: ' . $nextUrl);
                 return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
             }
         }
 
         $nextUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'] ?? '/';
+        log_message('error', '[VERIFICATION REDIRECT] Keine Methode matched → Weiterleitung zu: ' . $nextUrl);
         return redirect()->to($nextUrl)->with('error', lang('Verification.errorSendingCode'));
     }
 
@@ -240,7 +256,9 @@ class Verification extends BaseController {
         $verificationCode = session('verification_code');
         if (!$verificationCode || $verificationCode == '') {
             log_message('info', 'Verifizierung Confirm verificationCode fehlt.');
-            return redirect()->to(session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de']);
+            $redirectUrl = session()->get('next_url') ?? $this->siteConfig->thankYouUrl['de'];
+            log_message('info', '[VERIFICATION REDIRECT] Confirm: Code fehlt → Weiterleitung zu: ' . $redirectUrl);
+            return redirect()->to($redirectUrl);
         }
 
         $smsStatus = session('sms_sent_status'); // z.B. "DELIVERED_TO_HANDSET", "INVALID_DESTINATION_ADDRESS"
@@ -253,6 +271,19 @@ class Verification extends BaseController {
             'method' => session('verify_method'),
         ]);
 
+    }
+
+    public function verifyGet() {
+        // GET-Request auf /verification/verify abfangen
+        // Dies passiert wenn User F5 drückt oder zurück navigiert
+        $locale = getCurrentLocale();
+        $prefix = ($locale === 'de') ? '' : '/' . $locale;
+
+        log_message('info', '[VERIFICATION REDIRECT] GET auf /verification/verify → Weiterleitung zu /verification/confirm');
+
+        // Zurück zur Confirm-Seite
+        return redirect()->to($prefix . '/verification/confirm')
+            ->with('info', lang('Verification.pleaseUseForm'));
     }
 
     public function verify() {
@@ -321,10 +352,14 @@ class Verification extends BaseController {
 
                 if ($infobipResponseArray['success']) {
                     log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
-                    return redirect()->to($prefix . '/verification/confirm');
+                    $redirectUrl = $prefix . '/verification/confirm';
+                    log_message('info', '[VERIFICATION REDIRECT] Telefon geändert: SMS erfolgreich → Weiterleitung zu: ' . $redirectUrl);
+                    return redirect()->to($redirectUrl);
                 } else {
                     log_message('error', "Infobip SMS Fehler an $normalizedPhone: " . ($infobipResponseArray['error'] ?? 'Unknown error'));
-                    return redirect()->to($prefix . '/verification/confirm')->with('error', lang('Verification.errorSendingCode'));
+                    $redirectUrl = $prefix . '/verification/confirm';
+                    log_message('error', '[VERIFICATION REDIRECT] Telefon geändert: SMS Fehler → Weiterleitung zu: ' . $redirectUrl);
+                    return redirect()->to($redirectUrl)->with('error', lang('Verification.errorSendingCode'));
                 }
             }
 
@@ -334,11 +369,15 @@ class Verification extends BaseController {
                 ]);
                 $success = $twilio->sendCallCode($normalizedPhone, $message, $verificationCode);
                 if ($success) {
-                    return redirect()->to($prefix . '/verification/confirm');
+                    $redirectUrl = $prefix . '/verification/confirm';
+                    log_message('info', '[VERIFICATION REDIRECT] Telefon geändert: Anruf erfolgreich → Weiterleitung zu: ' . $redirectUrl);
+                    return redirect()->to($redirectUrl);
                 }
             }
 
-            return redirect()->to($prefix . '/verification/confirm')->with('error', lang('Verification.errorSendingCode'));
+            $redirectUrl = $prefix . '/verification/confirm';
+            log_message('error', '[VERIFICATION REDIRECT] Telefon geändert: Fehler → Weiterleitung zu: ' . $redirectUrl);
+            return redirect()->to($redirectUrl)->with('error', lang('Verification.errorSendingCode'));
         }
 
         // --- FALL 2: Benutzer gibt Bestätigungscode ein ---
@@ -384,21 +423,23 @@ class Verification extends BaseController {
 
                 log_message('info', 'Verifizierung abgeschlossen: E-Mail(s) gesendet.');
 
-
-                log_message('info', 'Verifizierung abgeschlossen: gehe weiter zur URL: ' . (session('next_url') ?? $this->siteConfig->thankYouUrl['de']));
+                $nextUrl = session('next_url') ?? $this->siteConfig->thankYouUrl['de'];
+                log_message('info', '[VERIFICATION REDIRECT] Code korrekt: Verifizierung erfolgreich → Erfolgsseite mit next_url: ' . $nextUrl);
                 return view('verification_success', [
                     'siteConfig' => $this->siteConfig,
-                    'next_url' => session('next_url') ?? $this->siteConfig->thankYouUrl['de']
+                    'next_url' => $nextUrl
                 ]);
             }
 
             // Falscher Code
             log_message('info', 'Verifizierung Confirm: Falscher Code. Bitte erneut versuchen.');
+            log_message('info', '[VERIFICATION REDIRECT] Falscher Code → redirect()->back()');
             return redirect()->back()->with('error', lang('Verification.wrongCode'));
         }
 
 
         // --- FALL 3: Ungültiger Request ---
+        log_message('error', '[VERIFICATION REDIRECT] Ungültiger Request → redirect()->back()');
         return redirect()->back()->with('error', lang('Verification.invalidRequest'));
 
     }
@@ -425,18 +466,24 @@ class Verification extends BaseController {
         $prefix = ($locale === 'de') ? '' : '/' . $locale;
 
         if (!$offerId || !$token) {
-            return redirect()->to($prefix . '/')->with('error', lang('Verification.invalidVerificationLink'));
+            $redirectUrl = $prefix . '/';
+            log_message('error', '[VERIFICATION REDIRECT] E-Mail-Link: Ungültiger Link (ID/Token fehlt) → Weiterleitung zu: ' . $redirectUrl);
+            return redirect()->to($redirectUrl)->with('error', lang('Verification.invalidVerificationLink'));
         }
 
         $offerModel = new \App\Models\OfferModel();
         $offer = $offerModel->find($offerId);
 
         if (!$offer || $offer['verification_token'] !== $token) {
-            return redirect()->to($prefix . '/')->with('error', lang('Verification.invalidOrOldVerificationLink'));
+            $redirectUrl = $prefix . '/';
+            log_message('error', '[VERIFICATION REDIRECT] E-Mail-Link: Ungültiger/alter Token → Weiterleitung zu: ' . $redirectUrl);
+            return redirect()->to($redirectUrl)->with('error', lang('Verification.invalidOrOldVerificationLink'));
         }
 
         if ((int)$offer['verified'] === 1) {
-            return redirect()->to($prefix . '/')->with('message', lang('Verification.alreadyVerified'));
+            $redirectUrl = $prefix . '/';
+            log_message('info', '[VERIFICATION REDIRECT] E-Mail-Link: Bereits verifiziert → Weiterleitung zu: ' . $redirectUrl);
+            return redirect()->to($redirectUrl)->with('message', lang('Verification.alreadyVerified'));
         }
 
         $fields = json_decode($offer['form_fields'], true);
@@ -451,7 +498,9 @@ class Verification extends BaseController {
         session()->set('verify_method', $method);
         session()->set('next_url', $this->siteConfig->thankYouUrl['de']); // fix immer danke seite
 
-        return redirect()->to($prefix . '/verification/send');
+        $redirectUrl = $prefix . '/verification/send';
+        log_message('info', '[VERIFICATION REDIRECT] E-Mail-Link: Gültig, Session gesetzt → Weiterleitung zu: ' . $redirectUrl);
+        return redirect()->to($redirectUrl);
     }
 
     private function normalizePhone(string $phone): string {

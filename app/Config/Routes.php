@@ -82,6 +82,7 @@ function defineAppRoutes($routes) {
     $routes->post('verification/send', 'Verification::send');
     $routes->get('verification/send', 'Verification::send');
     $routes->get('verification/confirm', 'Verification::confirm');
+    $routes->get('verification/verify', 'Verification::verifyGet');
     $routes->post('verification/verify', 'Verification::verify');
 
     $routes->get('processing', 'Verification::processing'); // oder beliebiger Pfadname

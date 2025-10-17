@@ -14,7 +14,7 @@ class SiteConfig extends BaseConfig
     public string $testEmail = 'testbenutzer@offertenschweiz.ch';
     public string $frontendUrl = 'https://offertenschweiz.ch';
     public string $backendUrl = '';
-    public string $thankYouUrl = '';
+    public array $thankYouUrl = [];
     public string $logoUrl = '';
     public string $faviconUrl = '';
     public string $companyUidCheck = '';
