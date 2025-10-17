@@ -25,14 +25,33 @@
             <td><?= esc($method['payment_method_code']) ?></td>
             <td>
                 <?php
-                if ($method['payment_method_code'] === 'paypal' && isset($data['email'])) {
-                    echo esc($data['email']);
+                if ($method['payment_method_code'] === 'saferpay' && isset($data['alias_id'])) {
+                    ?>
+                    <i class="bi bi-credit-card text-primary"></i>
+                    <span class="ms-2">
+                        <?= esc($data['card_brand'] ?? 'Kreditkarte') ?>
+                        <?= isset($data['card_masked']) ? esc($data['card_masked']) : '' ?>
+                    </span>
+                    <?php if (isset($data['card_exp_month']) && isset($data['card_exp_year'])): ?>
+                        <br>
+                        <small class="text-muted">Gültig bis: <?= str_pad($data['card_exp_month'], 2, '0', STR_PAD_LEFT) ?>/<?= $data['card_exp_year'] ?></small>
+                    <?php endif; ?>
+                    <?php
+                } elseif ($method['payment_method_code'] === 'paypal' && isset($data['email'])) {
+                    ?>
+                    <i class="bi bi-paypal text-primary"></i>
+                    <span class="ms-2"><?= esc($data['email']) ?></span>
+                    <?php
                 } elseif ($method['payment_method_code'] === 'creditcard' && isset($data['last4'])) {
                     ?>
-                    <span>**** **** **** <?= esc($data['last4']) ?></span>
+                    <i class="bi bi-credit-card text-primary"></i>
+                    <span class="ms-2">**** **** **** <?= esc($data['last4']) ?></span>
                     <?php
                 } elseif ($method['payment_method_code'] === 'twint' && isset($data['phone'])) {
-                    echo esc($data['phone']);
+                    ?>
+                    <i class="bi bi-phone text-success"></i>
+                    <span class="ms-2"><?= esc($data['phone']) ?></span>
+                    <?php
                 } else {
                     echo '<pre>' . esc(json_encode($data, JSON_PRETTY_PRINT)) . '</pre>';
                 }

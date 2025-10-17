@@ -186,16 +186,38 @@ class Finance extends BaseController
                 ]);
 
                 // 4. Alias sichern, falls vorhanden
-                if (isset($response['Transaction']['PaymentMeans']['Alias'])) {
-                    $aliasId = $response['Transaction']['PaymentMeans']['Alias']['Id'];
+                // Der Alias ist in RegistrationResult.Alias, nicht in Transaction.PaymentMeans.Alias
+                log_message('info', 'Saferpay Response - Full Response: ' . json_encode($response));
+
+                if (isset($response['RegistrationResult']['Alias']['Id'])) {
+                    $aliasId = $response['RegistrationResult']['Alias']['Id'];
+                    $aliasLifetime = $response['RegistrationResult']['Alias']['Lifetime'] ?? null;
+
+                    log_message('info', "Saferpay Alias gefunden und wird gespeichert: $aliasId (Lifetime: $aliasLifetime Tage) für User #{$user->id}");
+
+                    // Speichere auch PaymentMeans für bessere Anzeige
+                    $paymentMeans = $response['PaymentMeans'] ?? [];
+                    $card = $paymentMeans['Card'] ?? [];
+
                     $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
                     $paymentMethodModel->save([
                         'user_id' => $user->id,
                         'payment_method_code' => 'saferpay',
-                        'provider_data' => json_encode(['alias_id' => $aliasId]),
+                        'provider_data' => json_encode([
+                            'alias_id' => $aliasId,
+                            'alias_lifetime' => $aliasLifetime,
+                            'card_masked' => $paymentMeans['DisplayText'] ?? null,
+                            'card_brand' => $paymentMeans['Brand']['Name'] ?? null,
+                            'card_exp_month' => $card['ExpMonth'] ?? null,
+                            'card_exp_year' => $card['ExpYear'] ?? null,
+                        ]),
                         'created_at' => date('Y-m-d H:i:s'),
                         'updated_at' => date('Y-m-d H:i:s'),
                     ]);
+
+                    log_message('info', "Saferpay Alias erfolgreich gespeichert für User #{$user->id}");
+                } else {
+                    log_message('warning', "Kein Saferpay Alias in Response gefunden für User #{$user->id}");
                 }
 
                 // 5. Transaktion updaten
@@ -419,6 +441,20 @@ class Finance extends BaseController
 
         if (!$booking) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Bei Kreditkartenzahlungen (amount = 0) den echten Betrag aus offer_purchases holen
+        if ($booking['amount'] == 0 && $booking['reference_id']) {
+            $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+            $purchase = $offerPurchaseModel
+                ->where('offer_id', $booking['reference_id'])
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($purchase) {
+                $booking['amount'] = -$purchase['price_paid']; // Negativ für Rechnung
+                $booking['payment_method_info'] = 'Kreditkarte';
+            }
         }
 
         // Rechnungsnummer: RE{LAND}{ID} z.B. RECH123

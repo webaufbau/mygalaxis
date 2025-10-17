@@ -37,7 +37,7 @@ class OfferAutoBuy extends BaseCommand
                 ->countAllResults();
 
             if ($isBlocked) {
-                $this->log("⏸  Benutzer #{$user->id} ({$user->email}) ist heute blockiert ({$today}).", 'blue');
+                $this->log("⏸  Benutzer #{$user->id} ({$user->email_text}) ist heute blockiert ({$today}).", 'blue');
                 continue;
             }
 
@@ -57,21 +57,33 @@ class OfferAutoBuy extends BaseCommand
         // Hole gefilterte Offerten
         $offers = $this->getFilteredOffersForUser($user);
 
+        $this->log("📋 Gefundene Offerten für User #{$user->id}: " . count($offers), 'cyan');
+
         foreach ($offers as $offer) {
-            $alreadyPurchased = $bookingModel
+            // Prüfe ob bereits in offer_purchases gekauft (neue Tabelle)
+            $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+            $alreadyPurchased = $offerPurchaseModel
                 ->where('user_id', $user->id)
-                ->where('type', 'offer_purchase')
-                ->where('reference_id', $offer['id'])
+                ->where('offer_id', $offer['id'])
+                ->where('status', 'paid')
                 ->countAllResults();
 
             if ($alreadyPurchased > 0) {
                 continue;
             }
 
-            if ($purchaseService->purchase($user, $offer['id'], true)) {
+            $result = $purchaseService->purchase($user, $offer['id'], true);
+
+            if ($result === true) {
                 $this->log("✅ Auto-Kauf erfolgreich für Angebot #{$offer['id']} (Benutzer #{$user->id})", 'green');
             } else {
-                $this->log("❌ Auto-Kauf NICHT möglich für Angebot #{$offer['id']} (Benutzer #{$user->id})", 'red');
+                // Detaillierte Fehlermeldung
+                if (is_array($result)) {
+                    $this->log("❌ Auto-Kauf NICHT möglich für Angebot #{$offer['id']} (Benutzer #{$user->id})", 'red');
+                    $this->log("   Guthaben: {$result['current_balance']} CHF, Benötigt: {$result['required_amount']} CHF, Fehlt: {$result['missing_amount']} CHF", 'yellow');
+                } else {
+                    $this->log("❌ Auto-Kauf NICHT möglich für Angebot #{$offer['id']} (Benutzer #{$user->id}) - Angebot nicht verfügbar oder Kreditkartenzahlung fehlgeschlagen", 'red');
+                }
             }
         }
     }
@@ -81,13 +93,17 @@ class OfferAutoBuy extends BaseCommand
         $offerModel = new \App\Models\OfferModel();
         $builder = $offerModel->builder();
         $builder->where('verified', 1);
+        $builder->where('status', 'available');
+        $builder->where('price >', 0); // Nur Offerten mit gültigem Preis
 
-        $cantons = is_string($user->filter_cantons) ? explode(',', $user->filter_cantons) : $user->filter_cantons ?? [];
-        $regions = is_string($user->filter_regions) ? explode(',', $user->filter_regions) : $user->filter_regions ?? [];
-        $categories = is_string($user->filter_categories) ? explode(',', $user->filter_categories) : $user->filter_categories ?? [];
+        $cantons = is_string($user->filter_cantons) ? array_filter(explode(',', $user->filter_cantons)) : $user->filter_cantons ?? [];
+        $regions = is_string($user->filter_regions) ? array_filter(explode(',', $user->filter_regions)) : $user->filter_regions ?? [];
+        $categories = is_string($user->filter_categories) ? array_filter(explode(',', $user->filter_categories)) : $user->filter_categories ?? [];
         $languages = is_string($user->filter_languages) ? json_decode($user->filter_languages, true) ?? [] : $user->filter_languages ?? [];
         $services = is_string($user->filter_absences) ? json_decode($user->filter_absences, true) ?? [] : $user->filter_absences ?? [];
-        $customZips = is_string($user->filter_custom_zip) ? explode(',', $user->filter_custom_zip) : [];
+        $customZips = is_string($user->filter_custom_zip) ? array_filter(explode(',', $user->filter_custom_zip)) : [];
+
+        $this->log("Debug - Categories: " . implode(', ', $categories), 'yellow');
 
         $zipcodeService = new \App\Libraries\ZipcodeService();
         $siteConfig = siteconfig();

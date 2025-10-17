@@ -14,6 +14,15 @@ class OfferPurchaseService
      */
     public function purchase($user, $offerId, bool $isAuto = false): bool|array
     {
+        // Im CLI-Mode (Auto-Buy) müssen wir den User aus der DB laden
+        if ($isAuto && !($user instanceof \CodeIgniter\Shield\Entities\User)) {
+            $userModel = new \CodeIgniter\Shield\Models\UserModel();
+            $fullUser = $userModel->find($user->id);
+            if ($fullUser) {
+                $user = $fullUser;
+            }
+        }
+
         $offerModel = new OfferModel();
         $offer = $offerModel->find($offerId);
 
@@ -40,25 +49,23 @@ class OfferPurchaseService
             return true;
         }
 
-        // Nicht genug Guthaben
-        $missingAmount = $price - $balance;
+        // Nicht genug Guthaben - versuche direkt von Kreditkarte abzubuchen
+        $charged = $this->tryChargeFromCard($user, $price, $offer['id']);
 
-        // Bei Auto-Kauf: Versuche automatisch von Kreditkarte abzubuchen
+        if ($charged) {
+            // Erfolgreich von Karte abgebucht - Kauf direkt abschließen (ohne Guthaben)
+            $this->finalize($user, $offer, $price, 'credit_card');
+            return true;
+        }
+
+        // Kreditkartenzahlung fehlgeschlagen
         if ($isAuto) {
-            $charged = $this->tryAutoChargeFromCard($user, $missingAmount, $offer['id']);
-
-            if ($charged) {
-                // Erfolgreich von Karte abgebucht - jetzt kaufen
-                $this->finalize($user, $offer, $price, 'auto_charge');
-                return true;
-            }
-
-            // Auto-Charge fehlgeschlagen
-            log_message('warning', "Auto-Charge fehlgeschlagen für User #{$user->id}, Offer #{$offerId}. Fehlender Betrag: {$missingAmount}");
+            log_message('warning', "Auto-Charge fehlgeschlagen für User #{$user->id}, Offer #{$offerId}");
             return false;
         }
 
-        // Manueller Kauf ohne genug Guthaben - Betrag zurückgeben
+        // Manueller Kauf ohne genug Guthaben und ohne Kreditkarte - Betrag zurückgeben
+        $missingAmount = $price - $balance;
         return [
             'success' => false,
             'missing_amount' => $missingAmount,
@@ -68,7 +75,71 @@ class OfferPurchaseService
     }
 
     /**
-     * Versucht automatisch den fehlenden Betrag von der hinterlegten Kreditkarte abzubuchen
+     * Versucht direkt von der Kreditkarte abzubuchen (ohne Guthaben aufzuladen)
+     *
+     * @param object $user Der Benutzer
+     * @param float $amount Der Betrag der abgebucht werden soll
+     * @param int $offerId Die Offer-ID (für Referenz)
+     * @return bool True wenn erfolgreich abgebucht, false sonst
+     */
+    protected function tryChargeFromCard($user, float $amount, int $offerId): bool
+    {
+        try {
+            // Hole gespeicherte Zahlungsmethode
+            $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
+            $paymentMethod = $paymentMethodModel
+                ->where('user_id', $user->id)
+                ->where('payment_method_code', 'saferpay')
+                ->orderBy('created_at', 'DESC')
+                ->first();
+
+            if (!$paymentMethod) {
+                log_message('info', "Keine Zahlungsmethode für User #{$user->id} gefunden");
+                return false;
+            }
+
+            // Hole Alias-ID
+            $providerData = json_decode($paymentMethod['provider_data'], true);
+            $aliasId = $providerData['alias_id'] ?? null;
+
+            if (!$aliasId) {
+                log_message('warning', "Alias-ID fehlt für User #{$user->id}");
+                return false;
+            }
+
+            // Saferpay Charge durchführen
+            $saferpayService = new SaferpayService();
+            $amountInCents = (int)($amount * 100);
+            $refno = 'offer_purchase_' . $offerId . '_' . uniqid();
+
+            $response = $saferpayService->authorizeWithAlias($aliasId, $amountInCents, $refno, $user);
+
+            // Prüfe ob erfolgreich
+            if (!isset($response['Transaction']) || $response['Transaction']['Status'] !== 'AUTHORIZED') {
+                log_message('error', "Saferpay Authorization fehlgeschlagen für User #{$user->id}: " . json_encode($response));
+                return false;
+            }
+
+            // Capture durchführen (Geld tatsächlich abbuchen)
+            $transactionId = $response['Transaction']['Id'];
+            $captureResponse = $saferpayService->captureTransaction($transactionId);
+
+            if (!isset($captureResponse['Status']) || $captureResponse['Status'] !== 'CAPTURED') {
+                log_message('error', "Saferpay Capture fehlgeschlagen für User #{$user->id}: " . json_encode($captureResponse));
+                return false;
+            }
+
+            log_message('info', "Kreditkartenzahlung erfolgreich: User #{$user->id}, Betrag: {$amount}, Offer: #{$offerId}");
+            return true;
+
+        } catch (\Exception $e) {
+            log_message('error', "Kreditkartenzahlung Exception für User #{$user->id}: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Versucht automatisch den fehlenden Betrag von der hinterlegten Kreditkarte abzubuchen (für Guthaben-Aufladung)
      *
      * @param object $user Der Benutzer
      * @param float $amount Der Betrag der abgebucht werden soll
@@ -142,16 +213,28 @@ class OfferPurchaseService
     {
         $bookingModel = new BookingModel();
 
-        // Buchung eintragen
-        $bookingModel->insert([
-            'user_id' => $user->id,
-            'type' => 'offer_purchase',
-            'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'],
-            'reference_id' => $offer['id'],
-            'amount' => -$price,
-            'created_at' => date('Y-m-d H:i:s'),
-            'meta' => json_encode(['source' => $source]),
-        ]);
+        // Buchung nur eintragen, wenn aus Guthaben bezahlt wurde
+        // Bei Kreditkartenzahlung keine Buchung erstellen (Geld kommt direkt von Karte)
+        if ($source === 'wallet') {
+            $bookingModel->insert([
+                'user_id' => $user->id,
+                'type' => 'offer_purchase',
+                'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'],
+                'reference_id' => $offer['id'],
+                'amount' => -$price,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+        } else {
+            // Bei Kreditkartenzahlung: Nur eine Info-Buchung mit 0 CHF für Tracking
+            $bookingModel->insert([
+                'user_id' => $user->id,
+                'type' => 'offer_purchase',
+                'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'] . " - {$price} CHF per Kreditkarte bezahlt",
+                'reference_id' => $offer['id'],
+                'amount' => 0, // 0 CHF, da direkt von Karte abgebucht
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
 
         // Berechne discount_type basierend auf dem Rabatt-Prozentsatz
         $discountType = 'normal';

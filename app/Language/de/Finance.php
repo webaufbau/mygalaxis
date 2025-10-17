@@ -16,7 +16,8 @@ return [
     'type'            => 'Typ',
     'description'     => 'Beschreibung',
     'amount'          => 'Betrag',
-    'invoice' => 'Rechnung',
+    'invoice'         => 'Rechnung',
+    'paidByCard'      => 'Per Kreditkarte bezahlt',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Ungültiger Betrag.',

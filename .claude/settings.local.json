@@ -19,7 +19,8 @@
       "Bash(TOKEN=\"eyJ2b3JuYW1lIjoiVGVzdCIsIm5hY2huYW1lIjoiVXNlciIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsInRlbGVmb24iOiIwNzkxMjM0NTY3IiwidGltZXN0YW1wIjoxNzYwNDcxODAyfXxlMGExZTIyNzRlZGU2ODViZjZhM2RjNWQ4ZGYwNDU2YzhkZWJlMDJiMzk3YzY3OTdiNjE5YTIxNjIwZDcwZTFl\")",
       "Bash(ddev logs:*)",
       "Bash(for file in app/Views/emails/*.php)",
-      "Bash(do echo \"=== $file ===\")"
+      "Bash(do echo \"=== $file ===\")",
+      "Read(//var/www/html/writable/**)"
     ],
     "deny": [],
     "ask": []

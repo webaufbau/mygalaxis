@@ -59,9 +59,16 @@ class SaferpayService
             "ReturnUrl" => [
                 "Url" => $successUrl
             ],
+            "RegisterAlias" => [
+                "IdGenerator" => "RANDOM"
+            ]
         ];
 
+        log_message('info', 'Saferpay Initialize Request mit RegisterAlias: ' . json_encode($data));
+
         $response = $this->sendRequest($url, $data);
+
+        log_message('info', 'Saferpay Initialize Response: ' . json_encode($response));
 
         if (!isset($response['RedirectUrl']) || !isset($response['Token'])) {
             throw new \Exception("Fehler bei Initialisierung: " . json_encode($response));
@@ -73,15 +80,18 @@ class SaferpayService
         return $response;
     }
 
-    public function authorizeWithAlias(string $aliasId, int $amount, string $refno)
+    public function authorizeWithAlias(string $aliasId, int $amount, string $refno, $user = null)
     {
         $url = $this->config->apiBaseUrl . '/Payment/v1/Transaction/AuthorizeDirect';
 
-        $user = auth()->user();
+        // Wenn kein User übergeben wurde, versuche auth()->user()
+        if ($user === null) {
+            $user = auth()->user();
+        }
 
         $data = [
             "RequestHeader" => [
-                "SpecVersion" => "1.35", // wichtig: 1.35, nicht 1.10
+                "SpecVersion" => "1.35",
                 "CustomerId" => $this->config->customerId,
                 "RequestId" => uniqid(),
                 "RetryIndicator" => 0
@@ -93,28 +103,24 @@ class SaferpayService
                     "CurrencyCode" => "CHF"
                 ],
                 "OrderId" => $refno,
-                "Description" => "Rebilling"
+                "Description" => "Offer Purchase"
             ],
-            "Alias" => [
-                "Id" => $aliasId
+            "PaymentMeans" => [
+                "Alias" => [
+                    "Id" => $aliasId
+                ]
             ],
             "Payer" => [
                 "LanguageCode" => "de-CH",
                 "Email" => $user->getEmail(),
-                //"IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
-                "FirstName" => $user->contact_person ?? '',
-                "LastName" => $user->company_name ?? '',
-                "Phone" => $user->company_phone ?? '',
-                "BillingAddress" => [
-                    "Street" => $user->company_street ?? '',
-                    "Zip" => $user->company_zip ?? '',
-                    "City" => $user->company_city ?? '',
-                    "CountryCode" => 'CH'
-                ],
+                "IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+                "UserAgent" => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
             ]
         ];
 
+        log_message('info', 'Saferpay AuthorizeDirect Request: ' . json_encode($data));
         $response = $this->sendRequest($url, $data);
+        log_message('info', 'Saferpay AuthorizeDirect Response: ' . json_encode($response));
 
         if (!isset($response['Transaction'])) {
             throw new \Exception("Autorisierung fehlgeschlagen: " . json_encode($response));
@@ -160,7 +166,11 @@ class SaferpayService
             "Token" => $token
         ];
 
-        return $this->sendRequest($url, $data);
+        log_message('info', 'Saferpay Assert Request: ' . json_encode($data));
+        $response = $this->sendRequest($url, $data);
+        log_message('info', 'Saferpay Assert Full Response: ' . json_encode($response));
+
+        return $response;
     }
 
     public function storeToken(string $refno, string $token)

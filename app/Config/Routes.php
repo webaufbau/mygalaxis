@@ -148,6 +148,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->match(['GET', 'POST'], 'topup', 'Finance::topup');
         $routes->match(['GET', 'POST'], 'startAddPaymentMethodAjax', 'Finance::startAddPaymentMethodAjax');
         $routes->get('pdf', 'Finance::pdf');
+        $routes->get('userpaymentmethods', 'Finance::userPaymentMethods');
+        $routes->match(['GET', 'POST'], 'userpaymentmethods/add', 'Finance::addUserPaymentMethod');
+        $routes->get('userpaymentmethods/delete/(:num)', 'Finance::deleteUserPaymentMethod/$1');
     });
 
     $routes->get('finance/startAddPaymentMethod', 'Finance::startAddPaymentMethod');

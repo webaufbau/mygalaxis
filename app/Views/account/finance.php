@@ -108,11 +108,17 @@
                     <td><?= date('d.m.Y', strtotime($entry['created_at'])) ?></td>
                     <td><?= esc(lang('Offers.credit_type.'.$entry['type'])) ?></td>
                     <td><?= esc($entry['description']) ?></td>
-                    <td class="text-end <?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
-                        <?= number_format($entry['amount'], 2, ".", "'") ?> CHF
+                    <td class="text-end">
+                        <?php if ($entry['type'] === 'offer_purchase' && $entry['amount'] == 0): ?>
+                            <span class="text-muted"><?= esc(lang('Finance.paidByCard')) ?></span>
+                        <?php else: ?>
+                            <span class="<?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
+                                <?= number_format($entry['amount'], 2, ".", "'") ?> CHF
+                            </span>
+                        <?php endif; ?>
                     </td>
                     <td>
-                        <?php if ($entry['amount'] < 0): ?>
+                        <?php if ($entry['type'] === 'offer_purchase'): ?>
                             <a href="<?= site_url('finance/invoice/'.$entry['id']) ?>"
                                class="btn btn-sm btn-secondary">
                                 <i class="bi bi-file-earmark-pdf"></i> RE<?=strtoupper(siteconfig()->siteCountry);?><?=$entry['id'];?>
