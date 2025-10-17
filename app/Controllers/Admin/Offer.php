@@ -44,8 +44,8 @@ class Offer extends BaseController
         $priceComponents = $calculator->getPriceComponents();
 
         // Rabatt berechnen
-        $createdAt = new \DateTime($offer['created_at']);
-        $now = new \DateTime();
+        $createdAt = \CodeIgniter\I18n\Time::parse($offer['created_at'], 'UTC')->setTimezone(app_timezone());
+        $now = \CodeIgniter\I18n\Time::now(app_timezone());
         $hoursDiff = $createdAt->diff($now)->h + ($createdAt->diff($now)->days * 24);
         $discountedPrice = $calculator->applyDiscount($calculatedPrice, $hoursDiff);
 

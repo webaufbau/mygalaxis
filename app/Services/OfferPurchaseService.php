@@ -177,6 +177,8 @@ class OfferPurchaseService
             'discount_type' => $discountType,
             'payment_method' => $source,
             'status' => 'paid',
+            'company_name' => $user->company_name ?? null,
+            'external_user_id' => $user->id,
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 

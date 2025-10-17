@@ -19,6 +19,8 @@ class OfferPurchaseModel extends Model
         'review',       // neu
         'review',       // neu
         'status',
+        'company_name',     // für Analytics
+        'external_user_id', // für Analytics
         'created_at'
     ];
 

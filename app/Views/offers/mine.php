@@ -28,7 +28,7 @@
                     <div class="flex-grow-1 me-3">
                         <span class="title fw-bold d-block"><?= esc($offer['title']) ?></span>
                         <small class="text-muted">
-                            <?= lang('Offers.purchased_on') ?> <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?>
+                            <?= lang('Offers.purchased_on') ?> <?= \CodeIgniter\I18n\Time::parse($offer['purchased_at'])->setTimezone(app_timezone())->format('d.m.Y') ?>
                         </small>
                         <br>
 

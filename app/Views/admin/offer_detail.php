@@ -73,7 +73,7 @@
 
         <h5>Rabatt-Berechnung:</h5>
         <ul>
-            <li><strong>Angebot erstellt:</strong> <?= date('d.m.Y H:i', strtotime($offer['created_at'])) ?> Uhr</li>
+            <li><strong>Angebot erstellt:</strong> <?= \CodeIgniter\I18n\Time::parse($offer['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?> Uhr</li>
             <li><strong>Alter des Angebots:</strong> <?= floor($hoursDiff / 24) ?> Tage, <?= $hoursDiff % 24 ?> Stunden (<?= $hoursDiff ?> Stunden total)</li>
             <li><strong>Anzahl Verkäufe:</strong> <?= $purchaseCount ?></li>
             <?php if ($purchaseCount < 4): ?>
