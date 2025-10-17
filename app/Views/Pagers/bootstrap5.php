@@ -1,17 +1,24 @@
-<?php $pager->setSurroundCount(10) ?>
+<?php $pager->setSurroundCount(2) ?>
 
-<nav aria-label="Page navigation">
-    <ul class="pagination">
+<nav aria-label="Seitennavigation">
+    <ul class="pagination justify-content-center">
         <?php if ($pager->hasPrevious()) : ?>
             <li class="page-item">
-                <a class="page-link" href="<?= $pager->getFirst() ?>" aria-label="<?= lang('Pager.first') ?>">
-                    <span aria-hidden="true"><?= lang('Pager.first') ?></span>
+                <a class="page-link" href="<?= $pager->getFirst() ?>" aria-label="Erste Seite">
+                    <i class="bi bi-chevron-double-left"></i>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="<?= $pager->getPrevious() ?>" aria-label="<?= lang('Pager.previous') ?>">
-                    <span aria-hidden="true"><?= lang('Pager.previous') ?></span>
+                <a class="page-link" href="<?= $pager->getPrevious() ?>" aria-label="Vorherige Seite">
+                    <i class="bi bi-chevron-left"></i>
                 </a>
+            </li>
+        <?php else: ?>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-double-left"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
             </li>
         <?php endif ?>
 
@@ -25,14 +32,21 @@
 
         <?php if ($pager->hasNext()) : ?>
             <li class="page-item">
-                <a class="page-link" href="<?= $pager->getNext() ?>" aria-label="<?= lang('Pager.next') ?>">
-                    <span aria-hidden="true"><?= lang('Pager.next') ?></span>
+                <a class="page-link" href="<?= $pager->getNext() ?>" aria-label="Nächste Seite">
+                    <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="<?= $pager->getLast() ?>" aria-label="<?= lang('Pager.last') ?>">
-                    <span aria-hidden="true"><?= lang('Pager.last') ?></span>
+                <a class="page-link" href="<?= $pager->getLast() ?>" aria-label="Letzte Seite">
+                    <i class="bi bi-chevron-double-right"></i>
                 </a>
+            </li>
+        <?php else: ?>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-double-right"></i></span>
             </li>
         <?php endif ?>
     </ul>

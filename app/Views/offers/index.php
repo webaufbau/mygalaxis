@@ -62,12 +62,10 @@
                         <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
                         <br>
 
-                        <?php if (!$isPurchased && $status == 'available'): ?>
+                        <?php if ($status == 'available' || $isPurchased): ?>
                             <a data-bs-toggle="collapse" href="#details-<?= $offer['id'] ?>" role="button" aria-expanded="false" aria-controls="details-<?= $offer['id'] ?>" data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
                                 <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i> <?= lang('Offers.showDetails') ?>
                             </a>
-                        <?php else: ?>
-                            <p></p>
                         <?php endif; ?>
                     </div>
 
@@ -107,12 +105,19 @@
 
                 <div class="collapse mt-3" id="details-<?= $offer['id'] ?>">
                     <div class="card card-body bg-light">
-                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => false]) ?>
+                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => $isPurchased]) ?>
                     </div>
                 </div>
             </div>
         <?php endforeach; ?>
     </div>
+
+    <!-- Pagination -->
+    <?php if (isset($pager)): ?>
+        <div class="mt-4">
+            <?= $pager->links('default', 'bootstrap5') ?>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>
 
 <script>

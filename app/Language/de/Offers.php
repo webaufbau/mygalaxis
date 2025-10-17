@@ -8,6 +8,7 @@ return [
     'statusAvailable' => 'Zum Kauf',
     'statusSold' => 'Erledigt',
     'statusOutOfStock' => 'Ausverkauft',
+    'filterPurchased' => 'Gekaufte',
     'filterButton' => 'Filtern',
     'noOffersFound' => 'Keine Angebote gefunden. Bitte',
     'expandFilters' => 'erweitern Sie die Filter',

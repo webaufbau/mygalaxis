@@ -115,41 +115,54 @@ class Offers extends BaseController
         }
 
         $filter = $this->request->getGet('filter');
-        if ($filter && $filter !== 'purchased') {
+
+        // Hole alle gekauften Offer-IDs für diesen User (falls purchased-Filter aktiv)
+        $purchasedOfferIds = [];
+        if ($userId) {
+            $bookingModel = new \App\Models\BookingModel();
+            $bookings = $bookingModel
+                ->where('user_id', $userId)
+                ->where('type', 'offer_purchase')
+                ->findAll();
+            $purchasedOfferIds = array_column($bookings, 'reference_id');
+        }
+
+        // Filter anwenden
+        if ($filter === 'purchased') {
+            // Nur gekaufte Angebote anzeigen
+            if (!empty($purchasedOfferIds)) {
+                $builder->whereIn('id', $purchasedOfferIds);
+            } else {
+                // Keine gekauften Angebote -> leere Ergebnisse
+                $builder->where('1', '0');
+            }
+        } elseif ($filter) {
             $builder->where('status', $filter);
         }
 
-        $offers = $builder->orderBy('created_at', 'DESC')->get()->getResultArray();
+        $builder->orderBy('created_at', 'DESC');
 
-        $purchasedOfferIds = [];
+        // Pagination
+        $perPage = 25;
+        $page = $this->request->getGet('page') ?? 1;
+        $offset = ($page - 1) * $perPage;
 
-        if ($userId) {
-            $offerIds = array_column($offers, 'id');
-            if (!empty($offerIds)) {
-                $bookingModel = new \App\Models\BookingModel();
-                $bookings = $bookingModel
-                    ->where('user_id', $userId)
-                    ->where('type', 'offer_purchase')
-                    ->whereIn('reference_id', $offerIds)
-                    ->findAll();
+        // Get total count for pagination
+        $totalOffers = $builder->countAllResults(false);
 
-                $purchasedOfferIds = array_column($bookings, 'reference_id');
-            }
-        }
+        // Get paginated results
+        $offers = $builder->limit($perPage, $offset)->get()->getResultArray();
 
-        // Filter für gekaufte Angebote
-        if ($filter === 'purchased') {
-            $offers = array_filter($offers, function($offer) use ($purchasedOfferIds) {
-                return in_array($offer['id'], $purchasedOfferIds);
-            });
-        }
-
+        // Create pager manually
+        $pager = \Config\Services::pager();
+        $pager->store('default', $page, $perPage, $totalOffers);
 
         return view('offers/index', [
             'offers' => $offers,
             'purchasedOfferIds' => $purchasedOfferIds,
             'search' => $search,
             'filter' => $filter,
+            'pager' => $pager,
             'title' => 'Angebote'
         ]);
 

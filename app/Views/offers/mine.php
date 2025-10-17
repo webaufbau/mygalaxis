@@ -85,7 +85,7 @@
 
                 <div class="collapse mt-3" id="details-<?= $offer['id'] ?>">
                     <div class="card card-body bg-light">
-                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => $isOwnView ?? false]) ?>
+                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true]) ?>
                     </div>
                 </div>
             </div>
