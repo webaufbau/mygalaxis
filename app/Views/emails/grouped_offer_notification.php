@@ -41,6 +41,7 @@ $excludedFields = [
     'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
     'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
     'vorname', 'nachname', 'names', 'email', 'phone', // Diese werden nur einmal oben angezeigt
+    'skip_kontakt', 'skip_reinigung_umzug', // Interne Felder - nicht für Kunden sichtbar
 ];
 
 foreach ($offers as $index => $offer):

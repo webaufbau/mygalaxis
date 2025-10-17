@@ -56,6 +56,8 @@
             'utm_term',
             'utm_content',
             'referrer',
+            'skip_kontakt',
+            'skip_reinigung_umzug', // Interne Felder - nicht für Kunden sichtbar
         ];
 
         foreach ($filteredFields as $key => $value):

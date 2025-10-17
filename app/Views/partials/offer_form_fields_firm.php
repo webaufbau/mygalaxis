@@ -23,7 +23,8 @@ $technicalKeys = [
     'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
     'additional_service', 'referrer',
     'terms_n_condition', 'terms_and_conditions', 'terms', 'type', 'lang', 'language',
-    'csrf_test_name', 'submit', 'form_token'
+    'csrf_test_name', 'submit', 'form_token',
+    'skip_kontakt', 'skip_reinigung_umzug' // Interne Felder - nicht für Kunden oder Firmen sichtbar
 ];
 
 // Kontaktdaten die NUR ausgeschlossen werden wenn NICHT gekauft
