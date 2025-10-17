@@ -138,6 +138,25 @@ class FluentForm extends BaseController
             'next_url' => $next_url,
         ]);
 
+        // Group-ID erstellen wenn additional_service = "Ja" (mehrere Offerten nacheinander)
+        $groupId = null;
+        if ($additional_service !== 'Nein') {
+            // Prüfe ob bereits eine group_id in Session existiert
+            $groupId = session()->get('group_id');
+            if (!$groupId) {
+                // Erstelle neue group_id für diese Session
+                $groupId = bin2hex(random_bytes(6));
+                session()->set('group_id', $groupId);
+                log_message('debug', '[Handle] Neue group_id erstellt: ' . $groupId);
+            } else {
+                log_message('debug', '[Handle] Existierende group_id aus Session: ' . $groupId);
+            }
+        } else {
+            // Bei "Nein" Session-group_id löschen (letztes Formular)
+            session()->remove('group_id');
+            log_message('debug', '[Handle] group_id aus Session entfernt (additional_service = Nein)');
+        }
+
         log_message('debug', 'Session Daten sichern: ' .  print_r($_SESSION, true));
 
         if($additional_service == 'Nein') {
@@ -174,6 +193,12 @@ class FluentForm extends BaseController
                 $getParams['city'] = $city ?? '';
                 $getParams['erreichbar'] = $erreichbar ?? '';
                 $getParams['skip_kontakt'] = '1';
+
+                // Group-ID mitgeben wenn vorhanden
+                if (!empty($groupId)) {
+                    $getParams['group_id'] = $groupId;
+                    log_message('debug', '[Handle] group_id an WordPress übergeben: ' . $groupId);
+                }
 
                 // Prüfe ob umzug_reinigung = "Reinigung & Umzug" in vorheriger Offerte
                 if (!empty($uuid)) {
@@ -453,39 +478,13 @@ class FluentForm extends BaseController
             log_message('debug', '[Webhook] Session saved - group_uuid: ' . session()->get('group_uuid'));
         }
 
-        // save for groups
-        $groupId = null;
-        if(isset($data['additional_service'])) {
-            log_message('debug', 'matching additional_service|'.$data['additional_service'].'|');
+        // Group-ID aus GET-Parametern oder Session holen
+        $groupId = $data['group_id'] ?? session()->get('group_id') ?? null;
 
-            if ($data['additional_service'] !== 'Nein') {
-                log_message('debug', '[Webhook] Additional Service = Ja - keine Group-Logik');
-
-            } else {
-                log_message('debug', 'matching Nein');
-
-                // Nein
-                $offerModel = new OfferModel();
-                $matchingOffers = $offerModel
-                    ->where('email', $data['email'] ?? session()->get('group_email'))
-                    // ->where('uuid', session()->get('group_uuid'))
-                    ->where('group_id IS NULL') // noch nicht gruppiert
-                    //->where('created_at >=', date('Y-m-d H:i:s', strtotime('-15 minutes')))
-                    ->orderBy('created_at', 'DESC')
-                    ->findAll(1); // nur das letzte holen
-                log_message('debug', 'matching query ' . $offerModel->db->getLastQuery());
-
-                if (!empty($matchingOffers)) {
-                    log_message('debug', 'matching offers ' . print_r($matchingOffers, true));
-
-                    $groupId = bin2hex(random_bytes(6));
-                    log_message('debug', 'matching groupId ' . $groupId);
-
-                    // Update vorheriges Angebot mit group_id
-                    $offerModel->update($matchingOffers[0]['id'], ['group_id' => $groupId]);
-                }
-
-            }
+        if (!empty($groupId)) {
+            log_message('debug', '[Webhook] group_id aus Parametern/Session: ' . $groupId);
+        } else {
+            log_message('debug', '[Webhook] Keine group_id vorhanden - einzelne Offerte');
         }
 
 

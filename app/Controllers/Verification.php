@@ -71,31 +71,43 @@ class Verification extends BaseController {
 
         $method = $isMobile ? 'sms' : 'call';
 
-        // NEUE LOGIK: Prüfe ob Telefonnummer bereits verifiziert wurde
-        $verifiedPhoneModel = new \App\Models\VerifiedPhoneModel();
-        $validityHours = $this->siteConfig->phoneVerificationValidityHours ?? 24;
-        $isAlreadyVerified = $verifiedPhoneModel->isPhoneVerified($phone, null, $validityHours);
+        // NEUE LOGIK: Prüfe ob diese Offerte zu einer Gruppe gehört (mehrere nacheinander)
+        // Nur dann Auto-Verifikation wenn andere Offerten der Gruppe bereits verifiziert sind
+        if (!empty($row->group_id)) {
+            log_message('info', "[Verification] Offerte UUID $uuid gehört zu Gruppe {$row->group_id}");
 
-        if ($isAlreadyVerified) {
-            log_message('info', "Telefonnummer $phone bereits verifiziert (innerhalb {$validityHours}h). Überspringe Verifizierung für UUID $uuid");
+            // Prüfe ob andere Offerten dieser Gruppe bereits verifiziert sind
+            $offerModel = new \App\Models\OfferModel();
+            $verifiedInGroup = $offerModel
+                ->where('group_id', $row->group_id)
+                ->where('verified', 1)
+                ->countAllResults();
 
-            // Markiere Offerte als verifiziert
-            $builder->where('uuid', $uuid)->update([
-                'verified' => 1,
-                'verify_type' => 'auto_verified' // kennzeichnet automatische Verifizierung
-            ]);
+            if ($verifiedInGroup > 0) {
+                log_message('info', "[Verification] Gruppe {$row->group_id} hat bereits $verifiedInGroup verifizierte Offerte(n). Auto-Verifizierung für UUID $uuid");
 
-            // Sende E-Mails direkt (wie nach manueller Verifizierung)
-            $this->handlePostVerification($uuid, $row);
+                // Markiere Offerte als verifiziert
+                $builder->where('uuid', $uuid)->update([
+                    'verified' => 1,
+                    'verify_type' => 'auto_verified_group' // kennzeichnet automatische Verifizierung durch Gruppe
+                ]);
 
-            // Weiterleitung zur Erfolgsseite
-            $nextUrl = session('next_url') ?? $this->siteConfig->thankYouUrl['de'];
-            log_message('info', '[VERIFICATION REDIRECT] Auto-Verifizierung erfolgreich → Erfolgsseite mit next_url: ' . $nextUrl);
-            return view('verification_success', [
-                'siteConfig' => $this->siteConfig,
-                'next_url' => $nextUrl,
-                'auto_verified' => true // Flag für View
-            ]);
+                // Sende E-Mails direkt (wie nach manueller Verifizierung)
+                $this->handlePostVerification($uuid, $row);
+
+                // Weiterleitung zur Erfolgsseite
+                $nextUrl = session('next_url') ?? $this->siteConfig->thankYouUrl['de'];
+                log_message('info', '[VERIFICATION REDIRECT] Auto-Verifizierung (Gruppe) erfolgreich → Erfolgsseite mit next_url: ' . $nextUrl);
+                return view('verification_success', [
+                    'siteConfig' => $this->siteConfig,
+                    'next_url' => $nextUrl,
+                    'auto_verified' => true // Flag für View
+                ]);
+            } else {
+                log_message('info', "[Verification] Gruppe {$row->group_id} hat noch keine verifizierten Offerten. Normale Verifikation erforderlich.");
+            }
+        } else {
+            log_message('info', "[Verification] Offerte UUID $uuid hat keine group_id. Normale Verifikation erforderlich.");
         }
 
         // In Session schreiben
@@ -796,7 +808,7 @@ class Verification extends BaseController {
     }
 
     /**
-     * Verifiziert alle unverifizierte Anfragen mit derselben Telefonnummer
+     * Verifiziert alle unverifizierte Anfragen mit derselben group_id
      * und sendet gruppierte E-Mails (eine E-Mail pro group_id)
      *
      * @param string $phone Normalisierte Telefonnummer
@@ -807,21 +819,22 @@ class Verification extends BaseController {
         $db = \Config\Database::connect();
         $offerModel = new \App\Models\OfferModel();
 
-        // Finde alle unverifizierte Offerten mit derselben Telefonnummer
-        $unverifiedOffers = $offerModel->where('verified', 0)->findAll();
-
         $offersToVerify = [];
         $verifyMethod = session()->get('verify_method') ?? 'sms';
 
-        // Sammle alle Offerten mit der gleichen Telefonnummer
-        foreach ($unverifiedOffers as $offer) {
-            $formFields = json_decode($offer['form_fields'], true);
-            $offerPhone = $formFields['phone'] ?? '';
-            $normalizedOfferPhone = $this->normalizePhone($offerPhone);
+        // Prüfe ob die aktuelle Offerte eine group_id hat
+        if (!empty($currentOffer['group_id'])) {
+            log_message('info', "[verifyAndNotifyGroupedOffers] Aktuelle Offerte gehört zu Gruppe {$currentOffer['group_id']}");
 
-            if ($normalizedOfferPhone === $phone) {
-                $offersToVerify[] = $offer;
-            }
+            // Finde alle unverifizierte Offerten mit derselben group_id
+            $offersToVerify = $offerModel
+                ->where('group_id', $currentOffer['group_id'])
+                ->where('verified', 0)
+                ->findAll();
+
+            log_message('info', "[verifyAndNotifyGroupedOffers] Gefunden: " . count($offersToVerify) . " unverifizierte Offerten in Gruppe {$currentOffer['group_id']}");
+        } else {
+            log_message('info', "[verifyAndNotifyGroupedOffers] Aktuelle Offerte hat keine group_id - nur diese Offerte wird verarbeitet");
         }
 
         // Füge die aktuelle Offerte hinzu (falls nicht schon in der Liste)
