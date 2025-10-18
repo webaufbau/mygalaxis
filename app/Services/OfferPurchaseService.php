@@ -60,7 +60,14 @@ class OfferPurchaseService
 
         // Kreditkartenzahlung fehlgeschlagen
         if ($isAuto) {
-            log_message('warning', "Auto-Charge fehlgeschlagen für User #{$user->id}, Offer #{$offerId}");
+            // Nur einmal pro Tag loggen um Log-Spam zu vermeiden
+            $cacheKey = "auto_charge_failed_{$user->id}_" . date('Y-m-d');
+            $cache = \Config\Services::cache();
+
+            if (!$cache->get($cacheKey)) {
+                log_message('warning', "Auto-Charge fehlgeschlagen für User #{$user->id}, Offer #{$offerId}");
+                $cache->save($cacheKey, true, 86400); // 24 Stunden
+            }
             return false;
         }
 
@@ -94,7 +101,14 @@ class OfferPurchaseService
                 ->first();
 
             if (!$paymentMethod) {
-                log_message('info', "Keine Zahlungsmethode für User #{$user->id} gefunden");
+                // Nur einmal pro Tag loggen um Log-Spam zu vermeiden
+                $cacheKey = "no_payment_method_logged_{$user->id}_" . date('Y-m-d');
+                $cache = \Config\Services::cache();
+
+                if (!$cache->get($cacheKey)) {
+                    log_message('info', "Keine Zahlungsmethode für User #{$user->id} gefunden");
+                    $cache->save($cacheKey, true, 86400); // 24 Stunden
+                }
                 return false;
             }
 
