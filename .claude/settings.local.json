@@ -21,7 +21,13 @@
       "Bash(for file in app/Views/emails/*.php)",
       "Bash(do echo \"=== $file ===\")",
       "Read(//var/www/html/writable/**)",
-      "Read(//private/var/www/html/**)"
+      "Read(//private/var/www/html/**)",
+      "Bash(chmod +x deploy-migration.sh)",
+      "Bash(./deploy-migration.sh)",
+      "Bash(./deploy-migration.sh -y)",
+      "Bash(git add app/Database/Migrations/2025-10-18-000000_AddIsAutoPurchaseToOfferPurchases.php app/Services/OfferPurchaseService.php)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd is_auto_purchase migration and reduce auto-buy log spam\n\n- Add migration for is_auto_purchase field in offer_purchases table\n- Implement cache-based throttling for auto-purchase error logs\n- Logs now only appear once per day per user instead of every 10 minutes\n- Reduces log pollution from users without payment methods\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push)"
     ],
     "deny": [],
     "ask": []
