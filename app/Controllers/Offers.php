@@ -283,7 +283,19 @@ class Offers extends BaseController
         }
 
         if (is_array($result) && !$result['success']) {
-            // Betrag in Session speichern und zur Auflade-Seite weiterleiten
+            // Prüfe ob User bereits eine Zahlungsmethode hat
+            $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
+            $hasPaymentMethod = $paymentMethodModel
+                ->where('user_id', $user->id)
+                ->where('payment_method_code', 'saferpay')
+                ->countAllResults() > 0;
+
+            if (!$hasPaymentMethod) {
+                // Kein Alias vorhanden -> Direktkauf via Saferpay
+                return $this->buyDirect($id, $offer);
+            }
+
+            // Alias vorhanden aber Zahlung fehlgeschlagen -> zur Auflade-Seite
             session()->set('topup_amount', $result['missing_amount']);
             session()->set('topup_reason', 'offer_purchase');
             session()->set('topup_offer_id', $id);
@@ -291,6 +303,124 @@ class Offers extends BaseController
         }
 
         return redirect()->to('/offers')->with('error', lang('Offers.errors.purchase_failed'));
+    }
+
+    /**
+     * Direktkauf via Saferpay (wenn noch keine Zahlungsmethode gespeichert)
+     */
+    private function buyDirect($offerId, $offer)
+    {
+        $user = auth()->user();
+        $price = $offer['discounted_price'] > 0 ? $offer['discounted_price'] : $offer['price'];
+        $amountInCents = (int)($price * 100);
+        $refno = 'offer_direct_' . $offerId . '_' . uniqid();
+
+        $successUrl = site_url("offers/buyDirectSuccess?refno=$refno&offer_id=$offerId");
+        $failUrl    = site_url("offers/buyDirectFail?offer_id=$offerId");
+        $notifyUrl  = site_url("webhook/saferpay/notify");
+
+        try {
+            $saferpay = new \App\Services\SaferpayService();
+            $response = $saferpay->initTransactionWithAlias($successUrl, $failUrl, $amountInCents, $refno, $notifyUrl);
+            return redirect()->to($response['RedirectUrl']);
+        } catch (\Exception $e) {
+            log_message('error', 'Saferpay-Direktkauf fehlgeschlagen: ' . $e->getMessage());
+            return redirect()->to('/offers')->with('error', lang('Offers.errors.payment_failed'));
+        }
+    }
+
+    /**
+     * Success-Handler für Direktkauf via Saferpay
+     */
+    public function buyDirectSuccess()
+    {
+        $refno = $this->request->getGet('refno');
+        $offerId = $this->request->getGet('offer_id');
+        $user = auth()->user();
+
+        if (!$user || !$offerId) {
+            return redirect()->to('/offers')->with('error', lang('Offers.errors.purchase_failed'));
+        }
+
+        // Token holen
+        $saferpay = new \App\Services\SaferpayService();
+        $token = $saferpay->getTokenByRefno($refno);
+
+        if (!$token) {
+            return redirect()->to('/offers')->with('error', lang('Offers.errors.transaction_not_found'));
+        }
+
+        try {
+            // Transaktion prüfen
+            $response = $saferpay->assertTransaction($token);
+
+            if (isset($response['Transaction']) && $response['Transaction']['Status'] === 'AUTHORIZED') {
+                $transactionId = $response['Transaction']['Id'];
+
+                // Capture durchführen
+                $captureResponse = $saferpay->captureTransaction($transactionId);
+                log_message('info', 'Saferpay Direktkauf Capture erfolgreich: ' . json_encode($captureResponse));
+
+                // Alias speichern (wie bei topupSuccess)
+                if (isset($response['RegistrationResult']['Alias']['Id'])) {
+                    $aliasId = $response['RegistrationResult']['Alias']['Id'];
+                    $aliasLifetime = $response['RegistrationResult']['Alias']['Lifetime'] ?? null;
+                    $paymentMeans = $response['PaymentMeans'] ?? [];
+                    $card = $paymentMeans['Card'] ?? [];
+
+                    $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
+                    $paymentMethodModel->save([
+                        'user_id' => $user->id,
+                        'payment_method_code' => 'saferpay',
+                        'provider_data' => json_encode([
+                            'alias_id' => $aliasId,
+                            'alias_lifetime' => $aliasLifetime,
+                            'card_masked' => $paymentMeans['DisplayText'] ?? null,
+                            'card_brand' => $paymentMeans['Brand']['Name'] ?? null,
+                            'card_exp_month' => $card['ExpMonth'] ?? null,
+                            'card_exp_year' => $card['ExpYear'] ?? null,
+                        ]),
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ]);
+
+                    log_message('info', "Alias gespeichert beim Direktkauf für User #{$user->id}");
+                }
+
+                // Kauf finalisieren (via OfferPurchaseService)
+                $offerModel = new \App\Models\OfferModel();
+                $offer = $offerModel->find($offerId);
+
+                if ($offer) {
+                    $price = $offer['discounted_price'] > 0 ? $offer['discounted_price'] : $offer['price'];
+                    $purchaseService = new \App\Services\OfferPurchaseService();
+
+                    // Direkt finalize aufrufen (da Zahlung bereits erfolgt)
+                    $reflection = new \ReflectionClass($purchaseService);
+                    $finalizeMethod = $reflection->getMethod('finalize');
+                    $finalizeMethod->setAccessible(true);
+                    $finalizeMethod->invoke($purchaseService, $user, $offer, $price, 'credit_card', false);
+
+                    return redirect()->to('/offers/' . $offerId)->with('message', lang('Offers.messages.purchase_success'));
+                }
+
+                return redirect()->to('/offers')->with('error', lang('Offers.errors.offer_not_found'));
+            }
+
+            return redirect()->to('/offers')->with('error', lang('Offers.errors.payment_not_authorized'));
+        } catch (\Exception $e) {
+            log_message('error', 'Direktkauf Success-Handler fehlgeschlagen: ' . $e->getMessage());
+            return redirect()->to('/offers')->with('error', lang('Offers.errors.purchase_failed'));
+        }
+    }
+
+    /**
+     * Fail-Handler für Direktkauf via Saferpay
+     */
+    public function buyDirectFail()
+    {
+        $offerId = $this->request->getGet('offer_id');
+        return redirect()->to('/offers/' . $offerId)->with('error', lang('Offers.errors.payment_cancelled'));
     }
 
     /**

@@ -166,6 +166,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('finance/topupSuccess', 'Finance::topupSuccess');
     $routes->get('finance/topupFail', 'Finance::topupFail');
 
+    // Direktkauf via Saferpay (Rückleitungen außerhalb von auth-Filter)
+    $routes->get('offers/buyDirectSuccess', 'Offers::buyDirectSuccess');
+    $routes->get('offers/buyDirectFail', 'Offers::buyDirectFail');
+
 
 
     // Credits / Guthaben
