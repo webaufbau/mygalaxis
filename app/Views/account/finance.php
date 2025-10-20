@@ -11,6 +11,13 @@
     </div>
 </div>
 
+<!-- Info: Direktkauf möglich -->
+<div class="alert alert-info mb-4" style="max-width: 600px;">
+    <i class="bi bi-info-circle"></i>
+    <strong>Hinweis:</strong> Anfragen können auch ohne Guthaben-Aufladung direkt von Ihrer gespeicherten Kreditkarte gekauft werden.
+    Beim ersten Kauf werden Ihre Kartendaten sicher bei Worldline (Saferpay) gespeichert. Danach erfolgen alle weiteren Käufe automatisch.
+</div>
+
 <!-- Guthaben aufladen -->
 <form action="<?= site_url('finance/topup') ?>" method="post" class="mb-5" style="max-width: 350px;">
     <?= csrf_field() ?>
