@@ -218,7 +218,7 @@ class Finance extends BaseController
             $bookingModel->insert([
                 'user_id' => $user->id,
                 'type' => 'topup',
-                'description' => lang('Finance.topupDescription') . " (Auto)",
+                'description' => lang('Finance.topupDescription') . " - " . number_format($amount, 2, '.', '') . " CHF per Kreditkarte bezahlt",
                 'amount' => $amount,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
@@ -271,11 +271,12 @@ class Finance extends BaseController
                 // 3. Guthaben gutschreiben (eigene Logik)
                 // Guthaben gutschreiben
                 $bookingModel = new BookingModel();
+                $amountInChf = $amount / 100;
                 $booking_id = $bookingModel->insert([
                     'user_id' => $user->id,
                     'type' => 'topup',
-                    'description' => lang('Finance.topupDescription') . " " . ($response['Transaction']['AcquirerName'] ?? lang('Finance.onlinePayment')),
-                    'amount' => $amount / 100,
+                    'description' => lang('Finance.topupDescription') . " - " . number_format($amountInChf, 2, '.', '') . " CHF (" . ($response['Transaction']['AcquirerName'] ?? lang('Finance.onlinePayment')) . ")",
+                    'amount' => $amountInChf,
                     'created_at' => date('Y-m-d H:i:s'),
                 ]);
 

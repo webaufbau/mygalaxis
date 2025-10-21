@@ -66,7 +66,7 @@ return [
     'backToTopup'      => 'Retour à la recharge',
 
     // Sonstige
-    'topupDescription' => 'Recharge de solde via',
+    'topupDescription' => 'Solde rechargé',
     'onlinePayment'    => 'Paiement en ligne',
 
     // Page de recharge

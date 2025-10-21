@@ -68,7 +68,7 @@ return [
     'backToTopup'      => 'Zurück zur Aufladung',
 
     // Sonstige
-    'topupDescription' => 'Guthabenaufladung via',
+    'topupDescription' => 'Guthaben aufgeladen',
     'onlinePayment'    => 'Online-Zahlung',
 
     // Auflade-Seite

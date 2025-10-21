@@ -66,7 +66,7 @@ return [
     'backToTopup'      => 'Torna alla ricarica',
 
     // Sonstige
-    'topupDescription' => 'Ricarica saldo via',
+    'topupDescription' => 'Saldo ricaricato',
     'onlinePayment'    => 'Pagamento online',
 
     // Pagina di ricarica

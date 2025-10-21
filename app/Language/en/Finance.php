@@ -66,7 +66,7 @@ return [
     'backToTopup'      => 'Back to top-up',
 
     // Sonstige
-    'topupDescription' => 'Top-up via',
+    'topupDescription' => 'Credit topped up',
     'onlinePayment'    => 'Online payment',
 
     // Top-up Page
