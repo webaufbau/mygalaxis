@@ -48,18 +48,44 @@ class FluentForm extends BaseController
 
             log_message('debug', '[Handle] Session geladen - vorname: ' . ($vorname ?: 'leer') . ', email: ' . ($email ?: 'leer') . ', phone: ' . ($phone ?: 'leer'));
 
-            // Wenn Session leer ist, dann aus Datenbank holen basierend auf UUID
-            if (empty($email) && !empty($uuid)) {
+            // Wenn Session leer ist, dann aus Datenbank holen
+            if (empty($email)) {
                 $offerModel = new OfferModel();
+                $lastOffer = null;
 
-                // WICHTIG: Lade die ERSTE Offerte mit Kontaktdaten, nicht die neueste!
-                $lastOffer = $offerModel
-                    ->where('uuid', $uuid)
-                    ->where('email IS NOT NULL')
-                    ->where('phone IS NOT NULL')
-                    ->orderBy('created_at', 'ASC')
-                    ->first();
+                // METHODE 1: Versuche über group_id zu finden (bei Weiterleitungen)
+                $groupId = $getParams['group_id'] ?? session()->get('group_id') ?? null;
+                if (!empty($groupId)) {
+                    log_message('debug', '[Handle] Suche Kontaktdaten über group_id: ' . $groupId);
+                    $lastOffer = $offerModel
+                        ->where('group_id', $groupId)
+                        ->where('email IS NOT NULL')
+                        ->where('phone IS NOT NULL')
+                        ->orderBy('created_at', 'ASC')
+                        ->first();
 
+                    if ($lastOffer) {
+                        log_message('debug', '[Handle] Kontaktdaten via group_id gefunden (Offer ID: '.$lastOffer['id'].')');
+                    }
+                }
+
+                // METHODE 2: Fallback auf UUID wenn group_id nicht erfolgreich
+                if (!$lastOffer && !empty($uuid)) {
+                    log_message('debug', '[Handle] Suche Kontaktdaten über UUID: ' . $uuid);
+                    // WICHTIG: Lade die ERSTE Offerte mit Kontaktdaten, nicht die neueste!
+                    $lastOffer = $offerModel
+                        ->where('uuid', $uuid)
+                        ->where('email IS NOT NULL')
+                        ->where('phone IS NOT NULL')
+                        ->orderBy('created_at', 'ASC')
+                        ->first();
+
+                    if ($lastOffer) {
+                        log_message('debug', '[Handle] Kontaktdaten via UUID gefunden (Offer ID: '.$lastOffer['id'].')');
+                    }
+                }
+
+                // Verarbeite gefundene Offerte
                 if ($lastOffer) {
                     $formFields = json_decode($lastOffer['form_fields'], true) ?? [];
                     $vorname = $formFields['names'] ?? $formFields['vorname'] ?? '';
@@ -68,7 +94,7 @@ class FluentForm extends BaseController
                     $phone = $formFields['phone'] ?? '';
                     log_message('debug', '[Handle] Kontaktdaten aus Datenbank geladen (UUID: '.$uuid.', Offer ID: '.$lastOffer['id'].'): vorname='.$vorname.', email='.$email);
                 } else {
-                    log_message('warning', '[Handle] Keine Offerte mit Kontaktdaten gefunden für UUID: '.$uuid);
+                    log_message('warning', '[Handle] Keine Offerte mit Kontaktdaten gefunden (group_id: '.($groupId ?? 'keine').', UUID: '.$uuid.')');
                 }
             } else {
                 log_message('debug', 'Kontaktdaten aus Session geladen: vorname='.$vorname.', email='.$email);
@@ -85,16 +111,35 @@ class FluentForm extends BaseController
         log_message('debug', '[Handle] Adressdaten aus Session - Line1: ' . ($addressLine1 ?: 'leer') . ', Zip: ' . ($zip ?: 'leer') . ', City: ' . ($city ?: 'leer'));
 
         // Wenn Session leer ist, auch diese aus Datenbank holen
-        if (empty($addressLine1) && !empty($uuid)) {
+        if (empty($addressLine1)) {
             $offerModel = $offerModel ?? new OfferModel();
 
-            // WICHTIG: Lade die ERSTE Offerte mit Kontaktdaten
-            $lastOffer = $lastOffer ?? $offerModel
-                ->where('uuid', $uuid)
-                ->where('email IS NOT NULL')
-                ->where('phone IS NOT NULL')
-                ->orderBy('created_at', 'ASC')
-                ->first();
+            // Wenn noch keine Offerte geladen wurde, lade sie jetzt
+            if (!isset($lastOffer) || !$lastOffer) {
+                $groupId = $groupId ?? $getParams['group_id'] ?? session()->get('group_id') ?? null;
+
+                // METHODE 1: Über group_id
+                if (!empty($groupId)) {
+                    log_message('debug', '[Handle] Suche Adressdaten über group_id: ' . $groupId);
+                    $lastOffer = $offerModel
+                        ->where('group_id', $groupId)
+                        ->where('email IS NOT NULL')
+                        ->where('phone IS NOT NULL')
+                        ->orderBy('created_at', 'ASC')
+                        ->first();
+                }
+
+                // METHODE 2: Fallback auf UUID
+                if (!$lastOffer && !empty($uuid)) {
+                    log_message('debug', '[Handle] Suche Adressdaten über UUID: ' . $uuid);
+                    $lastOffer = $offerModel
+                        ->where('uuid', $uuid)
+                        ->where('email IS NOT NULL')
+                        ->where('phone IS NOT NULL')
+                        ->orderBy('created_at', 'ASC')
+                        ->first();
+                }
+            }
 
             if ($lastOffer) {
                 $formFields = $formFields ?? json_decode($lastOffer['form_fields'], true) ?? [];
