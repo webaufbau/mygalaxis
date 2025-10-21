@@ -169,12 +169,19 @@ class Finance extends BaseController
                 ->orderBy('created_at', 'DESC')
                 ->first();
 
-            if (!$paymentMethod || empty($paymentMethod['alias_id'])) {
+            if (!$paymentMethod) {
                 log_message('debug', "Keine gespeicherte Zahlungsmethode für User #{$user->id}");
                 return false;
             }
 
-            $aliasId = $paymentMethod['alias_id'];
+            // Hole Alias-ID aus provider_data JSON
+            $providerData = json_decode($paymentMethod['provider_data'], true);
+            $aliasId = $providerData['alias_id'] ?? null;
+
+            if (!$aliasId) {
+                log_message('warning', "Alias-ID fehlt für User #{$user->id}");
+                return false;
+            }
             $amountInCents = (int)($amount * 100);
 
             // Saferpay Service
@@ -182,17 +189,17 @@ class Finance extends BaseController
 
             // Transaction initialisieren MIT Alias (ohne Redirect)
             $refno = 'topup_auto_' . uniqid();
-            $notifyUrl = site_url("webhook/saferpay/notify");
 
-            $transactionResponse = $saferpay->authorizeTransactionWithAlias(
+            $transactionResponse = $saferpay->authorizeWithAlias(
                 $aliasId,
                 $amountInCents,
                 $refno,
-                $notifyUrl
+                $user
             );
 
-            if (!isset($transactionResponse['Transaction']['Id'])) {
-                log_message('error', "Saferpay Authorization fehlgeschlagen für User #{$user->id}");
+            // Prüfe ob erfolgreich
+            if (!isset($transactionResponse['Transaction']) || $transactionResponse['Transaction']['Status'] !== 'AUTHORIZED') {
+                log_message('error', "Saferpay Authorization fehlgeschlagen für User #{$user->id}: " . json_encode($transactionResponse));
                 return false;
             }
 
