@@ -610,8 +610,17 @@ class Verification extends BaseController {
         $languageService = service('language');
         $languageService->setLocale($language);
 
+        // Platform-spezifische Email-Konfiguration laden
+        // Nehme Platform der ersten Offerte (alle sollten gleiche Platform haben bei Weiterleitungen)
+        $firstOffer = $offers[0] ?? null;
+        $platform = $firstOffer['platform'] ?? 'my_offertenschweiz_ch';
+
+        $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        log_message('info', "Gruppierte Email wird versendet von Platform: {$platform}, Email: {$platformSiteConfig->email}, Name: {$platformSiteConfig->name}");
+
         // Admins
-        $adminEmails = [$this->siteConfig->email];
+        $adminEmails = [$platformSiteConfig->email];
         $bccString = implode(',', $adminEmails);
 
         // Formularverfasser
@@ -669,7 +678,7 @@ class Verification extends BaseController {
 
         // Maildienst starten
         $email = \Config\Services::email();
-        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
+        $email->setFrom($platformSiteConfig->email, $platformSiteConfig->name);
         $email->setTo($userEmail);
         $email->setBCC($bccString);
         $email->setSubject(
@@ -724,9 +733,15 @@ class Verification extends BaseController {
         $languageService = service('language');
         $languageService->setLocale($language);
 
+        // Platform-spezifische Email-Konfiguration laden
+        $platform = $offer['platform'] ?? 'my_offertenschweiz_ch';
+
+        $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        log_message('info', "Einzelne Email wird versendet von Platform: {$platform}, Email: {$platformSiteConfig->email}, Name: {$platformSiteConfig->name}");
 
         // Admins
-        $adminEmails = [$this->siteConfig->email];
+        $adminEmails = [$platformSiteConfig->email];
         $bccString = implode(',', $adminEmails);
 
         // Formularverfasser
@@ -780,7 +795,7 @@ class Verification extends BaseController {
         // Maildienst starten
         $email = \Config\Services::email();
 
-        $email->setFrom($this->siteConfig->email, $this->siteConfig->name);
+        $email->setFrom($platformSiteConfig->email, $platformSiteConfig->name);
         $email->setTo($userEmail);            // Kunde als To
         $email->setBCC($bccString);         // Admins als BCC
         $email->setSubject(lang('Email.offer_added_email_subject'));

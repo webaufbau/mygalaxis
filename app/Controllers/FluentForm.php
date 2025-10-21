@@ -578,17 +578,40 @@ class FluentForm extends BaseController
             'country'       => $siteConfig->siteCountry ?? null,
         ], $enriched);
 
-        $host = $_SERVER['HTTP_HOST'] ?? $headers['Host'] ?? 'unknown';
-        $parts = explode('.', $host);
-        $partsCount = count($parts);
-        if ($partsCount > 2) {
-            $domain = $parts[$partsCount - 2] . '.' . $parts[$partsCount - 1];
-        } else {
-            $domain = $host;
+        // Platform ermitteln
+        // Bei group_id: Platform von erster Offerte der Gruppe übernehmen
+        $platform = null;
+        if (!empty($groupId)) {
+            log_message('debug', '[Webhook] Suche Platform von erster Offerte der Gruppe: ' . $groupId);
+            $firstOfferInGroup = $offerModel
+                ->where('group_id', $groupId)
+                ->where('platform IS NOT NULL')
+                ->orderBy('created_at', 'ASC')
+                ->first();
+
+            if ($firstOfferInGroup && !empty($firstOfferInGroup['platform'])) {
+                $platform = $firstOfferInGroup['platform'];
+                log_message('debug', '[Webhook] Platform von erster Offerte übernommen: ' . $platform);
+            }
         }
-        // Platform normalisieren: Domain-Format zu Ordner-Format
-        // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
-        $insertData['platform'] = 'my_' . str_replace(['.', '-'], '_', $domain);
+
+        // Fallback: Platform aus HTTP_HOST ermitteln
+        if (empty($platform)) {
+            $host = $_SERVER['HTTP_HOST'] ?? $headers['Host'] ?? 'unknown';
+            $parts = explode('.', $host);
+            $partsCount = count($parts);
+            if ($partsCount > 2) {
+                $domain = $parts[$partsCount - 2] . '.' . $parts[$partsCount - 1];
+            } else {
+                $domain = $host;
+            }
+            // Platform normalisieren: Domain-Format zu Ordner-Format
+            // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
+            $platform = 'my_' . str_replace(['.', '-'], '_', $domain);
+            log_message('debug', '[Webhook] Platform aus HTTP_HOST ermittelt: ' . $platform);
+        }
+
+        $insertData['platform'] = $platform;
 
         // Combo-Logik nur für move und cleaning (wenn aktiviert in SiteConfig)
         if($siteConfig->enableMoveCleaningCombo && isset($data['additional_service']) && $data['additional_service'] == 'Nein') {

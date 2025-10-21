@@ -16,9 +16,9 @@ echo ""
 # Server Konfiguration
 # Format: "server_name|ssh_user@host|pfad|port|git_pull"
 SERVERS=(
-    "offertenschweiz.ch|famajynu@vsm-devoha.cyon.net|www/my_offertenschweiz_ch|22|no"
-    "offertenheld.de|offerq@dedi108.your-server.de|public_html/my_offertenheld_de|222|no"
-    "offertenheld.at|offerv@dedi1000.your-server.de|public_html/my_offertenheld_at|222|no"
+    "offertenschweiz.ch|famajynu@vsm-devoha.cyon.net|www/my_offertenschweiz_ch|22|yes"
+    "offertenheld.de|offerq@dedi108.your-server.de|public_html/my_offertenheld_de|222|yes"
+    "offertenheld.at|offerv@dedi1000.your-server.de|public_html/my_offertenheld_at|222|yes"
     "verwaltungbox.ch|bajagady@vsm-nysitu.cyon.net|www/verwaltungbox_ch|22|yes"
 )
 
