@@ -50,11 +50,12 @@ class OfferPurchaseService
         }
 
         // Nicht genug Guthaben - versuche direkt von Kreditkarte abzubuchen
-        $charged = $this->tryChargeFromCard($user, $price, $offer['id']);
+        $chargeResult = $this->tryChargeFromCard($user, $price, $offer['id']);
 
-        if ($charged) {
+        if ($chargeResult !== false) {
             // Erfolgreich von Karte abgebucht - Kauf direkt abschließen (ohne Guthaben)
-            $this->finalize($user, $offer, $price, 'credit_card', $isAuto);
+            // $chargeResult enthält die Zahlungsmethode (z.B. "VISA", "TWINT")
+            $this->finalize($user, $offer, $price, 'credit_card', $isAuto, $chargeResult);
             return true;
         }
 
@@ -87,9 +88,9 @@ class OfferPurchaseService
      * @param object $user Der Benutzer
      * @param float $amount Der Betrag der abgebucht werden soll
      * @param int $offerId Die Offer-ID (für Referenz)
-     * @return bool True wenn erfolgreich abgebucht, false sonst
+     * @return string|false Zahlungsmethode (z.B. "VISA", "TWINT") wenn erfolgreich, false sonst
      */
-    protected function tryChargeFromCard($user, float $amount, int $offerId): bool
+    protected function tryChargeFromCard($user, float $amount, int $offerId): string|false
     {
         try {
             // Hole gespeicherte Zahlungsmethode
@@ -143,8 +144,11 @@ class OfferPurchaseService
                 return false;
             }
 
-            log_message('info', "Kreditkartenzahlung erfolgreich: User #{$user->id}, Betrag: {$amount}, Offer: #{$offerId}");
-            return true;
+            // Hole Zahlungsmethode aus Response
+            $paymentMethodName = $response['PaymentMeans']['Brand']['Name'] ?? 'Kreditkarte';
+
+            log_message('info', "Kreditkartenzahlung erfolgreich: User #{$user->id}, Betrag: {$amount}, Offer: #{$offerId}, Methode: {$paymentMethodName}");
+            return $paymentMethodName;
 
         } catch (\Exception $e) {
             log_message('error', "Kreditkartenzahlung Exception für User #{$user->id}: " . $e->getMessage());
@@ -223,7 +227,7 @@ class OfferPurchaseService
         }
     }
 
-    protected function finalize($user, $offer, $price, $source = 'wallet', $isAuto = false)
+    protected function finalize($user, $offer, $price, $source = 'wallet', $isAuto = false, $paymentMethod = null)
     {
         $bookingModel = new BookingModel();
 
@@ -240,10 +244,13 @@ class OfferPurchaseService
             ]);
         } else {
             // Bei Kreditkartenzahlung: Nur eine Info-Buchung mit 0 CHF für Tracking
+            // Verwende die echte Zahlungsmethode falls verfügbar (VISA, TWINT, etc.)
+            $paymentMethodText = $paymentMethod ?? 'Kreditkarte';
+
             $bookingModel->insert([
                 'user_id' => $user->id,
                 'type' => 'offer_purchase',
-                'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'] . " - {$price} CHF per Kreditkarte bezahlt",
+                'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'] . " - {$price} CHF per {$paymentMethodText} bezahlt",
                 'reference_id' => $offer['id'],
                 'amount' => 0, // 0 CHF, da direkt von Karte abgebucht
                 'created_at' => date('Y-m-d H:i:s'),
