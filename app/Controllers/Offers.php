@@ -283,30 +283,16 @@ class Offers extends BaseController
         }
 
         if (is_array($result) && !$result['success']) {
-            // Prüfe ob User bereits eine Zahlungsmethode hat
-            $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
-            $hasPaymentMethod = $paymentMethodModel
-                ->where('user_id', $user->id)
-                ->where('payment_method_code', 'saferpay')
-                ->countAllResults() > 0;
-
-            if (!$hasPaymentMethod) {
-                // Kein Alias vorhanden -> Direktkauf via Saferpay
-                return $this->buyDirect($id, $offer);
-            }
-
-            // Alias vorhanden aber Zahlung fehlgeschlagen -> zur Auflade-Seite
-            session()->set('topup_amount', $result['missing_amount']);
-            session()->set('topup_reason', 'offer_purchase');
-            session()->set('topup_offer_id', $id);
-            return redirect()->to('/finance/topup-page');
+            // Zahlung aus Guthaben oder automatische Kreditkartenzahlung fehlgeschlagen
+            // -> Direktkauf via Saferpay (egal ob bereits eine Zahlungsmethode gespeichert ist)
+            return $this->buyDirect($id, $offer);
         }
 
         return redirect()->to('/offers')->with('error', lang('Offers.errors.purchase_failed'));
     }
 
     /**
-     * Direktkauf via Saferpay (wenn noch keine Zahlungsmethode gespeichert)
+     * Direktkauf via Saferpay (wenn Guthaben nicht ausreicht oder automatische Zahlung fehlschlägt)
      */
     private function buyDirect($offerId, $offer)
     {
