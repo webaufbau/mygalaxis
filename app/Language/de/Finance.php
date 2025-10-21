@@ -22,6 +22,7 @@ return [
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Ungültiger Betrag.',
     'messageCreditAdded' => 'Guthaben erfolgreich aufgeladen.',
+    'messageTopupSuccess' => 'Guthaben erfolgreich aufgeladen.',
     'messageTransactionNotFound' => 'Transaktion nicht gefunden.',
     'messagePaymentSuccess' => 'Zahlung erfolgreich.',
     'messagePaymentMethodSaved' => 'Zahlungsmethode gespeichert.',

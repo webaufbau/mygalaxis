@@ -106,7 +106,20 @@ class Finance extends BaseController
 
     public function topup()
     {
-        $amount = (int)(floatval($this->request->getPost('amount') ?? 20) * 100); // CHF → Rappen
+        $user = auth()->user();
+        $amountInChf = floatval($this->request->getPost('amount') ?? 20);
+        $amountInCents = (int)($amountInChf * 100); // CHF → Rappen
+
+        // Versuche direkt von gespeicherter Kreditkarte abzubuchen
+        $charged = $this->tryChargeTopupFromCard($user, $amountInChf);
+
+        if ($charged) {
+            // Erfolgreich von Karte abgebucht - direkt zur Finance-Seite
+            return redirect()->to('/finance')->with('message', lang('Finance.messageTopupSuccess'));
+        }
+
+        // Keine gespeicherte Zahlungsmethode oder Abbuchung fehlgeschlagen
+        // -> Gehe zu Saferpay für manuelle Zahlung
         $refno = uniqid('topup_');
 
         $successUrl = site_url("finance/topupSuccess?refno=$refno");
@@ -114,7 +127,7 @@ class Finance extends BaseController
         $notifyUrl  = site_url("webhook/saferpay/notify"); // Server-to-Server Benachrichtigung
 
         try {
-            $response = $this->saferpay->initTransactionWithAlias($successUrl, $failUrl, $amount, $refno, $notifyUrl);
+            $response = $this->saferpay->initTransactionWithAlias($successUrl, $failUrl, $amountInCents, $refno, $notifyUrl);
             return redirect()->to($response['RedirectUrl']);
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
@@ -135,6 +148,80 @@ class Finance extends BaseController
 
             return $this->response->setStatusCode(500)
                 ->setBody(lang('Finance.errorPaymentFailed') . ': ' . $errorMessage);
+        }
+    }
+
+    /**
+     * Versucht Guthaben-Aufladung direkt von der Kreditkarte abzubuchen
+     *
+     * @param object $user Der Benutzer
+     * @param float $amount Der Betrag der abgebucht werden soll (in CHF)
+     * @return bool True wenn erfolgreich abgebucht, false sonst
+     */
+    protected function tryChargeTopupFromCard($user, float $amount): bool
+    {
+        try {
+            // Hole gespeicherte Zahlungsmethode
+            $paymentMethodModel = new UserPaymentMethodModel();
+            $paymentMethod = $paymentMethodModel
+                ->where('user_id', $user->id)
+                ->where('payment_method_code', 'saferpay')
+                ->orderBy('created_at', 'DESC')
+                ->first();
+
+            if (!$paymentMethod || empty($paymentMethod['alias_id'])) {
+                log_message('debug', "Keine gespeicherte Zahlungsmethode für User #{$user->id}");
+                return false;
+            }
+
+            $aliasId = $paymentMethod['alias_id'];
+            $amountInCents = (int)($amount * 100);
+
+            // Saferpay Service
+            $saferpay = new SaferpayService();
+
+            // Transaction initialisieren MIT Alias (ohne Redirect)
+            $refno = 'topup_auto_' . uniqid();
+            $notifyUrl = site_url("webhook/saferpay/notify");
+
+            $transactionResponse = $saferpay->authorizeTransactionWithAlias(
+                $aliasId,
+                $amountInCents,
+                $refno,
+                $notifyUrl
+            );
+
+            if (!isset($transactionResponse['Transaction']['Id'])) {
+                log_message('error', "Saferpay Authorization fehlgeschlagen für User #{$user->id}");
+                return false;
+            }
+
+            $transactionId = $transactionResponse['Transaction']['Id'];
+
+            // Transaktion capturen (Geld tatsächlich abbuchen)
+            $captureResponse = $saferpay->captureTransaction($transactionId);
+
+            if (!isset($captureResponse['Status']) || $captureResponse['Status'] !== 'CAPTURED') {
+                log_message('error', "Saferpay Capture fehlgeschlagen für User #{$user->id}, Transaction #{$transactionId}");
+                return false;
+            }
+
+            // Guthaben gutschreiben
+            $bookingModel = new BookingModel();
+            $bookingModel->insert([
+                'user_id' => $user->id,
+                'type' => 'topup',
+                'description' => lang('Finance.topupDescription') . " (Auto)",
+                'amount' => $amount,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            log_message('info', "Guthaben-Aufladung erfolgreich für User #{$user->id}: {$amount} CHF");
+            return true;
+
+        } catch (\Exception $e) {
+            log_message('error', "Guthaben-Aufladung fehlgeschlagen für User #{$user->id}: " . $e->getMessage());
+            return false;
         }
     }
 
