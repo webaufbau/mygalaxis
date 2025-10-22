@@ -18,6 +18,7 @@ class FluentForm extends BaseController
     public function handle()
     {
         $request = service('request');
+        $auditLog = new \App\Models\FormAuditLogModel();
 
         // POST-Daten (meist leer bei Fluent Form Action URLs)
         $vorname = $request->getPost('names');
@@ -35,6 +36,23 @@ class FluentForm extends BaseController
         log_message('debug', '[Handle] Form Submit Handle GET: ' . print_r($getParams, true));
         log_message('debug', '[Handle] UUID: ' . $uuid . ', additional_service: ' . $additional_service);
         log_message('debug', '[Handle] POST vorname: ' . ($vorname ?: 'leer') . ', POST email: ' . ($email ?: 'leer'));
+
+        // AUDIT: Form Handle aufgerufen
+        $auditLog->logEvent(
+            'form_handle_called',
+            'form',
+            "Formular Handle aufgerufen - Weitere Dienstleistung: {$additional_service}",
+            [
+                'uuid' => $uuid,
+                'email' => $email,
+                'phone' => $phone,
+            ],
+            [
+                'get_params' => $getParams,
+                'next_url' => $next_url,
+                'additional_service' => $additional_service,
+            ]
+        );
 
         // Kontaktdaten aus POST-Daten oder Session holen
         if (empty($vorname) || empty($email)) {
@@ -196,11 +214,8 @@ class FluentForm extends BaseController
             } else {
                 log_message('debug', '[Handle] Existierende group_id aus Session: ' . $groupId);
             }
-        } else {
-            // Bei "Nein" Session-group_id löschen (letztes Formular)
-            session()->remove('group_id');
-            log_message('debug', '[Handle] group_id aus Session entfernt (additional_service = Nein)');
         }
+        // WICHTIG: group_id wird NICHT hier gelöscht, sondern erst nach erfolgreicher Verifikation (thank you page)
 
         log_message('debug', 'Session Daten sichern: ' .  print_r($_SESSION, true));
 

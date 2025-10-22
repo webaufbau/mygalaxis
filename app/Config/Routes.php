@@ -291,6 +291,12 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('email-templates/preview/(:num)', 'Admin\EmailTemplates::preview/$1');
     $routes->get('email-templates/shortcode-help', 'Admin\EmailTemplates::shortcodeHelp');
 
+    // Audit Log
+    $routes->get('audit-log', 'Admin\AuditLog::index');
+    $routes->get('audit-log/uuid/(:segment)', 'Admin\AuditLog::byUuid/$1');
+    $routes->get('audit-log/group/(:segment)', 'Admin\AuditLog::byGroupId/$1');
+    $routes->get('audit-log/offer/(:num)', 'Admin\AuditLog::byOfferId/$1');
+
     // Field Display Rules
     $routes->get('field-display-rules', 'Admin\FieldDisplayRules::index');
     $routes->get('field-display-rules/create', 'Admin\FieldDisplayRules::create');

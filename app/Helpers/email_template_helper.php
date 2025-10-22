@@ -48,7 +48,12 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
         log_message('info', "Verwende E-Mail Template ID {$template['id']} für Offer Type: {$offerType}, Language: {$language}");
 
         // Load platform-specific config
-        $platform = $offer['platform'] ?? 'my_offertenschweiz_ch';
+        $platform = $offer['platform'] ?? null;
+        if (empty($platform)) {
+            log_message('error', "E-Mail kann nicht gesendet werden: Platform fehlt für Angebot ID {$offer['id']} (UUID: {$offer['uuid']})");
+            return false;
+        }
+
         $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
 
         // Prepare data for template parser

@@ -19,14 +19,21 @@ class OfferNotificationSender
 
     /**
      * E-Mail an alle passenden Firmen senden
+     * @return int Anzahl versendeter E-Mails
      */
-    public function notifyMatchingUsers(array $offer): void
+    public function notifyMatchingUsers(array $offer): int
     {
         $users = $this->userModel->findAll();
         $today = date('Y-m-d');
+        $sentCount = 0;
 
         foreach ($users as $user) {
             if (!$user->inGroup('user')) continue;
+
+            // Check if user has disabled email notifications
+            if (isset($user->email_notifications_enabled) && !$user->email_notifications_enabled) {
+                continue;
+            }
 
             // Prüfe ob User heute blockiert ist (Agenda/Abwesenheit)
             if ($this->isUserBlockedToday($user->id, $today)) {
@@ -35,8 +42,20 @@ class OfferNotificationSender
 
             if ($this->doesOfferMatchUser($offer, $user)) {
                 $this->sendOfferEmail($user, $offer);
+                $sentCount++;
             }
         }
+
+        // Setze companies_notified_at wenn mindestens eine E-Mail gesendet wurde
+        // ODER wenn keine passenden Firmen gefunden wurden (dann trotzdem als "verarbeitet" markieren)
+        $db = \Config\Database::connect();
+        $db->table('offers')->where('id', $offer['id'])->update([
+            'companies_notified_at' => date('Y-m-d H:i:s')
+        ]);
+
+        log_message('info', "Firmen-Benachrichtigung für Offer ID {$offer['id']}: {$sentCount} E-Mails versendet");
+
+        return $sentCount;
     }
 
     /**
@@ -53,13 +72,22 @@ class OfferNotificationSender
 
     protected function doesOfferMatchUser(array $offer, User $user): bool
     {
+        // Prüfe erst ob User und Offer auf gleicher Platform sind
+        if (!empty($offer['platform']) && !empty($user->platform)) {
+            if ($offer['platform'] !== $user->platform) {
+                return false; // Unterschiedliche Platforms → kein Match
+            }
+        }
+
         $cantons = is_string($user->filter_cantons) ? explode(',', $user->filter_cantons) : [];
         $regions = is_string($user->filter_regions) ? explode(',', $user->filter_regions) : [];
         $categories = is_string($user->filter_categories) ? explode(',', $user->filter_categories) : [];
         $languages = is_string($user->filter_languages) ? json_decode($user->filter_languages, true) ?? [] : [];
         $customZips = is_string($user->filter_custom_zip) ? explode(',', $user->filter_custom_zip) : [];
 
-        $siteConfig = siteconfig();
+        // Verwende Platform der Offerte für siteConfig
+        $offerPlatform = $offer['platform'] ?? null;
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offerPlatform);
         $siteCountry = $siteConfig->siteCountry ?? null;
 
         $relevantZips = $this->zipcodeService->getZipsByCantonAndRegion($cantons, $regions, $siteCountry);

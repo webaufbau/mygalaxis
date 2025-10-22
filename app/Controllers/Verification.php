@@ -98,6 +98,11 @@ class Verification extends BaseController {
                 // Weiterleitung zur Erfolgsseite
                 $nextUrl = session('next_url') ?? $this->siteConfig->thankYouUrl['de'];
                 log_message('info', '[VERIFICATION REDIRECT] Auto-Verifizierung (Gruppe) erfolgreich → Erfolgsseite mit next_url: ' . $nextUrl);
+
+                // Session aufräumen: group_id entfernen (Verifizierung abgeschlossen)
+                session()->remove('group_id');
+                log_message('debug', '[Verification] group_id aus Session entfernt (Auto-Verifizierung abgeschlossen)');
+
                 return view('verification_success', [
                     'siteConfig' => $this->siteConfig,
                     'next_url' => $nextUrl,
@@ -437,6 +442,11 @@ class Verification extends BaseController {
 
                 $nextUrl = session('next_url') ?? $this->siteConfig->thankYouUrl['de'];
                 log_message('info', '[VERIFICATION REDIRECT] Code korrekt: Verifizierung erfolgreich → Erfolgsseite mit next_url: ' . $nextUrl);
+
+                // Session aufräumen: group_id entfernen (Verifizierung abgeschlossen)
+                session()->remove('group_id');
+                log_message('debug', '[Verification] group_id aus Session entfernt (Verifizierung abgeschlossen)');
+
                 return view('verification_success', [
                     'siteConfig' => $this->siteConfig,
                     'next_url' => $nextUrl
@@ -613,7 +623,13 @@ class Verification extends BaseController {
         // Platform-spezifische Email-Konfiguration laden
         // Nehme Platform der ersten Offerte (alle sollten gleiche Platform haben bei Weiterleitungen)
         $firstOffer = $offers[0] ?? null;
-        $platform = $firstOffer['platform'] ?? 'my_offertenschweiz_ch';
+        $platform = $firstOffer['platform'] ?? null;
+
+        if (empty($platform)) {
+            $offerIds = array_column($offers, 'id');
+            log_message('error', "Gruppierte E-Mail kann nicht gesendet werden: Platform fehlt für Offerten IDs: " . implode(', ', $offerIds));
+            return;
+        }
 
         $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
 
@@ -745,7 +761,12 @@ class Verification extends BaseController {
         $languageService->setLocale($language);
 
         // Platform-spezifische Email-Konfiguration laden
-        $platform = $offer['platform'] ?? 'my_offertenschweiz_ch';
+        $platform = $offer['platform'] ?? null;
+
+        if (empty($platform)) {
+            log_message('error', "Bestätigungsmail kann nicht gesendet werden: Platform fehlt für Angebot ID {$offer['id']} (UUID: $uuid)");
+            return;
+        }
 
         $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
 
