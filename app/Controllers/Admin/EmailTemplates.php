@@ -258,7 +258,11 @@ class EmailTemplates extends AdminBase
             ];
         }
 
-        $parser = new \App\Services\EmailTemplateParser();
+        // Get platform from selected offer
+        $platform = $selectedOffer['platform'] ?? null;
+
+        // Create parser with platform
+        $parser = new \App\Services\EmailTemplateParser($platform);
 
         // Parse field_display_template if available
         $fieldDisplayHtml = '';

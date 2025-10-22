@@ -76,7 +76,7 @@
     <?php else: ?>
     <div class="alert alert-warning">
         <i class="bi bi-exclamation-triangle"></i>
-        <strong>Info:</strong> Keine Offerten gefunden<?= $template['offer_type'] !== 'default' ? ' für Typ "' . esc($categoryTypes[$template['offer_type']] ?? $template['offer_type']) . '"' : '' ?>. Es werden Testdaten verwendet.
+        <strong>Info:</strong> No offers found<?= $template['offer_type'] !== 'default' ? ' for type "' . esc($template['offer_type']) . '"' : '' ?>. Using test data.
     </div>
     <?php endif; ?>
 

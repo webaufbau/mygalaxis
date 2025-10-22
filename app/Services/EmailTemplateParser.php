@@ -27,10 +27,12 @@ class EmailTemplateParser
     protected $siteConfig;
     protected array $labels = [];
     protected ?\App\Services\FieldRenderer $fieldRenderer = null;
+    protected ?string $platform = null;
 
-    public function __construct()
+    public function __construct(?string $platform = null)
     {
-        $this->siteConfig = siteconfig();
+        $this->platform = $platform;
+        $this->siteConfig = siteconfig($platform);
         $this->labels = lang('Offers.labels');
         $this->fieldRenderer = new \App\Services\FieldRenderer();
     }
