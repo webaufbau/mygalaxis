@@ -90,6 +90,11 @@ class DiscountOldOffers extends BaseCommand
                         continue;
                     }
 
+                    // Check if user has disabled email notifications
+                    if (isset($user->email_notifications_enabled) && !$user->email_notifications_enabled) {
+                        continue;
+                    }
+
                     // Prüfe ob User heute blockiert ist (Agenda/Abwesenheit)
                     if ($this->isUserBlockedToday($user->id, $today)) {
                         continue;
