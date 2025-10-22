@@ -43,6 +43,9 @@ class Offer extends BaseController
         // Preiskomponenten holen
         $priceComponents = $calculator->getPriceComponents();
 
+        // Maximalpreis-Cap Informationen holen
+        $maxPriceCapInfo = $calculator->getMaxPriceCapInfo();
+
         // Rabatt berechnen
         $createdAt = \CodeIgniter\I18n\Time::parse($offer['created_at'], 'UTC')->setTimezone(app_timezone());
         $now = \CodeIgniter\I18n\Time::now(app_timezone());
@@ -73,6 +76,7 @@ class Offer extends BaseController
         $data['formFieldsCombo'] = $formFieldsCombo;
         $data['priceDebugInfo'] = $priceDebugInfo;
         $data['priceComponents'] = $priceComponents;
+        $data['maxPriceCapInfo'] = $maxPriceCapInfo;
 
         return view('admin/offer_detail', $data);
     }

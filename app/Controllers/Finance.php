@@ -161,6 +161,8 @@ class Finance extends BaseController
     protected function tryChargeTopupFromCard($user, float $amount): bool
     {
         try {
+            log_message('info', "[TOPUP AUTO] Versuche automatische Abbuchung für User #{$user->id}, Betrag: CHF {$amount}");
+
             // Hole gespeicherte Zahlungsmethode
             $paymentMethodModel = new UserPaymentMethodModel();
             $paymentMethod = $paymentMethodModel
@@ -170,16 +172,20 @@ class Finance extends BaseController
                 ->first();
 
             if (!$paymentMethod) {
-                log_message('debug', "Keine gespeicherte Zahlungsmethode für User #{$user->id}");
+                log_message('warning', "[TOPUP AUTO] Keine gespeicherte Zahlungsmethode für User #{$user->id} - Weiterleitung zu Saferpay");
                 return false;
             }
 
             // Hole Alias-ID aus provider_data JSON
             $providerData = json_decode($paymentMethod['provider_data'], true);
             $aliasId = $providerData['alias_id'] ?? null;
+            $cardMasked = $providerData['card_masked'] ?? 'unbekannt';
+            $platform = $paymentMethod['platform'] ?? 'unbekannt';
+
+            log_message('info', "[TOPUP AUTO] Gefundene Zahlungsmethode für User #{$user->id}: Alias {$aliasId}, Karte: {$cardMasked}, Platform: {$platform}");
 
             if (!$aliasId) {
-                log_message('warning', "Alias-ID fehlt für User #{$user->id}");
+                log_message('error', "[TOPUP AUTO] Alias-ID fehlt in provider_data für User #{$user->id} - Weiterleitung zu Saferpay");
                 return false;
             }
             $amountInCents = (int)($amount * 100);
@@ -190,6 +196,8 @@ class Finance extends BaseController
             // Transaction initialisieren MIT Alias (ohne Redirect)
             $refno = 'topup_auto_' . uniqid();
 
+            log_message('info', "[TOPUP AUTO] Starte authorizeWithAlias für User #{$user->id}, Alias: {$aliasId}, Betrag: {$amountInCents} Rappen, Refno: {$refno}");
+
             $transactionResponse = $saferpay->authorizeWithAlias(
                 $aliasId,
                 $amountInCents,
@@ -197,9 +205,11 @@ class Finance extends BaseController
                 $user
             );
 
+            log_message('info', "[TOPUP AUTO] authorizeWithAlias Response für User #{$user->id}: " . json_encode($transactionResponse));
+
             // Prüfe ob erfolgreich
             if (!isset($transactionResponse['Transaction']) || $transactionResponse['Transaction']['Status'] !== 'AUTHORIZED') {
-                log_message('error', "Saferpay Authorization fehlgeschlagen für User #{$user->id}: " . json_encode($transactionResponse));
+                log_message('error', "[TOPUP AUTO] Authorization fehlgeschlagen für User #{$user->id}, Status: " . ($transactionResponse['Transaction']['Status'] ?? 'unbekannt') . " - Weiterleitung zu Saferpay. Full Response: " . json_encode($transactionResponse));
                 return false;
             }
 
@@ -209,10 +219,13 @@ class Finance extends BaseController
             $paymentMethodName = $transactionResponse['PaymentMeans']['Brand']['Name'] ?? 'Kreditkarte';
 
             // Transaktion capturen (Geld tatsächlich abbuchen)
+            log_message('info', "[TOPUP AUTO] Starte Capture für User #{$user->id}, Transaction ID: {$transactionId}");
             $captureResponse = $saferpay->captureTransaction($transactionId);
 
+            log_message('info', "[TOPUP AUTO] Capture Response für User #{$user->id}: " . json_encode($captureResponse));
+
             if (!isset($captureResponse['Status']) || $captureResponse['Status'] !== 'CAPTURED') {
-                log_message('error', "Saferpay Capture fehlgeschlagen für User #{$user->id}, Transaction #{$transactionId}");
+                log_message('error', "[TOPUP AUTO] Capture fehlgeschlagen für User #{$user->id}, Transaction #{$transactionId}, Status: " . ($captureResponse['Status'] ?? 'unbekannt'));
                 return false;
             }
 
@@ -226,11 +239,11 @@ class Finance extends BaseController
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
-            log_message('info', "Guthaben-Aufladung erfolgreich für User #{$user->id}: {$amount} CHF");
+            log_message('info', "[TOPUP AUTO] ✓ Erfolgreich abgeschlossen für User #{$user->id}, Betrag: CHF {$amount}, Alias: {$aliasId}");
             return true;
 
         } catch (\Exception $e) {
-            log_message('error', "Guthaben-Aufladung fehlgeschlagen für User #{$user->id}: " . $e->getMessage());
+            log_message('error', "[TOPUP AUTO] ✗ Exception für User #{$user->id}: " . $e->getMessage() . "\nStacktrace: " . $e->getTraceAsString());
             return false;
         }
     }
@@ -298,30 +311,57 @@ class Finance extends BaseController
                     $aliasId = $response['RegistrationResult']['Alias']['Id'];
                     $aliasLifetime = $response['RegistrationResult']['Alias']['Lifetime'] ?? null;
 
-                    log_message('info', "Saferpay Alias gefunden und wird gespeichert: $aliasId (Lifetime: $aliasLifetime Tage) für User #{$user->id}");
+                    log_message('info', "Saferpay Alias gefunden: $aliasId (Lifetime: $aliasLifetime Tage) für User #{$user->id}");
 
                     try {
-                        // Speichere auch PaymentMeans für bessere Anzeige
-                        $paymentMeans = $response['PaymentMeans'] ?? [];
-                        $card = $paymentMeans['Card'] ?? [];
-
+                        // Prüfe ob dieser Alias bereits gespeichert ist
                         $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
-                        $paymentMethodModel->save([
-                            'user_id' => $user->id,
-                            'payment_method_code' => 'saferpay',
-                            'provider_data' => json_encode([
-                                'alias_id' => $aliasId,
-                                'alias_lifetime' => $aliasLifetime,
-                                'card_masked' => $paymentMeans['DisplayText'] ?? null,
-                                'card_brand' => $paymentMeans['Brand']['Name'] ?? null,
-                                'card_exp_month' => $card['ExpMonth'] ?? null,
-                                'card_exp_year' => $card['ExpYear'] ?? null,
-                            ]),
-                            'created_at' => date('Y-m-d H:i:s'),
-                            'updated_at' => date('Y-m-d H:i:s'),
-                        ]);
+                        $existingAlias = $paymentMethodModel
+                            ->where('user_id', $user->id)
+                            ->where('payment_method_code', 'saferpay')
+                            ->like('provider_data', $aliasId)
+                            ->first();
 
-                        log_message('info', "Saferpay Alias erfolgreich gespeichert für User #{$user->id}");
+                        if ($existingAlias) {
+                            log_message('info', "Saferpay Alias $aliasId bereits gespeichert für User #{$user->id}, wird nicht erneut hinzugefügt");
+                        } else {
+                            // Speichere auch PaymentMeans für bessere Anzeige
+                            $paymentMeans = $response['PaymentMeans'] ?? [];
+                            $card = $paymentMeans['Card'] ?? [];
+
+                            // Hole Platform aus .env oder bestimme sie anhand der Domain
+                            $platform = env('app.platform', null);
+                            if (!$platform) {
+                                // Fallback: Bestimme Platform anhand der aktuellen Domain
+                                $request = service('request');
+                                $host = $request->getServer('HTTP_HOST');
+                                if (str_contains($host, 'offertenheld')) {
+                                    $platform = 'my_offertenheld_ch';
+                                } elseif (str_contains($host, 'renovo24')) {
+                                    $platform = 'my_renovo24_ch';
+                                } else {
+                                    $platform = 'my_offertenschweiz_ch';
+                                }
+                            }
+
+                            $paymentMethodModel->save([
+                                'user_id' => $user->id,
+                                'payment_method_code' => 'saferpay',
+                                'platform' => $platform,
+                                'provider_data' => json_encode([
+                                    'alias_id' => $aliasId,
+                                    'alias_lifetime' => $aliasLifetime,
+                                    'card_masked' => $paymentMeans['DisplayText'] ?? null,
+                                    'card_brand' => $paymentMeans['Brand']['Name'] ?? null,
+                                    'card_exp_month' => $card['ExpMonth'] ?? null,
+                                    'card_exp_year' => $card['ExpYear'] ?? null,
+                                ]),
+                                'created_at' => date('Y-m-d H:i:s'),
+                                'updated_at' => date('Y-m-d H:i:s'),
+                            ]);
+
+                            log_message('info', "Saferpay Alias $aliasId erfolgreich gespeichert für User #{$user->id} auf Platform: {$platform}");
+                        }
                     } catch (\Exception $aliasError) {
                         // Fehler beim Speichern des Alias loggen, aber nicht die gesamte Zahlung abbrechen
                         log_message('error', "Fehler beim Speichern des Saferpay Alias für User #{$user->id}: " . $aliasError->getMessage());

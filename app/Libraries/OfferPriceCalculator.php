@@ -7,6 +7,8 @@ class OfferPriceCalculator
     protected array $discountRules;
     protected array $debugInfo = [];
     protected array $priceComponents = [];
+    protected ?float $maxPriceCap = null;
+    protected ?float $priceBeforeCap = null;
 
     public function __construct()
     {
@@ -39,6 +41,20 @@ class OfferPriceCalculator
     }
 
     /**
+     * Gibt Informationen über den angewendeten Maximalpreis zurück
+     */
+    public function getMaxPriceCapInfo(): ?array
+    {
+        if ($this->maxPriceCap !== null && $this->priceBeforeCap !== null) {
+            return [
+                'cap' => $this->maxPriceCap,
+                'before_cap' => $this->priceBeforeCap
+            ];
+        }
+        return null;
+    }
+
+    /**
      * Berechnet den Basispreis
      */
     public function calculatePrice(string $type, string $originalType, array $fields, array $fields_combo): float
@@ -46,6 +62,8 @@ class OfferPriceCalculator
         $price = 0;
         $this->debugInfo = []; // Debug-Info zurücksetzen
         $this->priceComponents = []; // Preiskomponenten zurücksetzen
+        $this->maxPriceCap = null; // Maximalpreis-Cap zurücksetzen
+        $this->priceBeforeCap = null; // Preis vor Cap zurücksetzen
 
         // Versuche zuerst mit dem Haupttyp
         $category = $this->categoryPrices[$type] ?? null;
@@ -109,6 +127,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -183,6 +203,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -288,6 +310,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -426,6 +450,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -491,6 +517,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -573,6 +601,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -619,6 +649,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -700,6 +732,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -746,6 +780,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 
@@ -792,6 +828,8 @@ class OfferPriceCalculator
                 // --- Maximalpreis berücksichtigen ---
                 $maxPrice = $category['max'] ?? null;
                 if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
                     $price = $maxPrice;
                 }
 

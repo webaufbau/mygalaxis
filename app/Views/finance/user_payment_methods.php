@@ -14,6 +14,7 @@
     <tr>
         <th>Zahlungsmethode</th>
         <th>Details</th>
+        <th>Platform</th>
         <th>Aktion</th>
     </tr>
     </thead>
@@ -57,6 +58,24 @@
                 }
                 ?>
 
+            </td>
+            <td>
+                <?php if (!empty($method['platform'])): ?>
+                    <span class="badge bg-secondary">
+                        <?php
+                        // Zeige schönen Namen für Platform
+                        $platformName = match($method['platform']) {
+                            'my_offertenschweiz_ch' => 'Offertenschweiz',
+                            'my_offertenheld_ch' => 'Offertenheld',
+                            'my_renovo24_ch' => 'Renovo24',
+                            default => $method['platform']
+                        };
+                        echo esc($platformName);
+                        ?>
+                    </span>
+                <?php else: ?>
+                    <small class="text-muted">-</small>
+                <?php endif; ?>
             </td>
             <td>
                 <a href="<?= site_url('finance/userpaymentmethods/delete/'.$method['id']) ?>"

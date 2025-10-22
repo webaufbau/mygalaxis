@@ -47,7 +47,7 @@
 <?php endif; ?>
 
 <!-- Aufklappbare Berechnung -->
-<details style="margin-top: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+<details style="margin-top: 20px; margin-bottom: 30px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
     <summary style="cursor: pointer; font-weight: bold; padding: 10px; background-color: #f5f5f5;">🔍 Berechnungsdetails anzeigen</summary>
     <div style="padding: 10px; margin-top: 10px;">
         <h5>Berechnungsgrundlage:</h5>
@@ -107,10 +107,27 @@
                     <?php endforeach; ?>
                 </tbody>
                 <tfoot>
-                    <tr style="background-color: #e8f4f8; font-weight: bold;">
-                        <td colspan="2" style="padding: 8px; border: 1px solid #ddd; text-align: right;">Summe:</td>
-                        <td style="padding: 8px; text-align: right; border: 1px solid #ddd;"><?= esc($calculatedPrice) ?> CHF</td>
-                    </tr>
+                    <?php if (!empty($maxPriceCapInfo)): ?>
+                        <tr style="background-color: #fff3cd;">
+                            <td colspan="2" style="padding: 8px; border: 1px solid #ddd; text-align: right;">Zwischensumme:</td>
+                            <td style="padding: 8px; text-align: right; border: 1px solid #ddd; text-decoration: line-through; color: #666;"><?= esc($maxPriceCapInfo['before_cap']) ?> CHF</td>
+                        </tr>
+                        <tr style="background-color: #fff3cd;">
+                            <td colspan="2" style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                <strong>⚠️ Maximaler Preis für diese Kategorie:</strong>
+                            </td>
+                            <td style="padding: 8px; text-align: right; border: 1px solid #ddd; font-weight: bold; color: #856404;"><?= esc($maxPriceCapInfo['cap']) ?> CHF</td>
+                        </tr>
+                        <tr style="background-color: #e8f4f8; font-weight: bold;">
+                            <td colspan="2" style="padding: 8px; border: 1px solid #ddd; text-align: right;">Endpreis (nach Cap):</td>
+                            <td style="padding: 8px; text-align: right; border: 1px solid #ddd;"><?= esc($calculatedPrice) ?> CHF</td>
+                        </tr>
+                    <?php else: ?>
+                        <tr style="background-color: #e8f4f8; font-weight: bold;">
+                            <td colspan="2" style="padding: 8px; border: 1px solid #ddd; text-align: right;">Summe:</td>
+                            <td style="padding: 8px; text-align: right; border: 1px solid #ddd;"><?= esc($calculatedPrice) ?> CHF</td>
+                        </tr>
+                    <?php endif; ?>
                 </tfoot>
             </table>
         <?php else: ?>
