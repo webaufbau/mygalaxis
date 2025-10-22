@@ -114,7 +114,7 @@ foreach ($offers as $index => $offer):
                     $urls = is_array($value) ? $value : [$value];
                     foreach ($urls as $url) {
                         if (is_string($url) && preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $url)) {
-                            echo '<br><img src="' . esc($url) . '" alt="Upload" style="max-width: 100%; height: auto; border:1px solid #ccc; padding: 5px;">';
+                            echo '<br><img src="' . esc($url) . '" alt="Upload" style="max-width: 400px; width: 100%; height: auto; border:1px solid #ccc; padding: 5px; display: block; margin: 10px 0;">';
                         } elseif (filter_var($url, FILTER_VALIDATE_URL)) {
                             echo '<br><a href="' . esc($url) . '" target="_blank">' . esc(basename($url)) . '</a>';
                         } else {

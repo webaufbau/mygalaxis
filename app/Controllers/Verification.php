@@ -608,23 +608,33 @@ class Verification extends BaseController {
         }
 
         // Bereite Offerten-Daten auf
+        $formFieldOptions = config('FormFieldOptions');
+        $excludedFieldsAlways = $formFieldOptions->excludedFieldsAlways ?? [];
+
         $offersData = [];
         foreach ($offers as $offer) {
             $offerFields = json_decode($offer['form_fields'], true);
             $type = $offer['type'] ?? 'unknown';
 
-            // Technische Felder rausfiltern
-            $filteredFields = array_filter($offerFields, function ($key) {
-                $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
-                if (in_array($key, $excludeKeys)) return false;
-                if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
-                return true;
-            }, ARRAY_FILTER_USE_KEY);
+            // Technische Felder rausfiltern - verwende die zentrale Config
+            $filteredFields = array_filter($offerFields, function ($key) use ($excludedFieldsAlways) {
+                // Normalisiere den Key (lowercase, trim)
+                $normalizedKey = strtolower(trim($key));
 
-            // Tracking-Felder entfernen
-            $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
-            $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
-                return !in_array($key, $utmKeys);
+                // Prüfe gegen excluded fields (case-insensitive)
+                foreach ($excludedFieldsAlways as $excludedField) {
+                    if (strtolower($excludedField) === $normalizedKey) {
+                        return false;
+                    }
+                }
+
+                // Filtere FluentForm Nonce Felder mit beliebigem Format
+                if (preg_match('/fluentform.*nonce/i', $key)) return false;
+
+                // Filtere "names" Feld (wird für mehrsprachige Feld-Labels verwendet)
+                if ($normalizedKey === 'names') return false;
+
+                return true;
             }, ARRAY_FILTER_USE_KEY);
 
             $offersData[] = [
@@ -750,18 +760,28 @@ class Verification extends BaseController {
             $formular_page = trim($formular_page);
         }
 
-        // Technische Felder rausfiltern
-        $filteredFields = array_filter($data, function ($key) {
-            $excludeKeys = ['__submission', '__fluent_form_embded_post_id', '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method'];
-            if (in_array($key, $excludeKeys)) return false;
-            if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
-            return true;
-        }, ARRAY_FILTER_USE_KEY);
+        // Technische Felder rausfiltern - verwende die zentrale Config
+        $formFieldOptions = config('FormFieldOptions');
+        $excludedFieldsAlways = $formFieldOptions->excludedFieldsAlways ?? [];
 
-        // Tracking-Felder entfernen
-        $utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
-        $filteredFields = array_filter($filteredFields, function ($key) use ($utmKeys) {
-            return !in_array($key, $utmKeys);
+        $filteredFields = array_filter($data, function ($key) use ($excludedFieldsAlways) {
+            // Normalisiere den Key (lowercase, trim)
+            $normalizedKey = strtolower(trim($key));
+
+            // Prüfe gegen excluded fields (case-insensitive)
+            foreach ($excludedFieldsAlways as $excludedField) {
+                if (strtolower($excludedField) === $normalizedKey) {
+                    return false;
+                }
+            }
+
+            // Filtere FluentForm Nonce Felder mit beliebigem Format
+            if (preg_match('/fluentform.*nonce/i', $key)) return false;
+
+            // Filtere "names" Feld (wird für mehrsprachige Feld-Labels verwendet)
+            if ($normalizedKey === 'names') return false;
+
+            return true;
         }, ARRAY_FILTER_USE_KEY);
 
         // Maildaten für View
@@ -869,6 +889,7 @@ class Verification extends BaseController {
         // Für jede Gruppe: Verifiziere alle Offerten und sende eine E-Mail
         foreach ($groupedOffers as $groupKey => $offers) {
             $verifiedOffers = [];
+            $allOfferIds = []; // Alle Offerten-IDs, auch die mit Preis = 0
 
             foreach ($offers as $offer) {
                 // Verifiziere die Offerte in der DB
@@ -877,6 +898,8 @@ class Verification extends BaseController {
                     'verified' => 1,
                     'verify_type' => ($offer['id'] === $currentOffer['id']) ? $verifyMethod : 'auto_verified_same_phone'
                 ]);
+
+                $allOfferIds[] = $offer['id']; // Speichere alle IDs
 
                 // Stelle sicher, dass Preis berechnet ist
                 if (empty($offer['price']) || $offer['price'] <= 0) {
@@ -928,6 +951,16 @@ class Verification extends BaseController {
 
                 $offerIds = array_column($verifiedOffers, 'id');
                 log_message('info', "Gruppierte E-Mail gesendet für Offerten IDs: " . implode(', ', $offerIds));
+            }
+
+            // Setze confirmation_sent_at für ALLE Offerten dieser Gruppe (auch die mit Preis = 0)
+            // Dies ist wichtig, damit auch Offerten die wegen Preis = 0 übersprungen wurden, als "verarbeitet" markiert werden
+            if (!empty($allOfferIds)) {
+                $builder = $db->table('offers');
+                $builder->whereIn('id', $allOfferIds)->update([
+                    'confirmation_sent_at' => date('Y-m-d H:i:s')
+                ]);
+                log_message('info', "confirmation_sent_at gesetzt für alle Offerten in Gruppe $groupKey: IDs " . implode(', ', $allOfferIds));
             }
         }
 
