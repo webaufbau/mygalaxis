@@ -34,6 +34,12 @@ class SendDailyNewOffers extends BaseCommand
                 continue;
             }
 
+            // Check if user has disabled email notifications
+            if (isset($user->email_notifications_enabled) && !$user->email_notifications_enabled) {
+                CLI::write("📧 Benutzer #{$user->id} hat E-Mail-Benachrichtigungen deaktiviert.", 'yellow');
+                continue;
+            }
+
             if ($this->isUserBlockedToday($user->id, $today)) {
                 CLI::write("⏸ Benutzer #{$user->id} blockiert heute.", 'blue');
                 continue;

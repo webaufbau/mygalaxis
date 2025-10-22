@@ -104,6 +104,23 @@ elseif($siteConfig->phoneCheck == 'de') {
         </label>
     </div>
 
+    <div class="form-check form-switch mb-4">
+        <input
+                class="form-check-input"
+                type="checkbox"
+                id="email_notifications_enabled"
+                name="email_notifications_enabled"
+                value="1"
+            <?= old('email_notifications_enabled', $user->email_notifications_enabled ?? 1) ? 'checked' : '' ?>
+        >
+        <label class="form-check-label" for="email_notifications_enabled">
+            Tägliche Update-E-Mails erhalten
+        </label>
+        <small class="form-text text-muted d-block">
+            Deaktivieren Sie diese Option, um keine täglichen Benachrichtigungen über neue Offerten mehr zu erhalten.
+        </small>
+    </div>
+
     <div class="mb-3">
         <label class="form-label"><?= esc(lang('Profile.companyName')) ?> *</label>
         <input type="text" name="company_name" id="company-name" class="form-control" value="<?= esc($user->company_name) ?>" required="required">

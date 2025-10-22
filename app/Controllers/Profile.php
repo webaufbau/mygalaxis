@@ -46,6 +46,7 @@ class Profile extends Controller
         ]);
 
         $data['auto_purchase'] = $this->request->getPost('auto_purchase') ? 1 : 0;
+        $data['email_notifications_enabled'] = $this->request->getPost('email_notifications_enabled') ? 1 : 0;
 
         // --- Passwortänderung prüfen ---
         $newPassword     = $this->request->getPost('new_password');
