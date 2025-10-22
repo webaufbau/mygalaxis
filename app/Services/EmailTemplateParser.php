@@ -15,7 +15,8 @@ use DateTime;
  * - {site_name} - Site name from config
  * - {site_url} - Site URL
  * - [if field:fieldname]...[/if] - Conditional block
- * - [if field:fieldname > value]...[/if] - Conditional with comparison
+ * - [if field:fieldname > value]...[/if] - Conditional with comparison (>, <, >=, <=, ==, !=)
+ * - [if field:fieldname]...[else]...[/if] - Conditional with else block
  * - [show_all exclude="field1,field2"] - Show all fields except excluded ones
  * - [show_field name="fieldname" label="Custom Label"] - Show single field with custom label
  */
@@ -60,8 +61,9 @@ class EmailTemplateParser
     }
 
     /**
-     * Parse conditional blocks [if ...]...[/if]
+     * Parse conditional blocks [if ...]...[else]...[/if]
      * Supports nested conditionals by processing from innermost to outermost
+     * Supports [else] for alternative content
      */
     protected function parseConditionals(string $template): string
     {
@@ -74,13 +76,15 @@ class EmailTemplateParser
 
             // Pattern: [if field:fieldname] or [if field:fieldname > value]
             // Match innermost [if] blocks (those without nested [if] inside)
-            $pattern = '/\[if\s+field:([a-zA-Z0-9_-]+)(?:\s*(>|<|>=|<=|==|!=)\s*([^\]]+))?\]((?:(?!\[if\s+field:).)*?)\[\/if\]/s';
+            // Now also captures optional [else] block
+            $pattern = '/\[if\s+field:([a-zA-Z0-9_-]+)(?:\s*(>|<|>=|<=|==|!=)\s*([^\]]+))?\]((?:(?!\[if\s+field:).)*?)(?:\[else\]((?:(?!\[if\s+field:).)*?))?\[\/if\]/s';
 
             $replaced = preg_replace_callback($pattern, function ($matches) {
                 $fieldName = $matches[1];
                 $operator = $matches[2] ?? null;
                 $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
-                $content = $matches[4];
+                $ifContent = $matches[4];
+                $elseContent = $matches[5] ?? '';
 
                 $fieldValue = $this->getFieldValue($fieldName);
 
@@ -88,17 +92,17 @@ class EmailTemplateParser
                 if (!$operator) {
                     // Field exists and is not empty/nein/false
                     if ($this->isFieldTruthy($fieldValue)) {
-                        return $content;
+                        return $ifContent;
                     }
-                    return '';
+                    return $elseContent;
                 }
 
                 // Comparison check
                 if ($this->compareValues($fieldValue, $operator, $compareValue)) {
-                    return $content;
+                    return $ifContent;
                 }
 
-                return '';
+                return $elseContent;
             }, $template);
 
             // If nothing was replaced, we're done

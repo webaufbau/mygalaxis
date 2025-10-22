@@ -260,6 +260,10 @@ class EmailTemplates extends AdminBase
                     'description' => 'Zeigt Inhalt nur wenn Bedingung erfüllt ist (>, <, >=, <=, ==, !=)',
                 ],
                 [
+                    'code' => '[if field:material == Holz]...[else]...[/if]',
+                    'description' => 'Zeigt ersten Teil wenn Bedingung erfüllt, sonst den [else] Teil',
+                ],
+                [
                     'code' => '[show_field name="qm" label="Quadratmeter"]',
                     'description' => 'Zeigt ein einzelnes Feld mit benutzerdefiniertem Label',
                 ],
