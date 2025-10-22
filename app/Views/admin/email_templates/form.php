@@ -306,6 +306,18 @@ Grosse Wohnung!
                                         </button>
                                     </div>
 
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1 small">[if field:material == Holz]
+Material ist Holz
+[else]
+Anderes Material: {field:andere_material}
+[/if]</code>
+                                        <small>Mit [else] für Alternative</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('[if field:material == Holz]\nMaterial ist Holz\n[else]\nAnderes Material: {field:andere_material}\n[/if]')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
+                                    </div>
+
                                     <div class="alert alert-info p-2 small">
                                         <strong>Operatoren:</strong><br>
                                         &gt; &lt; &gt;= &lt;= == !=
@@ -553,6 +565,10 @@ CodeMirror.defineMode("shortcode-html", function(config, parserConfig) {
         token: function(stream, state) {
             // Match [if field:xyz] or [if field:xyz == value]
             if (stream.match(/\[if\s+field:[a-zA-Z0-9_-]+(?:\s*(?:>|<|>=|<=|==|!=)\s*[^\]]+)?\]/)) {
+                return "shortcode-if-open";
+            }
+            // Match [else]
+            if (stream.match(/\[else\]/)) {
                 return "shortcode-if-open";
             }
             // Match [/if]
