@@ -176,6 +176,11 @@ class EmailTemplateParser
                 return $this->formatDate($value, $filterParam);
             }
 
+            // Handle arrays (multi-select fields, checkboxes, etc.)
+            if (is_array($value)) {
+                return esc(implode(', ', $value));
+            }
+
             return esc($value);
         }, $template);
     }
