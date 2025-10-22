@@ -1,0 +1,710 @@
+<h2>🎉 Wir bestätigen Ihnen Ihre Anfrage/Offerte in Gartenarbeit</h2>
+
+<p>Guten Tag {field:vorname} {field:nachname},</p>
+
+<div class="highlight">
+    <p><strong>Herzlichen Dank für Ihre Anfrage für Gartenarbeiten.</strong></p>
+    <p>In Kürze werden Sie bis zu 3 unverbindliche Offerten von passenden Anbietern aus Ihrer Region erhalten.</p>
+</div>
+
+<p style="background-color: #fff3cd; padding: 12px; border-left: 4px solid #ffc107; margin: 20px 0;">
+    <strong>Hinweis:</strong> Je nach Saison kann es vorkommen, dass die Firmen für den gewünschten Zeitraum schon ausgebucht sind und daher keine Angebote unterbreiten.
+</p>
+
+<h3>So funktioniert's:</h3>
+<ul>
+    <li>Sie erhalten Angebote per E-Mail – oft innerhalb von 1-3 Werktagen</li>
+    <li>Anbieter können Sie kontaktieren, falls Rückfragen bestehen</li>
+    <li>Wir arbeiten mit Partnerplattformen zusammen, daher könnten Sie ev. auch von denen Angebote erhalten</li>
+    <li>Sie entscheiden in Ruhe, welches Angebot am besten passt</li>
+</ul>
+
+<p style="background-color: #e7f3ff; padding: 12px; border-left: 4px solid #007bff; margin: 20px 0;">
+    <strong>Hinweis:</strong> Prüfen Sie auch Ihren Spam/Werbungsordner, falls Sie innerhalb von 1-3 Werktagen keine Angebote erhalten.
+</p>
+
+<h3>Zusammenfassung Ihrer Anfrage</h3>
+<ul>
+<h4>Informationen zum Projekt</h4>
+    [if field:garten_benutzer == Andere]
+        <li><strong>Benutzer:</strong> {field:garten_benutzer_andere}</li>
+    [/if]
+    [if field:garten_benutzer != Andere]
+        <li><strong>Benutzer:</strong> {field:garten_benutzer}</li>
+    [/if]
+
+    [if field:garten_anlegen == Andere]
+        <li><strong>Zu erledigte Arbeiten:</strong> {field:garten_anlegen_andere}</li>
+    [/if]
+    [if field:garten_anlegen != Andere]
+        <li><strong>Zu erledigte Arbeiten:</strong> {field:garten_anlegen}</li>
+    [/if]
+
+<h4>Bodenplatten</h4>
+      [if field:bodenplatten_vorplatz == Ja]
+          [if field:bodenplatten_vorplatz_flaeche == Ja]
+              <li><strong>Bodenplatten - Vorplatz / Garage:</strong> {field:bodenplatten_vorplatz_flaeche_ja} m²</li>
+          [/if]
+          [if field:bodenplatten_vorplatz_flaeche == Nein]
+              <li><strong>Bodenplatten - Vorplatz / Garage:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:bodenplatten_haus == Ja]
+          [if field:bodenplatten_haus_flaeche == Ja]
+              <li><strong>Bodenplatten - Um das Haus</strong> {field:bodenplatten_haus_flaeche_ja} m²</li>
+          [/if]
+          [if field:bodenplatten_haus_flaeche == Nein]
+              <li><strong>Bodenplatten - Um das Haus:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:bodenplatten_sitzplatz == Ja]
+          [if field:bodenplatten_sitzplatz_flaeche == Ja]
+              <li><strong>Bodenplatten - Sitzplatz:</strong> {field:bodenplatten_sitzplatz_flaeche_ja} m²</li>
+          [/if]
+          [if field:bodenplatten_sitzplatz_flaeche == Nein]
+              <li><strong>Bodenplatten - Sitzplatz:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:bodenplatten_gehweg == Ja]
+          [if field:bodenplatten_gehweg_flaeche == Ja]
+              <li><strong>Bodenplatten - Gehweg:</strong> {field:bodenplatten_gehweg_flaeche_ja} m²</li>
+          [/if]
+          [if field:bodenplatten_gehweg_flaeche == Nein]
+              <li><strong>Bodenplatten - Gehweg:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:bodenplatten_balkon == Ja]
+          [if field:bodenplatten_balkon_flaeche == Ja]
+              <li><strong>Bodenplatten - Balkon:</strong> {field:bodenplatten_balkon_flaeche_ja} m²</li>
+          [/if]
+          [if field:bodenplatten_balkon_flaeche == Nein]
+              <li><strong>Bodenplatten - Balkon:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:bodenplatten_andere == Ja]
+              <li><strong>Andere Orte zum verlegen von Bodenplatten:</strong> {field:bodenplatten_andere-definition}</li>
+          [if field:bodenplatten_andere_flaeche == Ja]
+              <li><strong>Bodenplatten - Andere Orte:</strong> {field:bodenplatten_andere_flaeche_ja} m²</li>
+          [/if]
+          [if field:bodenplatten_andere_flaeche == Nein]
+              <li><strong>Bodenplatten - Andere Orte:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:bodenplatten_typ_a_d == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/bodenplatten_typ_a_d.jpg" alt="Typ a-d">
+              <br><strong>Typ a-d:</strong> {field:bodenplatten_typ_a_d_waehlen}
+          </li>
+      [/if]
+
+      [if field:bodenplatten_typ_e_h == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/bodenplatten_typ_e_h.jpg" alt="Typ e-h">
+              <br><strong>Typ e-h:</strong> {field:bodenplatten_typ_e_h_waehlen}
+          </li>
+      [/if]
+
+      [if field:bodenplatten_typ_i_l == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/bodenplatten_typ_i_l.jpg" alt="Typ i-l">
+              <br><strong>Typ i-l:</strong> {field:bodenplatten_typ_i_l_waehlen}
+          </li>
+      [/if]
+
+      [if field:bodenplatten_typ_m_p == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/bodenplatten_typ_m_p.jpg" alt="Typ m-p">
+              <br><strong>Typ m-p:</strong> {field:bodenplatten_typ_m_p_waehlen}
+          </li>
+      [/if]
+
+      [if field:bodenplatten_typ_q_t == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/bodenplatten_typ_q_t.jpg" alt="Typ q-t">
+              <br><strong>Typ q-t:</strong> {field:bodenplatten_typ_q_t_waehlen}
+          </li>
+      [/if]
+      [if field:bodenplatten_typ_andere == Ja]
+              <li><strong>Angaben andere Bodenplatten:</strong> {field:bodenplatten_typ_andere_definition} </li>
+      [/if]
+ <li><strong>Hinweise des Kunden:</strong> {field:bodenbelaege_hinweise_2} </li>
+
+<h4> Kies/Splittarbeiten</h4>
+[if field:kies_vorplatz == Ja]
+          [if field:kies_vorplatz_flaeche == Ja]
+              <li><strong>Kies - Vorplatz / Garage:</strong> {field:kies_vorplatz_flaeche_ja} m²</li>
+          [/if]
+          [if field:kies_vorplatz_flaeche == Nein]
+              <li><strong>Kies - Vorplatz / Garage:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:kies_haus == Ja]
+          [if field:kies_haus_flaeche == Ja]
+              <li><strong>Kies - Um das Haus</strong> {field:kies_haus_flaeche_ja} m²</li>
+          [/if]
+          [if field:kies_haus_flaeche == Nein]
+              <li><strong>Kies - Um das Haus:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:kies_sitzplatz == Ja]
+          [if field:kies_sitzplatz_flaeche == Ja]
+              <li><strong>Kies - Sitzplatz:</strong> {field:kies_sitzplatz_flaeche_ja} m²</li>
+          [/if]
+          [if field:kies_sitzplatz_flaeche == Nein]
+              <li><strong>Kies - Sitzplatz:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:kies_gehweg == Ja]
+          [if field:kies_gehweg_flaeche == Ja]
+              <li><strong>Kies - Gehweg:</strong> {field:kies_gehweg_flaeche_ja} m²</li>
+          [/if]
+          [if field:kies_gehweg_flaeche == Nein]
+              <li><strong>Kies - Gehweg:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:kies_vereinzelnd == Ja]
+          [if field:kies_vereinzelnd_flaeche == Ja]
+              <li><strong>Kies - Vereinzelnde Fläche:</strong> {field:kies_vereinzelnd_flaeche_ja} m²</li>
+          [/if]
+          [if field:kies_vereinzelnd_flaeche == Nein]
+              <li><strong>Kies - Vereinzelnde Fläche:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:kies_andere == Ja]
+              <li><strong>Andere Orte zum verlegen von Kies:</strong> {field:kies_andere-definition}</li>
+          [if field:kies_andere_flaeche == Ja]
+              <li><strong>Kies - Andere Orte:</strong> {field:kies_andere_flaeche_ja} m²</li>
+          [/if]
+          [if field:kies_andere_flaeche == Nein]
+              <li><strong>Kies - Andere Orte:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+      [if field:kies_typ_a_d == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/kies_typ_a_d.jpg" alt="Typ a-d">
+              <br><strong>Typ a-d:</strong> {field:kies_typ_a_d_waehlen}
+          </li>
+      [/if]
+
+      [if field:kies_typ_e_h == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/kies_typ_e_h.jpg" alt="Typ e-h">
+              <br><strong>Typ e-h:</strong> {field:kies_typ_e_h_waehlen}
+          </li>
+      [/if]
+
+      [if field:kies_typ_i_l == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/kies_typ_i_l.jpg" alt="Typ i-l">
+              <br><strong>Typ i-l:</strong> {field:kies_typ_i_l_waehlen}
+          </li>
+      [/if]
+
+      [if field:kies_typ_andere == Ja]
+              <li><strong>Angaben anderes Material:</strong> {field:kies_typ_andere_definition} </li>
+      [/if]
+ <li><strong>Hinweise des Kunden:</strong> {field:kies_hinweis} </li>
+
+<h4>Brüstung / Stützmauer</h4>
+[if field:mauer_deko == Ja]
+          [if field:mauer_deko_masse == Ja]
+              <li><strong>Dekorative Mauer - Länge:</strong> {field:mauer_deko_masse_laenge} m</li>
+<li><strong>Dekorative Mauer - Höhe:</strong> {field:mauer_deko_masse_hoehe} m</li>
+          [/if]
+          [if field:mauer_deko_masse == Nein]
+              <li><strong>Dekorative Mauer:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:mauer_absuetzung == Ja]
+          [if field:mauer_abstuetzung_masse == Ja]
+              <li><strong>Abstützung / Höhenunterschied - Länge:</strong> {field:mauer_abstuetzung_masse_laenge} m</li>
+              <li><strong>Abstützung / Höhenunterschied - Höhe:</strong> {field:mauer_abstuetzung_masse_hoehe} m</li>
+          [/if]
+          [if field:mauer_abstuetzung_masse == Nein]
+              <li><strong>Abstützung / Höhenunterschied:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:mauer_teich == Ja]
+          [if field:mauer_teich_masse == Ja]
+              <li><strong>Teichumfassung - Länge:</strong> {field:mauer_teich_masse_laenge} m</li>
+              <li><strong>Teichumfassung - Höhe:</strong> {field:mauer_teich_masse_hoehe} m</li>
+          [/if]
+          [if field:mauer_teich_masse == Nein]
+              <li><strong>Teichumfassung:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:mauer_seite == Ja]
+          [if field:mauer_seite_masse == Ja]
+              <li><strong>Seitenmauer bei Treppen - Länge:</strong> {field:mauer_seite_masse_laenge} m</li>
+              <li><strong>Seitenmauer bei Treppen - Höhe:</strong> {field:mauer_seite_masse_hoehe} m</li>
+          [/if]
+          [if field:mauer_seite_masse == Nein]
+              <li><strong>Seitenmauer bei Treppen:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:mauer_hang == Ja]
+          [if field:mauer_hang_masse == Ja]
+              <li><strong>Höherer Hang / Statische Mauer - Länge:</strong> {field:mauer_hang_masse_laenge} m</li>
+              <li><strong>Höherer Hang / Statische Mauer - Höhe:</strong> {field:mauer_hang_masse_hoehe} m</li>
+          [/if]
+          [if field:mauer_hang_masse == Nein]
+              <li><strong>Höherer Hang / Statische Mauer:</strong> Fläche unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:mauer_andere == Ja]
+              <li><strong>Andere Mauern zum errichten:</strong> {field:mauer_andere_definition}</li>
+          [if field:mauer_andere_masse == Ja]
+              <li><strong>Andere Mauern - Länge:</strong> {field:mauer_andere_masse_laenge} m</li>
+              <li><strong>Andere Mauern - Höhe:</strong> {field:mauer_andere_masse_hoehe} m</li>
+          [/if]
+          [if field:mauer_andere_masse == Nein]
+              <li><strong>Andere Mauern:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:mauer_typ_a_d == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/mauer_typ_a_d.jpg" alt="Typ a-d">
+              <br><strong>Typ a-d:</strong> {field:mauer_typ_a_d_waehlen}
+          </li>
+      [/if]
+
+      [if field:mauer_typ_e_h == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/mauer_typ_e_h.jpg" alt="Typ e-h">
+              <br><strong>Typ e-h:</strong> {field:mauer_typ_e_h_waehlen}
+          </li>
+      [/if]
+
+      [if field:mauer_typ_i_l == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/mauer_typ_i_l.jpg" alt="Typ i-l">
+              <br><strong>Typ i-l:</strong> {field:mauer_typ_i_l_waehlen}
+          </li>
+      [/if]
+
+      [if field:mauer_typ_m_p == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/mauer_typ_m_p.jpg" alt="Typ m-p">
+              <br><strong>Typ m-p:</strong> {field:mauer_typ_m_p_waehlen}
+          </li>
+      [/if]
+
+      [if field:mauer_typ_andere == Ja]
+              <li><strong>Angaben anderes Material:</strong> {field:mauer_typ_andere_definition} </li>
+      [/if]
+ <li><strong>Hinweise des Kunden:</strong> {field:mauer_hinweis} </li>
+
+
+<h4>Zäune / Geländer</h4>
+[if field:zaun_vor_haus == Ja]
+          [if field:zaun_vor_haus_masse == Ja]
+            <li><strong>Zaun vor dem Haus - Länge:</strong> {field:zaun_vor_haus_masse_laenge} m</li>
+            <li><strong>Zaun vor dem Haus - Höhe:</strong> {field:zaun_vor_haus_masse_hoehe} m</li>
+          [/if]
+          [if field:zaun_vor_haus_masse == Nein]
+              <li><strong>Zaun vor dem Haus:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:zaun_seite_haus == Ja]
+          [if field:zaun_seite_haus_masse == Ja]
+              <li><strong>Zaun von der Seite des Hauses - Länge:</strong> {field:zaun_seite_haus_masse_laenge} m</li>
+              <li><strong>Zaun von der Seite des Hauses - Höhe:</strong> {field:zaun_seite_haus_masse_hoehe} m</li>
+          [/if]
+          [if field:zaun_seite_haus_masse == Nein]
+              <li><strong>Zaun von der Seite des Hauses:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:zaun_alle_haus == Ja]
+          [if field:zaun_alle_haus_masse == Ja]
+              <li><strong>Zaum von allen Seiten - Länge:</strong> {field:zaun_alle_haus_masse_laenge} m</li>
+              <li><strong>Zaum von allen Seiten - Höhe:</strong> {field:zaun_alle_haus_masse_hoehe} m</li>
+          [/if]
+          [if field:zaun_alle_haus_masse == Nein]
+              <li><strong>Zaum von allen Seiten:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:zaun_material == Andere]
+          <li><strong>Material: </strong>{field:zaun_material_andere}</li>
+      [/if]
+      [if field:zaun_material != Andere]
+          <li><strong>Material: </strong>{field:zaun_material}</li>
+      [/if]
+
+      [if field:zaun_a_d == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/zaun_a_d.jpg" alt="Typ a-d">
+              <br><strong>Typ a-d:</strong> {field:zaun_a_d_waehlen}
+          </li>
+      [/if]
+
+      [if field:zaun_e_h == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/zaun_e_h.jpg" alt="Typ e-h">
+              <br><strong>Typ e-h:</strong> {field:zaun_e_h_waehlen}
+          </li>
+      [/if]
+
+      [if field:zaun_i_l == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/zaun_i_l.jpg" alt="Typ i-l">
+              <br><strong>Typ i-l:</strong> {field:zaun_i_l_waehlen}
+          </li>
+      [/if]
+
+      [if field:zaun_m_p == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/zaun_m_p.jpg" alt="Typ m-p">
+              <br><strong>Typ m-p:</strong> {field:zaun_m_p_waehlen}
+          </li>
+      [/if]
+
+    [if field:zaun_q_t == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/zaun_q_t.jpg" alt="Typ q-t">
+              <br><strong>Typ q-t:</strong> {field:zaun_q_t_waehlen}
+          </li>
+      [/if]
+
+      [if field:zaun_andere == Ja]
+              <li><strong>Anderer Zaun:</strong> {field:zaun_andere_definition} </li>
+      [/if]
+ <li><strong>Hinweise des Kunden:</strong> {field:zaun_hinweis} </li>
+
+<h4>Holz /WPC Dielen</h4>
+[if field:diele_haus == Ja]
+          [if field:diele_haus_flaeche == Ja]
+            <li><strong>Dielen um das Haus - Fläche</strong> {field:diele_haus_flaeche_ja} m²</li>
+          [/if]
+          [if field:diele_haus_flaeche == Nein]
+              <li><strong>Dielen um das Haus:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:diele_sitzplatz == Ja]
+          [if field:diele_sitzplatz_flaeche == Ja]
+              <li><strong>Dielen auf dem Sitzplatz - Fläche:</strong> {field:diele_sitzplatz_flaeche_ja} m²</li>
+          [/if]
+          [if field:diele_sitzplatz_flaeche == Nein]
+              <li><strong>Dielen auf dem Sitzplatz:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:diele_gehweg == Ja]
+          [if field:diele_gehweg_flaeche == Ja]
+              <li><strong>Diele auf Gehwege - Fläche:</strong> {field:diele_gehweg_flaeche_ja} m²</li>
+          [/if]
+          [if field:diele_gehweg_flaeche == Nein]
+              <li><strong>Diele auf Gehwege:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+    [if field:diele_pool == Ja]
+          [if field:diele_pool_flaeche == Ja]
+              <li><strong>Diele beim Pool - Fläche:</strong> {field:diele_pool_flaeche_ja} m²</li>
+          [/if]
+          [if field:diele_pool_flaeche == Nein]
+              <li><strong>Diele beim Pool:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+    [if field:diele_balkon == Ja]
+          [if field:diele_balkon_flaeche == Ja]
+              <li><strong>Diele auf Balkon - Fläche:</strong> {field:diele_balkon_flaeche_ja} m²</li>
+          [/if]
+          [if field:diele_balkon_flaeche == Nein]
+              <li><strong>Diele auf Balkon:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:diele_andere == Ja]
+              <li><strong>Andere Orte für Dielen:</strong> {field:diele_andere_definition}</li>
+          [if field:diele_andere_flaeche == Ja]
+              <li><strong>Andere Orte für Dielen - Fläche:</strong> {field:diele_andere_flaeche_ja} m²</li>
+          [/if]
+          [if field:diele_andere_flaeche == Nein]
+              <li><strong>Andere Orte für Dielen:</strong> Masse unbekannt</li>
+          [/if]
+      [/if]
+
+      [if field:diele_material == Andere]
+          <li><strong>Material: </strong>{field:diele_material_andere}</li>
+      [/if]
+      [if field:diele_material != Andere]
+          <li><strong>Material: </strong>{field:diele_material}</li>
+      [/if]
+
+      [if field:diele_a_d == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/diele_a_d.jpg" alt="Typ a-d">
+              <br><strong>Typ a-d:</strong> {field:diele_a_d_waehlen}
+          </li>
+      [/if]
+
+      [if field:diele_e_h == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/diele_e_h.jpg" alt="Typ e-h">
+              <br><strong>Typ e-h:</strong> {field:diele_e_h_waehlen}
+          </li>
+      [/if]
+
+      [if field:diele_i_l == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/diele_i_l.jpg" alt="Typ i-l">
+              <br><strong>Typ i-l:</strong> {field:diele_i_l_waehlen}
+          </li>
+      [/if]
+
+      [if field:diele_m_p == Ja]
+          <li>
+              <img src="https://offertenschweiz.ch/wp-content/uploads/diele_m_p.jpg" alt="Typ m-p">
+              <br><strong>Typ m-p:</strong> {field:diele_m_p_waehlen}
+          </li>
+      [/if]
+
+      [if field:diele_andere1 == Ja]
+              <li><strong>Andere Diele:</strong> {field:diele_andere_definition1} </li>
+      [/if]
+ <li><strong>Hinweise des Kunden:</strong> {field:diele_hinweis} </li>
+
+
+<h4>Teich-Arbeiten</h4>
+[if field:teich_reinigung == Ja]
+    [if field:teich_reinigung_intervall == Wiederkehrend]
+        [if field:teich_reinigung_intervall_ja == Andere]
+            <li><strong>Reinigungsintervall des Teiches</strong> {field:teich_reinigung_intervall_andere}</li>
+        [/if]
+        [if field:teich_reinigung_intervall_ja != Andere]
+            <li><strong>Reinigungsintervall des Teiches: </strong>{field:teich_reinigung_intervall_ja}</li>
+        [/if]
+    [/if]
+    [if field:teich_reinigung_intervall == Einmalig]
+        <li><strong>Reinigungsintervall des Teiches: </strong>{field:teich_reinigung_intervall}</li>
+    [/if]
+    [if field:teich_reinigung_flaeche == Ja]
+        <li><strong>Fläche des Teiches:</strong> {field:teich_reinigung_flaeche_ja} m²</li>
+    [/if]
+    [if field:teich_reinigung_flaeche == Nein]
+        <li><strong>Fläche des Teiches:</strong> Masse unbekannt</li>
+    [/if]
+[/if]
+[if field:teich_neu == Ja]
+    [if field:teich_neu_flaeche == Ja]
+        <li><strong>Fläche des neuen Teichs:</strong> {field:teich_neu_flaeche_ja} m²</li>
+    [/if]
+    [if field:teich_neu_flaeche == Nein]
+        <li><strong>Fläche des neuen Teichs:</strong> Masse unbekannt</li>
+    [/if]
+    [if field:teich_beleuchtung == Ja]
+        <li><strong>Beleuchtung im Wasser:</strong>{field:teich_beleuchtung}</li>
+    [/if]
+    [if field:teich_wasserzufuhr == Ja]
+        <li><strong>Wasserzufuhr zum Teich:</strong>{field:teich_wasserzufuhr}</li>
+    [/if]
+    [if field:teich_wasserpumpe == Ja]
+        <li><strong>Wasserpumpe Umwälzung:</strong>{field:teich_wasserpumpe}</li>
+    [/if]
+[/if]
+
+[if field:teich_a_d == Ja]
+    <li>
+        <img src="https://offertenschweiz.ch/wp-content/uploads/teich_a_d.jpg" alt="Typ a-d">
+        <br><strong>Typ a-d:</strong> {field:teich_a_d_waehlen}
+    </li>
+[/if]
+
+[if field:teich_e_h == Ja]
+    <li>
+        <img src="https://offertenschweiz.ch/wp-content/uploads/teich_e_h.jpg" alt="Typ e-h">
+        <br><strong>Typ e-h:</strong> {field:teich_e_h_waehlen}
+    </li>
+[/if]
+
+[if field:teich_i_l == Ja]
+    <li>
+        <img src="https://offertenschweiz.ch/wp-content/uploads/teich_i_l.jpg" alt="Typ i-l">
+        <br><strong>Typ i-l:</strong> {field:teich_i_l_waehlen}
+    </li>
+[/if]
+
+<li><strong>Hinweise des Kunden:</strong> {field:teich_hinweis} </li>
+
+<h4>Neuer Pool</h4>
+    [if field:pool_form == Andere]
+        <li><strong>Form des Pools:</strong> {field:pool_form_andere}</li>
+    [/if]
+    [if field:pool_form != Andere]
+        <li><strong>Form des Pools:</strong>{field:pool_form}</li>
+    [/if]
+    [if field:pool_form_groesse == Ja]
+        <li><strong>Grösse des Pools - Länge:</strong> {field:pool_form_laenge} m</li>
+        <li><strong>Grösse des Pools - Breite:</strong> {field:pool_form_breite} m</li>
+        <li><strong>Grösse des Pools - Tiefe:</strong> {field:pool_form_tiefe} m</li>
+    [/if]
+    [if field:pool_ausfuehrung == Andere]
+        <li><strong>Ausführung des Pools:</strong> {field:pool_ausfuehrung_andere}</li>
+    [/if]
+    [if field:pool_ausfuehrung != Andere]
+        <li><strong>Ausführung des Pools:</strong>{field:pool_ausfuehrung}</li>
+    [/if]
+    [if field:pool_einbettung == Andere]
+        <li><strong>Einbettung des Pools:</strong> {field:pool_einbettung_andere}</li>
+    [/if]
+    [if field:pool_einbettung != Andere]
+        <li><strong>Einbettung des Pools:</strong>{field:pool_einbettung}</li>
+    [/if]
+
+ <li><strong>Hinweise des Kunden:</strong> {field:pool_hinweis} </li>
+
+<h4>Hecken und Bäume</h4>
+[if field:hecke_schneiden == Ja]
+    [if field:hecke_schneiden_einmalig == Wiederkehrend]
+        [if field:hecke_schneiden_einmalig_nein == Andere]
+            <li><strong>Häufigkeit Hecke schneiden:</strong> {field:hecke_schneiden_einmalig_intervall}</li>
+        [/if]
+        [if field:hecke_schneiden_einmalig_nein != Andere]
+            <li><strong>Häufigkeit Hecke schneiden:</strong>{field:hecke_schneiden_einmalig_nein}</li>
+        [/if]
+    [/if]
+    [if field:hecke_schneiden_einmalig == Einmalig]
+        <li><strong>Häufigkeit Hecke schneiden:</strong>{field:hecke_schneiden_einmalig}</li>
+    [/if]
+    [if field:hecke_schneiden_masse == Ja]
+        <li><strong>Länge der Hecken:</strong> {field:hecke_schneiden_masse_laenge} m</li>
+        <li><strong>Höhe der Hecken:</strong> {field:hecke_schneiden_masse_hoehe} m</li>
+    [/if]
+    [if field:hecke_schneiden_masse == Nein]
+        <li><strong>Hecken - Länge und Höhe:</strong> Masse unbekannt</li>
+    [/if]
+[/if]
+[if field:hecke_pflanzen == Ja]
+    [if field:hecke_pflanzen_masse == Ja]
+        <li><strong>Länge der neu zu pflanzenden Hecken:</strong> {field:hecke_pflanzen_masse_laenge} m</li>
+        <li><strong>Höhe der neu zu pflanzenden Hecken:</strong> {field:hecke_pflanzen_masse_hoehe} m</li>
+    [/if]
+    <li><strong>Hecke Typ:</strong> {field:hecke_auswahl} </li>
+[/if]
+
+[if field:baum_schneiden == Ja]
+    [if field:baum_schneiden_einmalig == Wiederkehrend]
+        [if field:baum_schneiden_einmalig_nein == Andere]
+            <li><strong>Häufigkeit Baum schneiden:</strong> {field:baum_schneiden_einmalig_intervall}</li>
+        [/if]
+        [if field:baum_schneiden_einmalig_nein != Andere]
+            <li><strong>Häufigkeit Baum schneiden:</strong>{field:baum_schneiden_einmalig_nein}</li>
+        [/if]
+    [/if]
+    [if field:baum_schneiden_einmalig == Einmalig]
+        <li><strong>Häufigkeit Baum schneiden:</strong>{field:baum_schneiden_einmalig}</li>
+    [/if]
+    [if field:baum_schneiden_masse == Ja]
+        <li><strong>Baumart:</strong> {field:baum_schneiden_art}</li>
+    [/if]
+    [if field:baum_schneiden_masse == Nein]
+        <li><strong>Baumart:</strong>Nicht bekannt</li>
+    [/if]
+    [if field:baum_schneiden_masse == Unterschiedlich]
+        <li><strong>Baumart:</strong>Unterschiedlich</li>
+    [/if]
+    [if field:baum_entfernen_anzahl == Ja]
+        <li><strong>Anzahl Bäume:</strong> {field:baum_entfernen_anzahl_angeben}</li>
+    [/if]
+    [if field:baum_entfernen_anzahl == Nein]
+        <li><strong>Anzahl Bäume:</strong>Nicht bekannt</li>
+    [/if]
+    [if field:baum_entfernen_anzahl == Unterschiedlich]
+        <li><strong>Anzahl Bäume:</strong>Unterschiedlich</li>
+    [/if]
+[/if]
+
+[if field:baum_pflanzen == Ja]
+    [if field:baum_pflanzen_baumart == Ja]
+        <li><strong>Baumart(en):</strong> {field:baum_pflanzen_baumart_angeben}</li>
+    [/if]
+    [if field:baum_pflanzen_baumart == Nein]
+        <li><strong>Baumart(en):</strong>Nicht bekannt</li>
+    [/if]
+    [if field:baum_pflanzen_baumart == Unterschiedlich]
+        <li><strong>Baumart(en):</strong>Unterschiedlich</li>
+    [/if]
+    [if field:baum_pflanzen_anzahl == Ja]
+        <li><strong>Anzahl Bäume:</strong> {field:baum_pflanzen_anzahl_angeben}</li>
+    [/if]
+    [if field:baum_pflanzen_anzahl == Nein]
+        <li><strong>Anzahl Bäume:</strong>Nicht bekannt</li>
+    [/if]
+    [if field:baum_pflanzen_anzahl == Unterschiedlich]
+        <li><strong>Anzahl Bäume:</strong>Unterschiedlich</li>
+    [/if]
+[/if]
+<li><strong>Hinweise des Kunden:</strong> {field:hecken_baum_hinweis} </li>
+
+<h4>Rasen</h4>
+[if field:rasen_maehen == Ja]
+    [if field:rasen_maehen_einmalig == Wiederkehrend]
+        [if field:rasen_maehen_einmalig_intervall == Andere]
+            <li><strong>Häufigkeit Rasen mähen:</strong> {field:rasen_maehen_einmalig_andere}</li>
+        [/if]
+        [if field:rasen_maehen_einmalig_intervall != Andere]
+            <li><strong>Häufigkeit Rasen mähen:</strong>{field:rasen_maehen_einmalig_intervall}</li>
+        [/if]
+    [/if]
+    [if field:rasen_maehen_einmalig == Einmalig]
+        <li><strong>Häufigkeit Rasen mähen:</strong>{field:rasen_maehen_einmalig}</li>
+    [/if]
+    [if field:rasen_maehen_flaeche == Ja]
+        <li><strong>Fläche des Rasens:</strong> {field:rasen_maehen_flaeche_angabe} m²</li>
+    [/if]
+    [if field:rasen_ausbessern == Ja]
+        <li><strong>Ausbesserung des Rasens:</strong>{field:rasen_ausbessern}</li>
+    [/if]
+[/if]
+[if field:rasen_ersetzen == Ja]
+    [if field:rasen_ersetzen_masse == Ja]
+        <li><strong>Fläche des zu ersetzenden Rasens:</strong>{field:rasen_ersetzen_masse_flaeche}</li>
+    [/if]
+[/if]
+[if field:rasen_rollrasen == Ja]
+    [if field:rasen_rollrasen_flaeche == Ja]
+        <li><strong>Fläche des neuen Rollrasens:</strong>{field:rasen_rollrasen_flaeche_angabe}</li>
+    [/if]
+[/if]
+[if field:rasen_sprinkler == Ja]
+    [if field:rasen_sprinkler_masse == Ja]
+        <li><strong>Fläche des Rasens für automatische Sprinkerlanlage:</strong>{field:rasen_sprinkler_masse_angabe}</li>
+    [/if]
+[/if]
+
+ <li><strong>Hinweise des Kunden:</strong> {field:rasen_hinweis} </li>
+
+ <h4>Details</h4>
+ <li><strong>Sonstiges Hinweise des Kunden:</strong> {field:details_hinweise} </li>
+
+ <h4>Termine</h4>
+<li><strong>Beginn der Arbeiten:</strong> {field:datetime_1} </li>
+<li><strong>Zeitliche Flexibilität:</strong> {field:zeit_flexibel} </li>
+
+
+[show_all exclude="terms_n_condition,terms_and_conditions,terms,type,lang,language,csrf_test_name,submit,form_token,__submission,__fluent_form_embded_post_id,_wp_http_referer,form_name,uuid,service_url,uuid_value,verified_method,utm_source,utm_medium,utm_campaign,utm_term,utm_content,referrer,vorname,nachname,email,phone,skip_kontakt,skip_reinigung_umzug"]
+</ul>
+
+<hr style="margin: 30px 0; border: none; border-top: 2px solid #ddd;">
+
+<h3>Ihre Kontaktdaten</h3>
+<ul>
+    <li><strong>Name:</strong> {field:vorname} {field:nachname}</li>
+    <li><strong>E-Mail:</strong> {field:email}</li>
+    <li><strong>Telefon:</strong> {field:phone}</li>
+</ul>
+
+<p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px;">
+    Diese Nachricht wurde automatisch generiert. Bei Fragen kontaktieren Sie uns über {site_name}.
+</p>

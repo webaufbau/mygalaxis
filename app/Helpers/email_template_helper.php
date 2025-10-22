@@ -80,10 +80,24 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
             'skip_reinigung_umzug',
         ];
 
-        // Parse template
-        $parser = new EmailTemplateParser();
+        // Parse template with platform
+        $parser = new EmailTemplateParser($platform);
         $parsedSubject = $parser->parse($template['subject'], $data, $excludedFields);
-        $parsedBody = $parser->parse($template['body_template'], $data, $excludedFields);
+
+        // Parse field_display_template if available
+        $fieldDisplayHtml = '';
+        if (!empty($template['field_display_template'])) {
+            $fieldDisplayHtml = $parser->parse($template['field_display_template'], $data, $excludedFields);
+        } else {
+            // Fallback: use show_all if no field_display_template
+            $fieldDisplayHtml = $parser->parse('[show_all]', $data, $excludedFields);
+        }
+
+        // Replace {{FIELD_DISPLAY}} in body_template
+        $bodyTemplate = str_replace('{{FIELD_DISPLAY}}', $fieldDisplayHtml, $template['body_template']);
+
+        // Parse the complete body with all shortcodes
+        $parsedBody = $parser->parse($bodyTemplate, $data, $excludedFields);
 
         // Wrap in email layout
         $view = \Config\Services::renderer();

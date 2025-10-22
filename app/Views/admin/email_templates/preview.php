@@ -66,6 +66,7 @@
                 <strong>Gewählte Offerte #<?= $selectedOffer['id'] ?>:</strong>
                 <ul class="mb-0 mt-2 small">
                     <li><strong>Typ:</strong> <?= esc($categoryTypes[$selectedOffer['type']] ?? $selectedOffer['type']) ?></li>
+                    <li><strong>Plattform:</strong> <?= !empty($selectedOffer['platform']) ? esc($selectedOffer['platform']) : 'Keine Angabe' ?></li>
                     <li><strong>Erstellt:</strong> <?= date('d.m.Y H:i', strtotime($selectedOffer['created_at'])) ?></li>
                     <li><strong>Felder:</strong> <?= count(json_decode($selectedOffer['form_fields'] ?? '{}', true)) ?> Felder</li>
                 </ul>
