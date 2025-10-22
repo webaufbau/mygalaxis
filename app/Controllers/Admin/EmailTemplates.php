@@ -27,7 +27,7 @@ class EmailTemplates extends AdminBase
         $templates = $this->templateModel->getAllGrouped();
 
         return view('admin/email_templates/index', [
-            'title' => 'E-Mail Templates',
+            'title' => 'Templates',
             'templates' => $templates,
         ]);
     }
@@ -43,12 +43,13 @@ class EmailTemplates extends AdminBase
 
         if ($this->request->getMethod() === 'POST') {
             $data = [
-                'offer_type'    => $this->request->getPost('offer_type'),
-                'language'      => $this->request->getPost('language'),
-                'subject'       => $this->request->getPost('subject'),
-                'body_template' => $this->request->getPost('body_template'),
-                'is_active'     => $this->request->getPost('is_active') ? 1 : 0,
-                'notes'         => $this->request->getPost('notes'),
+                'offer_type'             => $this->request->getPost('offer_type'),
+                'language'               => $this->request->getPost('language'),
+                'subject'                => $this->request->getPost('subject'),
+                'body_template'          => $this->request->getPost('body_template'),
+                'field_display_template' => $this->request->getPost('field_display_template'),
+                'is_active'              => $this->request->getPost('is_active') ? 1 : 0,
+                'notes'                  => $this->request->getPost('notes'),
             ];
 
             if ($this->templateModel->insert($data)) {
@@ -66,7 +67,7 @@ class EmailTemplates extends AdminBase
         $offerTypes = array_merge(['default' => 'Standard (Fallback)'], $offerTypes);
 
         return view('admin/email_templates/form', [
-            'title'      => 'Neues E-Mail Template',
+            'title'      => 'Neues Template erstellen',
             'template'   => null,
             'action'     => 'create',
             'offerTypes' => $offerTypes,
@@ -90,16 +91,17 @@ class EmailTemplates extends AdminBase
 
         if ($this->request->getMethod() === 'POST') {
             $data = [
-                'offer_type'    => $this->request->getPost('offer_type'),
-                'language'      => $this->request->getPost('language'),
-                'subject'       => $this->request->getPost('subject'),
-                'body_template' => $this->request->getPost('body_template'),
-                'is_active'     => $this->request->getPost('is_active') ? 1 : 0,
-                'notes'         => $this->request->getPost('notes'),
+                'offer_type'             => $this->request->getPost('offer_type'),
+                'language'               => $this->request->getPost('language'),
+                'subject'                => $this->request->getPost('subject'),
+                'body_template'          => $this->request->getPost('body_template'),
+                'field_display_template' => $this->request->getPost('field_display_template'),
+                'is_active'              => $this->request->getPost('is_active') ? 1 : 0,
+                'notes'                  => $this->request->getPost('notes'),
             ];
 
             if ($this->templateModel->update($id, $data)) {
-                return redirect()->to('/admin/email-templates')->with('success', 'Template erfolgreich aktualisiert');
+                return redirect()->to('/admin/email-templates/edit/' . $id)->with('success', 'Template erfolgreich aktualisiert');
             }
 
             return redirect()->back()->withInput()->with('errors', $this->templateModel->errors());
@@ -113,7 +115,7 @@ class EmailTemplates extends AdminBase
         $offerTypes = array_merge(['default' => 'Standard (Fallback)'], $offerTypes);
 
         return view('admin/email_templates/form', [
-            'title'      => 'E-Mail Template bearbeiten',
+            'title'      => 'Template bearbeiten',
             'template'   => $template,
             'action'     => 'edit',
             'offerTypes' => $offerTypes,
@@ -137,12 +139,13 @@ class EmailTemplates extends AdminBase
 
         // Create a copy with modified name
         $copyData = [
-            'offer_type'    => $template['offer_type'],
-            'language'      => $template['language'],
-            'subject'       => $template['subject'] . ' (Kopie)',
-            'body_template' => $template['body_template'],
-            'is_active'     => 0, // Copies are inactive by default
-            'notes'         => $template['notes'] ? $template['notes'] . ' (Kopie)' : 'Kopie',
+            'offer_type'             => $template['offer_type'],
+            'language'               => $template['language'],
+            'subject'                => $template['subject'] . ' (Kopie)',
+            'body_template'          => $template['body_template'],
+            'field_display_template' => $template['field_display_template'] ?? null,
+            'is_active'              => 0, // Copies are inactive by default
+            'notes'                  => $template['notes'] ? $template['notes'] . ' (Kopie)' : 'Kopie',
         ];
 
         if ($this->templateModel->insert($copyData)) {

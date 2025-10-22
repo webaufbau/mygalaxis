@@ -75,7 +75,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="paymentModalLabel">Zahlungsmethode hinzufügen</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schliessen"></button>
             </div>
             <div class="modal-body">
                 <?php echo view('finance/add_user_payment_method'); ?>

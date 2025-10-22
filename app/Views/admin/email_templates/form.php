@@ -27,11 +27,19 @@
             <form method="POST" action="">
                 <?= csrf_field() ?>
 
+                <?php $isNewTemplate = empty($template['id']); ?>
+
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Template Einstellungen</h5>
+                        <button class="btn btn-link text-white text-decoration-none w-100 text-start p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings" aria-expanded="<?= $isNewTemplate ? 'true' : 'false' ?>">
+                            <h5 class="mb-0">
+                                Template Einstellungen
+                                <i class="bi bi-chevron-down float-end"></i>
+                            </h5>
+                        </button>
                     </div>
-                    <div class="card-body">
+                    <div class="collapse <?= $isNewTemplate ? 'show' : '' ?>" id="collapseSettings">
+                        <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="offer_type" class="form-label">
@@ -104,26 +112,75 @@
                                       rows="2"
                                       placeholder="Optionale Notizen für interne Zwecke"><?= old('notes', $template['notes'] ?? '') ?></textarea>
                         </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">E-Mail Inhalt</h5>
+                        <button class="btn btn-link text-white text-decoration-none w-100 text-start p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmailText" aria-expanded="false">
+                            <h5 class="mb-0">
+                                <i class="bi bi-envelope"></i> E-Mail Inhalt (Header/Text)
+                                <i class="bi bi-chevron-down float-end"></i>
+                            </h5>
+                        </button>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="body_template" class="form-label">
-                                <i class="bi bi-code"></i> Template HTML <span class="text-danger">*</span>
-                            </label>
-                            <textarea class="form-control font-monospace"
-                                      id="body_template"
-                                      name="body_template"
-                                      rows="20"
-                                      required><?= old('body_template', $template['body_template'] ?? '') ?></textarea>
-                            <small class="form-text text-muted">
-                                HTML-Code mit Shortcodes. Siehe Hilfe rechts für verfügbare Shortcodes.
-                            </small>
+                    <div class="collapse" id="collapseEmailText">
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Hinweis:</strong> Dies ist der statische Email-Text (Begrüßung, Erklärungen, etc.).
+                                <br>
+                                <strong>Wichtig:</strong> Verwende <code>{{FIELD_DISPLAY}}</code> um die Feld-Darstellung einzubinden.
+                            </div>
+                            <div class="mb-3">
+                                <label for="body_template" class="form-label">
+                                    <i class="bi bi-code"></i> Email-Text HTML <span class="text-danger">*</span>
+                                </label>
+                                <textarea id="body_template"
+                                          name="body_template"
+                                          required><?= old('body_template', $template['body_template'] ?? '') ?></textarea>
+                                <small class="form-text text-muted">
+                                    HTML-Code mit Shortcodes wie {field:vorname}, {site_name}, <strong>{{FIELD_DISPLAY}}</strong>, etc.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <button class="btn btn-link text-white text-decoration-none w-100 text-start p-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFieldDisplay" aria-expanded="<?= $isNewTemplate ? 'false' : 'true' ?>">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-ul"></i> Feld-Darstellung (wiederverwendbar)
+                                <i class="bi bi-chevron-down float-end"></i>
+                            </h5>
+                        </button>
+                    </div>
+                    <div class="collapse <?= $isNewTemplate ? '' : 'show' ?>" id="collapseFieldDisplay">
+                        <div class="card-body">
+                            <div class="alert alert-success">
+                                <i class="bi bi-lightbulb"></i>
+                                <strong>Wiederverwendbar:</strong> Dieses Template wird verwendet für:
+                                <ul class="mb-0 mt-2">
+                                    <li>✅ E-Mail Template (via <code>{{FIELD_DISPLAY}}</code>)</li>
+                                    <li>✅ Firmen Details Backend (Offerte-Ansicht)</li>
+                                </ul>
+                            </div>
+                            <div class="mb-3">
+                                <label for="field_display_template" class="form-label">
+                                    <i class="bi bi-code-square"></i> Feld-Darstellung Template
+                                </label>
+                                <textarea id="field_display_template"
+                                          name="field_display_template"><?= old('field_display_template', $template['field_display_template'] ?? '') ?></textarea>
+                                <small class="form-text text-muted">
+                                    HTML mit Bedingungen wie [if field:xyz] und Bildern. Siehe Beispiel rechts.
+                                </small>
+                            </div>
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <strong>Tipp:</strong> Wenn leer gelassen, wird automatisch <code>[show_all]</code> verwendet.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -241,10 +298,10 @@ Ihr Umzugstermin: {field:umzugsdatum}
 
                                     <div class="shortcode-item mb-3">
                                         <code class="d-block bg-light p-2 rounded mb-1 small">[if field:anzahl_zimmer > 3]
-Große Wohnung!
+Grosse Wohnung!
 [/if]</code>
                                         <small>Zeigt nur wenn Bedingung erfüllt</small>
-                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('[if field:anzahl_zimmer > 3]\nGroße Wohnung!\n[/if]')">
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('[if field:anzahl_zimmer > 3]\nGrosse Wohnung!\n[/if]')">
                                             <i class="bi bi-clipboard"></i> Einfügen
                                         </button>
                                     </div>
@@ -271,6 +328,12 @@ Große Wohnung!
                                         Wenn ein Feld im Template verwendet wird, aber im aktuellen Formular nicht existiert oder leer ist, wird es automatisch übersprungen und nicht angezeigt.
                                     </div>
 
+                                    <div class="alert alert-info p-2 small mb-3">
+                                        <i class="bi bi-info-circle"></i> <strong>Conditional Groups:</strong><br>
+                                        Bedingte Felder (z.B. Bodenplatten Vorplatz) werden automatisch intelligent dargestellt.
+                                        Die Regeln sind in <code>app/Config/FieldDisplayRules.php</code> definiert.
+                                    </div>
+
                                     <div class="shortcode-item mb-3">
                                         <code class="d-block bg-light p-2 rounded mb-1 small">[show_field name="qm" label="Quadratmeter"]</code>
                                         <small>Zeigt einzelnes Feld mit Label (nur wenn vorhanden)</small>
@@ -281,7 +344,7 @@ Große Wohnung!
 
                                     <div class="shortcode-item mb-3">
                                         <code class="d-block bg-light p-2 rounded mb-1 small">[show_all exclude="email,phone,terms"]</code>
-                                        <small>Zeigt alle Felder außer ausgeschlossene (nur nicht-leere)</small>
+                                        <small>Zeigt alle Felder inkl. conditional groups (nur nicht-leere)</small>
                                         <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('[show_all exclude=&quot;email,phone,terms&quot;]')">
                                             <i class="bi bi-clipboard"></i> Einfügen
                                         </button>
@@ -290,18 +353,44 @@ Große Wohnung!
                             </div>
                         </div>
 
+                        <!-- Feld-Darstellung Beispiel -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFieldDisplay">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFieldDisplay">
+                                    Feld-Darstellung Beispiel
+                                </button>
+                            </h2>
+                            <div id="collapseFieldDisplay" class="accordion-collapse collapse" data-bs-parent="#shortcodeAccordion">
+                                <div class="accordion-body">
+                                    <p class="small"><strong>Für "Feld-Darstellung":</strong></p>
+                                    <pre class="bg-light p-2 rounded small" style="font-size: 10px; max-height: 300px; overflow-y: auto;"><code>&lt;ul&gt;
+[if field:bodenplatten_typ_a_d == Ja]
+  &lt;li&gt;
+    &lt;img src="https://...bodenplatten_typ_a_d.jpg"&gt;
+    &lt;br&gt;&lt;strong&gt;Typ a-d:&lt;/strong&gt;
+    {field:bodenplatten_typ_a_d_waehlen}
+  &lt;/li&gt;
+[/if]
+
+[if field:cleaning_type]
+  &lt;li&gt;&lt;strong&gt;Reinigung:&lt;/strong&gt;
+  {field:cleaning_type}&lt;/li&gt;
+[/if]
+&lt;/ul&gt;</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Beispiel Template -->
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingExample">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample">
-                                    Vollständiges Beispiel
+                                    Email-Text Beispiel
                                 </button>
                             </h2>
                             <div id="collapseExample" class="accordion-collapse collapse" data-bs-parent="#shortcodeAccordion">
                                 <div class="accordion-body">
-                                    <button class="btn btn-success btn-sm w-100 mb-2" onclick="loadExampleTemplate()">
-                                        <i class="bi bi-download"></i> Beispiel laden
-                                    </button>
+                                    <p class="small"><strong>Für "Email-Text":</strong></p>
                                     <pre class="bg-light p-2 rounded small" style="font-size: 10px; max-height: 300px; overflow-y: auto;"><code>&lt;h2&gt;Vielen Dank!&lt;/h2&gt;
 
 &lt;p&gt;Hallo {field:vorname} {field:nachname},&lt;/p&gt;
@@ -310,14 +399,11 @@ Große Wohnung!
   &lt;p&gt;Vielen Dank für Ihre Anfrage über {site_name}.&lt;/p&gt;
 &lt;/div&gt;
 
-[if field:umzugsdatum]
-&lt;p&gt;&lt;strong&gt;Ihr Termin:&lt;/strong&gt; {field:umzugsdatum|date:d.m.Y}&lt;/p&gt;
-[/if]
-
 &lt;h3&gt;Ihre Angaben&lt;/h3&gt;
-&lt;ul&gt;
-[show_all exclude="email,phone,terms"]
-&lt;/ul&gt;</code></pre>
+{{FIELD_DISPLAY}}</code></pre>
+                                    <p class="small text-muted mt-2">
+                                        <code>{{FIELD_DISPLAY}}</code> wird automatisch durch die "Feld-Darstellung" ersetzt.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -329,16 +415,19 @@ Große Wohnung!
 </div>
 
 <script>
-function insertShortcode(shortcode) {
-    const textarea = document.getElementById('body_template');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
+// Variable um zu tracken welches Textarea gerade fokussiert ist
+let lastFocusedTextarea = 'body_template';
 
-    textarea.value = text.substring(0, start) + shortcode + text.substring(end);
-    textarea.focus();
-    textarea.selectionStart = textarea.selectionEnd = start + shortcode.length;
-}
+// Track welches Textarea fokussiert wurde
+document.addEventListener('DOMContentLoaded', function() {
+    const bodyTemplate = document.getElementById('body_template');
+
+    if (bodyTemplate) {
+        bodyTemplate.addEventListener('focus', function() {
+            lastFocusedTextarea = 'body_template';
+        });
+    }
+});
 
 function loadExampleTemplate() {
     const exampleTemplate = `<h2>Vielen Dank für Ihre Anfrage!</h2>
@@ -395,6 +484,216 @@ function loadExampleTemplate() {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.9rem;
 }
+
+/* Custom Shortcode Highlighting */
+.cm-shortcode-if-open {
+    color: #9c27b0;
+    font-weight: bold;
+}
+
+.cm-shortcode-if-close {
+    color: #9c27b0;
+    font-weight: bold;
+}
+
+.cm-shortcode-field {
+    color: #2196f3;
+    font-weight: 600;
+}
+
+.cm-shortcode-command {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.cm-shortcode-placeholder {
+    color: #ff5722;
+    font-weight: bold;
+    background-color: #fff3e0;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* CodeMirror Editor Styling */
+.CodeMirror {
+    border: none;
+    border-radius: 0.375rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+}
+
+.CodeMirror-scroll {
+    min-height: auto;
+}
+
+#body-editor-wrapper .CodeMirror,
+#editor-wrapper .CodeMirror {
+    height: auto;
+}
+
 </style>
+
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/mode/overlay.min.js"></script>
+
+<script>
+// Define custom mode for shortcodes
+CodeMirror.defineMode("shortcode-html", function(config, parserConfig) {
+    const htmlMode = CodeMirror.getMode(config, "htmlmixed");
+
+    return CodeMirror.overlayMode(htmlMode, {
+        token: function(stream, state) {
+            // Match [if field:xyz] or [if field:xyz == value]
+            if (stream.match(/\[if\s+field:[a-zA-Z0-9_-]+(?:\s*(?:>|<|>=|<=|==|!=)\s*[^\]]+)?\]/)) {
+                return "shortcode-if-open";
+            }
+            // Match [/if]
+            if (stream.match(/\[\/if\]/)) {
+                return "shortcode-if-close";
+            }
+            // Match {field:xyz}
+            if (stream.match(/\{field:[a-zA-Z0-9_-]+(?:\|[^\}]+)?\}/)) {
+                return "shortcode-field";
+            }
+            // Match [show_all ...]
+            if (stream.match(/\[show_all(?:[^\]]+)?\]/)) {
+                return "shortcode-command";
+            }
+            // Match [show_field ...]
+            if (stream.match(/\[show_field(?:[^\]]+)?\]/)) {
+                return "shortcode-command";
+            }
+            // Match {{FIELD_DISPLAY}}
+            if (stream.match(/\{\{[A-Z_]+\}\}/)) {
+                return "shortcode-placeholder";
+            }
+
+            stream.next();
+            return null;
+        }
+    });
+});
+
+// Initialize CodeMirror editors
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize body_template editor
+    const bodyTextarea = document.getElementById('body_template');
+    let bodyEditor = null;
+
+    if (bodyTextarea) {
+        bodyEditor = CodeMirror.fromTextArea(bodyTextarea, {
+            mode: 'shortcode-html',
+            theme: 'eclipse',
+            lineNumbers: true,
+            lineWrapping: true,
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            autofocus: false,
+            extraKeys: {
+                'Tab': function(cm) {
+                    cm.replaceSelection('    ', 'end');
+                }
+            }
+        });
+
+        bodyEditor.setSize(null, '400px');
+
+        bodyEditor.on('change', function() {
+            bodyTextarea.value = bodyEditor.getValue();
+        });
+
+        bodyEditor.on('focus', function() {
+            lastFocusedTextarea = 'body_template';
+            window.bodyCodeEditor = bodyEditor;
+        });
+
+        window.bodyCodeEditor = bodyEditor;
+
+        // Refresh editor when collapse is shown
+        const collapseEmailText = document.getElementById('collapseEmailText');
+        if (collapseEmailText) {
+            collapseEmailText.addEventListener('shown.bs.collapse', function() {
+                if (bodyEditor) {
+                    bodyEditor.refresh();
+                }
+            });
+        }
+    }
+
+    // Initialize field_display_template editor
+    const fieldTextarea = document.getElementById('field_display_template');
+    if (fieldTextarea) {
+        const fieldEditor = CodeMirror.fromTextArea(fieldTextarea, {
+            mode: 'shortcode-html',
+            theme: 'eclipse',
+            lineNumbers: true,
+            lineWrapping: true,
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            autofocus: false,
+            extraKeys: {
+                'Tab': function(cm) {
+                    cm.replaceSelection('    ', 'end');
+                }
+            }
+        });
+
+        fieldEditor.setSize(null, '500px');
+
+        fieldEditor.on('change', function() {
+            fieldTextarea.value = fieldEditor.getValue();
+        });
+
+        fieldEditor.on('focus', function() {
+            lastFocusedTextarea = 'field_display_template';
+            window.fieldCodeEditor = fieldEditor;
+        });
+    }
+});
+
+// Update insertShortcode to work with CodeMirror
+function insertShortcode(shortcode) {
+    // Check if we're using CodeMirror
+    if (lastFocusedTextarea === 'field_display_template' && window.fieldCodeEditor) {
+        const doc = window.fieldCodeEditor.getDoc();
+        const cursor = doc.getCursor();
+        doc.replaceRange(shortcode, cursor);
+        window.fieldCodeEditor.focus();
+        return;
+    }
+
+    if (lastFocusedTextarea === 'body_template' && window.bodyCodeEditor) {
+        const doc = window.bodyCodeEditor.getDoc();
+        const cursor = doc.getCursor();
+        doc.replaceRange(shortcode, cursor);
+        window.bodyCodeEditor.focus();
+        return;
+    }
+
+    // Fallback to regular textarea (shouldn't happen)
+    const textarea = document.getElementById(lastFocusedTextarea);
+    if (!textarea) {
+        return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+
+    textarea.value = text.substring(0, start) + shortcode + text.substring(end);
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = start + shortcode.length;
+}
+</script>
 
 <?= $this->endSection() ?>

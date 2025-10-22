@@ -18,7 +18,8 @@
       "Bash(ddev logs:*)",
       "Bash(curl:*)",
       "Bash(ddev exec tail:*)",
-      "Bash(ddev exec:*)"
+      "Bash(ddev exec:*)",
+      "Bash(php spark:*)"
     ],
     "deny": [],
     "ask": []

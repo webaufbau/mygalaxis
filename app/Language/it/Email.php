@@ -61,7 +61,7 @@ return [
     'label_your_phone'    => 'Il tuo numero di telefono',
     'thanks'              => 'Grazie per la tua fiducia!',
     'see_companies'       => 'Visualizza aziende',
-    'see_companies_text'  => 'Qui puoi vedere le aziende che hanno acquistato la tua richiesta e valutarle dopo la conclusione dei lavori:',
+    'see_companies_text'  => 'Qui troverai le aziende specializzate verificate che hanno ricevuto la tua richiesta di preventivo. Dopo il completamento dei lavori, potrai lasciare il tuo feedback.',
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Ti preghiamo di confermare il tuo numero di telefono',
@@ -74,7 +74,7 @@ return [
     'generatedAt'        => 'Questo messaggio è stato generato automaticamente il {0}.', // Data
 
     // Allgemeine Betreffzeilen
-    'offerPurchasedSubject'       => 'La tua offerta "{0}" è stata acquistata con successo',
+    'offerPurchasedSubject'       => 'Un\'azienda specializzata è interessata al tuo progetto \'{0}\'',
     'offerPurchasedCompanySubject'=> 'Grazie per aver acquistato l\'offerta "{0}"',
 
     // Texte für Kunden-Mail

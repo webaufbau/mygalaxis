@@ -61,7 +61,7 @@ return [
     'label_your_phone'      => 'Votre numéro de téléphone',
     'thanks'                => 'Merci pour votre confiance!',
     'see_companies'         => 'Voir les entreprises',
-    'see_companies_text'    => 'Vous pouvez ici consulter les entreprises ayant acheté votre demande et les évaluer une fois les travaux terminés:',
+    'see_companies_text'    => 'Vous trouverez ici les entreprises spécialisées vérifiées qui ont reçu votre demande de devis. Après la réalisation des travaux, vous pourrez donner votre avis.',
     'offer_added_how_it_works' => 'Voici comment cela fonctionne:',
 
     // Verifikation Erinnerung
@@ -75,7 +75,7 @@ return [
     'generatedAt'        => 'Ce message a été généré automatiquement le {0}.', // Date
 
     // Allgemeine Betreffzeilen
-    'offerPurchasedSubject'        => 'Votre offre "{0}" a été achetée avec succès',
+    'offerPurchasedSubject'        => 'Une entreprise spécialisée s\'intéresse à votre projet \'{0}\'',
     'offerPurchasedCompanySubject' => 'Merci pour l\'achat de l\'offre "{0}"',
 
     // Texte für Kunden-Mail

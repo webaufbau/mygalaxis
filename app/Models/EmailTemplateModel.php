@@ -17,6 +17,7 @@ class EmailTemplateModel extends Model
         'language',
         'subject',
         'body_template',
+        'field_display_template',
         'is_active',
         'notes',
     ];

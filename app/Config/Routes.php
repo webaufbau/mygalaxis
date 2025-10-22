@@ -291,4 +291,13 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('email-templates/preview/(:num)', 'Admin\EmailTemplates::preview/$1');
     $routes->get('email-templates/shortcode-help', 'Admin\EmailTemplates::shortcodeHelp');
 
+    // Field Display Rules
+    $routes->get('field-display-rules', 'Admin\FieldDisplayRules::index');
+    $routes->get('field-display-rules/create', 'Admin\FieldDisplayRules::create');
+    $routes->post('field-display-rules/create', 'Admin\FieldDisplayRules::store');
+    $routes->get('field-display-rules/edit/(:num)', 'Admin\FieldDisplayRules::edit/$1');
+    $routes->post('field-display-rules/edit/(:num)', 'Admin\FieldDisplayRules::update/$1');
+    $routes->get('field-display-rules/delete/(:num)', 'Admin\FieldDisplayRules::delete/$1');
+    $routes->post('field-display-rules/toggle-active/(:num)', 'Admin\FieldDisplayRules::toggleActive/$1');
+
 });

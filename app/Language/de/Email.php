@@ -61,7 +61,7 @@ return [
     'label_your_phone'    => 'Ihre Telefonnummer',
     'thanks'              => 'Vielen Dank für Ihr Vertrauen!',
     'see_companies'       => 'Firmen ansehen',
-    'see_companies_text'  => 'Sie können hier die Firmen sehen, die Ihre Anfrage gekauft haben, und diese nach Abschluss der Arbeiten bewerten:',
+    'see_companies_text'  => 'Hier finden Sie die geprüften Fachbetriebe, die Ihre Anfrage zur Angebotserstellung erhalten haben. Nach Abschluss der Arbeiten können Sie Ihr Feedback abgeben.',
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Bitte bestätigen Sie Ihre Telefonnummer',
@@ -74,7 +74,7 @@ return [
     'generatedAt'        => 'Diese Nachricht wurde automatisch generiert am {0}.', // Datum
 
     // Allgemeine Betreffzeilen
-    'offerPurchasedSubject'       => 'Ihr Angebot "{0}" wurde erfolgreich gekauft',
+    'offerPurchasedSubject'       => 'Ein Fachbetrieb interessiert sich für Ihr Projekt \'{0}\'',
     'offerPurchasedCompanySubject'=> 'Vielen Dank für den Kauf einer Offerte "{0}"',
 
     // Texte für Kunden-Mail

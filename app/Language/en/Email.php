@@ -61,7 +61,7 @@ return [
     'label_your_phone'    => 'Your phone number',
     'thanks'              => 'Thank you for your trust!',
     'see_companies'       => 'View companies',
-    'see_companies_text'  => 'Here you can see the companies that purchased your request and rate them after the work is completed:',
+    'see_companies_text'  => 'Here you will find the verified specialist companies that have received your request for quotation. After completion of the work, you can provide your feedback.',
 
     // Verifikation Erinnerung
     'verifyPhoneTitle'   => '👋 Please confirm your phone number',
@@ -74,7 +74,7 @@ return [
     'generatedAt'        => 'This message was automatically generated on {0}.', // Date
 
     // Allgemeine Betreffzeilen
-    'offerPurchasedSubject'        => 'Your request "{0}" was successfully purchased',
+    'offerPurchasedSubject'        => 'A specialist company is interested in your project \'{0}\'',
     'offerPurchasedCompanySubject' => 'Thank you for purchasing a request "{0}"',
 
     // Texte für Kunden-Mail

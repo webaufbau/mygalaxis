@@ -25,11 +25,13 @@ class EmailTemplateParser
     protected array $excludedFields = [];
     protected $siteConfig;
     protected array $labels = [];
+    protected ?\App\Services\FieldRenderer $fieldRenderer = null;
 
     public function __construct()
     {
         $this->siteConfig = siteconfig();
         $this->labels = lang('Offers.labels');
+        $this->fieldRenderer = new \App\Services\FieldRenderer();
     }
 
     /**
@@ -59,36 +61,55 @@ class EmailTemplateParser
 
     /**
      * Parse conditional blocks [if ...]...[/if]
+     * Supports nested conditionals by processing from innermost to outermost
      */
     protected function parseConditionals(string $template): string
     {
-        // Pattern: [if field:fieldname] or [if field:fieldname > value]
-        $pattern = '/\[if\s+field:([a-zA-Z0-9_-]+)(?:\s*(>|<|>=|<=|==|!=)\s*([^\]]+))?\](.*?)\[\/if\]/s';
+        // Process conditionals iteratively until no more matches
+        $maxIterations = 10; // Prevent infinite loops
+        $iteration = 0;
 
-        return preg_replace_callback($pattern, function ($matches) {
-            $fieldName = $matches[1];
-            $operator = $matches[2] ?? null;
-            $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
-            $content = $matches[4];
+        while ($iteration < $maxIterations) {
+            $iteration++;
 
-            $fieldValue = $this->getFieldValue($fieldName);
+            // Pattern: [if field:fieldname] or [if field:fieldname > value]
+            // Match innermost [if] blocks (those without nested [if] inside)
+            $pattern = '/\[if\s+field:([a-zA-Z0-9_-]+)(?:\s*(>|<|>=|<=|==|!=)\s*([^\]]+))?\]((?:(?!\[if\s+field:).)*?)\[\/if\]/s';
 
-            // Simple existence check
-            if (!$operator) {
-                // Field exists and is not empty/nein/false
-                if ($this->isFieldTruthy($fieldValue)) {
+            $replaced = preg_replace_callback($pattern, function ($matches) {
+                $fieldName = $matches[1];
+                $operator = $matches[2] ?? null;
+                $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
+                $content = $matches[4];
+
+                $fieldValue = $this->getFieldValue($fieldName);
+
+                // Simple existence check
+                if (!$operator) {
+                    // Field exists and is not empty/nein/false
+                    if ($this->isFieldTruthy($fieldValue)) {
+                        return $content;
+                    }
+                    return '';
+                }
+
+                // Comparison check
+                if ($this->compareValues($fieldValue, $operator, $compareValue)) {
                     return $content;
                 }
+
                 return '';
+            }, $template);
+
+            // If nothing was replaced, we're done
+            if ($replaced === $template) {
+                break;
             }
 
-            // Comparison check
-            if ($this->compareValues($fieldValue, $operator, $compareValue)) {
-                return $content;
-            }
+            $template = $replaced;
+        }
 
-            return '';
-        }, $template);
+        return $template;
     }
 
     /**
@@ -173,34 +194,32 @@ class EmailTemplateParser
     }
 
     /**
-     * Generate field list HTML
+     * Generate field list HTML using FieldRenderer
      */
     protected function generateFieldList(array $excludes): string
     {
         $html = '';
+
+        // Normalisiere Ausschlussfelder
         $normalizedExcludes = array_map(function($key) {
             return str_replace([' ', '-'], '_', strtolower($key));
         }, $excludes);
 
-        foreach ($this->data as $key => $value) {
-            $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+        // Merge mit bereits gesetzten Ausschlussfeldern
+        $allExcludes = array_merge($this->excludedFields, $normalizedExcludes);
 
-            if (in_array($normalizedKey, $normalizedExcludes)) {
-                continue;
-            }
+        // Verwende FieldRenderer für intelligente Felddarstellung
+        $this->fieldRenderer->setData($this->data)
+                           ->setExcludedFields($allExcludes);
 
-            if (!$this->isFieldTruthy($value)) {
-                continue;
-            }
+        $renderedFields = $this->fieldRenderer->renderFields('email');
 
-            $label = $this->labels[$key] ?? ucwords(str_replace(['_', '-'], ' ', $key));
-            $displayValue = $this->formatValue($value);
-
-            // Handle file uploads
-            if (in_array($key, ['file-upload', 'file_upload', 'upload_file'])) {
-                $html .= '<li><strong>' . esc($label) . ':</strong> ' . $this->formatFileUpload($value) . '</li>';
+        // Generiere HTML für Email
+        foreach ($renderedFields as $field) {
+            if ($this->fieldRenderer->isFileUploadField($field['key'])) {
+                $html .= '<li><strong>' . esc($field['label']) . ':</strong> ' . $this->fieldRenderer->formatFileUpload($field['value']) . '</li>';
             } else {
-                $html .= '<li><strong>' . esc($label) . ':</strong> ' . esc($displayValue) . '</li>';
+                $html .= '<li><strong>' . esc($field['label']) . ':</strong> ' . esc($field['display']) . '</li>';
             }
         }
 
@@ -325,24 +344,4 @@ class EmailTemplateParser
         return $value;
     }
 
-    /**
-     * Format file upload display
-     */
-    protected function formatFileUpload($value): string
-    {
-        $urls = is_array($value) ? $value : [$value];
-        $html = '';
-
-        foreach ($urls as $url) {
-            if (is_string($url) && preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $url)) {
-                $html .= '<br><img src="' . esc($url) . '" alt="Upload" style="max-width: 100%; height: auto; border:1px solid #ccc; padding: 5px;">';
-            } elseif (filter_var($url, FILTER_VALIDATE_URL)) {
-                $html .= '<br><a href="' . esc($url) . '" target="_blank">' . esc(basename($url)) . '</a>';
-            } else {
-                $html .= esc($url);
-            }
-        }
-
-        return $html;
-    }
 }

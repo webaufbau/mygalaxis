@@ -236,7 +236,7 @@ class OfferPriceCalculator
                         if ($key && isset($category['options'][$key])) {
                             $componentPrice = $category['options'][$key]['price'];
                             $price = $componentPrice;
-                            $this->priceComponents[] = ['label' => 'Wohnungsgröße', 'value' => $value, 'price' => $componentPrice];
+                            $this->priceComponents[] = ['label' => 'Wohnungsgrösse', 'value' => $value, 'price' => $componentPrice];
                         }
                     }
                     elseif (!empty($fields['komplett_anzahlzimmer'])) {
