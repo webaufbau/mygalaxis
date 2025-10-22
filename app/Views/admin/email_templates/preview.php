@@ -16,6 +16,12 @@
     </div>
 
     <!-- Offer Selection -->
+    <?php
+    // Load category types for German translations
+    $categoryConfig = config('CategoryOptions');
+    $categoryTypes = $categoryConfig->categoryTypes;
+    $categoryTypes['default'] = 'Standard (Fallback)';
+    ?>
     <?php if (!empty($offers)): ?>
     <div class="card mb-4">
         <div class="card-header bg-success text-white">
@@ -28,7 +34,7 @@
                 <div class="col-md-8">
                     <label for="offerSelect" class="form-label">
                         <strong>Offerte auswählen:</strong>
-                        <small class="text-muted">(<?= count($offers) ?> Offerten verfügbar<?= $template['offer_type'] !== 'default' ? ' für ' . esc($template['offer_type']) : '' ?>)</small>
+                        <small class="text-muted">(<?= count($offers) ?> Offerten verfügbar<?= $template['offer_type'] !== 'default' ? ' für ' . esc($categoryTypes[$template['offer_type']] ?? $template['offer_type']) : '' ?>)</small>
                     </label>
                     <select id="offerSelect" class="form-select">
                         <?php foreach ($offers as $offer): ?>
@@ -37,12 +43,13 @@
                             $displayName = ($fields['vorname'] ?? '') . ' ' . ($fields['nachname'] ?? '');
                             $displayName = trim($displayName) ?: 'Unbekannt';
                             $city = $fields['city'] ?? $fields['ort'] ?? '';
+                            $offerTypeLabel = $categoryTypes[$offer['type']] ?? $offer['type'];
                             ?>
                             <option value="<?= $offer['id'] ?>" <?= $selectedOfferId == $offer['id'] ? 'selected' : '' ?>>
                                 #<?= $offer['id'] ?> - <?= esc($displayName) ?>
                                 <?= $city ? '(' . esc($city) . ')' : '' ?>
                                 - <?= date('d.m.Y', strtotime($offer['created_at'])) ?>
-                                <?= $offer['type'] ? ' - ' . esc($offer['type']) : '' ?>
+                                <?= $offer['type'] ? ' - ' . esc($offerTypeLabel) : '' ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -58,7 +65,7 @@
             <div class="alert alert-info mt-3 mb-0">
                 <strong>Gewählte Offerte #<?= $selectedOffer['id'] ?>:</strong>
                 <ul class="mb-0 mt-2 small">
-                    <li><strong>Typ:</strong> <?= esc($selectedOffer['type']) ?></li>
+                    <li><strong>Typ:</strong> <?= esc($categoryTypes[$selectedOffer['type']] ?? $selectedOffer['type']) ?></li>
                     <li><strong>Erstellt:</strong> <?= date('d.m.Y H:i', strtotime($selectedOffer['created_at'])) ?></li>
                     <li><strong>Felder:</strong> <?= count(json_decode($selectedOffer['form_fields'] ?? '{}', true)) ?> Felder</li>
                 </ul>
@@ -69,7 +76,7 @@
     <?php else: ?>
     <div class="alert alert-warning">
         <i class="bi bi-exclamation-triangle"></i>
-        <strong>Info:</strong> Keine Offerten gefunden<?= $template['offer_type'] !== 'default' ? ' für Typ "' . esc($template['offer_type']) . '"' : '' ?>. Es werden Testdaten verwendet.
+        <strong>Info:</strong> Keine Offerten gefunden<?= $template['offer_type'] !== 'default' ? ' für Typ "' . esc($categoryTypes[$template['offer_type']] ?? $template['offer_type']) . '"' : '' ?>. Es werden Testdaten verwendet.
     </div>
     <?php endif; ?>
 
@@ -85,7 +92,7 @@
                             <table class="table table-sm">
                                 <tr>
                                     <th>Branche:</th>
-                                    <td><?= esc($template['offer_type']) ?></td>
+                                    <td><?= esc($categoryTypes[$template['offer_type']] ?? $template['offer_type']) ?></td>
                                 </tr>
                                 <tr>
                                     <th>Sprache:</th>

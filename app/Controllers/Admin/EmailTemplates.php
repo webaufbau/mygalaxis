@@ -259,7 +259,30 @@ class EmailTemplates extends AdminBase
         }
 
         $parser = new \App\Services\EmailTemplateParser();
-        $parsedBody = $parser->parse($template['body_template'], $formData);
+
+        // Parse field_display_template if available
+        $fieldDisplayHtml = '';
+        if (!empty($template['field_display_template'])) {
+            // Load excluded fields config
+            $fieldConfigForExclusion = new \Config\FormFieldOptions();
+            $excludedFields = $fieldConfigForExclusion->excludedFieldsAlways;
+
+            // Parse the field display template with form data
+            $fieldDisplayHtml = $parser->parse($template['field_display_template'], $formData, $excludedFields);
+        } else {
+            // Fallback: use show_all if no field_display_template
+            $fieldDisplayHtml = '[show_all]';
+            // Load excluded fields config
+            $fieldConfigForExclusion = new \Config\FormFieldOptions();
+            $excludedFields = $fieldConfigForExclusion->excludedFieldsAlways;
+            $fieldDisplayHtml = $parser->parse($fieldDisplayHtml, $formData, $excludedFields);
+        }
+
+        // Replace {{FIELD_DISPLAY}} in body_template
+        $bodyTemplate = str_replace('{{FIELD_DISPLAY}}', $fieldDisplayHtml, $template['body_template']);
+
+        // Parse the complete body with all shortcodes
+        $parsedBody = $parser->parse($bodyTemplate, $formData);
         $parsedSubject = $parser->parse($template['subject'], $formData);
 
         return view('admin/email_templates/preview', [
