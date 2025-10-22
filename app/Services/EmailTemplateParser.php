@@ -17,6 +17,8 @@ use DateTime;
  * - [if field:fieldname]...[/if] - Conditional block
  * - [if field:fieldname > value]...[/if] - Conditional with comparison (>, <, >=, <=, ==, !=)
  * - [if field:fieldname]...[else]...[/if] - Conditional with else block
+ * - [if field:a || field:b]...[/if] - OR condition (any field is truthy)
+ * - [if field:a && field:b]...[/if] - AND condition (all fields must be truthy)
  * - [show_all exclude="field1,field2"] - Show all fields except excluded ones
  * - [show_field name="fieldname" label="Custom Label"] - Show single field with custom label
  */
@@ -66,6 +68,7 @@ class EmailTemplateParser
      * Parse conditional blocks [if ...]...[else]...[/if]
      * Supports nested conditionals by processing from innermost to outermost
      * Supports [else] for alternative content
+     * Supports || (OR) and && (AND) operators
      */
     protected function parseConditionals(string $template): string
     {
@@ -76,35 +79,20 @@ class EmailTemplateParser
         while ($iteration < $maxIterations) {
             $iteration++;
 
-            // Pattern: [if field:fieldname] or [if field:fieldname > value]
+            // Pattern: [if field:fieldname] or [if field:fieldname > value] or with || / &&
             // Match innermost [if] blocks (those without nested [if] inside)
             // Now also captures optional [else] block
-            $pattern = '/\[if\s+field:([a-zA-Z0-9_-]+)(?:\s*(>|<|>=|<=|==|!=)\s*([^\]]+))?\]((?:(?!\[if\s+field:).)*?)(?:\[else\]((?:(?!\[if\s+field:).)*?))?\[\/if\]/s';
+            $pattern = '/\[if\s+([^\]]+)\]((?:(?!\[if\s+).)*?)(?:\[else\]((?:(?!\[if\s+).)*?))?\[\/if\]/s';
 
             $replaced = preg_replace_callback($pattern, function ($matches) {
-                $fieldName = $matches[1];
-                $operator = $matches[2] ?? null;
-                $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
-                $ifContent = $matches[4];
-                $elseContent = $matches[5] ?? '';
+                $conditionString = $matches[1];
+                $ifContent = $matches[2];
+                $elseContent = $matches[3] ?? '';
 
-                $fieldValue = $this->getFieldValue($fieldName);
+                // Evaluate the condition (may contain ||, &&)
+                $result = $this->evaluateCondition($conditionString);
 
-                // Simple existence check
-                if (!$operator) {
-                    // Field exists and is not empty/nein/false
-                    if ($this->isFieldTruthy($fieldValue)) {
-                        return $ifContent;
-                    }
-                    return $elseContent;
-                }
-
-                // Comparison check
-                if ($this->compareValues($fieldValue, $operator, $compareValue)) {
-                    return $ifContent;
-                }
-
-                return $elseContent;
+                return $result ? $ifContent : $elseContent;
             }, $template);
 
             // If nothing was replaced, we're done
@@ -116,6 +104,53 @@ class EmailTemplateParser
         }
 
         return $template;
+    }
+
+    /**
+     * Evaluate a condition string that may contain ||, &&
+     */
+    protected function evaluateCondition(string $conditionString): bool
+    {
+        // Check for OR operator first (lowest precedence)
+        if (strpos($conditionString, '||') !== false) {
+            $parts = explode('||', $conditionString);
+            foreach ($parts as $part) {
+                if ($this->evaluateCondition(trim($part))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Check for AND operator
+        if (strpos($conditionString, '&&') !== false) {
+            $parts = explode('&&', $conditionString);
+            foreach ($parts as $part) {
+                if (!$this->evaluateCondition(trim($part))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Single condition: field:fieldname or field:fieldname > value
+        if (preg_match('/field:([a-zA-Z0-9_-]+)(?:\s*(>|<|>=|<=|==|!=)\s*(.+))?/', $conditionString, $matches)) {
+            $fieldName = $matches[1];
+            $operator = $matches[2] ?? null;
+            $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
+
+            $fieldValue = $this->getFieldValue($fieldName);
+
+            // Simple existence check
+            if (!$operator) {
+                return $this->isFieldTruthy($fieldValue);
+            }
+
+            // Comparison check
+            return $this->compareValues($fieldValue, $operator, $compareValue);
+        }
+
+        return false;
     }
 
     /**
