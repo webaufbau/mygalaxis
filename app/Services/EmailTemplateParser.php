@@ -228,7 +228,7 @@ class EmailTemplateParser
         // Generiere HTML für Email
         foreach ($renderedFields as $field) {
             if ($this->fieldRenderer->isFileUploadField($field['key'])) {
-                $html .= '<li><strong>' . esc($field['label']) . ':</strong> ' . $this->fieldRenderer->formatFileUpload($field['value']) . '</li>';
+                $html .= '<li><strong>' . esc($field['label']) . ':</strong> ' . $this->fieldRenderer->formatFileUpload($field['value'], 'email') . '</li>';
             } else {
                 $html .= '<li><strong>' . esc($field['label']) . ':</strong> ' . esc($field['display']) . '</li>';
             }

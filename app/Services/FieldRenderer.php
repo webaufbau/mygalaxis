@@ -315,14 +315,20 @@ class FieldRenderer
     /**
      * Formatiere File-Upload für HTML-Anzeige
      */
-    public function formatFileUpload($value): string
+    public function formatFileUpload($value, string $context = 'html'): string
     {
         $urls = is_array($value) ? $value : [$value];
         $html = '';
 
         foreach ($urls as $url) {
             if (is_string($url) && preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $url)) {
-                $html .= '<img src="' . esc($url) . '" alt="Upload" style="max-width: 100%; height: auto; border:1px solid #ccc; padding: 5px; margin: 5px 0;">';
+                // Für E-Mails: kleinere Bilder (max 400px breit)
+                if ($context === 'email') {
+                    $html .= '<img src="' . esc($url) . '" alt="Upload" style="max-width: 400px; height: auto; border:1px solid #ccc; padding: 5px; margin: 5px 0; display: block;">';
+                } else {
+                    // Für HTML-Ansicht: volle Breite
+                    $html .= '<img src="' . esc($url) . '" alt="Upload" style="max-width: 100%; height: auto; border:1px solid #ccc; padding: 5px; margin: 5px 0;">';
+                }
             } elseif (filter_var($url, FILTER_VALIDATE_URL)) {
                 $html .= '<a href="' . esc($url) . '" target="_blank">' . esc(basename($url)) . '</a><br>';
             } else {
