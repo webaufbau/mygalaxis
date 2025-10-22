@@ -66,7 +66,19 @@
                 <strong>Gewählte Offerte #<?= $selectedOffer['id'] ?>:</strong>
                 <ul class="mb-0 mt-2 small">
                     <li><strong>Typ:</strong> <?= esc($categoryTypes[$selectedOffer['type']] ?? $selectedOffer['type']) ?></li>
-                    <li><strong>Plattform:</strong> <?= !empty($selectedOffer['platform']) ? esc($selectedOffer['platform']) : 'Keine Angabe' ?></li>
+                    <li><strong>Plattform:</strong>
+                        <?php
+                        if (!empty($selectedOffer['platform'])) {
+                            // Convert my_offertenschweiz_ch to offertenschweiz.ch
+                            $platform = $selectedOffer['platform'];
+                            $platform = str_replace('my_', '', $platform);
+                            $platform = str_replace('_', '.', $platform);
+                            echo esc($platform);
+                        } else {
+                            echo 'Keine Angabe';
+                        }
+                        ?>
+                    </li>
                     <li><strong>Erstellt:</strong> <?= date('d.m.Y H:i', strtotime($selectedOffer['created_at'])) ?></li>
                     <li><strong>Felder:</strong> <?= count(json_decode($selectedOffer['form_fields'] ?? '{}', true)) ?> Felder</li>
                 </ul>
@@ -156,6 +168,13 @@
             <div class="card-body">
                 <h6>Betreff Template:</h6>
                 <pre class="bg-light p-3 rounded"><code><?= esc($template['subject']) ?></code></pre>
+
+                <h6 class="mt-3">Feld-Darstellung Template:</h6>
+                <?php if (!empty($template['field_display_template'])): ?>
+                    <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;"><code><?= esc($template['field_display_template']) ?></code></pre>
+                <?php else: ?>
+                    <p class="text-muted"><em>Kein field_display_template definiert (verwendet automatisch [show_all])</em></p>
+                <?php endif; ?>
 
                 <h6 class="mt-3">Body Template:</h6>
                 <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;"><code><?= esc($template['body_template']) ?></code></pre>
