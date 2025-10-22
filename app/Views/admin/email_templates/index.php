@@ -27,7 +27,7 @@
     <div class="alert alert-info">
         <i class="bi bi-info-circle"></i>
         <strong>Info:</strong> Diese Templates werden für die Bestätigungsmails an Kunden verwendet, die über das Formular eine Anfrage stellen.
-        Jede Branche (Offer Type) kann ein eigenes Template pro Sprache haben.
+        Jede Branche kann ein eigenes Template pro Sprache haben.
     </div>
 
     <?php if (empty($templates)): ?>

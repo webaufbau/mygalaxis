@@ -43,7 +43,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="offer_type" class="form-label">
-                                    <i class="bi bi-tag"></i> Offer Type / Branche <span class="text-danger">*</span>
+                                    <i class="bi bi-tag"></i> Branche <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" id="offer_type" name="offer_type" required>
                                     <?php
@@ -384,9 +384,9 @@ Anderes Material: {field:andere_material}
   &lt;/li&gt;
 [/if]
 
-[if field:cleaning_type]
+[if field:reinigungsart]
   &lt;li&gt;&lt;strong&gt;Reinigung:&lt;/strong&gt;
-  {field:cleaning_type}&lt;/li&gt;
+  {field:reinigungsart}&lt;/li&gt;
 [/if]
 &lt;/ul&gt;</code></pre>
                                 </div>

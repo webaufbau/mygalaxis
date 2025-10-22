@@ -15,64 +15,99 @@
         </div>
     </div>
 
-    <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i>
-        <strong>Info:</strong> Dies ist eine Vorschau mit Testdaten. Die tatsächliche E-Mail wird mit echten Formulardaten gefüllt.
-    </div>
-
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Template Info</h5>
+    <!-- Offer Selection -->
+    <?php if (!empty($offers)): ?>
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-list-check"></i> Echte Offerte für Vorschau wählen
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <label for="offerSelect" class="form-label">
+                        <strong>Offerte auswählen:</strong>
+                        <small class="text-muted">(<?= count($offers) ?> Offerten verfügbar<?= $template['offer_type'] !== 'default' ? ' für ' . esc($template['offer_type']) : '' ?>)</small>
+                    </label>
+                    <select id="offerSelect" class="form-select">
+                        <?php foreach ($offers as $offer): ?>
+                            <?php
+                            $fields = json_decode($offer['form_fields'] ?? '{}', true);
+                            $displayName = ($fields['vorname'] ?? '') . ' ' . ($fields['nachname'] ?? '');
+                            $displayName = trim($displayName) ?: 'Unbekannt';
+                            $city = $fields['city'] ?? $fields['ort'] ?? '';
+                            ?>
+                            <option value="<?= $offer['id'] ?>" <?= $selectedOfferId == $offer['id'] ? 'selected' : '' ?>>
+                                #<?= $offer['id'] ?> - <?= esc($displayName) ?>
+                                <?= $city ? '(' . esc($city) . ')' : '' ?>
+                                - <?= date('d.m.Y', strtotime($offer['created_at'])) ?>
+                                <?= $offer['type'] ? ' - ' . esc($offer['type']) : '' ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr>
-                            <th>Offer Type:</th>
-                            <td><?= esc($template['offer_type']) ?></td>
-                        </tr>
-                        <tr>
-                            <th>Sprache:</th>
-                            <td><?= strtoupper(esc($template['language'])) ?></td>
-                        </tr>
-                        <tr>
-                            <th>Status:</th>
-                            <td>
-                                <?php if ($template['is_active']): ?>
-                                    <span class="badge bg-success">Aktiv</span>
-                                <?php else: ?>
-                                    <span class="badge bg-warning">Inaktiv</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Aktualisiert:</th>
-                            <td><?= date('d.m.Y H:i', strtotime($template['updated_at'])) ?></td>
-                        </tr>
-                    </table>
+                <div class="col-md-4">
+                    <button id="loadOffer" class="btn btn-primary w-100 mt-4">
+                        <i class="bi bi-arrow-clockwise"></i> Vorschau laden
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-6">
+            <?php if ($selectedOffer): ?>
+            <div class="alert alert-info mt-3 mb-0">
+                <strong>Gewählte Offerte #<?= $selectedOffer['id'] ?>:</strong>
+                <ul class="mb-0 mt-2 small">
+                    <li><strong>Typ:</strong> <?= esc($selectedOffer['type']) ?></li>
+                    <li><strong>Erstellt:</strong> <?= date('d.m.Y H:i', strtotime($selectedOffer['created_at'])) ?></li>
+                    <li><strong>Felder:</strong> <?= count(json_decode($selectedOffer['form_fields'] ?? '{}', true)) ?> Felder</li>
+                </ul>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php else: ?>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Info:</strong> Keine Offerten gefunden<?= $template['offer_type'] !== 'default' ? ' für Typ "' . esc($template['offer_type']) . '"' : '' ?>. Es werden Testdaten verwendet.
+    </div>
+    <?php endif; ?>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Testdaten</h5>
+                    <h5 class="mb-0">Template Informationen</h5>
                 </div>
                 <div class="card-body">
-                    <small class="text-muted">
-                        Diese Daten werden für die Vorschau verwendet:
-                    </small>
-                    <ul class="small mt-2">
-                        <li>vorname: Max</li>
-                        <li>nachname: Mustermann</li>
-                        <li>email: max@example.com</li>
-                        <li>phone: +41 79 123 45 67</li>
-                        <li>umzugsdatum: 15/12/2025</li>
-                        <li>anzahl_zimmer: 4</li>
-                        <li>qm: 85</li>
-                    </ul>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Branche:</th>
+                                    <td><?= esc($template['offer_type']) ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Sprache:</th>
+                                    <td><?= strtoupper(esc($template['language'])) ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        <?php if ($template['is_active']): ?>
+                                            <span class="badge bg-success">Aktiv</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning">Inaktiv</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Aktualisiert:</th>
+                                    <td><?= date('d.m.Y H:i', strtotime($template['updated_at'])) ?></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -164,5 +199,29 @@ pre code {
     font-size: 0.85rem;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const offerSelect = document.getElementById('offerSelect');
+    const loadButton = document.getElementById('loadOffer');
+
+    if (loadButton && offerSelect) {
+        loadButton.addEventListener('click', function() {
+            const offerId = offerSelect.value;
+            const templateId = <?= $template['id'] ?>;
+
+            // Reload page with selected offer
+            window.location.href = `/admin/email-templates/preview/${templateId}?offer_id=${offerId}`;
+        });
+
+        // Also allow Enter key in dropdown
+        offerSelect.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadButton.click();
+            }
+        });
+    }
+});
+</script>
 
 <?= $this->endSection() ?>

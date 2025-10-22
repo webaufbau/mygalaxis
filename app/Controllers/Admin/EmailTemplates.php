@@ -185,7 +185,7 @@ class EmailTemplates extends AdminBase
     }
 
     /**
-     * Preview template with test data
+     * Preview template with real offer data
      */
     public function preview($id = null)
     {
@@ -199,32 +199,77 @@ class EmailTemplates extends AdminBase
             throw PageNotFoundException::forPageNotFound('Template nicht gefunden');
         }
 
-        // Test data
-        $testData = [
-            'vorname' => 'Max',
-            'nachname' => 'Mustermann',
-            'email' => 'max@example.com',
-            'phone' => '+41 79 123 45 67',
-            'address_line_1' => 'Musterstrasse 123',
-            'zip' => '8000',
-            'city' => 'Zürich',
-            'umzugsdatum' => '15/12/2025',
-            'anzahl_zimmer' => '4',
-            'qm' => '85',
-            'object_type' => 'Wohnung',
-            'cleaning_type' => 'Endreinigung',
-            'additional_service' => 'Ja',
-        ];
+        // Load offers for dropdown
+        $offerModel = new \App\Models\OfferModel();
+
+        // Get offer type from template
+        $offerType = $template['offer_type'];
+
+        // Load offers based on type
+        if ($offerType === 'default') {
+            // For default template, show offers from all types
+            $offers = $offerModel->orderBy('created_at', 'DESC')->findAll(100);
+        } else {
+            // For specific type, show only offers of that type
+            $offers = $offerModel->where('type', $offerType)
+                                 ->orderBy('created_at', 'DESC')
+                                 ->findAll(100);
+        }
+
+        // Get selected offer ID from request or use first offer
+        $selectedOfferId = $this->request->getGet('offer_id');
+
+        if (!$selectedOfferId && !empty($offers)) {
+            $selectedOfferId = $offers[0]['id'];
+        }
+
+        // Load selected offer data
+        $formData = [];
+        $selectedOffer = null;
+
+        if ($selectedOfferId) {
+            $selectedOffer = $offerModel->find($selectedOfferId);
+            if ($selectedOffer) {
+                $formData = json_decode($selectedOffer['form_fields'] ?? '{}', true);
+                // Also include combo fields if available
+                $comboFields = json_decode($selectedOffer['form_fields_combo'] ?? '{}', true);
+                if (!empty($comboFields)) {
+                    $formData = array_merge($formData, $comboFields);
+                }
+            }
+        }
+
+        // Fallback zu Testdaten wenn keine Offerte gewählt
+        if (empty($formData)) {
+            $formData = [
+                'vorname' => 'Max',
+                'nachname' => 'Mustermann',
+                'email' => 'max@example.com',
+                'telefon' => '+41 79 123 45 67',
+                'adresse' => 'Musterstrasse 123',
+                'plz' => '8000',
+                'ort' => 'Zürich',
+                'umzugsdatum' => '15/12/2025',
+                'anzahl_zimmer' => '4',
+                'quadratmeter' => '85',
+                'objekttyp' => 'Wohnung',
+                'reinigungsart' => 'Endreinigung',
+                'zusatzleistung' => 'Ja',
+            ];
+        }
 
         $parser = new \App\Services\EmailTemplateParser();
-        $parsedBody = $parser->parse($template['body_template'], $testData);
-        $parsedSubject = $parser->parse($template['subject'], $testData);
+        $parsedBody = $parser->parse($template['body_template'], $formData);
+        $parsedSubject = $parser->parse($template['subject'], $formData);
 
         return view('admin/email_templates/preview', [
-            'title'    => 'Template Vorschau',
-            'template' => $template,
-            'subject'  => $parsedSubject,
-            'body'     => $parsedBody,
+            'title'           => 'Template Vorschau',
+            'template'        => $template,
+            'subject'         => $parsedSubject,
+            'body'            => $parsedBody,
+            'offers'          => $offers,
+            'selectedOfferId' => $selectedOfferId,
+            'selectedOffer'   => $selectedOffer,
         ]);
     }
 
