@@ -90,8 +90,11 @@ class SendReviewReminder extends BaseCommand
             // Lade SiteConfig basierend auf Offer-Platform
             $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
 
+            // Stelle sicher dass access_hash existiert (generiert automatisch falls nicht vorhanden)
+            $accessHash = $this->offerModel->ensureAccessHash($offer['id']);
+
             // Review-Link generieren: öffnet Seite für Anbieter (mit offer hash)
-            $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $offer['access_hash'];
+            $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $accessHash;
 
             // Maildaten
             $emailData = [
@@ -132,7 +135,7 @@ class SendReviewReminder extends BaseCommand
                     ->findAll(100);
 
                 foreach ($bookingsForReminder as $booking) {
-                    $offer = $this->offerModel->find($booking['reference_id']);
+                    $offer = $this->offerModel->asArray()->find($booking['reference_id']);
                     if (!$offer) continue;
 
                     $existingReview = $this->reviewModel
@@ -145,7 +148,11 @@ class SendReviewReminder extends BaseCommand
                     if (!$creatorEmail) continue;
 
                     $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform']);
-                    $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $offer['access_hash'];
+
+                    // Stelle sicher dass access_hash existiert (generiert automatisch falls nicht vorhanden)
+                    $accessHash = $this->offerModel->ensureAccessHash($offer['id']);
+
+                    $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $accessHash;
 
                     $emailData = [
                         'offerTitle' => $offer['title'],
@@ -162,7 +169,10 @@ class SendReviewReminder extends BaseCommand
 
                     if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
                         CLI::write("Erinnerungs-Email gesendet an {$creatorEmail} für Booking #{$booking['id']}", 'green');
-                        $this->bookingModel->update($booking['id'], ['review_second_reminder_sent_at' => date('Y-m-d H:i:s')]);
+                        $db = \Config\Database::connect();
+                        $db->table('bookings')
+                            ->where('id', $booking['id'])
+                            ->update(['review_second_reminder_sent_at' => date('Y-m-d H:i:s')]);
                         $sentReminderCount++;
                     }
                 }

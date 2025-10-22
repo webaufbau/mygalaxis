@@ -96,11 +96,20 @@ class ReviewModel extends BaseModel
 
     public function getTableFields($entity)
     {
+        // Verwende created_by_* Felder (nicht reviewer_*) da diese beim Insert gesetzt werden
+        $reviewerName = trim(
+            ($entity->created_by_firstname ?? $entity->reviewer_firstname ?? '') . ' ' .
+            ($entity->created_by_lastname ?? $entity->reviewer_lastname ?? '')
+        );
+        if (empty($reviewerName)) {
+            $reviewerName = '-';
+        }
+
         return [
             $entity->id,
             $entity->offer_id,
             $entity->recipient_name,
-            esc($entity->reviewer_firstname ?? '-') . esc($entity->reviewer_lastname ?? '-'),
+            esc($reviewerName),
             $entity->rating ?? '-',
             esc($entity->comment ?? '-'),
             $entity->created_at ? date('d.m.Y', strtotime($entity->created_at)) : '-',
@@ -149,15 +158,15 @@ class ReviewModel extends BaseModel
                         'label' => 'Kommentar',
                         'value' => $entity->comment ?? '',
                     ],
-                    'reviewer_firstname' => [
+                    'created_by_firstname' => [
                         'type' => 'text',
                         'label' => 'Vorname Bewerter',
-                        'value' => $entity->reviewer_firstname ?? '',
+                        'value' => $entity->created_by_firstname ?? $entity->reviewer_firstname ?? '',
                     ],
-                    'reviewer_lastname' => [
+                    'created_by_lastname' => [
                         'type' => 'text',
                         'label' => 'Nachname Bewerter',
-                        'value' => $entity->reviewer_lastname ?? '',
+                        'value' => $entity->created_by_lastname ?? $entity->reviewer_lastname ?? '',
                     ],
                     'recipient_id' => [
                         'type' => 'dropdown_db',
@@ -183,7 +192,7 @@ class ReviewModel extends BaseModel
                     'general' => [
                         ['offer_details'],
                         ['rating', 'comment'],
-                        ['reviewer_firstname', 'reviewer_lastname'],
+                        ['created_by_firstname', 'created_by_lastname'],
                         ['recipient_id', 'recipient_name'],
                     ],
                 ],

@@ -75,7 +75,44 @@ class OfferModel extends Model
             $data['data']['verification_token'] = bin2hex(random_bytes(32)); // 64 Zeichen Hex
         }
 
+        // Generiere access_hash wenn nicht vorhanden
+        if (empty($data['data']['access_hash'])) {
+            $data['data']['access_hash'] = md5(uniqid() . time() . rand(1000, 9999));
+            log_message('debug', 'Auto-generierter access_hash: ' . $data['data']['access_hash']);
+        }
+
         return $data;
+    }
+
+    /**
+     * Stellt sicher dass die Offer einen access_hash hat
+     * Generiert einen neuen falls nicht vorhanden
+     */
+    public function ensureAccessHash($offerId): string
+    {
+        $offer = $this->find($offerId);
+
+        if (!$offer) {
+            throw new \RuntimeException("Offer mit ID {$offerId} nicht gefunden");
+        }
+
+        // Wenn access_hash bereits existiert, zurückgeben
+        if (!empty($offer['access_hash'])) {
+            return $offer['access_hash'];
+        }
+
+        // Generiere neuen access_hash
+        $accessHash = md5($offerId . uniqid() . time() . rand(1000, 9999));
+
+        // Speichere in DB
+        $db = \Config\Database::connect();
+        $db->table('offers')
+            ->where('id', $offerId)
+            ->update(['access_hash' => $accessHash]);
+
+        log_message('info', "access_hash generiert für Offer #{$offerId}: {$accessHash}");
+
+        return $accessHash;
     }
 
     /**
