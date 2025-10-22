@@ -709,7 +709,7 @@ class Verification extends BaseController {
     }
 
     protected function sendOfferNotificationEmail(array $data, string $formName, string $uuid, ?string $verifyType = null): void {
-        helper('text'); // für esc()
+        helper(['text', 'email_template']);
 
         // Prüfe ob Bestätigungsmail bereits versendet wurde
         $offerModel = new \App\Models\OfferModel();
@@ -719,6 +719,17 @@ class Verification extends BaseController {
             log_message('info', "Bestätigungsmail wurde bereits versendet für Angebot ID {$offer['id']} (UUID: $uuid)");
             return;
         }
+
+        // Try to send with template first
+        $templateSent = sendOfferNotificationWithTemplate($offer, $data, $formName);
+
+        if ($templateSent) {
+            log_message('info', "E-Mail mit Template versendet für Angebot ID {$offer['id']} (UUID: $uuid)");
+            return;
+        }
+
+        // FALLBACK: Use old method if template not found or failed
+        log_message('info', "Fallback: Verwende alte E-Mail Methode für Angebot ID {$offer['id']} (UUID: $uuid)");
 
         // Sprache aus Offer-Daten setzen
         $language = $data['lang'] ?? 'de'; // Fallback: Deutsch

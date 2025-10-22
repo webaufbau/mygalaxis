@@ -10,7 +10,15 @@
       "Bash(do echo \"Offer $id:\")",
       "Bash(while read line)",
       "Bash(do echo \"$line\")",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(/opt/homebrew/bin/mailhog:*)",
+      "Bash(ddev describe:*)",
+      "Bash(ddev mysql:*)",
+      "Bash(ddev restart:*)",
+      "Bash(ddev logs:*)",
+      "Bash(curl:*)",
+      "Bash(ddev exec tail:*)",
+      "Bash(ddev exec:*)"
     ],
     "deny": [],
     "ask": []

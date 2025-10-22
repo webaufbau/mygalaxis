@@ -33,16 +33,12 @@
 // Lade die Sprachübersetzungen
 $labels = lang('Offers.labels');
 
-// Felder, die nicht angezeigt werden sollen
-$excludedFields = [
-    'terms_n_condition', 'terms_and_conditions', 'terms',
-    'type', 'lang', 'language', 'csrf_test_name', 'submit', 'form_token',
-    '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
-    'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
-    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
-    'vorname', 'nachname', 'names', 'email', 'phone', // Diese werden nur einmal oben angezeigt
-    'skip_kontakt', 'skip_reinigung_umzug', // Interne Felder - nicht für Kunden sichtbar
-];
+// Lade zentrale Konfiguration für Ausschlussfelder
+$fieldConfig = new \Config\FormFieldOptions();
+$excludedFields = array_merge(
+    $fieldConfig->excludedFieldsAlways,
+    ['vorname', 'nachname', 'names', 'email', 'phone'] // Diese werden nur einmal oben angezeigt
+);
 
 foreach ($offers as $index => $offer):
     $offerNumber = $index + 1;

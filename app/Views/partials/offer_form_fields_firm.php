@@ -16,37 +16,26 @@ if (!empty($full)) {
     $formFields += json_decode($offer['form_fields_combo'] ?? '', true) ?? [];
 }
 
-// UTM und technische Keys die IMMER ausgeschlossen werden
-$utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer'];
-$technicalKeys = [
-    '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
-    'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
-    'additional_service', 'referrer',
-    'terms_n_condition', 'terms_and_conditions', 'terms', 'type', 'lang', 'language',
-    'csrf_test_name', 'submit', 'form_token',
-    'skip_kontakt', 'skip_reinigung_umzug' // Interne Felder - nicht für Kunden oder Firmen sichtbar
-];
-
-// Kontaktdaten die NUR ausgeschlossen werden wenn NICHT gekauft
-$contactKeys = [
-    'vorname', 'firstname', 'first_name',
-    'nachname', 'lastname', 'last_name', 'surname',
-    'email', 'e_mail', 'email_address', 'mail', 'e_mail_adresse',
-    'telefon', 'telefonnummer', 'phone', 'telephone', 'phone_number', 'tel'
-];
+// Lade zentrale Konfiguration für Ausschlussfelder
+$fieldConfigForExclusion = new \Config\FormFieldOptions();
 
 // Felder filtern
-$formFields = array_filter($formFields, function ($key) use ($utmKeys, $technicalKeys, $contactKeys, $full, $admin) {
+$formFields = array_filter($formFields, function ($key) use ($fieldConfigForExclusion, $full, $admin) {
     // Normalisiere Key für Vergleich (Leerzeichen und Bindestriche zu Unterstrichen, kleingeschrieben)
     $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
 
-    // Technische Felder immer ausschließen
-    if (in_array($normalizedKey, $technicalKeys)) return false;
-    if (in_array($normalizedKey, $utmKeys)) return false;
-    if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) return false;
+    // Felder, die IMMER ausgeschlossen werden
+    if (in_array($normalizedKey, $fieldConfigForExclusion->excludedFieldsAlways)) {
+        return false;
+    }
+
+    // FluentForm Nonce ausschließen
+    if (preg_match('/^_fluentform_\d+_fluentformnonce$/', $key)) {
+        return false;
+    }
 
     // Kontaktdaten nur ausschließen wenn NICHT gekauft UND NICHT Admin
-    if (empty($full) && empty($admin) && in_array($normalizedKey, $contactKeys)) {
+    if (empty($full) && empty($admin) && in_array($normalizedKey, $fieldConfigForExclusion->excludedFieldsBeforePurchase)) {
         return false;
     }
 

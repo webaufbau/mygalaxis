@@ -125,7 +125,16 @@ $routes->get('test/verification/(:any)', '\App\Controllers\Test::testVerificatio
 // Geschützter Bereich (Login erforderlich)
 // ----------------------------
 $routes->group('', ['filter' => 'auth'], function ($routes) {
-    $routes->get('dashboard', 'Dashboard::index');
+    // Dashboard-Route mit intelligenter Weiterleitung
+    $routes->get('dashboard', function () {
+        // Wenn Admin: Weiterleitung zum Admin-Dashboard
+        if (auth()->user()->inGroup('admin')) {
+            return redirect()->to('/admin/dashboard');
+        }
+        // Sonst: Firmen-Dashboard
+        $controller = new \App\Controllers\Dashboard();
+        return $controller->index();
+    });
 
     $routes->get('filter', 'Filters::index');
     $routes->post('filter/save', 'Filters::save');
@@ -199,7 +208,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 // Admin-Bereich (Admin-Login erforderlich)
 // ----------------------------
 $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
-    $routes->get('dashboard', 'Admin\Dashboard::index');
+    $routes->get('dashboard', 'Dashboard::index');
 
     $routes->get('offer/(:num)', 'Admin\Offer::detail/$1');
 
@@ -273,5 +282,13 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->match(['GET', 'POST'], 'push/form/(:num)', 'Admin\Push::form/$1');
     $routes->match(['GET', 'POST'], 'push/delete/(:num)', 'Admin\Push::delete/$1');
 
+    // Email Templates
+    $routes->get('email-templates', 'Admin\EmailTemplates::index');
+    $routes->match(['GET', 'POST'], 'email-templates/create', 'Admin\EmailTemplates::create');
+    $routes->match(['GET', 'POST'], 'email-templates/edit/(:num)', 'Admin\EmailTemplates::edit/$1');
+    $routes->get('email-templates/copy/(:num)', 'Admin\EmailTemplates::copy/$1');
+    $routes->get('email-templates/delete/(:num)', 'Admin\EmailTemplates::delete/$1');
+    $routes->get('email-templates/preview/(:num)', 'Admin\EmailTemplates::preview/$1');
+    $routes->get('email-templates/shortcode-help', 'Admin\EmailTemplates::shortcodeHelp');
 
 });

@@ -7,18 +7,12 @@
     $formFields = json_decode($offer['form_fields'], true) ?? [];
     $labels = lang('Offers.labels');
 
-    // Felder, die nicht angezeigt werden sollen
-    $excludedFields = [
-        'terms_n_condition', 'terms_and_conditions', 'terms', 'type', 'lang', 'language',
-        'csrf_test_name', 'submit', 'form_token', '__submission', '__fluent_form_embded_post_id',
-        '_wp_http_referer', 'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
-        'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
-        // Persönliche Kontaktdaten (erst nach Kauf sichtbar)
-        'vorname', 'firstname', 'first_name',
-        'nachname', 'lastname', 'last_name', 'surname',
-        'email', 'e-mail', 'e_mail', 'email_address', 'mail', 'e-mail-adresse',
-        'telefon', 'telefonnummer', 'phone', 'telephone', 'phone_number', 'tel'
-    ];
+    // Lade zentrale Konfiguration für Ausschlussfelder
+    $fieldConfig = new \Config\FormFieldOptions();
+    $excludedFields = array_merge(
+        $fieldConfig->excludedFieldsAlways,
+        $fieldConfig->excludedFieldsBeforePurchase // Kontaktdaten erst nach Kauf sichtbar
+    );
 
     $currentPrice = $offer['discounted_price'] ?? $offer['price'];
     ?>

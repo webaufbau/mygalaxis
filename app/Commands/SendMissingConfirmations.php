@@ -107,13 +107,24 @@ class SendMissingConfirmations extends BaseCommand
         // Sprache explizit setzen für CLI-Kontext
         $this->setLanguage($language);
 
-        helper('text');
+        helper(['text', 'email_template']);
 
         $userEmail = $formFields['email'] ?? null;
         if (!$userEmail) {
             CLI::write('Fehler: Keine Email für Angebot ID ' . $offer['id'], 'red');
             return;
         }
+
+        // Try to send with template first
+        $templateSent = sendOfferNotificationWithTemplate($offer, $formFields, $offer['type'] ?? 'unknown');
+
+        if ($templateSent) {
+            CLI::write('✓ Mail mit Template gesendet für Angebot ID ' . $offer['id'] . ' (' . $offer['type'] . ')', 'green');
+            return;
+        }
+
+        // FALLBACK: Use old method if template not found
+        CLI::write('  → Kein Template gefunden, verwende Fallback für Angebot ID ' . $offer['id'], 'yellow');
 
         // Lade platform-spezifische Config
         $platform = $offer['platform'] ?? null;
@@ -177,7 +188,7 @@ class SendMissingConfirmations extends BaseCommand
                 'confirmation_sent_at' => date('Y-m-d H:i:s')
             ]);
 
-            CLI::write('✓ Mail gesendet für Angebot ID ' . $offer['id'], 'green');
+            CLI::write('✓ Mail (Fallback) gesendet für Angebot ID ' . $offer['id'], 'green');
         } else {
             CLI::write('✗ Fehler beim Senden für Angebot ID ' . $offer['id'], 'red');
         }

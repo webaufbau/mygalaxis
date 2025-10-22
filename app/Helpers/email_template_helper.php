@@ -1,0 +1,280 @@
+<?php
+
+use App\Models\EmailTemplateModel;
+use App\Services\EmailTemplateParser;
+
+if (!function_exists('sendOfferNotificationWithTemplate')) {
+    /**
+     * Send offer notification email using database template
+     *
+     * @param array $offer Full offer data from database
+     * @param array $data Form field data
+     * @param string|null $formName Form name
+     * @return bool Success status
+     */
+    function sendOfferNotificationWithTemplate(array $offer, array $data, ?string $formName = null): bool
+    {
+        helper('text');
+
+        // Check if confirmation email was already sent
+        if (!empty($offer['confirmation_sent_at'])) {
+            log_message('info', "Bestätigungsmail wurde bereits versendet für Angebot ID {$offer['id']} (UUID: {$offer['uuid']})");
+            return false;
+        }
+
+        // Get language and offer type
+        $language = $data['lang'] ?? $offer['language'] ?? 'de';
+        $offerType = $offer['type'] ?? 'default';
+
+        // Set locale
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+        $request = service('request');
+        if (!($request instanceof \CodeIgniter\HTTP\CLIRequest)) {
+            $request->setLocale($language);
+        }
+
+        // Load template from database
+        $templateModel = new EmailTemplateModel();
+        $template = $templateModel->getTemplateForOffer($offerType, $language);
+
+        if (!$template) {
+            log_message('error', "Kein E-Mail Template gefunden für Offer Type: {$offerType}, Language: {$language}");
+            // Fallback to old method if template not found
+            return false;
+        }
+
+        log_message('info', "Verwende E-Mail Template ID {$template['id']} für Offer Type: {$offerType}, Language: {$language}");
+
+        // Load platform-specific config
+        $platform = $offer['platform'] ?? 'my_offertenschweiz_ch';
+        $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        // Prepare data for template parser
+        $excludedFields = [
+            'terms_n_condition',
+            'terms_and_conditions',
+            'terms',
+            'type',
+            'lang',
+            'language',
+            'csrf_test_name',
+            'submit',
+            'form_token',
+            '__submission',
+            '__fluent_form_embded_post_id',
+            '_wp_http_referer',
+            'form_name',
+            'uuid',
+            'service_url',
+            'uuid_value',
+            'verified_method',
+            'utm_source',
+            'utm_medium',
+            'utm_campaign',
+            'utm_term',
+            'utm_content',
+            'referrer',
+            'skip_kontakt',
+            'skip_reinigung_umzug',
+        ];
+
+        // Parse template
+        $parser = new EmailTemplateParser();
+        $parsedSubject = $parser->parse($template['subject'], $data, $excludedFields);
+        $parsedBody = $parser->parse($template['body_template'], $data, $excludedFields);
+
+        // Wrap in email layout
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title'      => $parsedSubject,
+            'content'    => $parsedBody,
+            'siteConfig' => $platformSiteConfig,
+        ])->render('emails/layout');
+
+        // Get recipient email
+        $userEmail = $data['email'] ?? null;
+
+        if (!$userEmail) {
+            log_message('error', "Keine E-Mail-Adresse für Angebot ID {$offer['id']} gefunden");
+            return false;
+        }
+
+        // Prepare BCC for admins
+        $adminEmails = [$platformSiteConfig->email];
+        $bccString = implode(',', $adminEmails);
+
+        // Send email
+        $email = \Config\Services::email();
+        $email->setFrom($platformSiteConfig->email, $platformSiteConfig->name);
+        $email->setTo($userEmail);
+        $email->setBCC($bccString);
+        $email->setSubject($parsedSubject);
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        // Set correct timezone for email header
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', 'Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+            return false;
+        }
+
+        // Mark confirmation as sent
+        $db = \Config\Database::connect();
+        $builder = $db->table('offers');
+        $builder->where('id', $offer['id'])->update([
+            'confirmation_sent_at' => date('Y-m-d H:i:s')
+        ]);
+
+        log_message('info', "Bestätigungsmail mit Template ID {$template['id']} versendet für Angebot ID {$offer['id']} (UUID: {$offer['uuid']})");
+
+        return true;
+    }
+}
+
+if (!function_exists('sendGroupedOfferNotificationWithTemplate')) {
+    /**
+     * Send grouped offer notification email using database template
+     *
+     * @param array $offers Array of offers to group
+     * @param string $userEmail Recipient email
+     * @param string $platform Platform identifier
+     * @return bool Success status
+     */
+    function sendGroupedOfferNotificationWithTemplate(array $offers, string $userEmail, string $platform): bool
+    {
+        if (empty($offers)) {
+            return false;
+        }
+
+        helper('text');
+
+        // Get language from first offer
+        $firstOffer = $offers[0];
+        $formFields = json_decode($firstOffer['form_fields'], true) ?? [];
+        $language = $formFields['lang'] ?? $firstOffer['language'] ?? 'de';
+
+        // Set locale
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+        $request = service('request');
+        if (!($request instanceof \CodeIgniter\HTTP\CLIRequest)) {
+            $request->setLocale($language);
+        }
+
+        // Load platform-specific config
+        $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        // For grouped offers, we'll use a special "grouped" template or the default one
+        $templateModel = new EmailTemplateModel();
+        $template = $templateModel->getTemplateForOffer('grouped', $language);
+
+        if (!$template) {
+            // Fallback to default template
+            $template = $templateModel->getTemplateForOffer('default', $language);
+        }
+
+        if (!$template) {
+            log_message('error', "Kein E-Mail Template für gruppierte Offers gefunden (Language: {$language})");
+            return false;
+        }
+
+        $excludedFields = [
+            'terms_n_condition', 'terms_and_conditions', 'terms',
+            'type', 'lang', 'language', 'csrf_test_name', 'submit', 'form_token',
+            '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+            'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
+            'vorname', 'nachname', 'names', 'email', 'phone',
+            'skip_kontakt', 'skip_reinigung_umzug',
+        ];
+
+        // Parse template with grouped data
+        $parser = new EmailTemplateParser();
+
+        // For grouped emails, we use the common data from first offer
+        $parsedSubject = $parser->parse($template['subject'], $formFields, $excludedFields);
+
+        // For body, we need to handle multiple offers
+        // This is more complex - for now we'll use the existing grouped_offer_notification view
+        // TODO: Enhance parser to support grouped offer loops
+
+        $offersData = [];
+        foreach ($offers as $offer) {
+            $offerFields = json_decode($offer['form_fields'], true) ?? [];
+            $type = $offer['type'] ?? 'other';
+
+            $filteredFields = array_filter($offerFields, function ($key) use ($excludedFields) {
+                $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+                return !in_array($normalizedKey, $excludedFields);
+            }, ARRAY_FILTER_USE_KEY);
+
+            $offersData[] = [
+                'uuid' => $offer['uuid'],
+                'type' => $type,
+                'verifyType' => $offer['verify_type'] ?? null,
+                'filteredFields' => $filteredFields,
+                'data' => $offerFields,
+            ];
+        }
+
+        // Use the grouped offer notification view for now
+        // In the future, this could be enhanced to use template system
+        $message = view('emails/grouped_offer_notification', [
+            'offers' => $offersData,
+            'isMultiple' => count($offersData) > 1,
+            'data' => $formFields,
+        ]);
+
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title' => count($offersData) > 1 ? lang('Email.offer_added_requests_title') : lang('Email.offer_added_request_title'),
+            'content' => $message,
+            'siteConfig' => $platformSiteConfig,
+        ])->render('emails/layout');
+
+        // Prepare BCC
+        $adminEmails = [$platformSiteConfig->email];
+        $bccString = implode(',', $adminEmails);
+
+        // Send email
+        $email = \Config\Services::email();
+        $email->setFrom($platformSiteConfig->email, $platformSiteConfig->name);
+        $email->setTo($userEmail);
+        $email->setBCC($bccString);
+        $email->setSubject(
+            count($offersData) > 1
+                ? lang('Email.offer_added_multiple_subject')
+                : lang('Email.offer_added_email_subject')
+        );
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', 'Gruppierte Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+            return false;
+        }
+
+        log_message('info', "Gruppierte E-Mail gesendet an $userEmail für " . count($offersData) . " Offerten");
+
+        // Mark all offers as confirmed
+        $db = \Config\Database::connect();
+        $builder = $db->table('offers');
+        $offerIds = array_column($offers, 'id');
+        $builder->whereIn('id', $offerIds)->update([
+            'confirmation_sent_at' => date('Y-m-d H:i:s')
+        ]);
+
+        log_message('info', 'confirmation_sent_at gesetzt für Offerten IDs: ' . implode(', ', $offerIds));
+
+        return true;
+    }
+}
