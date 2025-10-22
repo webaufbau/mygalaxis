@@ -19,7 +19,9 @@
       "Bash(curl:*)",
       "Bash(ddev exec tail:*)",
       "Bash(ddev exec:*)",
-      "Bash(php spark:*)"
+      "Bash(php spark:*)",
+      "Bash(xattr:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

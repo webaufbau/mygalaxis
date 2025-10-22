@@ -17,8 +17,14 @@ echo ""
 # Format: "server_name|ssh_user@host|pfad|port|git_pull"
 SERVERS=(
     "offertenschweiz.ch|famajynu@vsm-devoha.cyon.net|www/my_offertenschweiz_ch|22|yes"
+    "renovo24.ch|famajynu@vsm-devoha.cyon.net|www/my_renovo24_ch|22|yes"
+    "offertenheld.ch|famajynu@vsm-devoha.cyon.net|www/my_offertenheld_ch|22|yes"
+    "offertendeutschland.de|offerq@dedi108.your-server.de|public_html/my_offertendeutschland_de|222|yes"
+    "renovoscout24.de|offerq@dedi108.your-server.de|public_html/my_renovoscout24_de|222|yes"
     "offertenheld.de|offerq@dedi108.your-server.de|public_html/my_offertenheld_de|222|yes"
+    "offertenaustria.at|offerv@dedi1000.your-server.de|public_html/my_offertenaustria_at|222|yes"
     "offertenheld.at|offerv@dedi1000.your-server.de|public_html/my_offertenheld_at|222|yes"
+    "renovo24.at|offerv@dedi1000.your-server.de|public_html/my_renovo24_at|222|yes"
     "verwaltungbox.ch|bajagady@vsm-nysitu.cyon.net|www/verwaltungbox_ch|22|yes"
 )
 
@@ -44,20 +50,41 @@ run_migration() {
 
     if [ "$need_git_pull" = "yes" ]; then
         echo -e "${BLUE}🔄 Git Pull wird ausgeführt...${NC}"
-        command="${command} && git pull"
+        # Git Pull separat ausführen, damit wir die Ausgabe sehen
+        ssh -p "${ssh_port}" "${ssh_user_host}" "cd ${project_path} && git pull"
     fi
 
-    command="${command} && php spark migrate"
+    # Writable-Verzeichnisse erstellen und Rechte setzen
+    echo -e "${BLUE}📁 Erstelle writable-Verzeichnisse...${NC}"
+    ssh -p "${ssh_port}" "${ssh_user_host}" "cd ${project_path} && \
+        mkdir -p writable/cache writable/logs writable/session writable/uploads && \
+        chmod -R 775 writable && \
+        find writable -type d -exec chmod 775 {} \; && \
+        find writable -type f -exec chmod 664 {} \;"
 
-    # SSH Befehl ausführen
-    ssh -p "${ssh_port}" "${ssh_user_host}" "${command}"
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Writable-Verzeichnisse erstellt${NC}"
+    else
+        echo -e "${YELLOW}⚠ Warnung: Konnte writable-Verzeichnisse nicht erstellen${NC}"
+    fi
 
+    # Migration separat ausführen mit besserer Fehlerbehandlung
+    echo -e "${BLUE}🔄 Migration wird ausgeführt...${NC}"
+    local migrate_output
+    migrate_output=$(ssh -p "${ssh_port}" "${ssh_user_host}" "cd ${project_path} && php spark migrate 2>&1" 2>&1)
     local exit_code=$?
+
+    # Output immer anzeigen
+    echo "$migrate_output"
 
     if [ $exit_code -eq 0 ]; then
         echo -e "${GREEN}✅ Migration erfolgreich auf ${server_name}${NC}"
     else
         echo -e "${RED}❌ Fehler bei Migration auf ${server_name} (Exit Code: ${exit_code})${NC}"
+
+        # Zusätzliche Diagnose-Informationen
+        echo -e "${YELLOW}🔍 Diagnose-Informationen:${NC}"
+        ssh -p "${ssh_port}" "${ssh_user_host}" "cd ${project_path} && php -v 2>&1 | head -1 && ls -la php 2>&1 || echo 'PHP binary check' && which php 2>&1"
     fi
 
     echo ""

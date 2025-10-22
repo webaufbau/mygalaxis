@@ -71,49 +71,9 @@ class Verification extends BaseController {
 
         $method = $isMobile ? 'sms' : 'call';
 
-        // NEUE LOGIK: Prüfe ob diese Offerte zu einer Gruppe gehört (mehrere nacheinander)
-        // Nur dann Auto-Verifikation wenn andere Offerten der Gruppe bereits verifiziert sind
-        if (!empty($row->group_id)) {
-            log_message('info', "[Verification] Offerte UUID $uuid gehört zu Gruppe {$row->group_id}");
-
-            // Prüfe ob andere Offerten dieser Gruppe bereits verifiziert sind
-            $offerModel = new \App\Models\OfferModel();
-            $verifiedInGroup = $offerModel
-                ->where('group_id', $row->group_id)
-                ->where('verified', 1)
-                ->countAllResults();
-
-            if ($verifiedInGroup > 0) {
-                log_message('info', "[Verification] Gruppe {$row->group_id} hat bereits $verifiedInGroup verifizierte Offerte(n). Auto-Verifizierung für UUID $uuid");
-
-                // Markiere Offerte als verifiziert
-                $builder->where('uuid', $uuid)->update([
-                    'verified' => 1,
-                    'verify_type' => 'auto_verified_group' // kennzeichnet automatische Verifizierung durch Gruppe
-                ]);
-
-                // Sende E-Mails direkt (wie nach manueller Verifizierung)
-                $this->handlePostVerification($uuid, $row);
-
-                // Weiterleitung zur Erfolgsseite
-                $nextUrl = session('next_url') ?? $this->siteConfig->thankYouUrl['de'];
-                log_message('info', '[VERIFICATION REDIRECT] Auto-Verifizierung (Gruppe) erfolgreich → Erfolgsseite mit next_url: ' . $nextUrl);
-
-                // Session aufräumen: group_id entfernen (Verifizierung abgeschlossen)
-                session()->remove('group_id');
-                log_message('debug', '[Verification] group_id aus Session entfernt (Auto-Verifizierung abgeschlossen)');
-
-                return view('verification_success', [
-                    'siteConfig' => $this->siteConfig,
-                    'next_url' => $nextUrl,
-                    'auto_verified' => true // Flag für View
-                ]);
-            } else {
-                log_message('info', "[Verification] Gruppe {$row->group_id} hat noch keine verifizierten Offerten. Normale Verifikation erforderlich.");
-            }
-        } else {
-            log_message('info', "[Verification] Offerte UUID $uuid hat keine group_id. Normale Verifikation erforderlich.");
-        }
+        // Auto-Verifizierung für Gruppen ist DEAKTIVIERT
+        // Jede Offerte muss einzeln verifiziert werden, auch wenn sie zu einer Gruppe gehört
+        log_message('info', "[Verification] Offerte UUID $uuid - Normale Verifikation wird durchgeführt");
 
         // In Session schreiben
         session()->set('phone', $phone);

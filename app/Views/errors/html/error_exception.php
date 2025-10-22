@@ -3,6 +3,36 @@ use CodeIgniter\HTTP\Header;
 use CodeIgniter\CodeIgniter;
 
 $errorId = uniqid('error', true);
+
+// Bestimme Farbe basierend auf der Rolle des eingeloggten Users
+$userRole = null;
+$isLoggedIn = false;
+
+try {
+    if (function_exists('auth') && auth()->loggedIn()) {
+        $isLoggedIn = true;
+        $user = auth()->user();
+        if ($user && $user->inGroup('admin')) {
+            $userRole = 'admin';
+        } elseif ($user && $user->inGroup('user')) {
+            $userRole = 'user';
+        }
+    }
+} catch (\Exception $e) {
+    // Fehler beim Prüfen der Authentifizierung ignorieren
+}
+
+// Admin: #FF6B6B (rot), User/Firma: #4A90E2 (blau), Default: #667eea (violett)
+if ($userRole === 'admin') {
+    $primaryColor = '#FF6B6B';
+    $primaryColorRgb = '255, 107, 107';
+} elseif ($userRole === 'user') {
+    $primaryColor = '#4A90E2';
+    $primaryColorRgb = '74, 144, 226';
+} else {
+    $primaryColor = '#667eea';
+    $primaryColorRgb = '102, 126, 234';
+}
 ?>
 <!doctype html>
 <html>
@@ -13,6 +43,23 @@ $errorId = uniqid('error', true);
     <title><?= esc($title) ?></title>
     <style>
         <?= preg_replace('#[\r\n\t ]+#', ' ', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.css')) ?>
+
+        /* Custom role-based colors */
+        .header {
+            background: <?= $primaryColor ?> !important;
+        }
+
+        .header h1 {
+            color: white !important;
+        }
+
+        a {
+            color: <?= $primaryColor ?> !important;
+        }
+
+        .tabs a.active {
+            background: <?= $primaryColor ?> !important;
+        }
     </style>
 
     <script>
