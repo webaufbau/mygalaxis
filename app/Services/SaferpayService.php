@@ -89,6 +89,29 @@ class SaferpayService
             $user = auth()->user();
         }
 
+        // IP-Adresse holen und validieren (Saferpay akzeptiert nur IPv4)
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
+
+        // IPv6-Adressen filtern oder ignorieren
+        if ($ipAddress && filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            // IPv6 nicht unterstützt - verwende keine IP statt ungültige
+            $ipAddress = null;
+        } elseif ($ipAddress && !filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            // Ungültige IP - verwende keine IP
+            $ipAddress = null;
+        }
+
+        $payerData = [
+            "LanguageCode" => "de-CH",
+            "Email" => $user->getEmail(),
+            "UserAgent" => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
+        ];
+
+        // IpAddress nur hinzufügen wenn gültige IPv4-Adresse vorhanden
+        if ($ipAddress) {
+            $payerData["IpAddress"] = $ipAddress;
+        }
+
         $data = [
             "RequestHeader" => [
                 "SpecVersion" => "1.35",
@@ -110,12 +133,7 @@ class SaferpayService
                     "Id" => $aliasId
                 ]
             ],
-            "Payer" => [
-                "LanguageCode" => "de-CH",
-                "Email" => $user->getEmail(),
-                "IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
-                "UserAgent" => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
-            ]
+            "Payer" => $payerData
         ];
 
         log_message('info', 'Saferpay AuthorizeDirect Request: ' . json_encode($data));
