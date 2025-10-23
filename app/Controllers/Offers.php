@@ -116,7 +116,7 @@ class Offers extends BaseController
 
         $filter = $this->request->getGet('filter');
 
-        // Hole alle gekauften Offer-IDs für diesen User (falls purchased-Filter aktiv)
+        // Hole alle gekauften Offer-IDs für diesen User
         $purchasedOfferIds = [];
         if ($userId) {
             $bookingModel = new \App\Models\BookingModel();
@@ -128,7 +128,13 @@ class Offers extends BaseController
         }
 
         // Filter anwenden
-        if ($filter === 'purchased') {
+        if ($filter === 'available') {
+            // Nur verfügbare (noch nicht gekaufte) Angebote anzeigen
+            if (!empty($purchasedOfferIds)) {
+                $builder->whereNotIn('id', $purchasedOfferIds);
+            }
+            $builder->where('status', 'available');
+        } elseif ($filter === 'purchased') {
             // Nur gekaufte Angebote anzeigen
             if (!empty($purchasedOfferIds)) {
                 $builder->whereIn('id', $purchasedOfferIds);
@@ -136,8 +142,6 @@ class Offers extends BaseController
                 // Keine gekauften Angebote -> leere Ergebnisse
                 $builder->where('1', '0');
             }
-        } elseif ($filter) {
-            $builder->where('status', $filter);
         }
 
         $builder->orderBy('created_at', 'DESC');

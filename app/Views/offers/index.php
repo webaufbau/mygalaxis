@@ -15,12 +15,10 @@
         >
     </div>
     <div class="col-auto">
-        <select name="filter" class="form-select">
+        <select name="filter" class="form-select" onchange="this.form.submit()">
             <option value=""><?= lang('Offers.allStatuses') ?></option>
-            <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.statusAvailable') ?></option>
-            <option value="purchased" <?= ($filter === 'purchased') ? 'selected' : '' ?>><?= lang('Offers.filterPurchased') ?? 'Gekaufte' ?></option>
-            <option value="sold" <?= ($filter === 'sold') ? 'selected' : '' ?>><?= lang('Offers.statusSold') ?></option>
-            <option value="out_of_stock" <?= ($filter === 'out_of_stock') ? 'selected' : '' ?>><?= lang('Offers.statusOutOfStock') ?></option>
+            <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.filterAvailable') ?></option>
+            <option value="purchased" <?= ($filter === 'purchased') ? 'selected' : '' ?>><?= lang('Offers.filterPurchased') ?></option>
         </select>
     </div>
     <div class="col-auto">
