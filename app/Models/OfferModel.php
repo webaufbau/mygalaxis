@@ -7,6 +7,11 @@ use Random\RandomException;
 
 class OfferModel extends Model
 {
+    /**
+     * Maximale Anzahl Käufe pro Offerte bevor sie ausverkauft ist
+     */
+    public const MAX_PURCHASES = 4;
+
     protected $table = 'offers';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;

@@ -433,7 +433,7 @@ class Offers extends BaseController
             ->countAllResults();
 
         // Anfrage als verkauft markieren
-        if ($salesCount >= 4) {
+        if ($salesCount >= \App\Models\OfferModel::MAX_PURCHASES) {
             $offerModel = new \App\Models\OfferModel();
             $offerModel->update($offer['id'], ['status' => 'sold']);
         }

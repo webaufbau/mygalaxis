@@ -33,13 +33,13 @@ class UpdateOfferStatus extends BaseCommand
             // Anzahl der Käufe ermitteln
             $purchaseCount = $purchaseModel
                 ->where('offer_id', $offer['id'])
-                ->where('status', 'completed')
+                ->where('status', 'paid')
                 ->countAllResults();
 
             CLI::write("Angebot #{$offer['id']}: {$purchaseCount} Verkäufe, Status: {$offer['status']}");
 
-            // Wenn weniger als 4 Verkäufe, Status auf 'available' setzen
-            if ($purchaseCount < 4) {
+            // Wenn weniger als MAX_PURCHASES Verkäufe, Status auf 'available' setzen
+            if ($purchaseCount < \App\Models\OfferModel::MAX_PURCHASES) {
                 $offerModel->update($offer['id'], [
                     'status' => 'available',
                     'buyers' => $purchaseCount
@@ -47,7 +47,7 @@ class UpdateOfferStatus extends BaseCommand
                 CLI::write("  → Status aktualisiert auf 'available'", 'green');
                 $updatedCount++;
             } else {
-                CLI::write("  → Bleibt '{$offer['status']}' (>= 4 Verkäufe)", 'blue');
+                CLI::write("  → Bleibt '{$offer['status']}' (>= " . \App\Models\OfferModel::MAX_PURCHASES . " Verkäufe)", 'blue');
             }
         }
 

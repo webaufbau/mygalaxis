@@ -295,7 +295,7 @@ class OfferPurchaseService
 
         $buyerIds = array_column($allPurchases, 'user_id');
         $buyerCount = count($buyerIds);
-        $status = $buyerCount >= 4 ? 'out_of_stock' : 'available';
+        $status = $buyerCount >= OfferModel::MAX_PURCHASES ? 'out_of_stock' : 'available';
 
         // Angebot aktualisieren
         $offerModel = new OfferModel();

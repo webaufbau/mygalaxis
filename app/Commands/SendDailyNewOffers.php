@@ -70,6 +70,7 @@ class SendDailyNewOffers extends BaseCommand
     protected function getFilteredOffersForUser(User $user, string $date, ZipcodeService $zipcodeService): array
     {
         $offerModel = new OfferModel();
+        $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
         $builder = $offerModel->builder();
         $builder->where('verified', 1);
         //$builder->where('DATE(created_at)', $date);
@@ -113,7 +114,22 @@ class SendDailyNewOffers extends BaseCommand
             }
         }
 
-        return $builder->orderBy('created_at', 'DESC')->get()->getResultArray();
+        $allOffers = $builder->orderBy('created_at', 'DESC')->get()->getResultArray();
+
+        // Filtere ausverkaufte Angebote (>= MAX_PURCHASES paid purchases) heraus
+        $filteredOffers = [];
+        foreach ($allOffers as $offer) {
+            $purchaseCount = $offerPurchaseModel
+                ->where('offer_id', $offer['id'])
+                ->where('status', 'paid')
+                ->countAllResults();
+
+            if ($purchaseCount < \App\Models\OfferModel::MAX_PURCHASES) {
+                $filteredOffers[] = $offer;
+            }
+        }
+
+        return $filteredOffers;
 
         //dd($builder->db()->getLastQuery()->getQuery());
     }

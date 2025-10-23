@@ -24,6 +24,17 @@ class OfferPriceUpdater
 
     public function updateOfferAndNotify(array $offer): bool
     {
+        // Prüfe ob Offerte ausverkauft ist (>= MAX_PURCHASES paid purchases)
+        $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+        $purchaseCount = $offerPurchaseModel
+            ->where('offer_id', $offer['id'])
+            ->where('status', 'paid')
+            ->countAllResults();
+
+        if ($purchaseCount >= \App\Models\OfferModel::MAX_PURCHASES) {
+            return false; // Ausverkauft, keine Updates/Benachrichtigungen
+        }
+
         $formFields = json_decode($offer['form_fields'] ?? '{}', true) ?? [];
         $formFieldsCombo = json_decode($offer['form_fields_combo'] ?? '{}', true) ?? [];
 

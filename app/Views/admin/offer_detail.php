@@ -76,7 +76,7 @@
             <li><strong>Angebot erstellt:</strong> <?= \CodeIgniter\I18n\Time::parse($offer['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?> Uhr</li>
             <li><strong>Alter des Angebots:</strong> <?= floor($hoursDiff / 24) ?> Tage, <?= $hoursDiff % 24 ?> Stunden (<?= $hoursDiff ?> Stunden total)</li>
             <li><strong>Anzahl Verkäufe:</strong> <?= $purchaseCount ?></li>
-            <?php if ($purchaseCount < 4): ?>
+            <?php if ($purchaseCount < \App\Models\OfferModel::MAX_PURCHASES): ?>
                 <?php if ($discountedPrice < $calculatedPrice): ?>
                     <li style="color: green;"><strong>✓ Rabatt aktiv:</strong> <?= $discountPercent ?>% (Preis: <?= $calculatedPrice ?> CHF → <?= $discountedPrice ?> CHF)</li>
                 <?php else: ?>

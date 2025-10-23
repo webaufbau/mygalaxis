@@ -23,9 +23,8 @@ class DiscountOldOffers extends BaseCommand
         $calculator = new \App\Libraries\OfferPriceCalculator();
         $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
 
-        // Hol alle Offers die nicht ausverkauft sind
+        // Hol alle Offers
         $offers = $offerModel
-            ->where('status !=', 'out_of_stock')
             ->where('price >', 0)
             ->findAll();
 
@@ -39,12 +38,15 @@ class DiscountOldOffers extends BaseCommand
         $now = new DateTime();
 
         foreach ($offers as $offer) {
-            // Prüfe Anzahl Käufe - keine Rabatte wenn >= 4
+            // Prüfe Anzahl PAID Käufe - keine Rabatte wenn >= MAX_PURCHASES
             $purchaseCount = $offerPurchaseModel
                 ->where('offer_id', $offer['id'])
+                ->where('status', 'paid')
                 ->countAllResults();
 
-            if ($purchaseCount >= 4) {
+            if ($purchaseCount >= \App\Models\OfferModel::MAX_PURCHASES) {
+                CLI::write("Offer #{$offer['id']}: Übersprungen (ausverkauft: {$purchaseCount} Verkäufe)", 'yellow');
+                $skipped++;
                 continue;
             }
 
