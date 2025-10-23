@@ -74,8 +74,8 @@ return [
     'generatedAt'        => 'Diese Nachricht wurde automatisch generiert am {0}.', // Datum
 
     // Allgemeine Betreffzeilen
-    'offerPurchasedSubject'       => 'Ein Fachbetrieb interessiert sich für Ihr Projekt \'{0}\'',
-    'offerPurchasedCompanySubject'=> 'Vielen Dank für den Kauf einer Offerte "{0}"',
+    'offerPurchasedSubject'       => 'Ein Fachbetrieb interessiert sich für Ihr Projekt \'%s\'',
+    'offerPurchasedCompanySubject'=> 'Vielen Dank für den Kauf einer Offerte "%s"',
 
     // Texte für Kunden-Mail
     'offerPurchasedGreeting'      => 'Guten Tag {0},',

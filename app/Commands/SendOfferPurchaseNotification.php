@@ -109,7 +109,7 @@ class SendOfferPurchaseNotification extends BaseCommand
             'company_backend_offer_link' => $company_backend_offer_link,
         ];
 
-        $subject = lang('Email.offerPurchasedCompanySubject', [$offer['title']]);
+        $subject = sprintf(lang('Email.offerPurchasedCompanySubject'), $offer['title']);
         $message = view('emails/offer_purchase_to_company', $data);
 
         $this->sendEmail($company->email, $subject, $message, $siteConfig);
@@ -143,7 +143,7 @@ class SendOfferPurchaseNotification extends BaseCommand
         ];
 
         // Betreff aus Sprachdateien holen
-        $subject = lang('Email.offerPurchasedSubject', [$offer['title']]);
+        $subject = sprintf(lang('Email.offerPurchasedSubject'), $offer['title']);
         $message = view('emails/offer_purchase_to_customer', $data);
 
         $originalEmail = $customer['email'];

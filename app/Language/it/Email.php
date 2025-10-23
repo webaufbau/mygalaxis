@@ -74,8 +74,8 @@ return [
     'generatedAt'        => 'Questo messaggio è stato generato automaticamente il {0}.', // Data
 
     // Allgemeine Betreffzeilen
-    'offerPurchasedSubject'       => 'Un\'azienda specializzata è interessata al tuo progetto \'{0}\'',
-    'offerPurchasedCompanySubject'=> 'Grazie per aver acquistato l\'offerta "{0}"',
+    'offerPurchasedSubject'       => 'Un\'azienda specializzata è interessata al tuo progetto \'%s\'',
+    'offerPurchasedCompanySubject'=> 'Grazie per aver acquistato l\'offerta "%s"',
 
     // Texte für Kunden-Mail
     'offerPurchasedGreeting'      => 'Buongiorno {0},',
