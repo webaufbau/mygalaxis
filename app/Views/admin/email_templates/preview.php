@@ -178,6 +178,52 @@
 
                 <h6 class="mt-3">Body Template:</h6>
                 <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;"><code><?= esc($template['body_template']) ?></code></pre>
+
+                <?php if ($selectedOffer): ?>
+                    <h6 class="mt-4">Verfügbare Felder der gewählten Offerte #<?= $selectedOffer['id'] ?>:</h6>
+                    <?php
+                    $formFields = json_decode($selectedOffer['form_fields'] ?? '{}', true);
+                    if (!empty($formFields)):
+                    ?>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 40%;">Feldname</th>
+                                        <th style="width: 60%;">Wert</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($formFields as $key => $value): ?>
+                                        <tr>
+                                            <td><code>{field:<?= esc($key) ?>}</code></td>
+                                            <td>
+                                                <?php
+                                                if (is_array($value)) {
+                                                    echo '<span class="text-muted">[Array: ' . implode(', ', array_map('esc', $value)) . ']</span>';
+                                                } elseif (is_string($value) && strlen($value) > 100) {
+                                                    echo '<span class="text-muted">' . esc(substr($value, 0, 100)) . '...</span>';
+                                                } elseif (empty($value)) {
+                                                    echo '<span class="text-muted fst-italic">(leer)</span>';
+                                                } else {
+                                                    echo esc($value);
+                                                }
+                                                ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i>
+                            Insgesamt <?= count($formFields) ?> Felder verfügbar.
+                            Verwende die Shortcodes wie <code>{field:feldname}</code> in deinem Template.
+                        </p>
+                    <?php else: ?>
+                        <p class="text-muted"><em>Keine Felder in dieser Offerte gefunden.</em></p>
+                    <?php endif; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
