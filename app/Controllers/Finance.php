@@ -236,6 +236,7 @@ class Finance extends BaseController
                 'type' => 'topup',
                 'description' => lang('Finance.topupDescription') . " - " . number_format($amount, 2, '.', '') . " CHF per " . $paymentMethodName . " bezahlt",
                 'amount' => $amount,
+                'paid_amount' => 0.00, // Topups haben kein paid_amount (nur für Käufe relevant)
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
@@ -300,6 +301,7 @@ class Finance extends BaseController
                     'type' => 'topup',
                     'description' => lang('Finance.topupDescription') . " - " . number_format($amountInChf, 2, '.', '') . " CHF per " . $paymentMethodName . " bezahlt",
                     'amount' => $amountInChf,
+                    'paid_amount' => 0.00, // Topups haben kein paid_amount (nur für Käufe relevant)
                     'created_at' => date('Y-m-d H:i:s'),
                 ]);
 

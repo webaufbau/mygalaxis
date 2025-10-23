@@ -192,7 +192,7 @@ class Dashboard extends Controller
                 $bookings[] = $booking;
 
                 // Offer-Info für Statistik hinzufügen
-                $offer['price_paid'] = abs($booking['amount']);
+                $offer['price_paid'] = $booking['paid_amount']; // Verwende paid_amount statt amount
                 $purchasedOffers[] = $offer;
             }
         }

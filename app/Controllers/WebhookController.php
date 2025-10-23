@@ -516,6 +516,7 @@ class WebhookController extends BaseController
                 'type' => 'topup',
                 'description' => 'SaferPay Top-up (NotifyURL) - ' . ($transaction['AcquirerName'] ?? 'Online-Zahlung'),
                 'amount' => $amount / 100, // Rappen → CHF
+                'paid_amount' => 0.00, // Topups haben kein paid_amount (nur für Käufe relevant)
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 

@@ -209,6 +209,7 @@ class OfferPurchaseService
                 'type' => 'topup',
                 'description' => 'Automatische Aufladung für Offertenkauf #' . $offerId,
                 'amount' => $amount,
+                'paid_amount' => 0.00, // Topups haben kein paid_amount (nur für Käufe relevant)
                 'created_at' => date('Y-m-d H:i:s'),
                 'meta' => json_encode([
                     'source' => 'auto_charge',
@@ -240,6 +241,7 @@ class OfferPurchaseService
                 'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'],
                 'reference_id' => $offer['id'],
                 'amount' => -$price,
+                'paid_amount' => $price,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
         } else {
@@ -253,6 +255,7 @@ class OfferPurchaseService
                 'description' => lang('Offers.buy.offer_purchased') . " #" . $offer['id'] . " - {$price} CHF per {$paymentMethodText} bezahlt",
                 'reference_id' => $offer['id'],
                 'amount' => 0, // 0 CHF, da direkt von Karte abgebucht
+                'paid_amount' => $price,
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
         }

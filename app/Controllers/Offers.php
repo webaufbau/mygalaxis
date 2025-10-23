@@ -195,7 +195,7 @@ class Offers extends BaseController
         $isPurchased = !empty($booking);
 
         if ($isPurchased && $booking) {
-            $offer['purchased_price'] = abs($booking['amount']);
+            $offer['purchased_price'] = $booking['paid_amount']; // Verwende paid_amount statt amount
             $offer['purchased_at'] = $booking['created_at'];
         }
 
@@ -240,7 +240,7 @@ class Offers extends BaseController
             foreach ($offers as &$offer) {
                 if (isset($bookingsByOfferId[$offer['id']])) {
                     $booking = $bookingsByOfferId[$offer['id']];
-                    $offer['purchased_price'] = abs($booking['amount']);
+                    $offer['purchased_price'] = $booking['paid_amount']; // Verwende paid_amount statt amount
                     $offer['purchased_at'] = $booking['created_at']; // für Sortierung
                 }
             }
