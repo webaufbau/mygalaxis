@@ -134,8 +134,9 @@ class EmailTemplateParser
         }
 
         // Single condition: field:fieldname or field:fieldname > value
-        if (preg_match('/field:([a-zA-Z0-9_-]+)(?:\s*(>|<|>=|<=|==|!=)\s*(.+))?/', $conditionString, $matches)) {
-            $fieldName = $matches[1];
+        // Erweitert um Leerzeichen, Schrägstriche und andere Sonderzeichen
+        if (preg_match('/field:([a-zA-Z0-9_\-\s\/äöüÄÖÜ]+?)(?:\s*(>|<|>=|<=|==|!=)\s*(.+))?(?:\]|$)/', $conditionString, $matches)) {
+            $fieldName = trim($matches[1]);
             $operator = $matches[2] ?? null;
             $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
 
@@ -207,10 +208,11 @@ class EmailTemplateParser
      */
     protected function parseFieldShortcodes(string $template): string
     {
-        $pattern = '/\{field:([a-zA-Z0-9_-]+)(?:\|([a-z]+):([^\}]+))?\}/';
+        // Erweitert um Leerzeichen, Schrägstriche und Umlaute
+        $pattern = '/\{field:([a-zA-Z0-9_\-\s\/äöüÄÖÜ]+?)(?:\|([a-z]+):([^\}]+))?\}/';
 
         return preg_replace_callback($pattern, function ($matches) {
-            $fieldName = $matches[1];
+            $fieldName = trim($matches[1]);
             $filter = $matches[2] ?? null;
             $filterParam = $matches[3] ?? null;
 
