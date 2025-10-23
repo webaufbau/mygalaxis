@@ -40,38 +40,6 @@
             <?php endif; ?>
         </p>
 
-        <h4><?= lang('Email.offer_added_summary') ?? 'Details' ?></h4>
-        <ul style="list-style: none; padding-left: 0;">
-            <?php foreach ($formFields as $key => $value): ?>
-                <?php
-                // Normalisiere Key für Vergleich (Leerzeichen und Bindestriche zu Unterstrichen)
-                $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
-
-                // Skip ausgeschlossene Felder
-                if (in_array($normalizedKey, $excludedFields)) {
-                    continue;
-                }
-
-                // Übersetzung
-                $label = $labels[$key] ?? ucwords(str_replace(['_', '-'], ' ', $key));
-
-                // Werte bereinigen
-                $cleanValue = is_string($value) ? trim(strtolower($value)) : $value;
-                if ($cleanValue === 'nein' || $cleanValue === false || $cleanValue === null || $cleanValue === '') {
-                    continue;
-                }
-
-                // Werte formatieren
-                if (is_array($value)) {
-                    $display = implode(', ', array_map('esc', $value));
-                } else {
-                    $display = esc($value);
-                }
-                ?>
-                <li><strong><?= esc($label) ?>:</strong> <?= $display ?></li>
-            <?php endforeach; ?>
-        </ul>
-
         <p>
             <a href="<?= rtrim($siteConfig->backendUrl, '/') . '/offers/' . $offer['id'] ?>" style="display: inline-block; padding: 10px 20px; background-color: #955CE9; color: white; text-decoration: none; border-radius: 5px;">
                 <?= lang('Email.viewNow') ?>
