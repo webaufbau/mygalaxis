@@ -691,6 +691,16 @@ class Verification extends BaseController {
                 'confirmation_sent_at' => date('Y-m-d H:i:s')
             ]);
             log_message('info', 'confirmation_sent_at gesetzt für Offerten IDs: ' . implode(', ', $offerIds));
+
+            // Benachrichtige passende Firmen über alle Offerten dieser Gruppe (Fallback-Methode)
+            $notifier = new \App\Libraries\OfferNotificationSender();
+            $totalSent = 0;
+            foreach ($offers as $offer) {
+                $sentCount = $notifier->notifyMatchingUsers($offer);
+                $totalSent += $sentCount;
+                log_message('info', "Firmen-Benachrichtigung (Fallback) für gruppierte Offerte ID {$offer['id']}: {$sentCount} Firma(n) benachrichtigt");
+            }
+            log_message('info', "Gesamt Firmen-Benachrichtigungen (Fallback) für gruppierte Offerten: {$totalSent} Firma(n)");
         }
     }
 
@@ -829,6 +839,11 @@ class Verification extends BaseController {
                     'confirmation_sent_at' => date('Y-m-d H:i:s')
                 ]);
                 log_message('info', "confirmation_sent_at gesetzt für Angebot ID {$offer['id']} (UUID: $uuid)");
+
+                // Benachrichtige passende Firmen über die neue Offerte (Fallback-Methode)
+                $notifier = new \App\Libraries\OfferNotificationSender();
+                $sentCount = $notifier->notifyMatchingUsers($offer);
+                log_message('info', "Firmen-Benachrichtigung (Fallback) versendet: {$sentCount} Firma(n) benachrichtigt für Angebot ID {$offer['id']}");
             }
         }
 

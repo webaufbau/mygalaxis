@@ -151,6 +151,11 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
 
         log_message('info', "Bestätigungsmail mit Template ID {$template['id']} versendet für Angebot ID {$offer['id']} (UUID: {$offer['uuid']})");
 
+        // Benachrichtige passende Firmen über die neue Offerte
+        $notifier = new \App\Libraries\OfferNotificationSender();
+        $sentCount = $notifier->notifyMatchingUsers($offer);
+        log_message('info', "Firmen-Benachrichtigung versendet: {$sentCount} Firma(n) benachrichtigt für Angebot ID {$offer['id']}");
+
         return true;
     }
 }
@@ -293,6 +298,16 @@ if (!function_exists('sendGroupedOfferNotificationWithTemplate')) {
         ]);
 
         log_message('info', 'confirmation_sent_at gesetzt für Offerten IDs: ' . implode(', ', $offerIds));
+
+        // Benachrichtige passende Firmen über alle Offerten dieser Gruppe
+        $notifier = new \App\Libraries\OfferNotificationSender();
+        $totalSent = 0;
+        foreach ($offers as $offer) {
+            $sentCount = $notifier->notifyMatchingUsers($offer);
+            $totalSent += $sentCount;
+            log_message('info', "Firmen-Benachrichtigung für gruppierte Offerte ID {$offer['id']}: {$sentCount} Firma(n) benachrichtigt");
+        }
+        log_message('info', "Gesamt Firmen-Benachrichtigungen für gruppierte Offerten: {$totalSent} Firma(n)");
 
         return true;
     }
