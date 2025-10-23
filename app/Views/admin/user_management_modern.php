@@ -226,8 +226,10 @@
                             $categories = is_string($user['categories'] ?? '') ? json_decode($user['categories'], true) : ($user['categories'] ?? []);
                             if (!empty($categories)):
                                 foreach (array_slice($categories, 0, 2) as $cat):
+                                    // Übersetzen falls es ein Language-Key ist (z.B. "Filter.flooring")
+                                    $displayCat = lang($cat) !== $cat ? lang($cat) : esc($cat);
                             ?>
-                                <span class="badge bg-info badge-status me-1"><?= esc($cat) ?></span>
+                                <span class="badge bg-info badge-status me-1"><?= $displayCat ?></span>
                             <?php
                                 endforeach;
                                 if (count($categories) > 2):

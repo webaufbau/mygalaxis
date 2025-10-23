@@ -13,13 +13,12 @@
             <?php if((isset($has_filter_configuration) && $has_filter_configuration>0) || isset($text_add_new) && $text_add_new!==false) { ?>
             <form class="d-flex form-filters" role="search" method="get">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item px-3 fs-4 mt-1">
-                        <a href="<?=site_url('account/search');?>?type=<?=$model_name;?>"><i class="bi bi-funnel"></i></a>
-                    </li>
                     <?=$form_filters;?>
+                    <?php if(isset($has_filter_configuration) && $has_filter_configuration>0) { ?>
                     <li class="nav-item px-3">
                         <input type="submit" value="filtern" class="btn btn-primary btn-sm py-1 my-2">
                     </li>
+                    <?php } ?>
                     <?php if(isset($url_prefix) && isset($controller_name) && service('request')->getGet('filtered')) { ?>
                     <li class="nav-item px-3">
                         <a href="<?=site_url(strtolower($url_prefix . $controller_name));?>" class="btn btn-outline-primary btn-sm py-1 my-2">Filter zurücksetzen</a>

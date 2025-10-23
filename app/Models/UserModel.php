@@ -162,8 +162,14 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             // Übersetzung über lang() holen
             $filter_categories_display = [];
             foreach ($keys as $key) {
-                // z.B. lang('Filter.' . $key)
-                $translated = lang('Filter.' . $key);
+                $key = trim($key);
+                // Prüfen ob $key bereits "Filter." enthält (z.B. "Filter.tiling")
+                // Falls ja, direkt übersetzen. Falls nein, "Filter." voranstellen
+                if (strpos($key, 'Filter.') === 0) {
+                    $translated = lang($key);
+                } else {
+                    $translated = lang('Filter.' . $key);
+                }
                 $filter_categories_display[] = $translated ?: $key; // fallback auf Key, falls keine Übersetzung
             }
 
