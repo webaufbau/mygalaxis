@@ -15,6 +15,10 @@ class MergeComboOffers extends BaseCommand
 
     public function run(array $params)
     {
+        // Command deaktiviert - Combo Offers werden nicht mehr verwendet
+        CLI::write('Command ist deaktiviert. Combo Offers werden nicht mehr zusammengeführt.', 'yellow');
+        return;
+
         $offerModel = new OfferModel();
 
         // Alle potenziellen Kandidaten vom Typ move
