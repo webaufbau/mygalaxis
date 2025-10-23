@@ -49,7 +49,7 @@ class Dashboard extends Controller
         $deleteId = $request->getGet('delete');
         $user = auth()->user();
 
-        if ($deleteId && $user && in_array('admin', $user->groups ?? [])) {
+        if ($deleteId && $user && $user->inGroup('admin')) {
             // Sicherstellen, dass $deleteId integer ist
             $deleteId = (int)$deleteId;
 

@@ -119,6 +119,11 @@ class FormFieldOptions extends BaseConfig
         'additional_service',
         'referrer',
 
+        // Fluent Forms Felder
+        'fluentformnonce',
+        '_fluentformnonce',
+        'input_type',
+
         // UTM Parameter
         'utm_source',
         'utm_medium',

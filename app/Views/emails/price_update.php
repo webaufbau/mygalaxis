@@ -16,5 +16,3 @@
 </ul>
 
 <p><?= lang('Email.successWishes') ?></p>
-
-<p><?= lang('Email.greetings', [$siteConfig->name]) ?></p>

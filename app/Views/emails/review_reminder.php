@@ -16,8 +16,3 @@
 </p>
 
 <p><?= lang('Reviews.thankYou') ?></p>
-
-<div class="footer">
-    <?= lang('Reviews.generatedAt', [date('d.m.Y H:i')]) ?><br>
-    <?= esc($siteConfig->name ?? '') ?>
-</div>
