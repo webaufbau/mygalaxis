@@ -212,6 +212,11 @@ class EmailTemplateParser
                 return '';
             }
 
+            // Check if this is a file upload field - render as images/links
+            if ($this->fieldRenderer->isFileUploadField($fieldName)) {
+                return $this->fieldRenderer->formatFileUpload($value, 'email');
+            }
+
             // Apply filter
             if ($filter === 'date' && $filterParam) {
                 return $this->formatDate($value, $filterParam);
@@ -222,8 +227,22 @@ class EmailTemplateParser
                 return esc(implode(', ', $value));
             }
 
+            // Check if value is a file URL (comma-separated URLs)
+            if (is_string($value) && $this->containsFileUrls($value)) {
+                return $this->fieldRenderer->formatFileUpload($value, 'email');
+            }
+
             return esc($value);
         }, $template);
+    }
+
+    /**
+     * Check if string contains file URLs (images or PDFs)
+     */
+    protected function containsFileUrls(string $value): bool
+    {
+        // Check for URLs with image/PDF extensions
+        return (bool) preg_match('/https?:\/\/[^\s,]+\.(jpg|jpeg|png|webp|gif|pdf)/i', $value);
     }
 
     /**

@@ -40,6 +40,10 @@
             $categoryConfig = config('CategoryOptions');
             $categoryTypes = $categoryConfig->categoryTypes;
             $categoryTypes['default'] = 'Standard (Fallback)';
+
+            // Load subtype labels
+            $subtypeConfig = config('OfferSubtypes');
+            $subtypeLabels = $subtypeConfig->getSubtypeLabels();
         ?>
         <?php foreach ($templates as $offerType => $typeTemplates): ?>
             <div class="card mb-4">
@@ -54,6 +58,7 @@
                             <thead>
                                 <tr>
                                     <th>Sprache</th>
+                                    <th>Unterkategorie</th>
                                     <th>Betreff</th>
                                     <th>Status</th>
                                     <th>Notizen</th>
@@ -68,6 +73,17 @@
                                             <span class="badge bg-secondary">
                                                 <?= strtoupper(esc($template['language'])) ?>
                                             </span>
+                                        </td>
+                                        <td>
+                                            <?php if (!empty($template['subtype'])): ?>
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-diagram-3"></i> <?= esc($subtypeLabels[$template['subtype']] ?? $template['subtype']) ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary">
+                                                    <i class="bi bi-asterisk"></i> Alle
+                                                </span>
+                                            <?php endif; ?>
                                         </td>
                                         <td><?= esc($template['subject']) ?></td>
                                         <td>

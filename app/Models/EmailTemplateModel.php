@@ -14,6 +14,7 @@ class EmailTemplateModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'offer_type',
+        'subtype',
         'language',
         'subject',
         'body_template',
@@ -49,28 +50,45 @@ class EmailTemplateModel extends Model
     ];
 
     /**
-     * Get template for specific offer type and language
-     * Falls back to 'default' template if specific one not found
+     * Get template for specific offer type, subtype and language
+     * Falls back intelligently through: subtype-specific → type-generic → default
      *
      * @param string $offerType
      * @param string $language
+     * @param string|null $subtype Optional subtype (e.g., 'umzug_privat', 'umzug_firma')
      * @return array|null
      */
-    public function getTemplateForOffer(string $offerType, string $language = 'de'): ?array
+    public function getTemplateForOffer(string $offerType, string $language = 'de', ?string $subtype = null): ?array
     {
-        // Try to get specific template
+        // Priority 1: Try to get template with matching offer_type AND subtype
+        if ($subtype !== null) {
+            $template = $this->where('offer_type', $offerType)
+                             ->where('subtype', $subtype)
+                             ->where('language', $language)
+                             ->where('is_active', 1)
+                             ->first();
+
+            if ($template) {
+                return $template;
+            }
+        }
+
+        // Priority 2: Try to get generic template for this offer_type (subtype = NULL = applies to all)
         $template = $this->where('offer_type', $offerType)
+                         ->where('subtype IS NULL')
                          ->where('language', $language)
                          ->where('is_active', 1)
                          ->first();
 
-        // Fallback to default template if not found
-        if (!$template) {
-            $template = $this->where('offer_type', 'default')
-                             ->where('language', $language)
-                             ->where('is_active', 1)
-                             ->first();
+        if ($template) {
+            return $template;
         }
+
+        // Priority 3: Fallback to default template
+        $template = $this->where('offer_type', 'default')
+                         ->where('language', $language)
+                         ->where('is_active', 1)
+                         ->first();
 
         return $template;
     }

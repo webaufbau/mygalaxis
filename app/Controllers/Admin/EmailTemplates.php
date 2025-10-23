@@ -44,6 +44,7 @@ class EmailTemplates extends AdminBase
         if ($this->request->getMethod() === 'POST') {
             $data = [
                 'offer_type'             => $this->request->getPost('offer_type'),
+                'subtype'                => $this->request->getPost('subtype') ?: null, // Empty string => NULL
                 'language'               => $this->request->getPost('language'),
                 'subject'                => $this->request->getPost('subject'),
                 'body_template'          => $this->request->getPost('body_template'),
@@ -92,6 +93,7 @@ class EmailTemplates extends AdminBase
         if ($this->request->getMethod() === 'POST') {
             $data = [
                 'offer_type'             => $this->request->getPost('offer_type'),
+                'subtype'                => $this->request->getPost('subtype') ?: null, // Empty string => NULL
                 'language'               => $this->request->getPost('language'),
                 'subject'                => $this->request->getPost('subject'),
                 'body_template'          => $this->request->getPost('body_template'),
@@ -140,6 +142,7 @@ class EmailTemplates extends AdminBase
         // Create a copy with modified name
         $copyData = [
             'offer_type'             => $template['offer_type'],
+            'subtype'                => $template['subtype'] ?? null,
             'language'               => $template['language'],
             'subject'                => $template['subject'] . ' (Kopie)',
             'body_template'          => $template['body_template'],

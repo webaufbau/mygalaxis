@@ -35,17 +35,24 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
             $request->setLocale($language);
         }
 
+        // Detect subtype from form fields
+        $offerModel = new \App\Models\OfferModel();
+        $subtype = $offerModel->detectSubtype($data);
+
         // Load template from database
         $templateModel = new EmailTemplateModel();
-        $template = $templateModel->getTemplateForOffer($offerType, $language);
+        $template = $templateModel->getTemplateForOffer($offerType, $language, $subtype);
 
         if (!$template) {
-            log_message('error', "Kein E-Mail Template gefunden für Offer Type: {$offerType}, Language: {$language}");
+            $subtypeInfo = $subtype ? ", Subtype: {$subtype}" : '';
+            log_message('error', "Kein E-Mail Template gefunden für Offer Type: {$offerType}{$subtypeInfo}, Language: {$language}");
             // Fallback to old method if template not found
             return false;
         }
 
-        log_message('info', "Verwende E-Mail Template ID {$template['id']} für Offer Type: {$offerType}, Language: {$language}");
+        $subtypeInfo = $subtype ? ", Subtype: {$subtype}" : '';
+        $templateSubtype = $template['subtype'] ?? 'NULL (gilt für alle)';
+        log_message('info', "Verwende E-Mail Template ID {$template['id']} (Template Subtype: {$templateSubtype}) für Offer Type: {$offerType}{$subtypeInfo}, Language: {$language}");
 
         // Load platform-specific config
         $platform = $offer['platform'] ?? null;

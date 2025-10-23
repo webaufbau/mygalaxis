@@ -317,10 +317,22 @@ class FieldRenderer
      */
     public function formatFileUpload($value, string $context = 'html'): string
     {
-        $urls = is_array($value) ? $value : [$value];
+        // Handle comma-separated URLs (from Fluent Forms or other sources)
+        if (is_string($value) && strpos($value, ',') !== false) {
+            $urls = array_map('trim', explode(',', $value));
+        } else {
+            $urls = is_array($value) ? $value : [$value];
+        }
+
         $html = '';
 
         foreach ($urls as $url) {
+            $url = trim($url);
+
+            if (empty($url)) {
+                continue;
+            }
+
             if (is_string($url) && preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $url)) {
                 // Für E-Mails: kleinere Bilder (max 400px breit)
                 if ($context === 'email') {

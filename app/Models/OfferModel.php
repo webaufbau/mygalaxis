@@ -228,45 +228,46 @@ class OfferModel extends Model
             return 'unknown';
         }
 
-        // Erlaubte Werte und ihre Zuordnung
-        $mapping = [
-            // Umzug
-            'umzug_privat'  => 'move',
-            'umzug_firma'   => 'move',
-
-            // Reinigung
-            'reinigung_wohnung'       => 'cleaning',
-            'reinigung_haus'          => 'cleaning',
-            'reinigung_gewerbe'       => 'cleaning',
-            'reinigung_andere'        => 'cleaning',
-            'reinigung_nur_fenster'   => 'cleaning',
-            'reinigung_fassaden'      => 'cleaning',
-            'reinigung_hauswartung'   => 'cleaning',
-
-            // Maler
-            'maler_wohnung' => 'painting',
-            'maler_haus'    => 'painting',
-            'maler_gewerbe' => 'painting',
-            'maler_andere'  => 'painting',
-
-            // Garten
-            'garten_neue_gartenanlage'        => 'gardening',
-            'garten_garten_umgestalten'       => 'gardening',
-            'garten_allgemeine_gartenpflege'  => 'gardening',
-            'garten_andere_gartenarbeiten'    => 'gardening',
-
-            // Einzelne Gewerke
-            'elektriker'   => 'electrician',
-            'sanitaer'     => 'plumbing',
-            'heizung'      => 'heating',
-            'plattenleger' => 'tiling',
-            'bodenleger'   => 'flooring',
-        ];
+        // Lade Subtype Mapping aus zentraler Config
+        $subtypeConfig = config('OfferSubtypes');
+        $mapping = $subtypeConfig->subtypeToTypeMapping;
 
         // Kleinbuchstaben und Whitespace entfernen, um Fehler zu vermeiden
         $normalized = strtolower(trim($typeValue));
 
         return $mapping[$normalized] ?? 'unknown';
+    }
+
+    /**
+     * Extrahiere den Subtype aus den Formularfeldern
+     * Der Subtype ist der ursprüngliche Wert (z.B. 'umzug_privat', 'reinigung_wohnung')
+     *
+     * @param array $fields
+     * @return string|null
+     */
+    public function detectSubtype(array $fields): ?string
+    {
+        $typeValue = $fields['type']
+            ?? $fields['service_type']
+            ?? $fields['angebot_typ']
+            ?? $fields['_wp_http_referer']
+            ?? $fields['__submission']['source_url']
+            ?? $fields['service_url']
+            ?? null;
+
+        if (!$typeValue) {
+            return null;
+        }
+
+        $normalized = strtolower(trim($typeValue));
+
+        // Prüfe ob dieser Wert ein bekannter Subtype ist
+        $subtypeConfig = config('OfferSubtypes');
+        if (isset($subtypeConfig->subtypeToTypeMapping[$normalized])) {
+            return $normalized;
+        }
+
+        return null;
     }
 
 

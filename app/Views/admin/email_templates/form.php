@@ -61,6 +61,21 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
+                                <label for="subtype" class="form-label">
+                                    <i class="bi bi-diagram-3"></i> Unterkategorie
+                                </label>
+                                <select class="form-select" id="subtype" name="subtype">
+                                    <option value="">Alle (Standard)</option>
+                                    <!-- Options werden dynamisch via JavaScript geladen -->
+                                </select>
+                                <small class="form-text text-muted">
+                                    Optional: Wählen Sie eine spezifische Unterkategorie. "Alle" bedeutet das Template gilt für alle Unterkategorien dieser Branche.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="language" class="form-label">
                                     <i class="bi bi-translate"></i> Sprache <span class="text-danger">*</span>
                                 </label>
@@ -710,6 +725,68 @@ function insertShortcode(shortcode) {
     textarea.focus();
     textarea.selectionStart = textarea.selectionEnd = start + shortcode.length;
 }
+
+// Subtype Handling
+(function() {
+    const subtypeConfig = <?= json_encode(config('OfferSubtypes')->getSubtypesForType('')) ?>;
+    const subtypeLabels = <?= json_encode(config('OfferSubtypes')->getSubtypeLabels()) ?>;
+    const subtypeMapping = <?= json_encode(config('OfferSubtypes')->subtypeToTypeMapping) ?>;
+
+    const offerTypeSelect = document.getElementById('offer_type');
+    const subtypeSelect = document.getElementById('subtype');
+    const currentSubtype = '<?= old('subtype', $template['subtype'] ?? '') ?>';
+
+    function updateSubtypeOptions() {
+        const selectedType = offerTypeSelect.value;
+
+        // Clear all options
+        subtypeSelect.innerHTML = '';
+
+        // Add "Alle" option first
+        const alleOption = document.createElement('option');
+        alleOption.value = '';
+        alleOption.textContent = 'Alle (Standard)';
+        subtypeSelect.appendChild(alleOption);
+
+        // Find all subtypes for this offer_type
+        const subtypes = [];
+        for (const [subtype, type] of Object.entries(subtypeMapping)) {
+            if (type === selectedType) {
+                subtypes.push(subtype);
+            }
+        }
+
+        // Add options for each subtype
+        subtypes.forEach(subtype => {
+            const option = document.createElement('option');
+            option.value = subtype;
+            option.textContent = subtypeLabels[subtype] || subtype;
+            subtypeSelect.appendChild(option);
+        });
+
+        // Set the selected value (after all options are added)
+        if (currentSubtype && currentSubtype !== '') {
+            subtypeSelect.value = currentSubtype;
+        } else {
+            subtypeSelect.value = ''; // Explicitly select "Alle"
+        }
+
+        // Show/hide subtype field based on whether there are subtypes
+        const subtypeContainer = subtypeSelect.closest('.col-md-6');
+        if (subtypes.length > 0) {
+            subtypeContainer.style.display = 'block';
+        } else {
+            subtypeContainer.style.display = 'none';
+            subtypeSelect.value = ''; // Always set to "Alle" if no subtypes
+        }
+    }
+
+    // Update on page load
+    updateSubtypeOptions();
+
+    // Update when offer_type changes
+    offerTypeSelect.addEventListener('change', updateSubtypeOptions);
+})();
 </script>
 
 <?= $this->endSection() ?>
