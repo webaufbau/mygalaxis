@@ -115,6 +115,50 @@ class ReviewModel extends BaseModel
             $entity->created_at ? date('d.m.Y', strtotime($entity->created_at)) : '-',
         ];
     }
+
+    public function getFilterConfiguration($entity=null, $request=null)
+    {
+        if(!$entity) {
+            $entity = $this->getEntity();
+        }
+        if(!$request) {
+            $request = service('request');
+        }
+
+        $filter_data = [
+            'fields' => [
+                'query' => [
+                    'type' => 'search',
+                    'name' => 'query',
+                    'placeholder' => 'Firma, E-Mail oder Kommentar suchen...',
+                    'like' => [
+                        'recipient_name' => '%value%',
+                        'created_by_email' => '%value%',
+                        'created_by_firstname' => '%value%',
+                        'created_by_lastname' => '%value%',
+                        'created_by_city' => '%value%',
+                        'comment' => '%value%',
+                    ],
+                ],
+                'rating' => [
+                    'type' => 'dropdown',
+                    'name' => 'rating',
+                    'label' => 'Bewertung',
+                    'options' => [
+                        '' => 'Alle Bewertungen',
+                        '5' => '5 Sterne',
+                        '4' => '4 Sterne',
+                        '3' => '3 Sterne',
+                        '2' => '2 Sterne',
+                        '1' => '1 Stern',
+                    ],
+                    'where' => 'rating = %value%',
+                ],
+            ],
+        ];
+
+        return $filter_data;
+    }
     public function getFormConfiguration($entity = null, $request = null)
     {
         if (!$entity) {
