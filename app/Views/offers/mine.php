@@ -85,6 +85,79 @@
 
                 <div class="collapse mt-3" id="details-<?= $offer['id'] ?>">
                     <div class="card card-body bg-light">
+                        <?php
+                        // Kundeninfos extrahieren (wie in show.php)
+                        $customerInfo = [];
+                        $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
+                        $contactKeys = [
+                            'vorname' => 'Vorname',
+                            'firstname' => 'Vorname',
+                            'first_name' => 'Vorname',
+                            'nachname' => 'Nachname',
+                            'lastname' => 'Nachname',
+                            'last_name' => 'Nachname',
+                            'surname' => 'Nachname',
+                            'email' => 'E-Mail',
+                            'e_mail' => 'E-Mail',
+                            'email_address' => 'E-Mail',
+                            'mail' => 'E-Mail',
+                            'e_mail_adresse' => 'E-Mail',
+                            'telefon' => 'Telefon',
+                            'telefonnummer' => 'Telefon',
+                            'phone' => 'Telefon',
+                            'telephone' => 'Telefon',
+                            'phone_number' => 'Telefon',
+                            'tel' => 'Telefon'
+                        ];
+
+                        foreach ($formFields as $key => $value) {
+                            $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+                            if (isset($contactKeys[$normalizedKey]) && !empty($value)) {
+                                $label = $contactKeys[$normalizedKey];
+                                if (!isset($customerInfo[$label])) {
+                                    $customerInfo[$label] = $value;
+                                }
+                            }
+                        }
+                        ?>
+
+                        <?php if (!empty($customerInfo)): ?>
+                            <!-- Kundeninformationen prominent anzeigen -->
+                            <div class="mb-3 pb-3 border-bottom">
+                                <h5 class="mb-2"><i class="bi bi-person-circle text-success"></i> Kundeninformationen</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <?php foreach ($customerInfo as $label => $value): ?>
+                                            <p class="mb-1">
+                                                <strong><?= esc($label) ?>:</strong>
+                                                <?php if ($label === 'E-Mail'): ?>
+                                                    <a href="mailto:<?= esc($value) ?>"><?= esc($value) ?></a>
+                                                <?php elseif ($label === 'Telefon'): ?>
+                                                    <a href="tel:<?= esc($value) ?>"><?= esc($value) ?></a>
+                                                <?php else: ?>
+                                                    <?= esc($value) ?>
+                                                <?php endif; ?>
+                                            </p>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1">
+                                            <strong><?= lang('Offers.labels.zip') ?>:</strong> <?= esc($offer['zip']) ?>
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong><?= lang('Offers.labels.city') ?>:</strong> <?= esc($offer['city']) ?>
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong><?= lang('Offers.labels.type') ?>:</strong> <?= lang('Offers.type.' . $offer['type']) ?>
+                                        </p>
+                                        <p class="text-muted mb-0">
+                                            <small><?= lang('Offers.purchased_on') ?>: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
                         <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true]) ?>
                     </div>
                 </div>
