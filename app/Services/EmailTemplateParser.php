@@ -139,6 +139,14 @@ class EmailTemplateParser
             $operator = $matches[2] ?? null;
             $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
 
+            // Remove surrounding quotes from compare value if present
+            if ($compareValue !== null && strlen($compareValue) >= 2) {
+                if (($compareValue[0] === '"' && $compareValue[-1] === '"') ||
+                    ($compareValue[0] === "'" && $compareValue[-1] === "'")) {
+                    $compareValue = substr($compareValue, 1, -1);
+                }
+            }
+
             $fieldValue = $this->getFieldValue($fieldName);
 
             // Simple existence check
