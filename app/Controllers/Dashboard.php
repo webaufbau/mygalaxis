@@ -88,6 +88,23 @@ class Dashboard extends Controller
 
         $type = $request->getGet('type');
 
+        // Neue globale Filter
+        if ($verified = $request->getGet('verified')) {
+            if ($verified === 'yes') {
+                $builder->where('offers.verified', 1);
+            } elseif ($verified === 'no') {
+                $builder->where('offers.verified', 0);
+            }
+        }
+
+        if ($purchases = $request->getGet('purchases')) {
+            if ($purchases === 'yes') {
+                $builder->where('offers.buyers >', 0);
+            } elseif ($purchases === 'no') {
+                $builder->where('(offers.buyers IS NULL OR offers.buyers = 0)');
+            }
+        }
+
         // Typ-spezifische Filter
         switch ($type) {
             case 'move':

@@ -81,7 +81,7 @@ function form_build_one_field($field_key, $field_configuration, $form_data=null,
     $return_html .= '<div class="row form-row-'.$data['id'].'" id="form-row-'.$data['id'].'"><div class="form-group my-1" id="form-group-'.$data['id'].'">';
 
     if(isset($field_configuration['label']) && $field_configuration['label']!=="") {
-        $return_html .= '<label class="form-label label">';
+        $return_html .= '<label class="form-label">';
         $return_html .= $field_configuration['label'];
         /*$return_html .= '<code>[';
         $return_html .= $field_key;

@@ -19,15 +19,31 @@
         <label class="form-label">Bis</label>
         <input type="date" name="to" class="form-control" value="<?= esc($request['to'] ?? '') ?>">
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <label class="form-label">Typ</label>
-        <select name="type" id="typeSelect" class="form-select">
+        <select name="type" id="typeSelect" class="form-select" onchange="this.form.submit()">
             <option value="">Alle</option>
             <?php foreach ($types as $typeValue => $typeLabel): ?>
                 <option value="<?= esc($typeValue) ?>" <?= (isset($filter_type) && $filter_type === $typeValue) ? 'selected' : '' ?>>
                     <?= esc($typeLabel) ?>
                 </option>
             <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Verifiziert</label>
+        <select name="verified" class="form-select" onchange="this.form.submit()">
+            <option value="">Alle</option>
+            <option value="yes" <?= ($request['verified'] ?? '') === 'yes' ? 'selected' : '' ?>>Ja</option>
+            <option value="no" <?= ($request['verified'] ?? '') === 'no' ? 'selected' : '' ?>>Nein</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Käufe</label>
+        <select name="purchases" class="form-select" onchange="this.form.submit()">
+            <option value="">Alle</option>
+            <option value="yes" <?= ($request['purchases'] ?? '') === 'yes' ? 'selected' : '' ?>>Mit Käufen</option>
+            <option value="no" <?= ($request['purchases'] ?? '') === 'no' ? 'selected' : '' ?>>Ohne Käufe</option>
         </select>
     </div>
 
@@ -78,7 +94,7 @@
         <button class="btn btn-primary">Filtern</button>
     </div>
 
-    <?php if(!empty($filter_type) || !empty($request['from']) || !empty($request['to'])): ?>
+    <?php if(!empty($filter_type) || !empty($request['from']) || !empty($request['to']) || !empty($request['verified']) || !empty($request['purchases'])): ?>
         <div class="col-md-3 d-grid align-items-end">
             <a href="<?= current_url() ?>" class="btn btn-secondary">Filter zurücksetzen</a>
         </div>
@@ -96,7 +112,6 @@
         <th>PLZ</th>
         <th>Ort</th>
         <th>Name</th>
-        <th>Status</th>
         <th>Käufe</th>
         <th>Kampagne</th>
         <th>Verifiziert</th>
@@ -156,7 +171,6 @@
         <td><?= esc($o['zip']) ?></td>
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
-        <td><?= esc(lang('Offers.status.' . $o['status']) ?? $o['status']) ?></td>
         <td><?= esc($o['buyers']) ?></td>
         <td><?= $utmStatus ?></td>
         <td><?=$verified;?></td>
@@ -175,13 +189,6 @@
 <?php } else {
         echo "Keine Daten mit dieser Filterung";
     } ?>
-
-
-<script>
-    document.querySelector('#typeSelect').addEventListener('change', function() {
-        this.form.submit();
-    });
-</script>
 
 
 <script>
