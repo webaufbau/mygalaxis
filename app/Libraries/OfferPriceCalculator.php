@@ -845,10 +845,15 @@ class OfferPriceCalculator
 
     /**
      * Discount anwenden
+     * Prüft Rabattstufen von der höchsten zur niedrigsten Stundenanzahl
      */
     public function applyDiscount(float $price, float|int $hoursDiff): float
     {
-        foreach ($this->discountRules as $rule) {
+        // Sortiere Regeln absteigend nach Stunden (höchste zuerst)
+        $sortedRules = $this->discountRules;
+        usort($sortedRules, fn($a, $b) => $b['hours'] <=> $a['hours']);
+
+        foreach ($sortedRules as $rule) {
             if ($hoursDiff >= $rule['hours']) {
                 $discounted = $price * (1 - $rule['discount'] / 100);
                 return ceil($discounted);
