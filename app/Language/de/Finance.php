@@ -16,6 +16,8 @@ return [
     'type'            => 'Typ',
     'description'     => 'Beschreibung',
     'amount'          => 'Betrag',
+    'cardPayment'     => 'Kartenzahlung',
+    'balanceChange'   => 'Guthaben-Änderung',
     'invoice'         => 'Rechnung',
     'paidByCard'      => 'Per Kreditkarte bezahlt',
 

@@ -105,7 +105,8 @@
                 <th><?= esc(lang('Finance.date')) ?></th>
                 <th><?= esc(lang('Finance.type')) ?></th>
                 <th><?= esc(lang('Finance.description')) ?></th>
-                <th class="text-end"><?= esc(lang('Finance.amount')) ?></th>
+                <th class="text-end"><?= esc(lang('Finance.cardPayment')) ?></th>
+                <th class="text-end"><?= esc(lang('Finance.balanceChange')) ?></th>
                 <th><?= esc(lang('Finance.invoice')) ?></th>
             </tr>
             </thead>
@@ -115,15 +116,27 @@
                     <td><?= date('d.m.Y', strtotime($entry['created_at'])) ?></td>
                     <td><?= esc(lang('Offers.credit_type.'.$entry['type'])) ?></td>
                     <td><?= esc($entry['description']) ?></td>
+                    <!-- Kartenzahlung Spalte -->
                     <td class="text-end">
-                        <?php if ($entry['type'] === 'offer_purchase' && $entry['amount'] == 0): ?>
-                            <span class="text-muted"><?= esc(lang('Finance.paidByCard')) ?></span>
+                        <?php if (!empty($entry['paid_amount']) && $entry['paid_amount'] > 0): ?>
+                            <span class="text-primary">
+                                <?= number_format($entry['paid_amount'], 2, ".", "'") ?> CHF
+                            </span>
                         <?php else: ?>
+                            <span class="text-muted">-</span>
+                        <?php endif; ?>
+                    </td>
+                    <!-- Guthaben-Änderung Spalte -->
+                    <td class="text-end">
+                        <?php if ($entry['amount'] != 0): ?>
                             <span class="<?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
                                 <?= number_format($entry['amount'], 2, ".", "'") ?> CHF
                             </span>
+                        <?php else: ?>
+                            <span class="text-muted">0.00 CHF</span>
                         <?php endif; ?>
                     </td>
+                    <!-- Rechnung -->
                     <td>
                         <?php if ($entry['type'] === 'offer_purchase'): ?>
                             <a href="<?= site_url('finance/invoice/'.$entry['id']) ?>"

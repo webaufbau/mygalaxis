@@ -381,11 +381,14 @@ class Offers extends BaseController
                     $price = $offer['discounted_price'] > 0 ? $offer['discounted_price'] : $offer['price'];
                     $purchaseService = new \App\Services\OfferPurchaseService();
 
+                    // Zahlungsmethode aus Response extrahieren
+                    $paymentMethodName = $response['PaymentMeans']['Brand']['Name'] ?? 'Kreditkarte';
+
                     // Direkt finalize aufrufen (da Zahlung bereits erfolgt)
                     $reflection = new \ReflectionClass($purchaseService);
                     $finalizeMethod = $reflection->getMethod('finalize');
                     $finalizeMethod->setAccessible(true);
-                    $finalizeMethod->invoke($purchaseService, $user, $offer, $price, 'credit_card', false);
+                    $finalizeMethod->invoke($purchaseService, $user, $offer, $price, 'credit_card', false, $paymentMethodName);
 
                     return redirect()->to('/offers/' . $offerId)->with('message', lang('Offers.messages.purchase_success'));
                 }

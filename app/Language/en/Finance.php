@@ -16,6 +16,9 @@ return [
     'type'            => 'Type',
     'description'     => 'Description',
     'amount'          => 'Amount',
+    'cardPayment'     => 'Card Payment',
+    'balanceChange'   => 'Balance Change',
+    'invoice'         => 'Invoice',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Invalid amount.',

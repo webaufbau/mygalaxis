@@ -16,6 +16,9 @@ return [
     'type'            => 'Tipo',
     'description'     => 'Descrizione',
     'amount'          => 'Importo',
+    'cardPayment'     => 'Pagamento con carta',
+    'balanceChange'   => 'Variazione saldo',
+    'invoice'         => 'Fattura',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Importo non valido.',

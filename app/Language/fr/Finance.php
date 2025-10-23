@@ -16,6 +16,9 @@ return [
     'type'            => 'Type',
     'description'     => 'Description',
     'amount'          => 'Montant',
+    'cardPayment'     => 'Paiement par carte',
+    'balanceChange'   => 'Changement de solde',
+    'invoice'         => 'Facture',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Montant invalide.',
