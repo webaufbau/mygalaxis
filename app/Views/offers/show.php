@@ -141,7 +141,7 @@ if ($isPurchased) {
                         <strong><?= $zipLabel ?>:</strong> <?= esc($offer['zip']) ?><br>
                         <strong><?= $cityLabel ?>:</strong> <?= esc($offer['city']) ?><br>
                         <strong><?= $typeLabel ?>:</strong> <?= $typeValue ?><br>
-                        <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
+                        <small class="text-muted"><?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?> Uhr</small>
                     </p>
                 </div>
 
