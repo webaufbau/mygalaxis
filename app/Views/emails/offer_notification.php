@@ -39,8 +39,25 @@
             // Normalisiere Key für Vergleich (Leerzeichen und Bindestriche zu Unterstrichen)
             $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
 
-            // Skip ausgeschlossene Felder
-            if (in_array($normalizedKey, $excludedFields)) {
+            // Skip ausgeschlossene Felder (case-insensitive Vergleich)
+            $shouldExclude = false;
+            foreach ($excludedFields as $excludedField) {
+                if (strtolower($excludedField) === $normalizedKey) {
+                    $shouldExclude = true;
+                    break;
+                }
+            }
+            if ($shouldExclude) {
+                continue;
+            }
+
+            // Filtere FluentForm Nonce Felder mit beliebigem Format
+            if (preg_match('/fluentform.*nonce/i', $key)) {
+                continue;
+            }
+
+            // Filtere "names" Feld (wird für mehrsprachige Feld-Labels verwendet)
+            if ($normalizedKey === 'names') {
                 continue;
             }
 

@@ -37,7 +37,7 @@ $labels = lang('Offers.labels');
 $fieldConfig = new \Config\FormFieldOptions();
 $excludedFields = array_merge(
     $fieldConfig->excludedFieldsAlways,
-    ['vorname', 'nachname', 'names', 'email', 'phone'] // Diese werden nur einmal oben angezeigt
+    ['vorname', 'nachname', 'email', 'phone'] // Diese werden nur einmal oben angezeigt
 );
 
 foreach ($offers as $index => $offer):
@@ -60,8 +60,25 @@ foreach ($offers as $index => $offer):
             // Normalisiere Key für Vergleich
             $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
 
-            // Skip ausgeschlossene Felder
-            if (in_array($normalizedKey, $excludedFields)) {
+            // Skip ausgeschlossene Felder (case-insensitive Vergleich)
+            $shouldExclude = false;
+            foreach ($excludedFields as $excludedField) {
+                if (strtolower($excludedField) === $normalizedKey) {
+                    $shouldExclude = true;
+                    break;
+                }
+            }
+            if ($shouldExclude) {
+                continue;
+            }
+
+            // Filtere FluentForm Nonce Felder mit beliebigem Format
+            if (preg_match('/fluentform.*nonce/i', $key)) {
+                continue;
+            }
+
+            // Filtere "names" Feld (wird für mehrsprachige Feld-Labels verwendet)
+            if ($normalizedKey === 'names') {
                 continue;
             }
 
