@@ -44,7 +44,12 @@ $useCustomTemplate = false;
 
 if (!empty($offer['type'])) {
     $emailTemplateModel = new \App\Models\EmailTemplateModel();
-    $template = $emailTemplateModel->getTemplateForOffer($offer['type'], 'de');
+
+    // Detect subtype from form fields
+    $offerModel = new \App\Models\OfferModel();
+    $subtype = $offerModel->detectSubtype($formFields);
+
+    $template = $emailTemplateModel->getTemplateForOffer($offer['type'], 'de', $subtype);
 
     if ($template && !empty($template['field_display_template'])) {
         // Verwende das field_display_template aus dem Email Template
