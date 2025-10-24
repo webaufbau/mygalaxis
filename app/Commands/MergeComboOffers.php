@@ -70,6 +70,12 @@ class MergeComboOffers extends BaseCommand
             $categories = $categoryManager->getAll();
             $moveCleaning = $categories['move_cleaning'] ?? null;
 
+            // Prüfen ob Kategorie existiert
+            if (!$moveCleaning) {
+                CLI::write("Kategorie 'move_cleaning' nicht gefunden. Überspringe Offers {$kept['id']} + {$deleted['id']}", 'red');
+                continue;
+            }
+
             // Neuen Typ setzen
             $offerModel->update($kept['id'], [
                 'type' => 'move_cleaning',
