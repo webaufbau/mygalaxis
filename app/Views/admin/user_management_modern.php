@@ -227,7 +227,9 @@
                             if (!empty($categories)):
                                 foreach (array_slice($categories, 0, 2) as $cat):
                                     // Übersetzen falls es ein Language-Key ist (z.B. "Filter.flooring")
-                                    $displayCat = lang($cat) !== $cat ? lang($cat) : esc($cat);
+                                    // Wenn es mit "Filter." beginnt, ersetze durch "Offers.type."
+                                    $translationKey = str_replace('Filter.', 'Offers.type.', $cat);
+                                    $displayCat = lang($translationKey) !== $translationKey ? lang($translationKey) : esc($cat);
                             ?>
                                 <span class="badge bg-info badge-status me-1"><?= $displayCat ?></span>
                             <?php

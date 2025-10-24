@@ -1,0 +1,161 @@
+Verfügbare Felder der gewählten Offerte #364:
+Feldname	Wert
+{field:__fluent_form_embded_post_id}	1080
+{field:_fluentform_21_fluentformnonce}	c3e44ef0e8
+{field:_wp_http_referer}	/maler/offerte-haus/
+{field:skip_kontakt}	(leer)
+{field:malerarbeiten_uebersicht}	[Array: Innenräume, Fassade, Andere]
+{field:art_objekt_1}	Renovierung
+{field:ausbesserungsumfang}	Kleinere Ausbesserungen
+{field:arbeiten_wohnung_1}	[Array: Wände, Decken, Fensterläden, Fenster, Türen, Treppengeländer, Garagentor, Heizkörper, Zaungeländer, Andere]
+{field:wand_teil_komplett}	Teile des Hauses
+{field:wand_komplett_anzahl}	2-Zimmer
+{field:wand_gesamtflaeche}	Ja
+{field:wand_gesamtflaeche_ja}	50
+{field:wand_tapeten_entfernen}	Ja
+{field:wand_tapeten_alt_ja}	50
+{field:wand_tapeten_neu}	Ja
+{field:wand_tapeten_neu_ja}	50
+{field:wand_verkleidet}	Ja
+{field:wand_verkleidet_ja}	2
+{field:wand_gipsen}	Ja
+{field:wand_gipsen_anzahl}	5
+{field:wand_abrieb}	Ja
+{field:wand_abrieb_anzahl}	5
+{field:wand_streichen}	Ja
+{field:wand_streichen_weiss}	Ja
+{field:wand_option_trennwand}	Ja
+{field:wand_trennwand_anzahl}	2
+{field:wand_trennwand_masse}	Unterschiedliche Grössen
+{field:wand_trennwand_tuer}	Geschlossene Wand
+{field:wand_trennwand_geschlossen_anzahl}	2
+{field:decken_teil_komplett}	Teile des Hauses
+{field:decken_komplett_anzahl}	2-Zimmer
+{field:decken_gesamtflaeche}	Ja
+{field:decken_gesamtflaeche_ja}	25
+{field:decken_tapeten_entfernen_1}	Ja
+{field:decken_tapeten_alt_ja}	50
+{field:decken_tapeten_neu}	Ja
+{field:decken_tapeten_neu_ja}	2
+{field:decken_verkleidet}	Ja
+{field:decken_verkleidet_ja}	2
+{field:decken_gipsen}	Ja
+{field:decken_gipsen_anzahl}	2
+{field:decken_abrieb}	Ja
+{field:decken_abrieb_anzahl}	2
+{field:decken_streichen}	Ja
+{field:decken_streichen_weiss}	Ja
+{field:decken_option_zwischendecke}	Ja
+{field:decken_zwischendecke_anzahl}	2
+{field:decken_zwischendecken_masse}	Unterschiedliche Grössen
+{field:fensterlaeden_normal_ja1}	Ja
+{field:fensterlaeden_normal}	2
+{field:fensterlaeden_normal_streichen}	2 Seiten streichen
+{field:fensterlaeden_normal_ja2}	Ja
+{field:fensterlaeden_tuer}	2
+{field:fensterlaeden_tuer_streichen}	1 Seite streichen
+{field:fensterlaeden_material}	Holz
+{field:fensterlaeden_zustand}	Guter Zustand
+{field:fensterlaeden_hinweise}	test
+{field:fensterauswahl}	[Array: fensterart_02, fensterart_011]
+{field:fensterart_02}	2
+{field:fensterart_02_streichen}	Innenseite
+{field:fensterart_011}	2
+{field:fensterart_011_streichen}	Innenseite
+{field:fenster_material}	Kunststoff
+{field:fenster_zustand}	Leichte Abnutzungen
+{field:fenster_hinweise}	test
+{field:tuer_einfangstuer}	Ja
+{field:tuer_einfangstuer_anzahl}	2
+{field:tuer_innentuer}	Ja
+{field:tuer_innentuer_anzahl}	2
+{field:tuer_streichen}	Innenseite
+{field:tuer_rahmen}	Ja
+{field:tuer_hinweise}	test
+{field:garage_art_1}	[Array: Einfaches Tor, Doppeltor]
+{field:garage_art_einfachestor}	2
+{field:garage_art_doppeltor}	2
+{field:garage_material}	Holz
+{field:garage_oberflaeche}	Glatte Oberfläche
+{field:garage_zustand}	Guter Zustand
+{field:garage_streichen}	Aussenseite
+{field:garage_hinweise}	test
+{field:treppengelaender_handlauf}	Ja
+{field:treppengelaender_handlauf1}	2
+{field:treppengelaender_handlauf_laenge}	Ja
+{field:treppengelaender_handlauf_laenge1}	22
+{field:treppengelaender_verstrebung_anzahl}	Ja
+{field:treppengelaender_verstrebung_anzahl1}	2
+{field:treppengelaender_verstrebung_laenge}	Ja
+{field:treppengelaender_verstrebung_laenge1}	22
+{field:treppengelaender_wangen_anzahl}	Ja
+{field:treppengelaender_wangen_anzahl1}	2
+{field:treppengelaender_wangen_laenge}	Ja
+{field:treppengelaender_wangen_laenge1}	22
+{field:treppengelaender_tritte_anzahl}	Ja
+{field:treppengelaender_tritte_anzahl1}	2222
+{field:treppengelaender_material}	Metall
+{field:treppengelaender_hinweise}	test
+{field:zaun_a_d}	Ja
+{field:zaun_a_d_auswahl}	b
+{field:zaun_a_d_masse}	Nein
+{field:zaun_e_h}	Ja
+{field:zaun_e_h_auswahl}	f
+{field:zaun_e_h_masse}	Ja
+{field:zaun_e_h_masse_laenge}	22
+{field:zaun_e_h_masse_hoehe}	1
+{field:zaun_i_l}	Ja
+{field:zaun_i_l_auswahl}	i
+{field:zaun_i_l_masse}	Nein
+{field:zaun_zustand}	Guter Zustand
+{field:zaun_material}	Holz
+{field:zaun_hinweise}	test
+{field:heizung_gerillt}	Ja
+{field:heizung_gerillt_anzahl}	2
+{field:heizung_gerillt_masse}	Ja
+{field:heizung_gerillt_masse_laenge}	22
+{field:heizung_gerillt_masse_hoehe}	2
+{field:heizung_flach}	Ja
+{field:heizung_flach_anzahl}	2
+{field:heizung_flach_masse}	Nein
+{field:heizung_konv}	Ja
+{field:konvektoren_anzahl}	2
+{field:konvektoren_masse}	Ja
+{field:konvektoren_masse_laenge}	22
+{field:konvektoren_masse_hoehe}	2
+{field:heizung_hinweise}	test
+{field:sonstige_malerarbeiten_beschreibung}	test
+{field:fassaden_anzahl}	1
+{field:fassaden_hoehe}	EG + 1. Stock
+{field:fassaden_geruest}	Ja
+{field:fassaden_streichen}	Ja
+{field:fassaden_zustand}	Guter Zustand
+{field:fassaden_isolieren}	Ja
+{field:fassaden_isolieren_welche}	Ja
+{field:fassaden_isolieren_welche_ja}	Keine Ahnung
+{field:fassaden_flaeche}	Ja
+{field:fassaden_flaeche_ja}	22
+{field:fassaden_hinweis}	test
+{field:andere_malerarbeiten_beschreibung}	test
+{field:details_art}	Mieter
+{field:details_hinweise}	test
+{field:datetime_1}	31/10/2025
+{field:zeit_flexibel}	Nein
+{field:vorname}	Thomas
+{field:nachname}	Forster
+{field:email}	info@webagentur-forster.ch
+{field:phone}	+41797221849
+{field:address}	[Array: Schöne Fluh, 4, 4244, Röschenz]
+{field:erreichbar}	ganztags
+{field:additional_service}	Nein
+{field:service_url}	https://offertenschweiz.ch/dankesseite-maler/
+{field:terms-n-condition}	on
+{field:uuid}	375d5086-dfa9-4ea2-870a-f01d65485e28
+{field:utm_source}	(leer)
+{field:utm_medium}	(leer)
+{field:utm_campaign}	(leer)
+{field:utm_term}	(leer)
+{field:utm_content}	(leer)
+{field:referrer}	(leer)
+{field:type}	maler_haus
+{field:lang}	de

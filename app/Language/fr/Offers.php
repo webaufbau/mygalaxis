@@ -747,4 +747,5 @@ return [
     ],
 
     'priceNotAvailable' => 'Prix n.d.',
+    'time_suffix' => 'h',
 ];

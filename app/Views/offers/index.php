@@ -57,7 +57,7 @@
                             <?= $isPurchased ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '' ?>
                             <?= esc($offer['title']) ?>
                         </span>
-                        <small class="text-muted"><?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?> Uhr</small>
+                        <small class="text-muted"><?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
                         <br>
 
                         <?php if ($status == 'available' || $isPurchased): ?>
