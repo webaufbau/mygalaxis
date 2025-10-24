@@ -94,7 +94,7 @@
     <thead>
     <tr>
         <th><?= lang('Finance.description') ?></th>
-        <th style="width: 100px;"><?= lang('Finance.amount') ?> (CHF)</th>
+        <th style="width: 100px;"><?= lang('Finance.amount') ?> (<?= currency() ?>)</th>
     </tr>
     </thead>
     <tbody>
@@ -113,12 +113,12 @@ if ($siteConfig->vatEnabled && $siteConfig->vatRate > 0) {
     $vatAmount = $amount - $amountExclVat;
     ?>
     <div style="text-align: right; margin-bottom: 20px;">
-        <p><?= lang('Finance.amountExclVat') ?>: <?= number_format($amountExclVat, 2, ".", "'") ?> CHF</p>
-        <p><?= lang('Finance.vat') ?> (<?= number_format($siteConfig->vatRate, 1) ?>%): <?= number_format($vatAmount, 2, ".", "'") ?> CHF</p>
-        <p style="font-weight: bold; font-size: 16px;"><?= lang('Finance.amountInclVat') ?>: <?= number_format($amount, 2, ".", "'") ?> CHF</p>
+        <p><?= lang('Finance.amountExclVat') ?>: <?= number_format($amountExclVat, 2, ".", "'") ?> <?= currency() ?></p>
+        <p><?= lang('Finance.vat') ?> (<?= number_format($siteConfig->vatRate, 1) ?>%): <?= number_format($vatAmount, 2, ".", "'") ?> <?= currency() ?></p>
+        <p style="font-weight: bold; font-size: 16px;"><?= lang('Finance.amountInclVat') ?>: <?= number_format($amount, 2, ".", "'") ?> <?= currency() ?></p>
     </div>
 <?php } else { ?>
-    <p class="total"><?= lang('Finance.totalAmount') ?>: <?= number_format($amount, 2, ".", "'") ?> CHF</p>
+    <p class="total"><?= lang('Finance.totalAmount') ?>: <?= number_format($amount, 2, ".", "'") ?> <?= currency() ?></p>
     <?php if (!empty($siteConfig->vatExemptionText)): ?>
         <p style="text-align: right; font-size: 12px; color: #666;"><?= esc($siteConfig->vatExemptionText) ?></p>
     <?php endif; ?>

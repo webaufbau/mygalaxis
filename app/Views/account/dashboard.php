@@ -93,7 +93,7 @@
 
                     <div class="text-end" style="min-width: 150px;">
                         <div class="small">
-                            <?= number_format($offer['price_paid'] ?? $offer['discounted_price'] ?? $offer['price'], 2) ?> CHF
+                            <?= number_format($offer['price_paid'] ?? $offer['discounted_price'] ?? $offer['price'], 2) ?> <?= currency() ?>
                         </div>
                         <a href="<?= site_url('offers/' . $offer['id']) ?>" class="btn btn-primary btn-sm mt-2"><?= lang('Offers.detailsButton') ?></a>
                     </div>

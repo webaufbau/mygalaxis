@@ -148,10 +148,10 @@ if ($isPurchased) {
                 <div class="col-md-4 text-end d-flex flex-column justify-content-center align-items-end">
                     <div class="mb-3">
                         <?php if ($priceWasDiscounted): ?>
-                            <span class="text-decoration-line-through text-muted d-block"><?= number_format($offer['price'], 2) ?> CHF</span>
-                            <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> CHF</span>
+                            <span class="text-decoration-line-through text-muted d-block"><?= number_format($offer['price'], 2) ?> <?= currency() ?></span>
+                            <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> <?= currency() ?></span>
                         <?php else: ?>
-                            <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> CHF</span>
+                            <span class="h4 mb-0"><?= number_format($displayPrice, 2) ?> <?= currency() ?></span>
                         <?php endif; ?>
                     </div>
 

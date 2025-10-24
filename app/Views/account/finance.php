@@ -7,7 +7,7 @@
 <div class="card mb-4 shadow-sm" style="max-width: 400px;">
     <div class="card-body d-flex justify-content-between align-items-center">
         <span><strong><?= esc(lang('Finance.currentBalance')) ?>:</strong></span>
-        <span class="fs-4 fw-bold text-primary"><?= number_format($balance, 2, ".", "'") ?> CHF</span>
+        <span class="fs-4 fw-bold text-primary"><?= number_format($balance, 2, ".", "'") ?> <?= currency() ?></span>
     </div>
 </div>
 
@@ -120,7 +120,7 @@
                     <td class="text-end">
                         <?php if (!empty($entry['paid_amount']) && $entry['paid_amount'] > 0): ?>
                             <span class="text-primary">
-                                <?= number_format($entry['paid_amount'], 2, ".", "'") ?> CHF
+                                <?= number_format($entry['paid_amount'], 2, ".", "'") ?> <?= currency() ?>
                             </span>
                         <?php else: ?>
                             <span class="text-muted">-</span>
@@ -130,10 +130,10 @@
                     <td class="text-end">
                         <?php if ($entry['amount'] != 0): ?>
                             <span class="<?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
-                                <?= number_format($entry['amount'], 2, ".", "'") ?> CHF
+                                <?= number_format($entry['amount'], 2, ".", "'") ?> <?= currency() ?>
                             </span>
                         <?php else: ?>
-                            <span class="text-muted">0.00 CHF</span>
+                            <span class="text-muted">0.00 <?= currency() ?></span>
                         <?php endif; ?>
                     </td>
                     <!-- Rechnung -->

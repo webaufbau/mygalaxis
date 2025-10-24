@@ -82,10 +82,10 @@
                         ?>
                         <div class="small">
                             <?php if ($priceWasDiscounted): ?>
-                                <span class="text-decoration-line-through text-muted me-2"><?= number_format($offer['price'], 2) ?> CHF</span>
-                                <span><?= number_format($displayPrice, 2) ?> CHF</span>
+                                <span class="text-decoration-line-through text-muted me-2"><?= number_format($offer['price'], 2) ?> <?= currency() ?></span>
+                                <span><?= number_format($displayPrice, 2) ?> <?= currency() ?></span>
                             <?php else: ?>
-                                <?= number_format($displayPrice, 2) ?> CHF
+                                <?= number_format($displayPrice, 2) ?> <?= currency() ?>
                             <?php endif; ?>
                         </div>
 
