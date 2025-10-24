@@ -18,6 +18,11 @@ class SaferpayService
 
         $user = auth()->user();
 
+        // Bestimme Währung, Sprache und Land basierend auf User-Platform
+        $currencyCode = currency($user->platform ?? null);
+        $languageCode = languageCode($user->platform ?? null);
+        $countryCode = countryCode($user->platform ?? null);
+
         $data = [
             "RequestHeader" => [
                 "SpecVersion" => "1.35",
@@ -29,13 +34,13 @@ class SaferpayService
             "Payment" => [
                 "Amount" => [
                     "Value" => $amount,
-                    "CurrencyCode" => "CHF"
+                    "CurrencyCode" => $currencyCode
                 ],
                 "OrderId" => $refno,
                 "Description" => "Top-up"
             ],
             "Payer" => [
-                "LanguageCode" => "de-CH",
+                "LanguageCode" => $languageCode,
                 "Email" => $user->getEmail(),
                 //"IpAddress" => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
                 "FirstName" => $user->contact_person ?? '', // Kontaktperson als Vorname
@@ -45,7 +50,7 @@ class SaferpayService
                     "Street" => $user->company_street ?? '',
                     "Zip" => $user->company_zip ?? '',
                     "City" => $user->company_city ?? '',
-                    "CountryCode" => 'CH' // oder dynamisch, falls vorhanden
+                    "CountryCode" => $countryCode
                 ],
                 "UserAgent" => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
                 "AcceptHeader" => $_SERVER['HTTP_ACCEPT'] ?? 'text/html',
@@ -89,6 +94,10 @@ class SaferpayService
             $user = auth()->user();
         }
 
+        // Bestimme Währung und Sprache basierend auf User-Platform
+        $currencyCode = currency($user->platform ?? null);
+        $languageCode = languageCode($user->platform ?? null);
+
         // IP-Adresse holen und validieren (Saferpay akzeptiert nur IPv4)
         $ipAddress = $_SERVER['REMOTE_ADDR'] ?? null;
 
@@ -102,7 +111,7 @@ class SaferpayService
         }
 
         $payerData = [
-            "LanguageCode" => "de-CH",
+            "LanguageCode" => $languageCode,
             "Email" => $user->getEmail(),
             "UserAgent" => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
         ];
@@ -123,7 +132,7 @@ class SaferpayService
             "Payment" => [
                 "Amount" => [
                     "Value" => $amount,
-                    "CurrencyCode" => "CHF"
+                    "CurrencyCode" => $currencyCode
                 ],
                 "OrderId" => $refno,
                 "Description" => "Offer Purchase"

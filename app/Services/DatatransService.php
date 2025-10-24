@@ -18,9 +18,13 @@ class DatatransService
     {
         $url = $this->config->apiBaseUrl . '/transactions';
 
+        // Bestimme Währung basierend auf User-Platform
+        $user = auth()->user();
+        $currencyCode = currency($user->platform ?? null);
+
         $data = [
-            "currency" => "CHF",
-            "amount" => $amount, // z.B. 1000 = 10.00 CHF
+            "currency" => $currencyCode,
+            "amount" => $amount, // z.B. 1000 = 10.00 (CHF/EUR)
             "refno" => $refno,
             "paymentMethods" => ["VIS", "TWI", "PAP"], // gewünschte Zahlungsmethoden
             "autoSettle" => true,
@@ -57,8 +61,12 @@ class DatatransService
     {
         $url = $this->config->apiBaseUrl . '/transactions/authorize';
 
+        // Bestimme Währung basierend auf User-Platform
+        $user = auth()->user();
+        $currencyCode = currency($user->platform ?? null);
+
         $data = [
-            "currency" => "CHF",
+            "currency" => $currencyCode,
             "amount" => $amount,
             "refno" => $refno,
             "card" => [

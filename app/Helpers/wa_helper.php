@@ -36,3 +36,48 @@ if (! function_exists('currency')) {
         };
     }
 }
+
+if (! function_exists('languageCode')) {
+    /**
+     * Gibt den Sprachcode für Zahlungsanbieter zurück
+     *
+     * @param string|null $platform Optional: Platform override
+     * @return string z.B. 'de-CH', 'de-DE', 'de-AT'
+     */
+    function languageCode(?string $platform = null): string
+    {
+        if ($platform) {
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+            $country = $siteConfig->siteCountry ?? 'ch';
+        } else {
+            $country = siteconfig()->siteCountry ?? 'ch';
+        }
+
+        return match(strtolower($country)) {
+            'ch' => 'de-CH',
+            'de' => 'de-DE',
+            'at' => 'de-AT',
+            default => 'de-CH'
+        };
+    }
+}
+
+if (! function_exists('countryCode')) {
+    /**
+     * Gibt den ISO-Ländercode zurück (uppercase)
+     *
+     * @param string|null $platform Optional: Platform override
+     * @return string z.B. 'CH', 'DE', 'AT'
+     */
+    function countryCode(?string $platform = null): string
+    {
+        if ($platform) {
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+            $country = $siteConfig->siteCountry ?? 'ch';
+        } else {
+            $country = siteconfig()->siteCountry ?? 'ch';
+        }
+
+        return strtoupper($country);
+    }
+}
