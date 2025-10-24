@@ -573,6 +573,13 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             $request = service('request');
         }
 
+        // Benutzergruppen für Filter laden
+        $groupsConfig = new \Config\AuthGroups();
+        $group_options = ['' => 'Alle Benutzergruppen'];
+        foreach($groupsConfig->groups as $group=>$group_description) {
+            $group_options[$group] = $group_description['title'];
+        }
+
         $filter_data = [
             'fields' => [
                 'query' => [
@@ -607,6 +614,12 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                     'options' => [''=>'Alle', '0'=>'Inaktiv', '1'=>'Aktiv'],
                     'name' => 'status',
                     'where' => '( active = \'%value%\' )',
+                    'onchange' => 'this.form.submit()',
+                ],
+                'user_group' => [
+                    'type' => 'dropdown',
+                    'options' => $group_options,
+                    'name' => 'user_group',
                     'onchange' => 'this.form.submit()',
                 ],
             ],

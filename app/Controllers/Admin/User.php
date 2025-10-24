@@ -76,6 +76,14 @@ class User extends Crud {
                         $this->model_class->groupEnd();
                     }
                 }
+
+                // Spezielle Behandlung für Benutzergruppen-Filter
+                if($key == 'user_group' && !empty($value)) {
+                    $this->model_class->select('users.*');
+                    $this->model_class->join('auth_groups_users', 'auth_groups_users.user_id = users.id', 'inner');
+                    $this->model_class->where('auth_groups_users.group', $value);
+                    $this->model_class->groupBy('users.id');
+                }
             }
         }
 
