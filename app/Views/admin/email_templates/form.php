@@ -144,9 +144,18 @@
                         <div class="card-body">
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle"></i>
-                                <strong>Hinweis:</strong> Dies ist der statische Email-Text (Begrüßung, Erklärungen, etc.).
+                                <strong>Hinweis:</strong> Dies ist der statische Email-Text (Begruessung, Erklaerungen, etc.).
                                 <br>
                                 <strong>Wichtig:</strong> Verwende <code>{{FIELD_DISPLAY}}</code> um die Feld-Darstellung einzubinden.
+                            </div>
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-search"></i>
+                                <strong>Im Editor suchen:</strong><br>
+                                <small>
+                                    <kbd>Ctrl+F</kbd> (Windows/Linux) oder <kbd>Cmd+F</kbd> (Mac) → Suchfeld oeffnen<br>
+                                    <kbd>Ctrl+H</kbd> (Windows/Linux) oder <kbd>Cmd+Alt+F</kbd> (Mac) → Ersetzen-Dialog<br>
+                                    <kbd>Enter</kbd> → Naechster Treffer | <kbd>Shift+Enter</kbd> → Vorheriger Treffer | <kbd>Esc</kbd> → Schliessen
+                                </small>
                             </div>
                             <div class="mb-3">
                                 <label for="body_template" class="form-label">
@@ -176,11 +185,20 @@
                         <div class="card-body">
                             <div class="alert alert-success">
                                 <i class="bi bi-lightbulb"></i>
-                                <strong>Wiederverwendbar:</strong> Dieses Template wird verwendet für:
+                                <strong>Wiederverwendbar:</strong> Dieses Template wird verwendet fuer:
                                 <ul class="mb-0 mt-2">
                                     <li>✅ E-Mail Template (via <code>{{FIELD_DISPLAY}}</code>)</li>
                                     <li>✅ Firmen Details Backend (Offerte-Ansicht)</li>
                                 </ul>
+                            </div>
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-search"></i>
+                                <strong>Im Editor suchen:</strong><br>
+                                <small>
+                                    <kbd>Ctrl+F</kbd> (Windows/Linux) oder <kbd>Cmd+F</kbd> (Mac) → Suchfeld oeffnen<br>
+                                    <kbd>Ctrl+H</kbd> (Windows/Linux) oder <kbd>Cmd+Alt+F</kbd> (Mac) → Ersetzen-Dialog<br>
+                                    <kbd>Enter</kbd> → Naechster Treffer | <kbd>Shift+Enter</kbd> → Vorheriger Treffer | <kbd>Esc</kbd> → Schliessen
+                                </small>
                             </div>
                             <div class="mb-3">
                                 <label for="field_display_template" class="form-label">
@@ -564,12 +582,20 @@ function loadExampleTemplate() {
 <!-- CodeMirror CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.min.css">
 
 <!-- CodeMirror JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/mode/overlay.min.js"></script>
+<!-- Search Addons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/search.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/scroll/annotatescrollbar.min.js"></script>
 
 <script>
 // Define custom mode for shortcodes
@@ -632,7 +658,11 @@ document.addEventListener('DOMContentLoaded', function() {
             extraKeys: {
                 'Tab': function(cm) {
                     cm.replaceSelection('    ', 'end');
-                }
+                },
+                'Ctrl-F': 'findPersistent',
+                'Cmd-F': 'findPersistent',
+                'Ctrl-H': 'replace',
+                'Cmd-Alt-F': 'replace'
             }
         });
 
@@ -675,7 +705,11 @@ document.addEventListener('DOMContentLoaded', function() {
             extraKeys: {
                 'Tab': function(cm) {
                     cm.replaceSelection('    ', 'end');
-                }
+                },
+                'Ctrl-F': 'findPersistent',
+                'Cmd-F': 'findPersistent',
+                'Ctrl-H': 'replace',
+                'Cmd-Alt-F': 'replace'
             }
         });
 
