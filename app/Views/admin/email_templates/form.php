@@ -351,9 +351,19 @@ Anderes Material: {field:andere_material}
                                         </button>
                                     </div>
 
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1 small">[if field:kuechenauswahl contains kuechen_02]
+Küchenart 2 ausgewählt
+[/if]</code>
+                                        <small>Prüft ob Array/String einen Wert enthält</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('[if field:kuechenauswahl contains kuechen_02]\nKüchenart 2 ausgewählt\n[/if]')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
+                                    </div>
+
                                     <div class="alert alert-info p-2 small">
                                         <strong>Operatoren:</strong><br>
-                                        &gt; &lt; &gt;= &lt;= == !=
+                                        &gt; &lt; &gt;= &lt;= == != contains
                                     </div>
                                 </div>
                             </div>

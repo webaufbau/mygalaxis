@@ -2,13 +2,12 @@
 
 <?= $this->section('content') ?>
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>E-Mail Templates</h1>
-        <a href="/admin/email-templates/create" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Neues Template
-        </a>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>E-Mail Templates</h1>
+    <a href="/admin/email-templates/create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Neues Template
+    </a>
+</div>
 
     <?php if (session()->has('success')): ?>
         <div class="alert alert-success alert-dismissible fade show">
@@ -143,7 +142,6 @@
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
-</div>
 
 <script>
 function confirmDelete(id, name) {

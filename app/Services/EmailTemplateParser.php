@@ -16,6 +16,7 @@ use DateTime;
  * - {site_url} - Site URL
  * - [if field:fieldname]...[/if] - Conditional block
  * - [if field:fieldname > value]...[/if] - Conditional with comparison (>, <, >=, <=, ==, !=)
+ * - [if field:fieldname contains value]...[/if] - Check if array/string contains value
  * - [if field:fieldname]...[else]...[/if] - Conditional with else block
  * - [if field:a || field:b]...[/if] - OR condition (any field is truthy)
  * - [if field:a && field:b]...[/if] - AND condition (all fields must be truthy)
@@ -133,11 +134,11 @@ class EmailTemplateParser
             return true;
         }
 
-        // Single condition: field:fieldname or field:fieldname > value
-        // Erweitert um Leerzeichen, Schrägstriche und andere Sonderzeichen
-        if (preg_match('/field:([a-zA-Z0-9_\-\s\/äöüÄÖÜ]+?)(?:\s*(>|<|>=|<=|==|!=)\s*(.+))?(?:\]|$)/', $conditionString, $matches)) {
+        // Single condition: field:fieldname or field:fieldname > value or field:fieldname contains value
+        // Erweitert um Leerzeichen, Schrägstriche, andere Sonderzeichen und 'contains' Operator
+        if (preg_match('/field:([a-zA-Z0-9_\-\s\/äöüÄÖÜ]+?)(?:\s*(>|<|>=|<=|==|!=|contains)\s+(.+))?(?:\]|$)/', $conditionString, $matches)) {
             $fieldName = trim($matches[1]);
-            $operator = $matches[2] ?? null;
+            $operator = isset($matches[2]) ? trim($matches[2]) : null;
             $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
 
             // Remove surrounding quotes from compare value if present
@@ -328,6 +329,19 @@ class EmailTemplateParser
      */
     protected function compareValues($fieldValue, string $operator, $compareValue): bool
     {
+        // Handle 'contains' operator for arrays
+        if ($operator === 'contains') {
+            // If fieldValue is an array, check if it contains the compareValue
+            if (is_array($fieldValue)) {
+                return in_array($compareValue, $fieldValue, false);
+            }
+            // If fieldValue is a string, check if it contains the substring
+            if (is_string($fieldValue)) {
+                return strpos($fieldValue, $compareValue) !== false;
+            }
+            return false;
+        }
+
         // Try to convert to numbers if possible
         if (is_numeric($fieldValue) && is_numeric($compareValue)) {
             $fieldValue = (float) $fieldValue;
