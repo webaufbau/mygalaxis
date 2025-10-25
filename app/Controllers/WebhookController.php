@@ -371,6 +371,9 @@ class WebhookController extends BaseController
         $result = $this->transactionLib->updateStatus($transactionId, 'refunded', $data);
         if ($result) {
             log_message('info', 'Transaktion erfolgreich erstattet', ['transactionId' => $transactionId]);
+
+            // Guthaben-Gutschrift in Bookings erstellen
+            $this->createRefundBooking($transactionId, $data, 'refunded');
         } else {
             log_message('info', 'Fehler bei der Erstattung der Transaktion', ['transactionId' => $transactionId]);
         }
@@ -384,6 +387,9 @@ class WebhookController extends BaseController
         $result = $this->transactionLib->updateStatus($transactionId, 'refundpending', $data);
         if ($result) {
             log_message('info', 'Transaktion erfolgreich als rückerstattet markiert', ['transactionId' => $transactionId]);
+
+            // Guthaben-Gutschrift in Bookings erstellen (sobald pending)
+            $this->createRefundBooking($transactionId, $data, 'refundpending');
         } else {
             log_message('info', 'Fehler bei der Rückerstattung der Transaktion', ['transactionId' => $transactionId]);
         }
@@ -397,6 +403,9 @@ class WebhookController extends BaseController
         $result = $this->transactionLib->updateStatus($transactionId, 'partially-refunded', $data);
         if ($result) {
             log_message('info', 'Transaktion erfolgreich teilweise erstattet', ['transactionId' => $transactionId]);
+
+            // Guthaben-Gutschrift in Bookings erstellen
+            $this->createRefundBooking($transactionId, $data, 'partially-refunded');
         } else {
             log_message('info', 'Fehler bei der teilweise Erstattung der Transaktion', ['transactionId' => $transactionId]);
         }
@@ -567,6 +576,105 @@ class WebhookController extends BaseController
                 'trace' => $e->getTraceAsString()
             ]);
             return $this->response->setStatusCode(500)->setBody('Interner Fehler');
+        }
+    }
+
+    /**
+     * Erstellt einen Booking-Eintrag für eine Rückerstattung
+     *
+     * @param int $transactionId Die Payrexx Transaction ID
+     * @param array $data Die Transaktionsdaten aus dem Webhook
+     * @param string $refundType Der Refund-Status (refunded, refundpending, partially-refunded)
+     * @return void
+     */
+    private function createRefundBooking(int $transactionId, array $data, string $refundType): void
+    {
+        try {
+            // Finde die ursprüngliche Transaktion in der DB
+            $transactionModel = new \App\Models\TransactionModel();
+            $transaction = $transactionModel->find($transactionId);
+
+            if (!$transaction) {
+                log_message('error', 'Refund Booking: Transaktion nicht gefunden', ['transactionId' => $transactionId]);
+                return;
+            }
+
+            // Finde den User anhand der invoice_id oder contact_id
+            $userId = null;
+
+            // Versuch 1: Über invoice -> subscription -> user_id
+            if (!empty($transaction->subscription_id)) {
+                $subscriptionModel = new \App\Models\UsersubscriptionModel();
+                $subscription = $subscriptionModel->find($transaction->subscription_id);
+                if ($subscription) {
+                    $userId = $subscription->user_id;
+                }
+            }
+
+            // Versuch 2: Über metadata (falls vorhanden)
+            if (!$userId && !empty($transaction->metadata)) {
+                $metadata = json_decode($transaction->metadata, true);
+                if (isset($metadata['user_id'])) {
+                    $userId = $metadata['user_id'];
+                }
+            }
+
+            if (!$userId) {
+                log_message('error', 'Refund Booking: User-ID nicht gefunden für Transaktion', ['transactionId' => $transactionId]);
+                return;
+            }
+
+            // Berechne Betrag (Payrexx speichert in Rappen/Cents)
+            $amountInChf = ($data['amount'] ?? $transaction->amount) / 100;
+
+            // Beschreibung basierend auf Zahlungsmethode
+            $paymentMethod = $data['payment']['brand'] ?? $transaction->payment_brand ?? 'Online-Zahlung';
+            $paymentWallet = $data['payment']['wallet'] ?? $transaction->payment_wallet ?? null;
+
+            if ($paymentWallet) {
+                $paymentMethod = $paymentWallet; // z.B. "TWINT"
+            }
+
+            $refundTypeLabel = match($refundType) {
+                'refunded' => 'Rückerstattung',
+                'refundpending' => 'Rückerstattung (ausstehend)',
+                'partially-refunded' => 'Teilrückerstattung',
+                default => 'Rückerstattung'
+            };
+
+            $description = sprintf(
+                '%s - %s - %.2f CHF',
+                $refundTypeLabel,
+                $paymentMethod,
+                $amountInChf
+            );
+
+            // Booking erstellen (positiver Betrag = Gutschrift)
+            $bookingModel = new \App\Models\BookingModel();
+            $bookingId = $bookingModel->insert([
+                'user_id' => $userId,
+                'type' => 'refund',
+                'description' => $description,
+                'amount' => $amountInChf, // Positiv = Guthaben erhöhen
+                'paid_amount' => 0.00,
+                'reference_id' => $transactionId, // Referenz zur ursprünglichen Transaktion
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            log_message('info', 'Refund Booking erfolgreich erstellt', [
+                'bookingId' => $bookingId,
+                'userId' => $userId,
+                'amount' => $amountInChf,
+                'transactionId' => $transactionId,
+                'refundType' => $refundType
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Fehler beim Erstellen des Refund Bookings', [
+                'transactionId' => $transactionId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 

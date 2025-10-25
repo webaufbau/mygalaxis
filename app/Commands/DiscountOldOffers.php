@@ -103,7 +103,8 @@ class DiscountOldOffers extends BaseCommand
                     }
 
                     if ($this->doesOfferMatchUser($offer, $user)) {
-                        $this->sendPriceUpdateEmail($user, $offer, $currentDiscountedPrice, $newDiscountedPrice);
+                        // Immer Original-Preis als oldPrice verwenden, nicht den vorherigen reduzierten Preis
+                        $this->sendPriceUpdateEmail($user, $offer, $basePrice, $newDiscountedPrice);
                         $notifiedCount++;
                     }
                 }

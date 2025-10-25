@@ -34,7 +34,7 @@
             ?>
             <strong><?= $zipLabel ?>:</strong> <?= esc($offer['zip']) ?><br>
             <strong><?= $cityLabel ?>:</strong> <?= esc($offer['city']) ?><br>
-            <strong><?= $typeLabel ?>:</strong> <?= lang('Offers.type.' . $offer['type'], [], $offer['type']) ?><br>
+            <strong><?= $typeLabel ?>:</strong> <?= lang('Offers.type.' . strtolower($offer['type']), [], $offer['type']) ?><br>
             <?php if ($currentPrice > 0): ?>
                 <strong><?= $priceLabel ?>:</strong> <?= number_format($currentPrice, 2) ?> <?= currency($firma->platform ?? null) ?><br>
             <?php endif; ?>

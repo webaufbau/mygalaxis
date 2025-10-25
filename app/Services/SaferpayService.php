@@ -250,5 +250,50 @@ class SaferpayService
         return $this->sendRequest($url, $data);
     }
 
+    /**
+     * Rückerstattung/Refund durchführen
+     *
+     * @param string $captureId Die Capture ID (aus Transaction Response)
+     * @param int $amount Der Betrag in Rappen/Cents (z.B. 5000 für 50.00 CHF)
+     * @param string $currencyCode Währungscode (z.B. "CHF", "EUR")
+     * @param string|null $notifyUrl Optional: URL für Pending-Notifications
+     * @return array Response von Saferpay
+     */
+    public function refundTransaction(string $captureId, int $amount, string $currencyCode = 'CHF', ?string $notifyUrl = null): array
+    {
+        $url = $this->config->apiBaseUrl . '/Payment/v1/Transaction/Refund';
+
+        $data = [
+            "RequestHeader" => [
+                "SpecVersion" => "1.35",
+                "CustomerId" => $this->config->customerId,
+                "RequestId" => uniqid(),
+                "RetryIndicator" => 0
+            ],
+            "Refund" => [
+                "Amount" => [
+                    "Value" => $amount,
+                    "CurrencyCode" => $currencyCode
+                ]
+            ],
+            "CaptureReference" => [
+                "CaptureId" => $captureId
+            ]
+        ];
+
+        // Optional: Pending Notification URL hinzufügen
+        if ($notifyUrl) {
+            $data["PendingNotification"] = [
+                "NotifyUrl" => $notifyUrl
+            ];
+        }
+
+        log_message('info', 'Saferpay Refund Request: ' . json_encode($data));
+        $response = $this->sendRequest($url, $data);
+        log_message('info', 'Saferpay Refund Response: ' . json_encode($response));
+
+        return $response;
+    }
+
 
 }
