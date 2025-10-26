@@ -136,6 +136,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         return $controller->index();
     });
 
+    // Dashboard Delete (für beide User-Typen, wird im Controller geprüft)
+    $routes->post('dashboard/delete/(:num)', 'Dashboard::delete/$1');
+
     $routes->get('filter', 'Filters::index');
     $routes->post('filter/save', 'Filters::save');
 

@@ -39,38 +39,60 @@ class Dashboard extends Controller
 
     }
 
+    /**
+     * Löscht eine Anfrage (nur für Admins)
+     */
+    public function delete($id = null)
+    {
+        $user = auth()->user();
+
+        // Prüfe ob User Admin ist
+        if (!$user || !$user->inGroup('admin')) {
+            session()->setFlashdata('error', 'Keine Berechtigung.');
+            return redirect()->to('/dashboard');
+        }
+
+        if (!$id) {
+            session()->setFlashdata('error', 'Keine ID angegeben.');
+            return redirect()->to('/dashboard');
+        }
+
+        $offerModel = new \App\Models\OfferModel();
+        $deleteId = (int)$id;
+
+        // Check ob das Angebot existiert
+        $offer = $offerModel->find($deleteId);
+        if ($offer) {
+            // Loggen wer gelöscht hat
+            log_message('info', sprintf(
+                'Offer ID %d wird gelöscht von User ID %d (Username: %s)',
+                $deleteId,
+                $user->id,
+                $user->username
+            ));
+
+            // Versuche zu löschen
+            $deleted = $offerModel->delete($deleteId, true); // true = permanent delete
+
+            if ($deleted) {
+                log_message('info', sprintf('Offer ID %d erfolgreich gelöscht', $deleteId));
+                session()->setFlashdata('success', 'Angebot #' . $deleteId . ' wurde erfolgreich gelöscht.');
+            } else {
+                log_message('error', sprintf('Offer ID %d konnte nicht gelöscht werden', $deleteId));
+                session()->setFlashdata('error', 'Fehler beim Löschen von Angebot #' . $deleteId);
+            }
+        } else {
+            log_message('warning', sprintf('Offer ID %d nicht gefunden zum Löschen', $deleteId));
+            session()->setFlashdata('error', 'Angebot #' . $deleteId . ' nicht gefunden.');
+        }
+
+        return redirect()->to('/dashboard');
+    }
+
     public function index_admin()
     {
         $request = service('request');
         $offerModel = new \App\Models\OfferModel();
-
-
-        // Prüfen ob 'delete' Parameter gesetzt ist und User Admin ist
-        $deleteId = $request->getGet('delete');
-        $user = auth()->user();
-
-        if ($deleteId && $user && $user->inGroup('admin')) {
-            // Sicherstellen, dass $deleteId integer ist
-            $deleteId = (int)$deleteId;
-
-            // Optional: Check ob das Angebot existiert
-            $offer = $offerModel->find($deleteId);
-            if ($offer) {
-                // Loggen wer gelöscht hat
-                log_message('info', sprintf(
-                    'Offer ID %d wurde gelöscht von User ID %d (Username: %s)',
-                    $deleteId,
-                    $user->id,
-                    $user->username
-                ));
-
-                $offerModel->delete($deleteId);
-
-                return redirect()->to('/dashboard')->with('success', 'Angebot wurde gelöscht.');
-            } else {
-                return redirect()->to('/dashboard')->with('error', 'Angebot nicht gefunden.');
-            }
-        }
 
 
         $builder = $offerModel->builder()->select('offers.*');

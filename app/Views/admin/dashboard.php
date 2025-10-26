@@ -8,6 +8,20 @@
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
+<!-- Flash Messages -->
+<?php if (session()->getFlashdata('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= session()->getFlashdata('success') ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= session()->getFlashdata('error') ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
 
 <!-- Filter -->
 <form method="get" class="row g-3 mb-4">
@@ -178,9 +192,10 @@
             <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm" target="_blank">
                 Details
             </a>
-            <a href="<?= site_url('/dashboard?delete=' . $o['id']) ?>" onclick="return confirm('<?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?> <?= esc($o['firstname'] . ' ' . $o['lastname']) ?> <?= esc($o['city']) ?> - Wirklich löschen?');" class="btn btn-warning btn-sm del">
-                Löschen
-            </a>
+            <form method="post" action="<?= site_url('dashboard/delete/' . $o['id']) ?>" style="display: inline;" onsubmit="return confirm('<?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?> <?= esc($o['firstname'] . ' ' . $o['lastname']) ?> <?= esc($o['city']) ?> - Wirklich löschen?');">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn btn-warning btn-sm">Löschen</button>
+            </form>
         </td>
     </tr>
     <?php endforeach; ?>
