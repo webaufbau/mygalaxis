@@ -101,5 +101,21 @@ return [
 
     'newOfferIntro' => 'Nous avons une nouvelle offre qui vous correspond :',
 
+    // Nouvelle notification d'offre détaillée pour les entreprises
+    'new_detailed_offer_subject' => 'Nouvelle offre correspondante',
+    'newOfferDetailedIntro' => 'Nous avons une nouvelle offre qui correspond exactement à vos critères de filtre. Sécurisez cette demande maintenant :',
+    'offer_details' => 'Détails de la demande',
+    'original_price' => 'Prix original',
+    'discounted_price' => 'Prix promotionnel',
+    'discount_valid_until' => 'Remise valable jusqu\'au {0}',
+    'price' => 'Prix',
+    'buy_now' => 'Acheter maintenant',
+    'login_required' => 'Remarque : Vous devez être connecté pour acheter cette offre.',
+    'already_purchased' => 'Cette demande a déjà été achetée',
+    'already_purchased_info' => 'Vous avez déjà acheté cette demande. Les coordonnées du client se trouvent ci-dessus.',
+    'customer_contact_details' => 'Contact client',
+    'mobile' => 'Mobile',
+    'address' => 'Adresse',
+
 
 ];

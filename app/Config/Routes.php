@@ -31,7 +31,7 @@ function defineAppRoutes($routes) {
 
     // Company Login
     $routes->get('login', '\CodeIgniter\Shield\Controllers\LoginController::loginView');
-    $routes->post('login', '\CodeIgniter\Shield\Controllers\LoginController::loginAction');
+    $routes->post('login', '\App\Controllers\CustomLoginController::loginAction');
 
     // Admin Login (separate URL)
     $routes->get('admin/login', 'Auth::adminLoginView', ['as' => 'admin-login']);

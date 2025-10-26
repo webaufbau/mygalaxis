@@ -100,7 +100,21 @@ return [
 
     'newOfferIntro' => 'We have a new offer that matches your profile:',
 
-
+    // New detailed offer notification for companies
+    'new_detailed_offer_subject' => 'New matching offer',
+    'newOfferDetailedIntro' => 'We have a new offer that exactly matches your filter criteria. Secure this request now:',
+    'offer_details' => 'Request details',
+    'original_price' => 'Original price',
+    'discounted_price' => 'Promotional price',
+    'discount_valid_until' => 'Discount valid until {0}',
+    'price' => 'Price',
+    'buy_now' => 'Buy now',
+    'login_required' => 'Note: You must be logged in to purchase this offer.',
+    'already_purchased' => 'This request has already been purchased',
+    'already_purchased_info' => 'You have already purchased this request. The customer contact details can be found above.',
+    'customer_contact_details' => 'Customer contact',
+    'mobile' => 'Mobile',
+    'address' => 'Address',
 
 
 ];

@@ -105,11 +105,35 @@ class OfferNotificationSender
         // Lade SiteConfig basierend auf User-Platform
         $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
+        // Lade vollständige Offertendaten inkl. data-Feld
+        $offerModel = new \App\Models\OfferModel();
+        $fullOffer = $offerModel->find($offer['id']);
+
+        if (!$fullOffer) {
+            log_message('error', 'Offerte ID ' . $offer['id'] . ' nicht gefunden für E-Mail-Versand');
+            return;
+        }
+
+        // Dekodiere data-Feld falls JSON
+        if (isset($fullOffer['data']) && is_string($fullOffer['data'])) {
+            $fullOffer['data'] = json_decode($fullOffer['data'], true) ?? [];
+        }
+
+        // Prüfe ob User diese Offerte bereits gekauft hat
+        $purchaseModel = new \App\Models\OfferPurchaseModel();
+        $purchase = $purchaseModel
+            ->where('offer_id', $offer['id'])
+            ->where('company_id', $user->id)
+            ->first();
+
+        $alreadyPurchased = !empty($purchase);
+
         $subject = "Neue passende Offerte #{$offer['id']}";
-        $message = view('emails/offer_new', [
+        $message = view('emails/offer_new_detailed', [
             'firma' => $user,
-            'offer' => $offer,
+            'offer' => $fullOffer,
             'siteConfig' => $siteConfig,
+            'alreadyPurchased' => $alreadyPurchased,
         ]);
 
         $view = \Config\Services::renderer();
