@@ -115,6 +115,7 @@ return [
     'customer_contact_details' => 'Contatto cliente',
     'mobile' => 'Cellulare',
     'address' => 'Indirizzo',
+    'and_more_details' => 'e altri dettagli',
 
 
 ];

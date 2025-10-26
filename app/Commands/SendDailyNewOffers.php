@@ -156,10 +156,34 @@ class SendDailyNewOffers extends BaseCommand
         $languageService = service('language');
         $languageService->setLocale($language);
 
+        // Lade vollständige Offerten mit data-Feld und Purchase-Status
+        $offerModel = new OfferModel();
+        $purchaseModel = new \App\Models\OfferPurchaseModel();
+        $fullOffers = [];
+
+        foreach ($offers as $offer) {
+            $fullOffer = $offerModel->find($offer['id']);
+            if ($fullOffer) {
+                // Dekodiere data-Feld
+                if (isset($fullOffer['data']) && is_string($fullOffer['data'])) {
+                    $fullOffer['data'] = json_decode($fullOffer['data'], true) ?? [];
+                }
+
+                // Prüfe Purchase-Status
+                $purchase = $purchaseModel
+                    ->where('offer_id', $fullOffer['id'])
+                    ->where('company_id', $user->id)
+                    ->first();
+
+                $fullOffer['alreadyPurchased'] = !empty($purchase);
+                $fullOffers[] = $fullOffer;
+            }
+        }
+
         $data = [
             'siteConfig' => $siteConfig,
             'firma'  => $user,
-            'offers' => $offers,
+            'offers' => $fullOffers,
         ];
 
         $subject = lang('Email.dailyOffersSubject', [$siteConfig->name]);
