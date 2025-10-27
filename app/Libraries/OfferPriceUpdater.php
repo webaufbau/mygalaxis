@@ -152,7 +152,7 @@ class OfferPriceUpdater
         $purchaseModel = new \App\Models\OfferPurchaseModel();
         $purchase = $purchaseModel
             ->where('offer_id', $offer['id'])
-            ->where('company_id', $user->id)
+            ->where('user_id', $user->id)
             ->first();
 
         $alreadyPurchased = !empty($purchase);
