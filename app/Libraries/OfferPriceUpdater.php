@@ -139,9 +139,13 @@ class OfferPriceUpdater
             return;
         }
 
-        // Dekodiere data-Feld falls JSON
-        if (isset($fullOffer['data']) && is_string($fullOffer['data'])) {
+        // Dekodiere form_fields als data-Feld
+        if (isset($fullOffer['form_fields']) && is_string($fullOffer['form_fields'])) {
+            $fullOffer['data'] = json_decode($fullOffer['form_fields'], true) ?? [];
+        } elseif (isset($fullOffer['data']) && is_string($fullOffer['data'])) {
             $fullOffer['data'] = json_decode($fullOffer['data'], true) ?? [];
+        } else {
+            $fullOffer['data'] = [];
         }
 
         // Prüfe ob User diese Offerte bereits gekauft hat

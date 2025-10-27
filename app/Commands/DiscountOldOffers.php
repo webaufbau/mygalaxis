@@ -167,6 +167,34 @@ class DiscountOldOffers extends BaseCommand
         // Lade SiteConfig basierend auf User-Platform
         $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($user->platform);
 
+        // Lade vollständige Offertendaten inkl. form_fields
+        $offerModel = new OfferModel();
+        $fullOffer = $offerModel->find($offer['id']);
+
+        if (!$fullOffer) {
+            CLI::error('Offerte ID ' . $offer['id'] . ' nicht gefunden für E-Mail-Versand');
+            return;
+        }
+
+        // Dekodiere form_fields als data-Feld
+        if (isset($fullOffer['form_fields']) && is_string($fullOffer['form_fields'])) {
+            $fullOffer['data'] = json_decode($fullOffer['form_fields'], true) ?? [];
+        } elseif (isset($fullOffer['data']) && is_string($fullOffer['data'])) {
+            $fullOffer['data'] = json_decode($fullOffer['data'], true) ?? [];
+        } else {
+            $fullOffer['data'] = [];
+        }
+
+        // Prüfe ob User diese Offerte bereits gekauft hat
+        $purchaseModel = new \App\Models\OfferPurchaseModel();
+        $purchase = $purchaseModel
+            ->where('offer_id', $offer['id'])
+            ->where('company_id', $user->id)
+            ->where('status', 'paid')
+            ->first();
+
+        $alreadyPurchased = !empty($purchase);
+
         $type = lang('Offers.type.' . $offer['type']);
         // Fallback falls Übersetzung fehlt
         if (str_starts_with($type, 'Offers.')) {
@@ -180,11 +208,12 @@ class DiscountOldOffers extends BaseCommand
 
         $message = view('emails/price_update', [
             'firma' => $user,
-            'offer' => $offer,
+            'offer' => $fullOffer,
             'oldPrice' => $oldPrice,
             'newPrice' => $newPrice,
             'discount' => $discount,
             'siteConfig' => $siteConfig,
+            'alreadyPurchased' => $alreadyPurchased,
         ]);
 
         $to = $siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail();

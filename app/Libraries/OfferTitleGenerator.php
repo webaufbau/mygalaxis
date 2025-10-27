@@ -135,10 +135,6 @@ class OfferTitleGenerator
             }
         }
 
-        if ($cleaningType && $cleaningType !== 'Standard') {
-            $title .= " ({$cleaningType})";
-        }
-
         return $title;
     }
 
@@ -153,11 +149,6 @@ class OfferTitleGenerator
 
         if ($objectType) {
             $title .= " - {$objectType}";
-        }
-
-        if (!empty($works) && is_array($works)) {
-            $workText = implode(', ', array_slice($works, 0, 2));
-            $title .= " ({$workText})";
         }
 
         return $title;
@@ -192,11 +183,6 @@ class OfferTitleGenerator
             $title .= " - {$objectType}";
         }
 
-        if (!empty($works) && is_array($works)) {
-            $workText = implode(', ', array_slice($works, 0, 2));
-            $title .= " ({$workText})";
-        }
-
         return $title;
     }
 
@@ -211,11 +197,6 @@ class OfferTitleGenerator
 
         if ($objectType) {
             $title .= " - {$objectType}";
-        }
-
-        if (!empty($works) && is_array($works)) {
-            $workText = implode(', ', array_slice($works, 0, 2));
-            $title .= " ({$workText})";
         }
 
         return $title;
@@ -234,11 +215,6 @@ class OfferTitleGenerator
             $title .= " - {$objectType}";
         }
 
-        if (!empty($works) && is_array($works)) {
-            $workText = implode(', ', array_slice($works, 0, 2));
-            $title .= " ({$workText})";
-        }
-
         return $title;
     }
 
@@ -255,11 +231,6 @@ class OfferTitleGenerator
             $title .= " - {$objectType}";
         }
 
-        if (!empty($works) && is_array($works)) {
-            $workText = implode(', ', array_slice($works, 0, 2));
-            $title .= " ({$workText})";
-        }
-
         return $title;
     }
 
@@ -274,11 +245,6 @@ class OfferTitleGenerator
 
         if ($objectType) {
             $title .= " - {$objectType}";
-        }
-
-        if (!empty($works) && is_array($works)) {
-            $workText = implode(', ', array_slice($works, 0, 2));
-            $title .= " ({$workText})";
         }
 
         return $title;
