@@ -122,6 +122,16 @@ class Offers extends ResourceController
                 $row['extras'] = $extras;
             }
 
+            // Füge offer_purchases Daten hinzu
+            $purchases = $db->table('offer_purchases')
+                ->where('offer_id', $row['id'])
+                ->where('status', 'paid')
+                ->orderBy('created_at', 'DESC')
+                ->get()
+                ->getResultArray();
+
+            $row['purchases'] = $purchases;
+
             $out[] = $row;
         }
 
