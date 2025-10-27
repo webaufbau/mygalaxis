@@ -32,18 +32,27 @@
 
     <div class="mb-3">
         <label for="amount" class="form-label"><?= esc(lang('Finance.topupAmount')) ?></label>
+        <?php
+        $maxAllowedTopup = 3000 - $currentBalance;
+        $maxAllowedTopup = max(0, $maxAllowedTopup); // Nie negativ
+        ?>
         <input
             type="number"
             step="0.01"
             min="<?= number_format($missingAmount, 2, '.', '') ?>"
+            max="<?= number_format($maxAllowedTopup, 2, '.', '') ?>"
             name="amount"
             id="amount"
             class="form-control"
-            value="<?= number_format(ceil($missingAmount), 2, '.', '') ?>"
+            value="<?= number_format(min(ceil($missingAmount), $maxAllowedTopup), 2, '.', '') ?>"
             required
         >
         <div class="form-text">
             <?= sprintf(lang('Finance.minimumTopupAmount'), number_format($missingAmount, 2, ".", "'")) ?>
+            <br>
+            <strong><?= lang('Finance.maximumTopupAmount') ?></strong>
+            <br>
+            <span class="text-muted">Maximal mögliche Aufladung: <?= number_format($maxAllowedTopup, 2, ".", "'") ?> CHF</span>
         </div>
     </div>
 

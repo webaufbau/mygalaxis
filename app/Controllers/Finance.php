@@ -108,6 +108,19 @@ class Finance extends BaseController
     {
         $user = auth()->user();
         $amountInChf = floatval($this->request->getPost('amount') ?? 20);
+
+        // Hole aktuelles Guthaben
+        $bookingModel = new BookingModel();
+        $currentBalance = $bookingModel->getUserBalance($user->id);
+
+        // Validierung: Gesamtguthaben darf 3000 CHF nicht überschreiten
+        if (($currentBalance + $amountInChf) > 3000) {
+            $maxAllowed = 3000 - $currentBalance;
+            return redirect()->back()
+                ->with('error', sprintf(lang('Finance.errorMaximumBalanceExceeded'), number_format($maxAllowed, 2, '.', '\'')))
+                ->withInput();
+        }
+
         $amountInCents = (int)($amountInChf * 100); // CHF → Rappen
 
         // Versuche direkt von gespeicherter Kreditkarte abzubuchen

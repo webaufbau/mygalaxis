@@ -80,6 +80,8 @@ return [
     'missingAmount' => 'Fehlender Betrag',
     'topupAmount' => 'Aufladebetrag (CHF)',
     'minimumTopupAmount' => 'Mindestaufladung: %s CHF',
+    'maximumTopupAmount' => 'Maximales Gesamtguthaben: 3\'000.00 CHF',
+    'errorMaximumBalanceExceeded' => 'Ihr Gesamtguthaben darf 3\'000.00 CHF nicht überschreiten. Sie können maximal %s CHF aufladen.',
     'topupNow' => 'Jetzt aufladen',
     'backToOffers' => 'Zurück zu Angeboten',
 ];
