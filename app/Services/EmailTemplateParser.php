@@ -13,6 +13,11 @@ use DateTime;
  * - {field:fieldname} - Display field value
  * - {field:fieldname.subfield} - Display nested field value using dot notation (e.g., address.city)
  * - {field:fieldname|date:d.m.Y} - Display field with date formatting
+ * - {field:fieldname|ucfirst} - First character uppercase
+ * - {field:fieldname|strtolower} - All lowercase
+ * - {field:fieldname|strtoupper} - All uppercase (preserves ß)
+ * - {field:fieldname|ucwords} - First character of each word uppercase (preserves ß)
+ * - {field:fieldname|replace:search,replacement} - Replace text within value
  * - {site_name} - Site name from config
  * - {site_url} - Site URL
  * - [if field:fieldname]...[/if] - Conditional block
@@ -207,12 +212,12 @@ class EmailTemplateParser
     }
 
     /**
-     * Parse {field:fieldname} and {field:fieldname|date:format}
+     * Parse {field:fieldname} and {field:fieldname|date:format} and text filters
      */
     protected function parseFieldShortcodes(string $template): string
     {
         // Erweitert um Leerzeichen, Schrägstriche, Punkte (für verschachtelte Arrays) und Umlaute
-        $pattern = '/\{field:([a-zA-Z0-9_\-\s\/\.\äöüÄÖÜ]+?)(?:\|([a-z]+):([^\}]+))?\}/';
+        $pattern = '/\{field:([a-zA-Z0-9_\-\s\/\.\äöüÄÖÜ]+?)(?:\|([a-z]+)(?::([^\}]+))?)?\}/';
 
         return preg_replace_callback($pattern, function ($matches) {
             $fieldName = trim($matches[1]);
@@ -230,14 +235,9 @@ class EmailTemplateParser
                 return $this->fieldRenderer->formatFileUpload($value, 'email');
             }
 
-            // Apply filter
-            if ($filter === 'date' && $filterParam) {
-                return $this->formatDate($value, $filterParam);
-            }
-
             // Handle arrays (multi-select fields, checkboxes, etc.)
             if (is_array($value)) {
-                return esc(implode(', ', $value));
+                $value = implode(', ', $value);
             }
 
             // Check if value is a file URL (comma-separated URLs)
@@ -245,8 +245,84 @@ class EmailTemplateParser
                 return $this->fieldRenderer->formatFileUpload($value, 'email');
             }
 
+            // Apply filter
+            if ($filter) {
+                $value = $this->applyFilter($value, $filter, $filterParam);
+            }
+
             return esc($value);
         }, $template);
+    }
+
+    /**
+     * Apply filter to value
+     */
+    protected function applyFilter($value, string $filter, ?string $filterParam): string
+    {
+        // Convert to string if not already
+        $value = (string) $value;
+
+        switch ($filter) {
+            case 'date':
+                return $filterParam ? $this->formatDate($value, $filterParam) : $value;
+
+            case 'ucfirst':
+                return mb_strtoupper(mb_substr($value, 0, 1)) . mb_substr($value, 1);
+
+            case 'strtolower':
+                return mb_strtolower($value);
+
+            case 'strtoupper':
+                // Convert to uppercase but preserve ß
+                return $this->strToUpperPreserveSharpS($value);
+
+            case 'ucwords':
+                // Uppercase first letter of each word but preserve ß
+                return $this->ucwordsPreserveSharpS($value);
+
+            case 'replace':
+                // Format: {field:name|replace:search,replacement}
+                if ($filterParam && strpos($filterParam, ',') !== false) {
+                    [$search, $replace] = explode(',', $filterParam, 2);
+                    return str_replace(trim($search), trim($replace), $value);
+                }
+                return $value;
+
+            default:
+                return $value;
+        }
+    }
+
+    /**
+     * Convert string to uppercase while preserving ß (German sharp s)
+     */
+    protected function strToUpperPreserveSharpS(string $value): string
+    {
+        // Replace ß with a placeholder
+        $placeholder = '###SHARP_S###';
+        $value = str_replace('ß', $placeholder, $value);
+
+        // Convert to uppercase
+        $value = mb_strtoupper($value, 'UTF-8');
+
+        // Restore ß
+        return str_replace($placeholder, 'ß', $value);
+    }
+
+    /**
+     * Uppercase first letter of each word while preserving ß
+     */
+    protected function ucwordsPreserveSharpS(string $value): string
+    {
+        // Replace ß with a placeholder
+        $placeholder = '###SHARP_S###';
+        $value = str_replace('ß', $placeholder, $value);
+
+        // Uppercase words
+        $value = mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+
+        // Restore ß
+        return str_replace($placeholder, 'ß', $value);
     }
 
     /**

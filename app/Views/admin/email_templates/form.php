@@ -283,15 +283,16 @@
                             </div>
                         </div>
 
-                        <!-- Datum Formatierung -->
+                        <!-- Filter (Datum & Text) -->
                         <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingDate">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDate">
-                                    Datum Formatierung
+                            <h2 class="accordion-header" id="headingFilters">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilters">
+                                    Werte formatieren
                                 </button>
                             </h2>
-                            <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#shortcodeAccordion">
+                            <div id="collapseFilters" class="accordion-collapse collapse" data-bs-parent="#shortcodeAccordion">
                                 <div class="accordion-body">
+                                    <h6 class="text-muted mb-2">Datum-Filter</h6>
                                     <div class="shortcode-item mb-3">
                                         <code class="d-block bg-light p-2 rounded mb-1">{field:umzugsdatum|date:d.m.Y}</code>
                                         <small>Datum formatiert: 15.12.2025</small>
@@ -300,11 +301,54 @@
                                         </button>
                                     </div>
 
-                                    <div class="alert alert-info p-2 small">
+                                    <div class="alert alert-info p-2 small mb-3">
                                         <strong>Formate:</strong><br>
                                         d.m.Y → 15.12.2025<br>
                                         d/m/Y → 15/12/2025<br>
                                         Y-m-d → 2025-12-15
+                                    </div>
+
+                                    <hr>
+
+                                    <h6 class="text-muted mb-2 mt-3">Text-Filter</h6>
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1">{field:city|ucfirst}</code>
+                                        <small>Erster Buchstabe gross: "zürich" → "Zürich"</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('{field:city|ucfirst}')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
+                                    </div>
+
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1">{field:nachname|strtolower}</code>
+                                        <small>Alles klein: "MÜLLER" → "müller"</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('{field:nachname|strtolower}')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
+                                    </div>
+
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1">{field:city|strtoupper}</code>
+                                        <small>Alles gross: "straße" → "STRAßE" (nicht STRASSE)</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('{field:city|strtoupper}')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
+                                    </div>
+
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1">{field:street|ucwords}</code>
+                                        <small>Jedes Wort gross: "haupt straße" → "Haupt Straße" (ß bleibt)</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('{field:street|ucwords}')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
+                                    </div>
+
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1">{field:company|replace:GmbH,AG}</code>
+                                        <small>Text ersetzen: "Firma GmbH" → "Firma AG"</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('{field:company|replace:GmbH,AG}')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -39,6 +39,69 @@ Für verschachtelte Arrays (wie Adressen) kann die Punkt-Notation verwendet werd
 [/if]
 ```
 
+### 4. Text-Filter (Pipe-Syntax)
+Mit der Pipe-Syntax ("|") können Feldwerte formatiert werden. Filter werden direkt hinter dem Feldnamen mit einem "|" angegeben:
+
+#### Verfügbare Filter:
+
+**Datum formatieren:**
+```
+{field:move_date|date:d.m.Y}
+```
+Ausgabe: 31.10.2025
+
+**Erster Buchstabe groß:**
+```
+{field:city|ucfirst}
+```
+Ausgabe: "zürich" → "Zürich"
+
+**Alles klein schreiben:**
+```
+{field:nachname|strtolower}
+```
+Ausgabe: "MÜLLER" → "müller"
+
+**Alles groß schreiben:**
+```
+{field:city|strtoupper}
+```
+Ausgabe: "Zürich" → "ZÜRICH"
+⚠️ **Hinweis:** Das deutsche "ß" bleibt als "ß" erhalten (wird nicht zu "SS")
+
+**Jeden Wort-Anfang groß:**
+```
+{field:street|ucwords}
+```
+Ausgabe: "hauptstrasse 42" → "Hauptstrasse 42"
+⚠️ **Hinweis:** Das deutsche "ß" bleibt als "ß" erhalten
+
+**Text ersetzen:**
+```
+{field:company|replace:GmbH,AG}
+```
+Ausgabe: "Musterfirma GmbH" → "Musterfirma AG"
+
+#### Mehrere Filter kombinieren:
+Filter können **nicht** kombiniert werden. Verwenden Sie nur einen Filter pro Feld.
+
+#### Beispiele aus der Praxis:
+
+**Ort immer groß schreiben:**
+```
+<p>Einsatzort: {field:city|strtoupper}</p>
+```
+
+**Name schön formatiert:**
+```
+<p>Sehr geehrte/r {field:vorname|ucfirst} {field:nachname|ucwords},</p>
+```
+
+**Datum im deutschen Format:**
+```
+<p>Umzugsdatum: {field:move_date|date:d.m.Y}</p>
+```
+
 ## Verfügbare Felder
 
 ### Grundlegende Felder (alle Offerten)
