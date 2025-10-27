@@ -292,6 +292,20 @@ class EmailTemplates extends AdminBase
         $parsedBody = $parser->parse($bodyTemplate, $formData);
         $parsedSubject = $parser->parse($template['subject'], $formData);
 
+        // Extrahiere separate Felder für Vorschau (wie im OfferNotificationSender)
+        $extractedFields = [];
+        if ($selectedOffer) {
+            $notificationSender = new \App\Libraries\OfferNotificationSender();
+            // Erstelle temporäres offer-Array mit dekodiertem data-Feld
+            $tempOffer = $selectedOffer;
+            $tempOffer['data'] = $formData;
+            // Nutze Reflection um auf protected Methode zuzugreifen
+            $reflection = new \ReflectionClass($notificationSender);
+            $method = $reflection->getMethod('extractFieldsForTemplate');
+            $method->setAccessible(true);
+            $extractedFields = $method->invoke($notificationSender, $tempOffer);
+        }
+
         return view('admin/email_templates/preview', [
             'title'           => 'Template Vorschau',
             'template'        => $template,
@@ -300,6 +314,7 @@ class EmailTemplates extends AdminBase
             'offers'          => $offers,
             'selectedOfferId' => $selectedOfferId,
             'selectedOffer'   => $selectedOffer,
+            'extractedFields' => $extractedFields,
         ]);
     }
 

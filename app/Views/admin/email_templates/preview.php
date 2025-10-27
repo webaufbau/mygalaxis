@@ -194,24 +194,74 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($formFields as $key => $value): ?>
-                                        <tr>
-                                            <td><code>{field:<?= esc($key) ?>}</code></td>
-                                            <td>
-                                                <?php
-                                                if (is_array($value)) {
-                                                    echo '<span class="text-muted">[Array: ' . implode(', ', array_map('esc', $value)) . ']</span>';
-                                                } elseif (is_string($value) && strlen($value) > 100) {
-                                                    echo '<span class="text-muted">' . esc(substr($value, 0, 100)) . '...</span>';
-                                                } elseif (empty($value)) {
-                                                    echo '<span class="text-muted fst-italic">(leer)</span>';
+                                    <?php
+                                    // Rekursive Funktion zum Anzeigen von Arrays
+                                    function displayArrayFields($fields, $prefix = '', $depth = 0) {
+                                        foreach ($fields as $key => $value) {
+                                            $fullKey = $prefix ? $prefix . '.' . $key : $key;
+                                            $isAssociative = is_array($value) && (array_keys($value) !== range(0, count($value) - 1));
+
+                                            echo '<tr>';
+                                            echo '<td><code>{field:' . esc($fullKey) . '}</code></td>';
+                                            echo '<td>';
+
+                                            if (is_array($value)) {
+                                                if ($isAssociative) {
+                                                    // Assoziatives Array - zeige Badge und erweiterte Tabelle
+                                                    echo '<div class="mb-2"><span class="badge bg-info">Array mit Unterfeldern:</span></div>';
+                                                    echo '<table class="table table-sm table-bordered mb-0" style="font-size: 0.85rem; margin-left: ' . ($depth * 10) . 'px;">';
+                                                    echo '<tr><th style="width: 50%;">Zugriff</th><th>Wert</th></tr>';
+
+                                                    // Zeige Unterfelder
+                                                    foreach ($value as $subKey => $subValue) {
+                                                        echo '<tr>';
+                                                        echo '<td><code>{field:' . esc($fullKey) . '.' . esc($subKey) . '}</code></td>';
+
+                                                        if (is_array($subValue)) {
+                                                            // Verschachteltes Array - zeige rekursiv wenn assoziativ
+                                                            $isNestedAssociative = array_keys($subValue) !== range(0, count($subValue) - 1);
+                                                            if ($isNestedAssociative && $depth < 2) {
+                                                                echo '<td>';
+                                                                echo '<span class="badge bg-secondary">Verschachteltes Array:</span><br>';
+                                                                echo '<table class="table table-sm table-bordered mt-1 mb-0" style="font-size: 0.8rem;">';
+                                                                echo '<tr><th>Zugriff</th><th>Wert</th></tr>';
+                                                                foreach ($subValue as $nestedKey => $nestedValue) {
+                                                                    echo '<tr>';
+                                                                    echo '<td><code>{field:' . esc($fullKey) . '.' . esc($subKey) . '.' . esc($nestedKey) . '}</code></td>';
+                                                                    echo '<td>' . (is_array($nestedValue) ? '<span class="text-muted">[Array]</span>' : esc($nestedValue)) . '</td>';
+                                                                    echo '</tr>';
+                                                                }
+                                                                echo '</table>';
+                                                                echo '</td>';
+                                                            } else {
+                                                                echo '<td><span class="text-muted">[Array: ' . implode(', ', array_map('esc', $subValue)) . ']</span></td>';
+                                                            }
+                                                        } else {
+                                                            echo '<td>' . esc($subValue) . '</td>';
+                                                        }
+                                                        echo '</tr>';
+                                                    }
+                                                    echo '</table>';
                                                 } else {
-                                                    echo esc($value);
+                                                    // Einfaches numerisches Array - zeige Werte
+                                                    echo '<span class="text-muted">[Array: ' . implode(', ', array_map('esc', $value)) . ']</span>';
                                                 }
-                                                ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
+                                            } elseif (is_string($value) && strlen($value) > 100) {
+                                                echo '<span class="text-muted">' . esc(substr($value, 0, 100)) . '...</span>';
+                                            } elseif (empty($value)) {
+                                                echo '<span class="text-muted fst-italic">(leer)</span>';
+                                            } else {
+                                                echo esc($value);
+                                            }
+
+                                            echo '</td>';
+                                            echo '</tr>';
+                                        }
+                                    }
+
+                                    // Zeige alle Felder
+                                    displayArrayFields($formFields);
+                                    ?>
                                 </tbody>
                             </table>
                         </div>

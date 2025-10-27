@@ -11,10 +11,12 @@ use DateTime;
  *
  * Available Shortcodes:
  * - {field:fieldname} - Display field value
+ * - {field:fieldname.subfield} - Display nested field value using dot notation (e.g., address.city)
  * - {field:fieldname|date:d.m.Y} - Display field with date formatting
  * - {site_name} - Site name from config
  * - {site_url} - Site URL
  * - [if field:fieldname]...[/if] - Conditional block
+ * - [if field:fieldname.subfield]...[/if] - Conditional with nested field
  * - [if field:fieldname > value]...[/if] - Conditional with comparison (>, <, >=, <=, ==, !=)
  * - [if field:fieldname contains value]...[/if] - Check if array/string contains value
  * - [if field:fieldname]...[else]...[/if] - Conditional with else block
@@ -135,8 +137,8 @@ class EmailTemplateParser
         }
 
         // Single condition: field:fieldname or field:fieldname > value or field:fieldname contains value
-        // Erweitert um Leerzeichen, Schrägstriche, andere Sonderzeichen und 'contains' Operator
-        if (preg_match('/field:([a-zA-Z0-9_\-\s\/äöüÄÖÜ]+?)(?:\s*(>|<|>=|<=|==|!=|contains)\s+(.+))?(?:\]|$)/', $conditionString, $matches)) {
+        // Erweitert um Leerzeichen, Schrägstriche, Punkte (für verschachtelte Arrays), andere Sonderzeichen und 'contains' Operator
+        if (preg_match('/field:([a-zA-Z0-9_\-\s\/\.\äöüÄÖÜ]+?)(?:\s*(>|<|>=|<=|==|!=|contains)\s+(.+))?(?:\]|$)/', $conditionString, $matches)) {
             $fieldName = trim($matches[1]);
             $operator = isset($matches[2]) ? trim($matches[2]) : null;
             $compareValue = isset($matches[3]) ? trim($matches[3]) : null;
@@ -209,8 +211,8 @@ class EmailTemplateParser
      */
     protected function parseFieldShortcodes(string $template): string
     {
-        // Erweitert um Leerzeichen, Schrägstriche und Umlaute
-        $pattern = '/\{field:([a-zA-Z0-9_\-\s\/äöüÄÖÜ]+?)(?:\|([a-z]+):([^\}]+))?\}/';
+        // Erweitert um Leerzeichen, Schrägstriche, Punkte (für verschachtelte Arrays) und Umlaute
+        $pattern = '/\{field:([a-zA-Z0-9_\-\s\/\.\äöüÄÖÜ]+?)(?:\|([a-z]+):([^\}]+))?\}/';
 
         return preg_replace_callback($pattern, function ($matches) {
             $fieldName = trim($matches[1]);
@@ -304,9 +306,26 @@ class EmailTemplateParser
 
     /**
      * Get field value from data
+     * Supports dot notation for nested arrays: einzug_adresse.city
      */
     protected function getFieldValue(string $fieldName)
     {
+        // Check if fieldName contains dot notation
+        if (strpos($fieldName, '.') !== false) {
+            $parts = explode('.', $fieldName);
+            $value = $this->data;
+
+            foreach ($parts as $part) {
+                if (is_array($value) && isset($value[$part])) {
+                    $value = $value[$part];
+                } else {
+                    return null;
+                }
+            }
+
+            return $value;
+        }
+
         return $this->data[$fieldName] ?? null;
     }
 
