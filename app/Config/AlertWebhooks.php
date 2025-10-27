@@ -28,44 +28,83 @@ class AlertWebhooks extends BaseConfig
 {
     /**
      * Enable or disable the alert system
+     * Set in .env: alert.enabled=true
      */
-    public bool $enabled = true;
+    public bool $enabled;
 
     /**
      * Server name to identify which server sent the alert
+     * Set in .env: alert.serverName="MyGalaxis Production"
      * This will appear in all alert messages
      */
-    public string $serverName = 'MyGalaxis Development';
+    public string $serverName;
 
     /**
      * Email alert configuration
+     * Set in .env: alert.emailEnabled=true
+     * Set in .env: alert.emailRecipients="logs@webaufbau.com,admin@example.com"
      */
-    public bool $emailEnabled = true;
-    public array $emailRecipients = [
-        'logs@webaufbau.com',
-    ];
+    public bool $emailEnabled;
+    public array $emailRecipients = [];
     public string $emailFrom = ''; // Uses email.fromEmail from .env
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Load from .env with defaults
+        $this->enabled = env('alert.enabled', false);
+        $this->serverName = env('alert.serverName', 'Unknown Server');
+        $this->emailEnabled = env('alert.emailEnabled', false);
+
+        // Parse comma-separated email list from .env
+        $emailList = env('alert.emailRecipients', '');
+        if (!empty($emailList)) {
+            $this->emailRecipients = array_map('trim', explode(',', $emailList));
+        }
+
+        $this->emailFrom = env('alert.emailFrom', '');
+
+        // SMS configuration
+        $this->smsEnabled = env('alert.smsEnabled', false);
+        $this->smsProvider = env('alert.smsProvider', 'twilio');
+
+        // Parse comma-separated SMS list from .env
+        $smsList = env('alert.smsRecipients', '');
+        if (!empty($smsList)) {
+            $this->smsRecipients = array_map('trim', explode(',', $smsList));
+        }
+
+        // SMS rate limits
+        $this->maxSmsPerHour = (int) env('alert.maxSmsPerHour', 10);
+        $this->maxSmsPerDay = (int) env('alert.maxSmsPerDay', 50);
+    }
 
     /**
      * SMS alert configuration (optional - for CRITICAL errors only)
      *
-     * Uses your existing SMS service (Twilio or Infobip)
+     * Set in .env:
+     * alert.smsEnabled=true
+     * alert.smsProvider="twilio"
+     * alert.smsRecipients="+41791234567,+41791234568"
      *
      * Note: SMS costs money per message! Only use for critical errors.
      */
-    public bool $smsEnabled = false;
-    public string $smsProvider = 'twilio'; // 'twilio' or 'infobip'
-    public array $smsRecipients = [
-        // '+41791234567', // Your phone
-    ];
+    public bool $smsEnabled;
+    public string $smsProvider;
+    public array $smsRecipients = [];
 
     /**
      * Global SMS rate limits (prevents SMS spam and cost explosion)
      *
+     * Set in .env:
+     * alert.maxSmsPerHour=10
+     * alert.maxSmsPerDay=50
+     *
      * Limits are TOTAL across all error types
      */
-    public int $maxSmsPerHour = 10;   // Max 10 SMS pro Stunde (costs ~CHF 0.80/hour)
-    public int $maxSmsPerDay = 50;    // Max 50 SMS pro Tag (costs ~CHF 4/day)
+    public int $maxSmsPerHour;
+    public int $maxSmsPerDay;
 
     /**
      * Severity levels determine which channels get notified
