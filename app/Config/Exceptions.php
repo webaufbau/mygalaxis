@@ -101,6 +101,16 @@ class Exceptions extends BaseConfig
      */
     public function handler(int $statusCode, Throwable $exception): ExceptionHandlerInterface
     {
+        // Trigger alert service for critical errors
+        // Note: This runs after logging, so alerts are sent in addition to normal error handling
+        try {
+            \App\Libraries\AlertExceptionHandler::handleException($exception, $statusCode);
+        } catch (\Throwable $e) {
+            // Don't let alert system break the app
+            log_message('error', 'Alert system failed: ' . $e->getMessage());
+        }
+
+        // Return default CI4 exception handler
         return new ExceptionHandler($this);
     }
 }
