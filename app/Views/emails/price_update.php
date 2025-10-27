@@ -4,8 +4,7 @@
 
 <div class="highlight" style="background-color: #f8f9fa; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0;">
     <h3 style="margin-top: 0; color: #ff9800;"><?= esc($offer['title'] ?? lang('Offers.type.' . $offer['type'])) ?></h3>
-    <p><strong><?= lang('Offers.labels.zip') ?>:</strong> <?= esc($offer['zip']) ?> <?= esc($offer['city'] ?? '') ?></p>
-    <p><strong><?= lang('Offers.labels.language') ?>:</strong> <?= esc($offer['language']) ?></p>
+    <p><strong><?= lang('Offers.labels.city') ?>:</strong> <?= esc($offer['zip']) ?> <?= esc($offer['city'] ?? '') ?></p>
 </div>
 
 <h3><?= lang('Email.offer_details') ?></h3>
