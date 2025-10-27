@@ -232,9 +232,16 @@ class OfferNotificationSender
             return;
         }
 
-        // Dekodiere data-Feld falls JSON
+        // Dekodiere data-Feld falls JSON, oder verwende form_fields als Fallback
         if (isset($fullOffer['data']) && is_string($fullOffer['data'])) {
             $fullOffer['data'] = json_decode($fullOffer['data'], true) ?? [];
+        } elseif (!isset($fullOffer['data']) || empty($fullOffer['data'])) {
+            // Fallback: Verwende form_fields wenn data nicht existiert
+            if (isset($fullOffer['form_fields']) && is_string($fullOffer['form_fields'])) {
+                $fullOffer['data'] = json_decode($fullOffer['form_fields'], true) ?? [];
+            } else {
+                $fullOffer['data'] = [];
+            }
         }
 
         // Prüfe ob User diese Offerte bereits gekauft hat

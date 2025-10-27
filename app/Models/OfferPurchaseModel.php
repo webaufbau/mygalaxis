@@ -9,16 +9,14 @@ class OfferPurchaseModel extends Model
     protected $primaryKey = 'id';
 
     protected $allowedFields = [
-        'user_id',      // neu hinzugefügt
-        'company_id',
+        'user_id',
         'offer_id',
         'price',
         'price_paid',
         'discount_type',
         'payment_method',
         'is_auto_purchase',
-        'review',       // neu
-        'review',       // neu
+        'review',
         'status',
         'company_name',     // für Analytics
         'external_user_id', // für Analytics
