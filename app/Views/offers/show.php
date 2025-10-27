@@ -53,6 +53,7 @@ if ($offer['discounted_price'] > 0) {
 
 // Kundeninfos extrahieren wenn gekauft
 $customerInfo = [];
+$addressInfo = [];
 if ($isPurchased) {
     $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
     $contactKeys = [
@@ -76,12 +77,48 @@ if ($isPurchased) {
         'tel' => 'Telefon'
     ];
 
+    // Sammle Kontaktdaten
     foreach ($formFields as $key => $value) {
         $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
         if (isset($contactKeys[$normalizedKey]) && !empty($value)) {
             $label = $contactKeys[$normalizedKey];
             if (!isset($customerInfo[$label])) {
                 $customerInfo[$label] = $value;
+            }
+        }
+    }
+
+    // Sammle Adressinformationen (verschachtelte Arrays und direkte Felder)
+    $addressKeys = [
+        'strasse' => 'Straße',
+        'street' => 'Straße',
+        'address_line_1' => 'Straße',
+        'hausnummer' => 'Hausnummer',
+        'house_number' => 'Hausnummer',
+        'nummer' => 'Hausnummer',
+        'address_line_2' => 'Adresszusatz',
+    ];
+
+    foreach ($formFields as $key => $value) {
+        // Prüfe verschachtelte Adressfelder (z.B. einzug_adresse oder auszug_adresse)
+        if (is_array($value) && (strpos(strtolower($key), 'adresse') !== false || strpos(strtolower($key), 'address') !== false)) {
+            foreach ($value as $subKey => $subValue) {
+                $normalizedSubKey = str_replace([' ', '-'], '_', strtolower($subKey));
+                if (isset($addressKeys[$normalizedSubKey]) && !empty($subValue)) {
+                    $label = $addressKeys[$normalizedSubKey];
+                    if (!isset($addressInfo[$label])) {
+                        $addressInfo[$label] = $subValue;
+                    }
+                }
+            }
+        }
+
+        // Prüfe direkte Adressfelder
+        $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+        if (isset($addressKeys[$normalizedKey]) && !empty($value) && !is_array($value)) {
+            $label = $addressKeys[$normalizedKey];
+            if (!isset($addressInfo[$label])) {
+                $addressInfo[$label] = $value;
             }
         }
     }
@@ -119,6 +156,14 @@ if ($isPurchased) {
                     <?php endforeach; ?>
                 </div>
                 <div class="col-md-6">
+                    <?php if (!empty($addressInfo)): ?>
+                        <p class="mb-2">
+                            <?php foreach ($addressInfo as $label => $value): ?>
+                                <strong><?= esc($label) ?>:</strong> <?= esc($value) ?><br>
+                            <?php endforeach; ?>
+                        </p>
+                    <?php endif; ?>
+
                     <p class="mb-2">
                         <strong><?= $zipLabel ?>:</strong> <?= esc($offer['zip']) ?><br>
                         <strong><?= $cityLabel ?>:</strong> <?= esc($offer['city']) ?><br>
@@ -177,7 +222,7 @@ if ($isPurchased) {
         <h4 class="mb-0"><?= $detailsLabel ?></h4>
     </div>
     <div class="card-body">
-        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => $isPurchased]) ?>
+        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => $isPurchased, 'wrapInCard' => false]) ?>
     </div>
 </div>
 

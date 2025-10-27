@@ -150,22 +150,21 @@
     </div>
 </details>
 
-<h4>Formulardaten:</h4>
-
-
 <?php
 $formFields = json_decode($offer['form_fields'], true);
 
 // Liste von Keys, die du **nicht anzeigen** möchtest:
 $excludeKeys = ['uuid', 'file_upload', '__submission', 'service_url'];
+?>
 
-if (!empty($formFields)):
-    ?>
+<?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true, 'admin' => true]) ?>
 
-    <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true, 'admin' => true]) ?>
-
-<?php else: ?>
-    <p><em>Keine Formulardaten verfügbar.</em></p>
+<?php if (empty($formFields)): ?>
+    <div class="card">
+        <div class="card-body">
+            <p class="mb-0"><em>Keine Formulardaten verfügbar.</em></p>
+        </div>
+    </div>
 <?php endif; ?>
 
 

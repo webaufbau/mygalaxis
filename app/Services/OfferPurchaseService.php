@@ -363,7 +363,57 @@ class OfferPurchaseService
             'lastname'  => $offer['lastname'] ?? '',
             'email'     => $offer['email'] ?? '',
             'phone'     => $offer['phone'] ?? '',
+            'zip'       => $offer['zip'] ?? '',
+            'city'      => $offer['city'] ?? '',
         ];
+
+        // Extrahiere Adresse aus form_fields
+        $formFields = json_decode($offer['form_fields'] ?? '{}', true);
+        $addressKeys = [
+            'strasse' => 'strasse',
+            'street' => 'strasse',
+            'address_line_1' => 'strasse',
+            'hausnummer' => 'hausnummer',
+            'house_number' => 'hausnummer',
+            'nummer' => 'hausnummer',
+            'address_line_2' => 'address_line_2',  // Adresszusatz
+        ];
+
+        foreach ($formFields as $key => $value) {
+            // Prüfe verschachtelte Adressfelder
+            if (is_array($value) && (strpos(strtolower($key), 'adresse') !== false || strpos(strtolower($key), 'address') !== false)) {
+                foreach ($value as $subKey => $subValue) {
+                    $normalizedSubKey = str_replace([' ', '-'], '_', strtolower($subKey));
+                    if (isset($addressKeys[$normalizedSubKey]) && !empty($subValue)) {
+                        $targetKey = $addressKeys[$normalizedSubKey];
+                        if (!isset($customerData[$targetKey])) {
+                            $customerData[$targetKey] = $subValue;
+                        }
+                    }
+                }
+            }
+
+            // Prüfe direkte Adressfelder
+            $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+            if (isset($addressKeys[$normalizedKey]) && !empty($value) && !is_array($value)) {
+                $targetKey = $addressKeys[$normalizedKey];
+                if (!isset($customerData[$targetKey])) {
+                    $customerData[$targetKey] = $value;
+                }
+            }
+        }
+
+        // Kombiniere Straße und Hausnummer/Adresszusatz zu 'address' für E-Mail
+        if (!empty($customerData['strasse'])) {
+            $address = $customerData['strasse'];
+            // Versuche hausnummer oder address_line_2 (Adresszusatz)
+            if (!empty($customerData['hausnummer'])) {
+                $address .= ' ' . $customerData['hausnummer'];
+            } elseif (!empty($customerData['address_line_2'])) {
+                $address .= ' ' . $customerData['address_line_2'];
+            }
+            $customerData['address'] = $address;
+        }
 
         $company_backend_offer_link = rtrim($siteConfig->backendUrl, '/') . '/offers/mine#detailsview-' . $offer['id'];
 

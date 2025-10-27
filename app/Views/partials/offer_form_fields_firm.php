@@ -2,6 +2,7 @@
 // Standardwerte für optionale Variablen
 $full = $full ?? false;
 $admin = $admin ?? false;
+$wrapInCard = $wrapInCard ?? true; // Standardmäßig Card-Wrapper hinzufügen
 
 // Form Fields laden
 $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
@@ -84,48 +85,197 @@ if (!$useCustomTemplate) {
 }
 ?>
 
-<?php if ($useCustomTemplate && !empty($renderedHtmlOutput)): ?>
-    <!-- Custom Template Output (direktes HTML aus field_display_template) -->
-    <?= $renderedHtmlOutput ?>
+<?php
+// Admin oder Gekauft: Zeige immer Kontaktdaten ganz oben
+if (!empty($admin) || !empty($full)):
+    // Sammle Kontaktinformationen
+    $contactKeys = [
+        'vorname' => 'Vorname',
+        'firstname' => 'Vorname',
+        'first_name' => 'Vorname',
+        'nachname' => 'Nachname',
+        'lastname' => 'Nachname',
+        'last_name' => 'Nachname',
+        'surname' => 'Nachname',
+        'email' => 'E-Mail',
+        'e_mail' => 'E-Mail',
+        'email_address' => 'E-Mail',
+        'mail' => 'E-Mail',
+        'e_mail_adresse' => 'E-Mail',
+        'telefon' => 'Telefon',
+        'telefonnummer' => 'Telefon',
+        'phone' => 'Telefon',
+        'telephone' => 'Telefon',
+        'phone_number' => 'Telefon',
+        'tel' => 'Telefon'
+    ];
 
-<?php elseif (!empty($renderedFields)): ?>
-    <!-- Fallback: Alte Tabellen-Darstellung mit FieldRenderer -->
-    <table class="table table-striped table-sm">
-        <tbody>
-        <?php foreach ($renderedFields as $field): ?>
-            <tr>
-                <td>
-                    <?= esc($field['label']) ?>
+    $customerInfo = [];
+    $addressInfo = [];
 
-                    <?php if ($field['image']): ?>
-                        <div>
-                            <img src="<?= esc($field['image']) ?>"
-                                 alt="Bild für <?= esc($field['label']) ?>"
-                                 style="max-width:100%; border:1px solid #ccc; margin-top: 10px;">
-                        </div>
+    // Sammle Kontaktdaten
+    foreach ($formFields as $key => $value) {
+        $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+        if (isset($contactKeys[$normalizedKey]) && !empty($value)) {
+            $label = $contactKeys[$normalizedKey];
+            if (!isset($customerInfo[$label])) {
+                $customerInfo[$label] = $value;
+            }
+        }
+    }
+
+    // Sammle Adressinformationen (verschachtelte Arrays und direkte Felder)
+    $addressKeys = [
+        'strasse' => 'Straße',
+        'street' => 'Straße',
+        'address_line_1' => 'Straße',
+        'hausnummer' => 'Hausnummer',
+        'house_number' => 'Hausnummer',
+        'nummer' => 'Hausnummer',
+        'address_line_2' => 'Adresszusatz',
+    ];
+
+    foreach ($formFields as $key => $value) {
+        // Prüfe verschachtelte Adressfelder (z.B. einzug_adresse oder auszug_adresse)
+        if (is_array($value) && (strpos(strtolower($key), 'adresse') !== false || strpos(strtolower($key), 'address') !== false)) {
+            foreach ($value as $subKey => $subValue) {
+                $normalizedSubKey = str_replace([' ', '-'], '_', strtolower($subKey));
+                if (isset($addressKeys[$normalizedSubKey]) && !empty($subValue)) {
+                    $label = $addressKeys[$normalizedSubKey];
+                    if (!isset($addressInfo[$label])) {
+                        $addressInfo[$label] = $subValue;
+                    }
+                }
+            }
+        }
+
+        // Prüfe direkte Adressfelder
+        $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+        if (isset($addressKeys[$normalizedKey]) && !empty($value) && !is_array($value)) {
+            $label = $addressKeys[$normalizedKey];
+            if (!isset($addressInfo[$label])) {
+                $addressInfo[$label] = $value;
+            }
+        }
+    }
+
+    // Zeige Kundeninformationen nur wenn Admin (nicht bei Firmen, die haben ihre eigene Card in show.php)
+    if (!empty($customerInfo) && !empty($admin)):
+        $cardBorderClass = 'border-primary';
+        $cardHeaderClass = 'bg-primary bg-opacity-10';
+        $iconColorClass = 'text-primary';
+?>
+    <div class="card mb-4 <?= $cardBorderClass ?>">
+        <div class="card-header <?= $cardHeaderClass ?>">
+            <h4 class="mb-0"><i class="bi bi-person-circle <?= $iconColorClass ?>"></i> Kundeninformationen</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <?php foreach ($customerInfo as $label => $value): ?>
+                        <p class="mb-2">
+                            <strong><?= esc($label) ?>:</strong>
+                            <?php if ($label === 'E-Mail'): ?>
+                                <a href="mailto:<?= esc($value) ?>"><?= esc($value) ?></a>
+                            <?php elseif ($label === 'Telefon'): ?>
+                                <a href="tel:<?= esc($value) ?>"><?= esc($value) ?></a>
+                            <?php else: ?>
+                                <?= esc($value) ?>
+                            <?php endif; ?>
+                        </p>
+                    <?php endforeach; ?>
+                </div>
+                <div class="col-md-6">
+                    <?php if (!empty($addressInfo)): ?>
+                        <p class="mb-2">
+                            <?php foreach ($addressInfo as $label => $value): ?>
+                                <strong><?= esc($label) ?>:</strong> <?= esc($value) ?><br>
+                            <?php endforeach; ?>
+                        </p>
                     <?php endif; ?>
-                </td>
-                <td>
-                    <?php
-                    // Initialisiere FieldRenderer für File-Upload Check (falls nicht bereits gesetzt)
-                    if (!isset($fieldRenderer)) {
-                        $fieldRenderer = new \App\Services\FieldRenderer();
-                        $fieldRenderer->setData($formFields)->setExcludedFields($excludedFields);
-                    }
 
-                    // Spezialbehandlung für File-Uploads
-                    if ($fieldRenderer->isFileUploadField($field['key'])) {
-                        echo $fieldRenderer->formatFileUpload($field['value']);
-                    } else {
-                        echo esc($field['display']);
-                    }
-                    ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
+                    <?php if (!empty($offer['zip']) || !empty($offer['city']) || !empty($offer['type'])): ?>
+                        <p class="mb-2">
+                            <?php if (!empty($offer['zip'])): ?>
+                                <strong>Postleitzahl:</strong> <?= esc($offer['zip']) ?><br>
+                            <?php endif; ?>
+                            <?php if (!empty($offer['city'])): ?>
+                                <strong>Ort:</strong> <?= esc($offer['city']) ?><br>
+                            <?php endif; ?>
+                            <?php if (!empty($offer['type'])): ?>
+                                <strong>Kategorie:</strong> <?= esc(lang('Offers.type.' . $offer['type'])) ?><br>
+                            <?php endif; ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if (!empty($offer['purchased_at'])): ?>
+                        <p class="text-muted mb-0">
+                            <small>Gekauft am: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php
+    endif;
+endif;
+?>
 
-<?php else: ?>
-    <p><em>Keine Angaben verfügbar.</em></p>
+<?php if ($wrapInCard): ?>
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">Details</h4>
+    </div>
+    <div class="card-body">
+<?php endif; ?>
+
+        <?php if ($useCustomTemplate && !empty($renderedHtmlOutput)): ?>
+            <!-- Custom Template Output (direktes HTML aus field_display_template) -->
+            <?= $renderedHtmlOutput ?>
+
+        <?php elseif (!empty($renderedFields)): ?>
+            <!-- Fallback: Alte Tabellen-Darstellung mit FieldRenderer -->
+            <table class="table table-striped table-sm">
+                <tbody>
+                <?php foreach ($renderedFields as $field): ?>
+                    <tr>
+                        <td>
+                            <?= esc($field['label']) ?>
+
+                            <?php if ($field['image']): ?>
+                                <div>
+                                    <img src="<?= esc($field['image']) ?>"
+                                         alt="Bild für <?= esc($field['label']) ?>"
+                                         style="max-width:100%; border:1px solid #ccc; margin-top: 10px;">
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php
+                            // Initialisiere FieldRenderer für File-Upload Check (falls nicht bereits gesetzt)
+                            if (!isset($fieldRenderer)) {
+                                $fieldRenderer = new \App\Services\FieldRenderer();
+                                $fieldRenderer->setData($formFields)->setExcludedFields($excludedFields);
+                            }
+
+                            // Spezialbehandlung für File-Uploads
+                            if ($fieldRenderer->isFileUploadField($field['key'])) {
+                                echo $fieldRenderer->formatFileUpload($field['value']);
+                            } else {
+                                echo esc($field['display']);
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+
+        <?php else: ?>
+            <p><em>Keine Angaben verfügbar.</em></p>
+        <?php endif; ?>
+
+<?php if ($wrapInCard): ?>
+    </div>
+</div>
 <?php endif; ?>

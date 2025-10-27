@@ -15,6 +15,15 @@
     <li><strong><?= lang('Email.Name') ?>:</strong> <?= esc($kunde['firstname'] ?? '') . ' ' . esc($kunde['lastname'] ?? '') ?></li>
     <li><strong><?= lang('Email.Email') ?>:</strong> <?= esc($kunde['email'] ?? '') ?></li>
     <li><strong><?= lang('Email.Phone') ?>:</strong> <?= esc($kunde['phone'] ?? '') ?></li>
+    <?php if (!empty($kunde['address'])): ?>
+        <li><strong>Adresse:</strong> <?= esc($kunde['address']) ?></li>
+    <?php endif; ?>
+    <?php if (!empty($kunde['zip']) || !empty($kunde['city'])): ?>
+        <li><strong>Ort:</strong>
+            <?php if (!empty($kunde['zip'])): ?><?= esc($kunde['zip']) ?> <?php endif; ?>
+            <?= esc($kunde['city'] ?? '') ?>
+        </li>
+    <?php endif; ?>
 </ul>
 
 <p><?= lang('Email.ContactInstruction') ?></p>
@@ -23,7 +32,7 @@
 
 <h3><?= lang('Email.RequestSummaryTitle') ?></h3>
 
-<?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true]) ?>
+<?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true, 'wrapInCard' => false]) ?>
 
 <p style="margin-top: 30px;">
     <a href="<?= esc($company_backend_offer_link) ?>" style="background-color:#007BFF; color:#fff; padding:10px 15px; text-decoration:none; border-radius:5px;">

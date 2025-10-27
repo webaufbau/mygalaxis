@@ -51,6 +51,12 @@ class AlertExceptionHandler
             return false;
         }
 
+        // Ignore debugbar/development tool errors
+        if (strpos($exception->getFile(), '/Debug/Toolbar/') !== false ||
+            strpos($exception->getMessage(), 'debugbar') !== false) {
+            return false;
+        }
+
         // Alert on all server errors (500+)
         if ($statusCode >= 500) {
             return true;

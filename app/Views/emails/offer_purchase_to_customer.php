@@ -20,7 +20,56 @@
     <li><strong><?= lang('Email.label_your_name') ?>:</strong> <?= esc(($offer['firstname'] ?? '') . ' ' . ($offer['lastname'] ?? '')) ?></li>
     <li><strong><?= lang('Email.label_your_email') ?>:</strong> <?= esc($offer['email'] ?? '') ?></li>
     <li><strong><?= lang('Email.label_your_phone') ?>:</strong> <?= esc($offer['phone'] ?? '') ?></li>
+    <?php
+    // Extrahiere Adresse aus form_fields
+    $formFields = json_decode($offer['form_fields'] ?? '{}', true);
+    $addressParts = [];
+    $addressKeys = ['strasse', 'street', 'address_line_1'];
+    $houseKeys = ['hausnummer', 'house_number', 'nummer'];
+
+    $street = '';
+    $house = '';
+
+    foreach ($formFields as $key => $value) {
+        if (is_array($value) && (strpos(strtolower($key), 'adresse') !== false || strpos(strtolower($key), 'address') !== false)) {
+            foreach ($value as $subKey => $subValue) {
+                $normalizedSubKey = str_replace([' ', '-'], '_', strtolower($subKey));
+                if (in_array($normalizedSubKey, $addressKeys) && !empty($subValue)) {
+                    $street = $subValue;
+                }
+                if (in_array($normalizedSubKey, $houseKeys) && !empty($subValue)) {
+                    $house = $subValue;
+                }
+            }
+        }
+
+        $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+        if (in_array($normalizedKey, $addressKeys) && !empty($value) && !is_array($value)) {
+            $street = $value;
+        }
+        if (in_array($normalizedKey, $houseKeys) && !empty($value) && !is_array($value)) {
+            $house = $value;
+        }
+    }
+
+    if (!empty($street)):
+        $address = $street;
+        if (!empty($house)) {
+            $address .= ' ' . $house;
+        }
+    ?>
+    <li><strong>Adresse:</strong> <?= esc($address) ?></li>
+    <?php endif; ?>
+    <?php if (!empty($offer['zip']) || !empty($offer['city'])): ?>
+    <li><strong>Ort:</strong>
+        <?php if (!empty($offer['zip'])): ?><?= esc($offer['zip']) ?> <?php endif; ?>
+        <?= esc($offer['city'] ?? '') ?>
+    </li>
+    <?php endif; ?>
 </ul>
+
+<h4>Anfragedetails:</h4>
+<?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true, 'wrapInCard' => false]) ?>
 
 <hr>
 
