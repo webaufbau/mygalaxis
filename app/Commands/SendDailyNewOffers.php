@@ -183,6 +183,22 @@ class SendDailyNewOffers extends BaseCommand
                     ->first();
 
                 $fullOffer['alreadyPurchased'] = !empty($purchase);
+
+                // Entferne sensible Adressdaten (Straße, Hausnummer) wenn noch nicht gekauft
+                if (!$fullOffer['alreadyPurchased'] && !empty($fullOffer['data'])) {
+                    foreach ($fullOffer['data'] as $key => $value) {
+                        if (preg_match('/adresse|address/i', $key) && is_array($value)) {
+                            // Entferne address_line_1 und address_line_2, aber behalte zip und city
+                            if (isset($fullOffer['data'][$key]['address_line_1'])) {
+                                unset($fullOffer['data'][$key]['address_line_1']);
+                            }
+                            if (isset($fullOffer['data'][$key]['address_line_2'])) {
+                                unset($fullOffer['data'][$key]['address_line_2']);
+                            }
+                        }
+                    }
+                }
+
                 $fullOffers[] = $fullOffer;
             }
         }
