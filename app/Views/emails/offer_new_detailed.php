@@ -32,7 +32,13 @@
                 <li><strong><?= lang('Email.mobile') ?>:</strong> <a href="tel:<?= esc($mobile) ?>"><?= esc($mobile) ?></a></li>
             <?php endif; ?>
             <?php if (!empty($offer['data']['strasse']) || !empty($offer['data']['street']) || !empty($offer['data']['address']) || !empty($offer['data']['adresse'])): ?>
-                <?php $address = $offer['data']['strasse'] ?? $offer['data']['street'] ?? $offer['data']['address'] ?? $offer['data']['adresse'] ?? ''; ?>
+                <?php
+                $address = $offer['data']['strasse'] ?? $offer['data']['street'] ?? $offer['data']['address'] ?? $offer['data']['adresse'] ?? '';
+                // Format address if it's an array
+                if (is_array($address)) {
+                    $address = implode(', ', array_filter($address, fn($v) => !empty($v)));
+                }
+                ?>
                 <li><strong><?= lang('Email.address') ?>:</strong> <?= esc($address) ?></li>
             <?php endif; ?>
         </ul>

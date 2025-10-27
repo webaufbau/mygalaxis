@@ -89,6 +89,7 @@ return [
         'type' => 'Kategorie',
         'zip' => 'Postleitzahl',
         'city' => 'Ort',
+        'language' => 'Sprache',
         'price' => 'Preis',
         'datetime_1' => 'Wann sollen die Arbeiten beginnen?',
         'zeit_flexibel' => 'Zeitlich flexibel',
