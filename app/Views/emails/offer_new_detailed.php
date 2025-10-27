@@ -7,7 +7,6 @@
 <div class="highlight" style="background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0;">
     <h3 style="margin-top: 0; color: #007bff;"><?= esc($offer['title'] ?? lang('Offers.type.' . $offer['type'])) ?></h3>
     <p><strong><?= lang('Offers.labels.zip') ?>:</strong> <?= esc($offer['zip']) ?> <?= esc($offer['city'] ?? '') ?></p>
-    <p><strong><?= lang('Offers.labels.language') ?>:</strong> <?= esc($offer['language']) ?></p>
 </div>
 
 <h3><?= lang('Email.offer_details') ?></h3>
