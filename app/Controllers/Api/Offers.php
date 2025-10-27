@@ -122,11 +122,14 @@ class Offers extends ResourceController
                 $row['extras'] = $extras;
             }
 
-            // Füge offer_purchases Daten hinzu
-            $purchases = $db->table('offer_purchases')
-                ->where('offer_id', $row['id'])
-                ->where('status', 'paid')
-                ->orderBy('created_at', 'DESC')
+            // Füge offer_purchases Daten mit User-Details und Offer-Platform hinzu
+            $purchases = $db->table('offer_purchases op')
+                ->select('op.*, u.company_name as user_company_name, u.company_email, u.company_phone, u.contact_person, u.company_city, u.company_website, o.platform as offer_platform')
+                ->join('users u', 'u.id = op.user_id', 'left')
+                ->join('offers o', 'o.id = op.offer_id', 'left')
+                ->where('op.offer_id', $row['id'])
+                ->where('op.status', 'paid')
+                ->orderBy('op.created_at', 'DESC')
                 ->get()
                 ->getResultArray();
 
