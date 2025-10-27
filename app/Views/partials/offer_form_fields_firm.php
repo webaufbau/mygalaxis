@@ -32,10 +32,18 @@ $formFields = array_filter($formFields, function ($key) use ($excludedFields) {
 if (empty($full) && empty($admin)) {
     $excludedFields = array_merge($excludedFields, $fieldConfigForExclusion->excludedFieldsBeforePurchase);
 
-    // Adressfelder bei nicht-gekauften ausschließen
-    $formFields = array_filter($formFields, function ($key) {
-        return !preg_match('/adresse|address/i', $key);
-    }, ARRAY_FILTER_USE_KEY);
+    // Bei Adressfeldern: nur sensible Daten (Straße, Hausnummer) entfernen, PLZ/Stadt behalten
+    foreach ($formFields as $key => $value) {
+        if (preg_match('/adresse|address/i', $key) && is_array($value)) {
+            // Entferne address_line_1 und address_line_2, aber behalte zip und city
+            if (isset($formFields[$key]['address_line_1'])) {
+                unset($formFields[$key]['address_line_1']);
+            }
+            if (isset($formFields[$key]['address_line_2'])) {
+                unset($formFields[$key]['address_line_2']);
+            }
+        }
+    }
 }
 
 // Versuche Email Template zu laden (mit field_display_template)

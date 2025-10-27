@@ -110,7 +110,25 @@
 
         // Format Arrays oder JSON-Daten lesbar
         if (is_array($value)) {
-            $display = implode(', ', array_map('esc', $value));
+            // Spezialbehandlung für Adressfelder: nur PLZ und Stadt anzeigen wenn nicht gekauft
+            if (preg_match('/adresse|address/i', $key) && !$alreadyPurchased) {
+                // Bei Adressfeldern nur zip und city anzeigen
+                $addressParts = [];
+                if (!empty($value['zip'])) {
+                    $addressParts[] = esc($value['zip']);
+                }
+                if (!empty($value['city'])) {
+                    $addressParts[] = esc($value['city']);
+                }
+                $display = implode(' ', $addressParts);
+
+                // Skip wenn keine PLZ/Stadt vorhanden
+                if (empty($display)) {
+                    continue;
+                }
+            } else {
+                $display = implode(', ', array_map('esc', $value));
+            }
         } elseif (is_string($value)) {
             $decoded = json_decode($value, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
