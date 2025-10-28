@@ -219,7 +219,7 @@
                                             </p>
                                             <?php if (!empty($offer['purchased_at'])): ?>
                                                 <p class="text-muted mb-0">
-                                                    <small><?= lang('Offers.purchased_on') ?>: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                                                    <small><?= lang('Offers.purchased_on') ?>: <?= date('d.m.Y - H:i', strtotime($offer['purchased_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
                                                 </p>
                                             <?php endif; ?>
                                         </div>

@@ -196,9 +196,11 @@
                                         <p class="mb-1">
                                             <strong><?= lang('Offers.labels.type') ?>:</strong> <?= lang('Offers.type.' . $offer['type']) ?>
                                         </p>
-                                        <p class="text-muted mb-0">
-                                            <small><?= lang('Offers.purchased_on') ?>: <?= date('d.m.Y - H:i', strtotime($offer['purchased_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
-                                        </p>
+                                        <?php if (!empty($offer['purchased_at'])): ?>
+                                            <p class="text-muted mb-0">
+                                                <small><?= lang('Offers.purchased_on') ?>: <?= date('d.m.Y - H:i', strtotime($offer['purchased_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
+                                            </p>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
