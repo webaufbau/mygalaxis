@@ -170,7 +170,7 @@ if ($isPurchased) {
                         <strong><?= $typeLabel ?>:</strong> <?= $typeValue ?><br>
                     </p>
                     <p class="text-muted mb-0">
-                        <small><?= $purchasedLabel ?>: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                        <small><?= $purchasedLabel ?>: <?= date('d.m.Y - H:i', strtotime($offer['purchased_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
                     </p>
                 </div>
             </div>
