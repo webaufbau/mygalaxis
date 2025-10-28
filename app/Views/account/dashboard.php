@@ -101,7 +101,127 @@
 
                 <div class="collapse mt-3" id="details-<?= $offer['id'] ?>">
                     <div class="card card-body bg-light">
-                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true]) ?>
+                        <?php
+                        // Kundeninfos extrahieren (wie in mine.php)
+                        $customerInfo = [];
+                        $addressInfo = [];
+                        $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
+                        $contactKeys = [
+                            'vorname' => 'Vorname',
+                            'firstname' => 'Vorname',
+                            'first_name' => 'Vorname',
+                            'nachname' => 'Nachname',
+                            'lastname' => 'Nachname',
+                            'last_name' => 'Nachname',
+                            'surname' => 'Nachname',
+                            'email' => 'E-Mail',
+                            'e_mail' => 'E-Mail',
+                            'email_address' => 'E-Mail',
+                            'mail' => 'E-Mail',
+                            'e_mail_adresse' => 'E-Mail',
+                            'telefon' => 'Telefon',
+                            'telefonnummer' => 'Telefon',
+                            'phone' => 'Telefon',
+                            'telephone' => 'Telefon',
+                            'phone_number' => 'Telefon',
+                            'tel' => 'Telefon'
+                        ];
+
+                        // Sammle Kontaktdaten
+                        foreach ($formFields as $key => $value) {
+                            $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+                            if (isset($contactKeys[$normalizedKey]) && !empty($value)) {
+                                $label = $contactKeys[$normalizedKey];
+                                if (!isset($customerInfo[$label])) {
+                                    $customerInfo[$label] = $value;
+                                }
+                            }
+                        }
+
+                        // Sammle Adressinformationen
+                        $addressKeys = [
+                            'strasse' => 'Straße',
+                            'street' => 'Straße',
+                            'address_line_1' => 'Straße',
+                            'hausnummer' => 'Hausnummer',
+                            'house_number' => 'Hausnummer',
+                            'nummer' => 'Hausnummer',
+                            'address_line_2' => 'Adresszusatz',
+                        ];
+
+                        foreach ($formFields as $key => $value) {
+                            // Prüfe verschachtelte Adressfelder
+                            if (is_array($value) && (strpos(strtolower($key), 'adresse') !== false || strpos(strtolower($key), 'address') !== false)) {
+                                foreach ($value as $subKey => $subValue) {
+                                    $normalizedSubKey = str_replace([' ', '-'], '_', strtolower($subKey));
+                                    if (isset($addressKeys[$normalizedSubKey]) && !empty($subValue)) {
+                                        $label = $addressKeys[$normalizedSubKey];
+                                        if (!isset($addressInfo[$label])) {
+                                            $addressInfo[$label] = $subValue;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Prüfe direkte Adressfelder
+                            $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
+                            if (isset($addressKeys[$normalizedKey]) && !empty($value) && !is_array($value)) {
+                                $label = $addressKeys[$normalizedKey];
+                                if (!isset($addressInfo[$label])) {
+                                    $addressInfo[$label] = $value;
+                                }
+                            }
+                        }
+                        ?>
+
+                        <?php if (!empty($customerInfo)): ?>
+                            <!-- Kundeninformationen prominent anzeigen -->
+                            <div class="mb-3 pb-3 border-bottom">
+                                <h5 class="mb-2"><i class="bi bi-person-circle text-success"></i> Kundeninformationen</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <?php foreach ($customerInfo as $label => $value): ?>
+                                            <p class="mb-1">
+                                                <strong><?= esc($label) ?>:</strong>
+                                                <?php if ($label === 'E-Mail'): ?>
+                                                    <a href="mailto:<?= esc($value) ?>"><?= esc($value) ?></a>
+                                                <?php elseif ($label === 'Telefon'): ?>
+                                                    <a href="tel:<?= esc($value) ?>"><?= esc($value) ?></a>
+                                                <?php else: ?>
+                                                    <?= esc($value) ?>
+                                                <?php endif; ?>
+                                            </p>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <?php if (!empty($addressInfo)): ?>
+                                            <p class="mb-1">
+                                                <?php foreach ($addressInfo as $label => $value): ?>
+                                                    <strong><?= esc($label) ?>:</strong> <?= esc($value) ?><br>
+                                                <?php endforeach; ?>
+                                            </p>
+                                        <?php endif; ?>
+
+                                        <p class="mb-1">
+                                            <strong><?= lang('Offers.labels.zip') ?>:</strong> <?= esc($offer['zip']) ?>
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong><?= lang('Offers.labels.city') ?>:</strong> <?= esc($offer['city']) ?>
+                                        </p>
+                                        <p class="mb-1">
+                                            <strong><?= lang('Offers.labels.type') ?>:</strong> <?= lang('Offers.type.' . $offer['type']) ?>
+                                        </p>
+                                        <?php if (!empty($offer['purchased_at'])): ?>
+                                            <p class="text-muted mb-0">
+                                                <small><?= lang('Offers.purchased_on') ?>: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => true, 'wrapInCard' => false]) ?>
                     </div>
                 </div>
             </div>

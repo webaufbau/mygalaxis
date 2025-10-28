@@ -68,8 +68,13 @@ if (!empty($offer['type'])) {
         $parser = new \App\Services\EmailTemplateParser();
         $parsedHtml = $parser->parse($template['field_display_template'], $formFields, $excludedFields);
 
-        // Konvertiere HTML zurück zu Array-Format für die Tabellen-Darstellung
-        // Für jetzt: einfach HTML direkt ausgeben
+        // Wenn wrapInCard false ist, entferne die Card-Struktur aus dem Template
+        if (!$wrapInCard) {
+            // Entferne äußere Card-Struktur aber behalte den Inhalt
+            $parsedHtml = preg_replace('/<div\s+class="card"[^>]*>\s*<div\s+class="card-header"[^>]*>.*?<\/div>\s*<div\s+class="card-body"[^>]*>/s', '', $parsedHtml);
+            $parsedHtml = preg_replace('/<\/div>\s*<\/div>\s*$/s', '', $parsedHtml);
+        }
+
         $renderedHtmlOutput = $parsedHtml;
     }
 }
