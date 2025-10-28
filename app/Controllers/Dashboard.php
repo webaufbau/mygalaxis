@@ -232,6 +232,7 @@ class Dashboard extends Controller
 
                 // Offer-Info für Statistik hinzufügen
                 $offer['price_paid'] = $booking['paid_amount']; // Verwende paid_amount statt amount
+                $offer['purchased_at'] = $booking['created_at']; // Add purchase timestamp
                 $purchasedOffers[] = $offer;
             }
         }
