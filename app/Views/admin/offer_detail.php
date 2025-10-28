@@ -8,6 +8,7 @@
 <p><strong>Status:</strong> <?= esc(lang('Offers.status.' . $offer['status'])) ?></p>
 <p><strong>Name:</strong> <?= esc($offer['firstname'] . ' ' . $offer['lastname']) ?></p>
 <p><strong>Ort:</strong> <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?></p>
+<p><strong>Verkauft:</strong> <?= $purchaseCount ?> / <?= \App\Models\OfferModel::MAX_PURCHASES ?> mal</p>
 
 <h4>Preise:</h4>
 <table style="border-collapse: collapse; margin-bottom: 20px;">
@@ -44,6 +45,34 @@
         ⚠️ <strong>Hinweis:</strong> Der gespeicherte Preis (<?= esc($offer['price']) ?> CHF) weicht vom berechneten Preis (<?= esc($calculatedPrice) ?> CHF) ab.
         Führe <code>php spark offers:recalculate-price <?= esc($offer['id']) ?></code> aus, um den Preis zu aktualisieren.
     </p>
+<?php endif; ?>
+
+<?php if (!empty($purchases)): ?>
+<h4>Käufer (<?= count($purchases) ?>):</h4>
+<table class="table table-striped table-sm mb-4">
+    <thead>
+        <tr>
+            <th>Firma / Kontaktperson</th>
+            <th>Username</th>
+            <th>Bezahlter Preis</th>
+            <th>Gekauft am</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($purchases as $purchase): ?>
+        <tr>
+            <td><?= esc($purchase['contact_person'] ?? 'N/A') ?></td>
+            <td>
+                <a href="<?= site_url('admin/user/' . $purchase['user_id']) ?>">
+                    <?= esc($purchase['username']) ?>
+                </a>
+            </td>
+            <td><?= number_format(abs($purchase['paid_amount'] ?? $purchase['amount']), 2) ?> <?= currency() ?></td>
+            <td><?= \CodeIgniter\I18n\Time::parse($purchase['created_at'])->setTimezone(app_timezone())->format('d.m.Y - H:i') ?> Uhr</td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
 <?php endif; ?>
 
 <!-- Aufklappbare Berechnung -->

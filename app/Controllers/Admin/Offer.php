@@ -62,6 +62,16 @@ class Offer extends BaseController
         $purchaseModel = new \App\Models\OfferPurchaseModel();
         $purchaseCount = $purchaseModel->where('offer_id', $offer['id'])->countAllResults();
 
+        // Käufer-Informationen holen
+        $bookingModel = new \App\Models\BookingModel();
+        $purchases = $bookingModel
+            ->select('bookings.*, users.username, users.contact_person')
+            ->join('users', 'users.id = bookings.user_id')
+            ->where('bookings.type', 'offer_purchase')
+            ->where('bookings.reference_id', $offer['id'])
+            ->orderBy('bookings.created_at', 'DESC')
+            ->findAll();
+
         // Berechnungsdetails sammeln
         $calculationDetails = $this->getCalculationDetails($offer, $formFields, $formFieldsCombo, $calculatedPrice);
 
@@ -71,6 +81,7 @@ class Offer extends BaseController
         $data['discountPercent'] = $discountPercent;
         $data['hoursDiff'] = $hoursDiff;
         $data['purchaseCount'] = $purchaseCount;
+        $data['purchases'] = $purchases;
         $data['calculationDetails'] = $calculationDetails;
         $data['formFields'] = $formFields;
         $data['formFieldsCombo'] = $formFieldsCombo;
