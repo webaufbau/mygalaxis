@@ -118,6 +118,7 @@ class Offers extends BaseController
 
         // Hole alle gekauften Offer-IDs für diesen User
         $purchasedOfferIds = [];
+        $bookingsByOfferId = [];
         if ($userId) {
             $bookingModel = new \App\Models\BookingModel();
             $bookings = $bookingModel
@@ -125,6 +126,11 @@ class Offers extends BaseController
                 ->where('type', 'offer_purchase')
                 ->findAll();
             $purchasedOfferIds = array_column($bookings, 'reference_id');
+
+            // Buchungen nach offer_id indexieren für spätere Verwendung
+            foreach ($bookings as $booking) {
+                $bookingsByOfferId[$booking['reference_id']] = $booking;
+            }
         }
 
         // Filter anwenden
@@ -156,6 +162,16 @@ class Offers extends BaseController
 
         // Get paginated results
         $offers = $builder->limit($perPage, $offset)->get()->getResultArray();
+
+        // Add purchased_at timestamp to purchased offers
+        foreach ($offers as &$offer) {
+            if (isset($bookingsByOfferId[$offer['id']])) {
+                $booking = $bookingsByOfferId[$offer['id']];
+                $offer['purchased_at'] = $booking['created_at'];
+                $offer['purchased_price'] = $booking['paid_amount'];
+            }
+        }
+        unset($offer);
 
         // Create pager manually
         $pager = \Config\Services::pager();
