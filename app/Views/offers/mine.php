@@ -28,7 +28,7 @@
                     <div class="flex-grow-1 me-3">
                         <span class="title fw-bold d-block"><?= esc($offer['title']) ?></span>
                         <small class="text-muted">
-                            <?= lang('Offers.purchased_on') ?> <?= \CodeIgniter\I18n\Time::parse($offer['purchased_at'])->setTimezone(app_timezone())->format('d.m.Y') ?> ·
+                            <?= lang('Offers.purchased_on') ?> <?= \CodeIgniter\I18n\Time::parse($offer['purchased_at'])->setTimezone(app_timezone())->format('d.m.Y - H:i') ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?> ·
                             <span class="badge bg-secondary"><?= lang('Offers.order_number') ?> #<?= $offer['id'] ?></span>
                         </small>
                         <br>

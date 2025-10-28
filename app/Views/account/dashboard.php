@@ -85,7 +85,7 @@
                             <?= esc($offer['title']) ?>
                         </span>
                         <small class="text-muted">
-                            <?= date('d.m.Y', strtotime($offer['created_at'])) ?> ·
+                            <?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?> ·
                             <span class="badge bg-secondary"><?= lang('Offers.order_number') ?> #<?= $offer['id'] ?></span>
                         </small>
                         <br>
