@@ -344,7 +344,15 @@ class EmailTemplateParser
             '{site_url}'  => $this->siteConfig->url ?? base_url(),
         ];
 
-        return str_replace(array_keys($replacements), array_values($replacements), $template);
+        log_message('debug', "parseSiteShortcodes - Platform: " . json_encode($this->platform));
+        log_message('debug', "parseSiteShortcodes - SiteConfig Name: " . json_encode($this->siteConfig->name ?? 'NULL'));
+        log_message('debug', "parseSiteShortcodes - Template vorher: " . substr($template, 0, 200));
+
+        $result = str_replace(array_keys($replacements), array_values($replacements), $template);
+
+        log_message('debug', "parseSiteShortcodes - Template nachher: " . substr($result, 0, 200));
+
+        return $result;
     }
 
     /**

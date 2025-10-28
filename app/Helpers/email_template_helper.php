@@ -61,7 +61,13 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
             return false;
         }
 
+        log_message('debug', "=== EMAIL SUBJECT DEBUGGING für Angebot ID {$offer['id']} (UUID: {$offer['uuid']}) ===");
+        log_message('debug', "Platform aus Offer-Datensatz: " . json_encode($platform));
+
         $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        log_message('debug', "Platform Site Config Name: " . json_encode($platformSiteConfig->name ?? 'NULL'));
+        log_message('debug', "Platform Site Config URL: " . json_encode($platformSiteConfig->url ?? 'NULL'));
 
         // Prepare data for template parser
         $excludedFields = [
@@ -93,8 +99,13 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
         ];
 
         // Parse template with platform
+        log_message('debug', "Template Subject (roh): " . json_encode($template['subject']));
+
         $parser = new EmailTemplateParser($platform);
         $parsedSubject = $parser->parse($template['subject'], $data, $excludedFields);
+
+        log_message('debug', "Parsed Subject (geparst): " . json_encode($parsedSubject));
+        log_message('debug', "=== END EMAIL SUBJECT DEBUGGING ===");
 
         // Parse field_display_template if available
         $fieldDisplayHtml = '';
