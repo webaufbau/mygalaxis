@@ -237,7 +237,7 @@ if (!function_exists('sendGroupedOfferNotificationWithTemplate')) {
         ];
 
         // Parse template with grouped data
-        $parser = new EmailTemplateParser();
+        $parser = new EmailTemplateParser($platform);
 
         // For grouped emails, we use the common data from first offer
         $parsedSubject = $parser->parse($template['subject'], $formFields, $excludedFields);

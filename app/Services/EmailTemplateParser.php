@@ -42,7 +42,14 @@ class EmailTemplateParser
     public function __construct(?string $platform = null)
     {
         $this->platform = $platform;
-        $this->siteConfig = siteconfig($platform);
+
+        // Load platform-specific config if platform is provided
+        if ($platform) {
+            $this->siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+        } else {
+            $this->siteConfig = siteconfig();
+        }
+
         $this->labels = lang('Offers.labels');
         $this->fieldRenderer = new \App\Services\FieldRenderer();
     }
