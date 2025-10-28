@@ -214,7 +214,7 @@ if (!empty($admin) || !empty($full)):
                     <?php endif; ?>
                     <?php if (!empty($offer['purchased_at'])): ?>
                         <p class="text-muted mb-0">
-                            <small>Gekauft am: <?= date('d.m.Y', strtotime($offer['purchased_at'])) ?></small>
+                            <small>Gekauft am: <?= date('d.m.Y - H:i', strtotime($offer['purchased_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
                         </p>
                     <?php endif; ?>
                 </div>
