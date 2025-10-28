@@ -268,16 +268,152 @@ class OfferNotificationSender
             }
         }
 
+        // Versuche zuerst Datenbank-Template zu laden
+        $language = $user->language ?? 'de';
+        $offerType = $fullOffer['type'] ?? 'default';
+
+        // Detect subtype from offer data
+        $subtype = $offerModel->detectSubtype($fullOffer['data']);
+
+        $templateModel = new \App\Models\EmailTemplateModel();
+
+        // Versuche spezielles Firmen-Benachrichtigungs-Template zu finden
+        // WICHTIG: NUR nach "company_notification" Templates suchen, NICHT auf default/customer templates zurückfallen!
+
+        // 1. Suche nach "company_notification_[type]" z.B. "company_notification_cleaning"
+        $companyNotificationType = 'company_notification_' . $offerType;
+        $template = $templateModel
+            ->where('offer_type', $companyNotificationType)
+            ->where('language', $language)
+            ->where('is_active', 1)
+            ->first();
+
+        if (!$template) {
+            // 2. Fallback: Suche nach allgemeinem "company_notification" Template (ohne Subtype)
+            $template = $templateModel
+                ->where('offer_type', 'company_notification')
+                ->where('subtype IS NULL')
+                ->where('language', $language)
+                ->where('is_active', 1)
+                ->first();
+        }
+
+        if ($template) {
+            // Verwende Datenbank-Template
+            log_message('info', "Verwende Firmen-Benachrichtigungs-Template ID {$template['id']} für Typ: {$offerType}, Sprache: {$language}");
+            $this->sendEmailWithDatabaseTemplate($user, $fullOffer, $template, $siteConfig, $alreadyPurchased);
+        } else {
+            // Fallback zu hardcoded View-Template
+            log_message('info', "Kein Firmen-Benachrichtigungs-Template gefunden für Typ: {$offerType}, Sprache: {$language}, verwende Fallback View-Template");
+            $this->sendEmailWithViewTemplate($user, $fullOffer, $siteConfig, $alreadyPurchased);
+        }
+    }
+
+    /**
+     * Sendet E-Mail mit Datenbank-Template
+     */
+    protected function sendEmailWithDatabaseTemplate(User $user, array $fullOffer, array $template, $siteConfig, bool $alreadyPurchased): void
+    {
+        helper('text');
+
+        // Bereite Daten vor - merge offer data mit zusätzlichen Variablen
+        $data = $fullOffer['data'] ?? [];
+        $data['offer_id'] = $fullOffer['id'];
+        $data['offer_title'] = $fullOffer['title'];
+        $data['offer_type'] = $fullOffer['type'];
+        $data['offer_city'] = $fullOffer['city'];
+        $data['offer_zip'] = $fullOffer['zip'];
+        $data['offer_price'] = $fullOffer['price'];
+        $data['offer_discounted_price'] = $fullOffer['discounted_price'] ?? null;
+        $data['offer_currency'] = $fullOffer['currency'] ?? 'CHF';
+        $data['company_name'] = $user->company_name;
+        $data['contact_person'] = $user->contact_person;
+        $data['already_purchased'] = $alreadyPurchased;
+
+        // URL zum Kauf der Offerte
+        $data['offer_buy_url'] = rtrim($siteConfig->backendUrl, '/') . '/offers/buy/' . $fullOffer['id'];
+
+        $excludedFields = [
+            'terms_n_condition', 'terms_and_conditions', 'terms',
+            'type', 'lang', 'language', 'csrf_test_name', 'submit', 'form_token',
+            '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+            'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
+            'skip_kontakt', 'skip_reinigung_umzug',
+        ];
+
+        // Wenn nicht gekauft, verstecke auch Kontaktdaten
+        if (!$alreadyPurchased) {
+            $excludedFields = array_merge($excludedFields, [
+                'vorname', 'nachname', 'email', 'phone', 'telefon', 'tel',
+                'e-mail', 'e_mail', 'mail', 'mobile', 'handy',
+                'strasse', 'street', 'address', 'adresse', 'hausnummer'
+            ]);
+        }
+
+        // Parse Template
+        $parser = new \App\Services\EmailTemplateParser($user->platform);
+        $parsedSubject = $parser->parse($template['subject'], $data, $excludedFields);
+
+        // Parse field_display_template if available
+        $fieldDisplayHtml = '';
+        if (!empty($template['field_display_template'])) {
+            $fieldDisplayHtml = $parser->parse($template['field_display_template'], $data, $excludedFields);
+        } else {
+            // Fallback: use show_all if no field_display_template
+            $fieldDisplayHtml = $parser->parse('[show_all]', $data, $excludedFields);
+        }
+
+        // Replace {{FIELD_DISPLAY}} in body_template
+        $bodyTemplate = str_replace('{{FIELD_DISPLAY}}', $fieldDisplayHtml, $template['body_template']);
+
+        // Parse the complete body with all shortcodes
+        $parsedBody = $parser->parse($bodyTemplate, $data, $excludedFields);
+
+        // Wrap in email layout
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title'   => $parsedSubject,
+            'content' => $parsedBody,
+            'siteConfig' => $siteConfig,
+        ])->render('emails/layout');
+
+        $email = \Config\Services::email();
+        $email->setTo($siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail());
+        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setSubject($parsedSubject);
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', 'Fehler beim Senden an ' . $user->getEmail() . ': ' . print_r($email->printDebugger(), true));
+        } else {
+            log_message('info', "Firmen-Benachrichtigung mit Datenbank-Template ID {$template['id']} gesendet an {$user->getEmail()} für Offerte #{$fullOffer['id']}");
+        }
+    }
+
+    /**
+     * Sendet E-Mail mit hardcoded View-Template (Fallback)
+     */
+    protected function sendEmailWithViewTemplate(User $user, array $fullOffer, $siteConfig, bool $alreadyPurchased): void
+    {
         // Extrahiere separate Felder für E-Mail-Template
         $extractedFields = $this->extractFieldsForTemplate($fullOffer);
 
-        $subject = "Neue passende Offerte #{$offer['id']}";
+        // Versuche field_display_template aus Datenbank zu laden
+        $customFieldDisplay = $this->getFieldDisplayFromDatabase($fullOffer, $user, $alreadyPurchased);
+
+        $subject = "Neue passende Offerte #{$fullOffer['id']}";
         $message = view('emails/offer_new_detailed', [
             'firma' => $user,
             'offer' => $fullOffer,
             'siteConfig' => $siteConfig,
             'alreadyPurchased' => $alreadyPurchased,
             'fields' => $extractedFields,
+            'customFieldDisplay' => $customFieldDisplay, // Neu: übergebe custom field display
         ]);
 
         $view = \Config\Services::renderer();
@@ -294,12 +430,68 @@ class OfferNotificationSender
         $email->setMessage($fullEmail);
         $email->setMailType('html');
 
-        // --- Wichtige Ergänzung: Header mit korrekter Zeitzone ---
-        date_default_timezone_set('Europe/Zurich'); // falls noch nicht gesetzt
-        $email->setHeader('Date', date('r')); // RFC2822-konforme aktuelle lokale Zeit
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
 
         if (!$email->send()) {
             log_message('error', 'Fehler beim Senden an ' . $user->getEmail() . ': ' . print_r($email->printDebugger(), true));
         }
+    }
+
+    /**
+     * Lädt field_display_template aus Datenbank für Kunden-Bestätigungs-Email
+     * (wird für Firmen-Benachrichtigungen wiederverwendet)
+     */
+    protected function getFieldDisplayFromDatabase(array $fullOffer, User $user, bool $alreadyPurchased): ?string
+    {
+        $language = $user->language ?? 'de';
+        $offerType = $fullOffer['type'] ?? 'default';
+
+        $offerModel = new \App\Models\OfferModel();
+        $subtype = $offerModel->detectSubtype($fullOffer['data']);
+
+        // Lade das Kunden-Bestätigungs-Template (cleaning, gardening, etc.)
+        $templateModel = new \App\Models\EmailTemplateModel();
+        $template = $templateModel->getTemplateForOffer($offerType, $language, $subtype);
+
+        if (!$template || empty($template['field_display_template'])) {
+            return null; // Kein Template gefunden oder kein field_display_template vorhanden
+        }
+
+        // Bereite Daten für Parser vor
+        $data = $fullOffer['data'] ?? [];
+        $data['offer_id'] = $fullOffer['id'];
+        $data['offer_title'] = $fullOffer['title'];
+        $data['offer_type'] = $fullOffer['type'];
+        $data['offer_city'] = $fullOffer['city'];
+        $data['offer_zip'] = $fullOffer['zip'];
+        $data['contact_person'] = $user->contact_person;
+        $data['company_name'] = $user->company_name;
+
+        $excludedFields = [
+            'terms_n_condition', 'terms_and_conditions', 'terms',
+            'type', 'lang', 'language', 'csrf_test_name', 'submit', 'form_token',
+            '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+            'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
+            'skip_kontakt', 'skip_reinigung_umzug',
+        ];
+
+        // Wenn nicht gekauft, verstecke auch Kontaktdaten
+        if (!$alreadyPurchased) {
+            $excludedFields = array_merge($excludedFields, [
+                'vorname', 'nachname', 'email', 'phone', 'telefon', 'tel',
+                'e-mail', 'e_mail', 'mail', 'mobile', 'handy',
+                'strasse', 'street', 'address', 'adresse', 'hausnummer'
+            ]);
+        }
+
+        // Parse field_display_template
+        $parser = new \App\Services\EmailTemplateParser($user->platform);
+        $parsedFieldDisplay = $parser->parse($template['field_display_template'], $data, $excludedFields);
+
+        log_message('info', "Verwende field_display_template aus Template ID {$template['id']} für Firmen-Benachrichtigung");
+
+        return $parsedFieldDisplay;
     }
 }

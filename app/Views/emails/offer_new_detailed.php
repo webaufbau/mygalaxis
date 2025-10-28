@@ -12,7 +12,7 @@
 <h3><?= lang('Email.offer_details') ?></h3>
 
 <?php if (isset($alreadyPurchased) && $alreadyPurchased): ?>
-    <!-- Kontaktdaten Box wenn bereits gekauft -->
+    <!-- Kontaktdaten Box wenn bereits gekauft - IMMER anzeigen -->
     <div style="background-color: #d4edda; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin: 20px 0;">
         <h4 style="color: #155724; margin-top: 0;"><?= lang('Email.customer_contact_details') ?></h4>
         <ul style="list-style: none; padding: 0;">
@@ -44,6 +44,11 @@
     </div>
 <?php endif; ?>
 
+<?php if (isset($customFieldDisplay) && !empty($customFieldDisplay)): ?>
+    <!-- Verwende field_display_template aus Datenbank -->
+    <?= $customFieldDisplay ?>
+<?php else: ?>
+    <!-- Fallback: Standard-Feldanzeige -->
 <ul>
     <?php
     // Lade die Sprachübersetzungen
@@ -173,6 +178,7 @@
         </li>
     <?php endforeach; ?>
 </ul>
+<?php endif; ?>
 
 <!-- Preise und Kaufoptionen -->
 <?php if (isset($alreadyPurchased) && $alreadyPurchased): ?>
