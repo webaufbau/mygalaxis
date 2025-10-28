@@ -30,6 +30,7 @@ return [
     'price_normal'           => 'Normal',
     'price_discounted'       => 'Reduziert',
     'price_purchased'        => 'Gekauft',
+    'order_number'           => 'Auftrag',
 
     'offerNotFound' => 'Offerte nicht gefunden.',
     'companyNotFound' => 'Firma nicht gefunden.',

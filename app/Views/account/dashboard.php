@@ -84,7 +84,10 @@
                             <i class="bi bi-check-circle-fill text-success me-1"></i>
                             <?= esc($offer['title']) ?>
                         </span>
-                        <small class="text-muted"><?= date('d.m.Y', strtotime($offer['created_at'])) ?></small>
+                        <small class="text-muted">
+                            <?= date('d.m.Y', strtotime($offer['created_at'])) ?> ·
+                            <span class="badge bg-secondary"><?= lang('Offers.order_number') ?> #<?= $offer['id'] ?></span>
+                        </small>
                         <br>
                         <a data-bs-toggle="collapse" href="#details-<?= $offer['id'] ?>" role="button" aria-expanded="false" aria-controls="details-<?= $offer['id'] ?>" data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">
                             <i class="bi bi-chevron-right" id="toggleIcon-<?= $offer['id'] ?>"></i> <?= lang('Offers.showDetails') ?>
