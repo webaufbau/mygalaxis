@@ -161,9 +161,10 @@ class TestEmailsWithRealData extends BaseCommand
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $emailService = \Config\Services::email();
         $emailService->setTo($to);
-        $emailService->setFrom($siteConfig->email, $siteConfig->name);
+        $emailService->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $emailService->setSubject($subject);
         $emailService->setMessage($fullEmail);
         $emailService->setMailType('html');

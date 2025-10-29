@@ -133,8 +133,8 @@ class SendOfferPurchaseNotification extends BaseCommand
         }
         $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
 
-        // Neuer Betreff: "Domain.ch - Vielen Dank für den Kauf der Anfrage Gartenpflege in 4244 Röschenz"
-        $subject = "{$domain} - Vielen Dank für den Kauf der Anfrage {$type} in {$offer['zip']} {$offer['city']}";
+        // Betreff: "Vielen Dank für den Kauf der Anfrage Gartenpflege in 4244 Röschenz"
+        $subject = "Vielen Dank für den Kauf der Anfrage {$type} in {$offer['zip']} {$offer['city']}";
 
         $message = view('emails/offer_purchase_to_company', $data);
 
@@ -192,8 +192,8 @@ class SendOfferPurchaseNotification extends BaseCommand
         }
         $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
 
-        // Neuer Betreff: "Domain.ch - Eine Firma interessiert sich für Ihre Anfrage - Gartenpflege in 4244 Röschenz"
-        $subject = "{$domain} - Eine Firma interessiert sich für Ihre Anfrage - {$type} in {$offer['zip']} {$offer['city']}";
+        // Betreff: "Eine Firma interessiert sich für Ihre Anfrage - Gartenpflege in 4244 Röschenz"
+        $subject = "Eine Firma interessiert sich für Ihre Anfrage - {$type} in {$offer['zip']} {$offer['city']}";
 
         $message = view('emails/offer_purchase_to_customer', $data);
 
@@ -223,9 +223,10 @@ class SendOfferPurchaseNotification extends BaseCommand
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $email = \Config\Services::email();
         $email->setTo($to);
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');

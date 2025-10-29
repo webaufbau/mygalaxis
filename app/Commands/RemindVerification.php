@@ -149,9 +149,10 @@ class RemindVerification extends BaseCommand
             $siteConfig = siteconfig();
         }
 
+        helper('email_template');
         $email = \Config\Services::email();
         $email->setTo($to);
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setSubject($subject);
         $email->setMessage($message);
         $email->setMailType('html');

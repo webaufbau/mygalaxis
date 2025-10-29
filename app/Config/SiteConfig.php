@@ -8,6 +8,7 @@ class SiteConfig extends BaseConfig
     // Basisvariablen
     public string $name = 'Offertenschweiz';
     public string $email = 'info@offertenschweiz.ch';
+    public string $domain_extension = '.ch';
     public string $address = '';
     public string $emailSignature = '';
     public bool $testMode = false;
@@ -40,6 +41,12 @@ class SiteConfig extends BaseConfig
         'email' => [
             'type' => 'email',
             'label' => 'Standard E-Mail',
+        ],
+        'domain_extension' => [
+            'type' => 'text',
+            'label' => 'Domain Extension für E-Mail Absendername',
+            'placeholder' => '.ch',
+            'help' => 'Wird an den Absendernamen angehängt (z.B. "Offertenschweiz.ch")',
         ],
         'address' => [
             'type' => 'textarea',

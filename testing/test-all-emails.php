@@ -206,11 +206,11 @@ echo "  → oder http://localhost:8025\n\n";
 
 echo "📊 Erwartete E-Mail-Typen:\n";
 echo "  • Bestätigung Kunde: 'Wir bestätigen Ihre Anfrage'\n";
-echo "  • Neue Offerte Firma: 'Domain.ch - Neue Anfrage für [Type]'\n";
-echo "  • Kauf Firma: 'Domain.ch - Vielen Dank für den Kauf der Anfrage'\n";
-echo "  • Kauf Kunde: 'Domain.ch - Eine Firma interessiert sich für Ihre Anfrage'\n";
-echo "  • Rabatt Firma: 'X% Rabatt auf Anfrage für [Type]'\n";
-echo "  • Bewertung Kunde: 'Bewerten Sie Ihre Erfahrung'\n\n";
+echo "  • Neue Offerte Firma: 'Neue Anfrage für [Type]' (Absender: Domain.ch)\n";
+echo "  • Kauf Firma: 'Vielen Dank für den Kauf der Anfrage' (Absender: Domain.ch)\n";
+echo "  • Kauf Kunde: 'Eine Firma interessiert sich für Ihre Anfrage' (Absender: Domain.ch)\n";
+echo "  • Rabatt Firma: 'X% Rabatt auf Anfrage für [Type]' (Absender: Domain.ch)\n";
+echo "  • Bewertung Kunde: 'Bewerten Sie Ihre Erfahrung' (Absender: Domain.ch)\n\n";
 
 $mysqli->close();
 

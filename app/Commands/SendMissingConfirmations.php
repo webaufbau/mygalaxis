@@ -167,8 +167,9 @@ class SendMissingConfirmations extends BaseCommand
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $email = Services::email();
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setTo($userEmail);
         $email->setBCC($siteConfig->email);
 
@@ -265,8 +266,9 @@ class SendMissingConfirmations extends BaseCommand
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $email = Services::email();
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setTo($userEmail);
         $email->setBCC($siteConfig->email);
 

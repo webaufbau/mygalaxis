@@ -378,9 +378,10 @@ class OfferNotificationSender
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $email = \Config\Services::email();
         $email->setTo($siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail());
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setSubject($parsedSubject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');
@@ -430,7 +431,7 @@ class OfferNotificationSender
         $price = !empty($fullOffer['discounted_price']) ? $fullOffer['discounted_price'] : $fullOffer['price'];
         $priceFormatted = number_format($price, 2, '.', '\'');
 
-        $subject = "{$domain} - Neue Anfrage Preis Fr. {$priceFormatted} für {$type} ID {$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
+        $subject = "Neue Anfrage Preis Fr. {$priceFormatted} für {$type} ID {$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
         $message = view('emails/offer_new_detailed', [
             'firma' => $user,
             'offer' => $fullOffer,
@@ -447,9 +448,10 @@ class OfferNotificationSender
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $email = \Config\Services::email();
         $email->setTo($siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail());
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');

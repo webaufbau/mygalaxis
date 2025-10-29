@@ -126,8 +126,8 @@ class SendReviewReminder extends BaseCommand
                 'siteConfig' => $siteConfig,
             ];
 
-            // Neuer Betreff: "Domain.ch - Bitte bewerten Sie die Anfrage - Reinigung ID 353 3000 Bern"
-            $subject = "{$domain} - Bitte bewerten Sie die Anfrage - {$type} ID {$offer['id']} {$offer['zip']} {$offer['city']}";
+            // Betreff: "Bitte bewerten Sie die Anfrage - Reinigung ID 353 3000 Bern"
+            $subject = "Bitte bewerten Sie die Anfrage - {$type} ID {$offer['id']} {$offer['zip']} {$offer['city']}";
             $message = view('emails/review_reminder', $emailData);
 
                 if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
@@ -205,7 +205,7 @@ class SendReviewReminder extends BaseCommand
                         'isReminder' => true,
                     ];
 
-                    $subject = "{$domain} - Bitte bewerten Sie die Anfrage - {$type} ID {$offer['id']} {$offer['zip']} {$offer['city']}";
+                    $subject = "Bitte bewerten Sie die Anfrage - {$type} ID {$offer['id']} {$offer['zip']} {$offer['city']}";
                     $message = view('emails/review_reminder', $emailData);
 
                     if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
@@ -234,9 +234,10 @@ class SendReviewReminder extends BaseCommand
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $email = \Config\Services::email();
         $email->setTo($to);
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');

@@ -31,9 +31,10 @@ class CompanyWelcomeMailer
             'siteConfig' => $siteConfig,
         ])->render('emails/layout');
 
+        helper('email_template');
         $email = \Config\Services::email();
         $email->setTo($user->getEmail());
-        $email->setFrom($siteConfig->email, $siteConfig->name);
+        $email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
         $email->setSubject($subject);
         $email->setMessage($fullEmail);
         $email->setMailType('html');

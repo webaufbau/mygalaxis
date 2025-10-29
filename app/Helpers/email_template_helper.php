@@ -3,6 +3,59 @@
 use App\Models\EmailTemplateModel;
 use App\Services\EmailTemplateParser;
 
+if (!function_exists('getEmailFromName')) {
+    /**
+     * Generate email sender name from site config
+     * Uses sitename + domain_extension (e.g. "Offertenschweiz.ch")
+     *
+     * @param object $siteConfig Site configuration object
+     * @return string Sender name
+     */
+    function getEmailFromName($siteConfig): string
+    {
+        $domain = '';
+
+        // Debug Logging
+        $debugEnabled = false; // Setze auf true zum Debuggen
+        if ($debugEnabled) {
+            log_message('debug', 'getEmailFromName() called');
+            log_message('debug', 'siteConfig->name: ' . var_export($siteConfig->name ?? 'NULL', true));
+            log_message('debug', 'siteConfig->email: ' . var_export($siteConfig->email ?? 'NULL', true));
+            log_message('debug', 'siteConfig->domain_extension: ' . var_export($siteConfig->domain_extension ?? 'NULL', true));
+        }
+
+        // Versuche name zu bekommen
+        // WICHTIG: Verwende nicht empty() mit Magic Getters!
+        $name = $siteConfig->name ?? '';
+        if ($name !== '' && $name !== null) {
+            // Use first part of name (e.g. "Offertenschweiz AG" -> "Offertenschweiz")
+            $domain = explode(' ', $name)[0];
+        }
+
+        // Fallback: Wenn name leer ist, verwende email domain
+        $email = $siteConfig->email ?? '';
+        if (($domain === '' || $domain === null) && $email !== '' && $email !== null) {
+            // Extrahiere Domain aus E-Mail (z.B. info@offertenschweiz.ch -> offertenschweiz)
+            $emailParts = explode('@', $email);
+            if (count($emailParts) === 2) {
+                $domainParts = explode('.', $emailParts[1]);
+                if (count($domainParts) >= 2) {
+                    $domain = $domainParts[0];
+                }
+            }
+        }
+
+        $domainExtension = $siteConfig->domain_extension ?? '.ch';
+        $result = ucfirst($domain) . $domainExtension;
+
+        if ($debugEnabled) {
+            log_message('debug', 'getEmailFromName() result: ' . $result);
+        }
+
+        return $result;
+    }
+}
+
 if (!function_exists('sendOfferNotificationWithTemplate')) {
     /**
      * Send offer notification email using database template
@@ -144,7 +197,7 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
 
         // Send email
         $email = \Config\Services::email();
-        $email->setFrom($platformSiteConfig->email, $platformSiteConfig->name);
+        $email->setFrom($platformSiteConfig->email, getEmailFromName($platformSiteConfig));
         $email->setTo($userEmail);
         $email->setBCC($bccString);
         $email->setSubject($parsedSubject);
@@ -286,7 +339,7 @@ if (!function_exists('sendGroupedOfferNotificationWithTemplate')) {
 
         // Send email
         $email = \Config\Services::email();
-        $email->setFrom($platformSiteConfig->email, $platformSiteConfig->name);
+        $email->setFrom($platformSiteConfig->email, getEmailFromName($platformSiteConfig));
         $email->setTo($userEmail);
         $email->setBCC($bccString);
         $email->setSubject(
