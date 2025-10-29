@@ -426,7 +426,11 @@ class OfferNotificationSender
         // Typ mit spezifischen Formulierungen für E-Mail-Betreffs
         $type = $this->getOfferTypeForSubject($fullOffer['type']);
 
-        $subject = "{$domain} - Neue Anfrage für {$type} #{$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
+        // Preis formatieren (entweder discounted_price oder regulärer price)
+        $price = !empty($fullOffer['discounted_price']) ? $fullOffer['discounted_price'] : $fullOffer['price'];
+        $priceFormatted = number_format($price, 2, '.', '\'');
+
+        $subject = "{$domain} - Neue Anfrage Preis Fr. {$priceFormatted} für {$type} ID {$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
         $message = view('emails/offer_new_detailed', [
             'firma' => $user,
             'offer' => $fullOffer,

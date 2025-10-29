@@ -217,8 +217,11 @@ class DiscountOldOffers extends BaseCommand
 
         $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
 
-        // Format: "offertenschweiz.ch - 50% Rabatt auf Anfrage für Garten Arbeiten #457 4244 Röschenz"
-        $subject = "{$domain} - {$discount}% Rabatt auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
+        // Neuer Preis formatieren
+        $newPriceFormatted = number_format($newPrice, 2, '.', '\'');
+
+        // Format: "Offertenschweiz.ch - 40% Rabatt / Neuer Preis Fr. 38.00 auf Anfrage für Garten Arbeiten #457 4244 Röschenz"
+        $subject = "{$domain} - {$discount}% Rabatt / Neuer Preis Fr. {$newPriceFormatted} auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
 
         // Versuche field_display_template aus Datenbank zu laden für bessere Formatierung
         $customFieldDisplay = null;

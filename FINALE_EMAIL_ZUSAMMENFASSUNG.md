@@ -23,14 +23,14 @@ ddev exec php test-all-emails.php
 
 ### 1. Neue Offerte → Firma
 ```
-{Domain}.ch - Neue Anfrage für {Type} #{ID} - {PLZ} {Stadt}
+{Domain}.ch - Neue Anfrage Preis Fr. {Preis} für {Type} #{ID} - {PLZ} {Stadt}
 ```
 **Beispiele:**
-- `Offertenschweiz.ch - Neue Anfrage für Reinigung #453 - 4244 Röschenz`
-- `Offertenschweiz.ch - Neue Anfrage für Umzug #451 - 4153 Kanton Reinach`
-- `Offertenschweiz.ch - Neue Anfrage für Garten Arbeiten #447 - 4244 Röschenz`
-- `Offertenschweiz.ch - Neue Anfrage für Elektriker Arbeiten #13 - 3600 Thun`
-- `Offertenschweiz.ch - Neue Anfrage für Maler/Gipser #2 - 6003 Luzern`
+- `Offertenschweiz.ch - Neue Anfrage Preis Fr. 99.00 für Reinigung #453 - 4244 Röschenz`
+- `Offertenschweiz.ch - Neue Anfrage Preis Fr. 39.00 für Umzug #451 - 4153 Kanton Reinach`
+- `Offertenschweiz.ch - Neue Anfrage Preis Fr. 29.00 für Garten Arbeiten #447 - 4244 Röschenz`
+- `Offertenschweiz.ch - Neue Anfrage Preis Fr. 78.00 für Elektriker Arbeiten #13 - 3600 Thun`
+- `Offertenschweiz.ch - Neue Anfrage Preis Fr. 43.00 für Maler/Gipser #2 - 6003 Luzern`
 
 ---
 
@@ -58,14 +58,14 @@ ddev exec php test-all-emails.php
 
 ### 4. Rabatt → Firma
 ```
-{Domain}.ch - {X}% Rabatt auf Anfrage für {Type} #{ID} {PLZ} {Stadt}
+{Domain}.ch - {X}% Rabatt / Neuer Preis Fr. {Preis} auf Anfrage für {Type} #{ID} {PLZ} {Stadt}
 ```
 **Beispiele:**
-- `Offertenschweiz.ch - 69% Rabatt auf Anfrage für Reinigung #453 4244 Röschenz`
-- `Offertenschweiz.ch - 59% Rabatt auf Anfrage für Umzug #451 4153 Kanton Reinach`
-- `Offertenschweiz.ch - 70% Rabatt auf Anfrage für Garten Arbeiten #16 6900 Lugano`
-- `Offertenschweiz.ch - 69% Rabatt auf Anfrage für Elektriker Arbeiten #13 3600 Thun`
-- `Offertenschweiz.ch - 70% Rabatt auf Anfrage für Maler/Gipser #2 6003 Luzern`
+- `Offertenschweiz.ch - 69% Rabatt / Neuer Preis Fr. 30.00 auf Anfrage für Reinigung #453 4244 Röschenz`
+- `Offertenschweiz.ch - 59% Rabatt / Neuer Preis Fr. 16.00 auf Anfrage für Umzug #451 4153 Kanton Reinach`
+- `Offertenschweiz.ch - 70% Rabatt / Neuer Preis Fr. 9.00 auf Anfrage für Garten Arbeiten #16 6900 Lugano`
+- `Offertenschweiz.ch - 69% Rabatt / Neuer Preis Fr. 24.00 auf Anfrage für Elektriker Arbeiten #13 3600 Thun`
+- `Offertenschweiz.ch - 70% Rabatt / Neuer Preis Fr. 13.00 auf Anfrage für Maler/Gipser #2 6003 Luzern`
 
 ---
 
