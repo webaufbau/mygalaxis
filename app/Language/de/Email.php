@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'ThankYouTitle'         => 'Vielen Dank für den Kauf einer Anfrage',
+    'ThankYouTitle'         => 'Vielen Dank',
     'SuccessMessage'        => 'Sie haben erfolgreich folgende Anfrage gekauft:',
     'Title'                 => 'Titel',
     'Type'                  => 'Typ',
@@ -47,7 +47,7 @@ return [
     'offer_added_request_title' => 'Ihre Anfrage',
 
     // Offerte Kauf an Firmen
-    'title_firm_interest' => 'Eine Firma interessiert sich für Ihre Anfrage',
+    'title_firm_interest' => 'Kontaktdaten der Firma',
     'label_company'       => 'Firma',
     'label_contact'       => 'Ansprechperson',
     'label_email'         => 'E-Mail',

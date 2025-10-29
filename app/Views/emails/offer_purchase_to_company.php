@@ -11,17 +11,62 @@
 
 <h3><?= lang('Email.CustomerDataTitle') ?></h3>
 
+<?php
+// Extrahiere vollständige Kundendaten aus form_fields
+$formFields = json_decode($offer['form_fields'] ?? '{}', true) ?? [];
+
+// Name
+$firstname = $formFields['vorname'] ?? $formFields['firstname'] ?? $kunde['firstname'] ?? '';
+$lastname = $formFields['nachname'] ?? $formFields['lastname'] ?? $kunde['lastname'] ?? '';
+
+// Kontakt
+$email = $formFields['email'] ?? $formFields['e-mail'] ?? $formFields['e_mail'] ?? $kunde['email'] ?? '';
+$phone = $formFields['telefon'] ?? $formFields['phone'] ?? $formFields['tel'] ?? $kunde['phone'] ?? '';
+$mobile = $formFields['mobile'] ?? $formFields['handy'] ?? '';
+
+// Adresse
+$street = $formFields['strasse'] ?? $formFields['street'] ?? $formFields['adresse'] ?? '';
+$houseNumber = $formFields['hausnummer'] ?? $formFields['house_number'] ?? '';
+$zip = $formFields['plz'] ?? $formFields['zip'] ?? $offer['zip'] ?? '';
+$city = $formFields['ort'] ?? $formFields['city'] ?? $offer['city'] ?? '';
+
+// Wenn Adresse ein Array ist (verschachtelt), versuche es zu extrahieren
+if (is_array($street)) {
+    $street = $street['strasse'] ?? $street['street'] ?? '';
+}
+if (is_array($houseNumber)) {
+    $houseNumber = $houseNumber['hausnummer'] ?? $houseNumber['house_number'] ?? '';
+}
+?>
+
 <ul>
-    <li><strong><?= lang('Email.Name') ?>:</strong> <?= esc($kunde['firstname'] ?? '') . ' ' . esc($kunde['lastname'] ?? '') ?></li>
-    <li><strong><?= lang('Email.Email') ?>:</strong> <?= esc($kunde['email'] ?? '') ?></li>
-    <li><strong><?= lang('Email.Phone') ?>:</strong> <?= esc($kunde['phone'] ?? '') ?></li>
-    <?php if (!empty($kunde['address'])): ?>
-        <li><strong>Adresse:</strong> <?= esc($kunde['address']) ?></li>
+    <?php if (!empty($firstname) || !empty($lastname)): ?>
+        <li><strong><?= lang('Email.Name') ?>:</strong> <?= esc($firstname) ?> <?= esc($lastname) ?></li>
     <?php endif; ?>
-    <?php if (!empty($kunde['zip']) || !empty($kunde['city'])): ?>
+
+    <?php if (!empty($email)): ?>
+        <li><strong><?= lang('Email.Email') ?>:</strong> <a href="mailto:<?= esc($email) ?>"><?= esc($email) ?></a></li>
+    <?php endif; ?>
+
+    <?php if (!empty($phone)): ?>
+        <li><strong><?= lang('Email.Phone') ?>:</strong> <a href="tel:<?= esc($phone) ?>"><?= esc($phone) ?></a></li>
+    <?php endif; ?>
+
+    <?php if (!empty($mobile)): ?>
+        <li><strong>Mobil:</strong> <a href="tel:<?= esc($mobile) ?>"><?= esc($mobile) ?></a></li>
+    <?php endif; ?>
+
+    <?php if (!empty($street)): ?>
+        <li><strong>Strasse:</strong>
+            <?= esc($street) ?>
+            <?php if (!empty($houseNumber)): ?> <?= esc($houseNumber) ?><?php endif; ?>
+        </li>
+    <?php endif; ?>
+
+    <?php if (!empty($zip) || !empty($city)): ?>
         <li><strong>Ort:</strong>
-            <?php if (!empty($kunde['zip'])): ?><?= esc($kunde['zip']) ?> <?php endif; ?>
-            <?= esc($kunde['city'] ?? '') ?>
+            <?php if (!empty($zip)): ?><?= esc($zip) ?> <?php endif; ?>
+            <?= esc($city) ?>
         </li>
     <?php endif; ?>
 </ul>

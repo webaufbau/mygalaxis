@@ -109,7 +109,31 @@ class SendOfferPurchaseNotification extends BaseCommand
             'company_backend_offer_link' => $company_backend_offer_link,
         ];
 
-        $subject = sprintf(lang('Email.offerPurchasedCompanySubject'), $offer['title']);
+        // Extrahiere Domain aus Platform (z.B. my_offertenheld_ch -> offertenheld.ch)
+        $domain = '';
+        if ($offer['platform']) {
+            $domain = str_replace('my_', '', $offer['platform']);
+            $domain = str_replace('_', '.', $domain);
+        } else {
+            // Fallback: extrahiere aus frontendUrl
+            $url = $siteConfig->frontendUrl ?? base_url();
+            $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
+            $parts = explode('.', $domain);
+            if (count($parts) >= 2) {
+                $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+            }
+        }
+
+        // Typ mit Großbuchstaben
+        $type = lang('Offers.type.' . $offer['type']);
+        if (str_starts_with($type, 'Offers.')) {
+            $type = ucfirst(strtolower(str_replace(['_', '-'], ' ', $offer['type'])));
+        }
+        $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
+
+        // Neuer Betreff: "Domain.ch - Vielen Dank für den Kauf der Anfrage Gartenpflege in Röschenz"
+        $subject = "{$domain} - Vielen Dank für den Kauf der Anfrage {$type} in {$offer['city']}";
+
         $message = view('emails/offer_purchase_to_company', $data);
 
         $this->sendEmail($company->email, $subject, $message, $siteConfig);
@@ -142,8 +166,31 @@ class SendOfferPurchaseNotification extends BaseCommand
             'interessentenLink' => $interessentenLink,
         ];
 
-        // Betreff aus Sprachdateien holen
-        $subject = sprintf(lang('Email.offerPurchasedSubject'), $offer['title']);
+        // Extrahiere Domain aus Platform (z.B. my_offertenheld_ch -> offertenheld.ch)
+        $domain = '';
+        if ($offer['platform']) {
+            $domain = str_replace('my_', '', $offer['platform']);
+            $domain = str_replace('_', '.', $domain);
+        } else {
+            // Fallback: extrahiere aus frontendUrl
+            $url = $siteConfig->frontendUrl ?? base_url();
+            $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
+            $parts = explode('.', $domain);
+            if (count($parts) >= 2) {
+                $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+            }
+        }
+
+        // Typ mit Großbuchstaben
+        $type = lang('Offers.type.' . $offer['type']);
+        if (str_starts_with($type, 'Offers.')) {
+            $type = ucfirst(strtolower(str_replace(['_', '-'], ' ', $offer['type'])));
+        }
+        $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
+
+        // Neuer Betreff: "Domain.ch - Eine Firma interessiert sich für Ihre Anfrage - Gartenpflege in Röschenz"
+        $subject = "{$domain} - Eine Firma interessiert sich für Ihre Anfrage - {$type} in {$offer['city']}";
+
         $message = view('emails/offer_purchase_to_customer', $data);
 
         $originalEmail = $customer['email'];
