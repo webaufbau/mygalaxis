@@ -221,7 +221,7 @@ class DiscountOldOffers extends BaseCommand
         $newPriceFormatted = number_format($newPrice, 2, '.', '\'');
 
         // Format: "Offertenschweiz.ch - 40% Rabatt / Neuer Preis Fr. 38.00 auf Anfrage für Garten Arbeiten ID 457 4244 Röschenz"
-        $subject = "{$domain} - {$discount}% Rabatt / Neuer Preis Fr. {$newPriceFormatted} für {$type} {$offer['zip']} {$offer['city']} ID {$offer['id']} Anfrage";
+        $subject = "{$discount}% Rabatt / Neuer Preis Fr. {$newPriceFormatted} für {$type} {$offer['zip']} {$offer['city']} ID {$offer['id']} Anfrage";
 
         // Versuche field_display_template aus Datenbank zu laden für bessere Formatierung
         $customFieldDisplay = null;
