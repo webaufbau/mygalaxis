@@ -209,15 +209,87 @@ class DiscountOldOffers extends BaseCommand
         // Format: "50% Rabatt auf Anfrage für Gartenpflege #457 4244 Röschenz"
         $subject = "{$discount}% Rabatt auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
 
-        $message = view('emails/price_update', [
-            'firma' => $user,
-            'offer' => $fullOffer,
-            'oldPrice' => $oldPrice,
-            'newPrice' => $newPrice,
-            'discount' => $discount,
-            'siteConfig' => $siteConfig,
-            'alreadyPurchased' => $alreadyPurchased,
-        ]);
+        // Lade E-Mail-Template aus Datenbank
+        $templateModel = new \App\Models\EmailTemplateModel();
+        $language = $fullOffer['data']['lang'] ?? $fullOffer['language'] ?? 'de';
+        $emailTemplate = $templateModel->getTemplateForOffer($offer['type'], $language);
+
+        // Wenn kein Template gefunden, fallback zum alten View
+        if (!$emailTemplate) {
+            $message = view('emails/price_update', [
+                'firma' => $user,
+                'offer' => $fullOffer,
+                'oldPrice' => $oldPrice,
+                'newPrice' => $newPrice,
+                'discount' => $discount,
+                'siteConfig' => $siteConfig,
+                'alreadyPurchased' => $alreadyPurchased,
+            ]);
+        } else {
+            // Verwende Template aus Datenbank
+            $parser = new \App\Services\EmailTemplateParser($offer['platform']);
+
+            // Lade excluded fields config
+            $fieldConfigForExclusion = new \Config\FormFieldOptions();
+
+            // Wenn bereits gekauft, zeige alle Felder (außer den Always-Excluded)
+            // Wenn nicht gekauft, verstecke zusätzlich Kontaktdaten
+            if ($alreadyPurchased) {
+                $excludedFields = $fieldConfigForExclusion->excludedFieldsAlways;
+            } else {
+                $excludedFields = array_merge(
+                    $fieldConfigForExclusion->excludedFieldsAlways,
+                    ['vorname', 'nachname', 'email', 'phone', 'telefon', 'tel',
+                     'e-mail', 'e_mail', 'mail', 'mobile', 'handy',
+                     'strasse', 'street', 'address', 'adresse', 'hausnummer']
+                );
+            }
+
+            // Parse field_display_template
+            $fieldDisplayHtml = '';
+            if (!empty($emailTemplate['field_display_template'])) {
+                $fieldDisplayHtml = $parser->parse($emailTemplate['field_display_template'], $fullOffer['data'], $excludedFields);
+            } else {
+                $fieldDisplayHtml = $parser->parse('[show_all]', $fullOffer['data'], $excludedFields);
+            }
+
+            // Erstelle Rabatt-Box HTML
+            $rabattBox = '<div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 30px 0;">';
+            $rabattBox .= '<h3 style="margin-top: 0; color: #856404;">Preisänderung</h3>';
+            $rabattBox .= '<p style="margin: 10px 0;"><span style="text-decoration: line-through; color: #6c757d; font-size: 18px;">Alter Preis: ' . esc($oldPrice) . ' ' . currency($offer['platform'] ?? null) . '</span></p>';
+            $rabattBox .= '<p style="margin: 10px 0;"><strong style="font-size: 24px; color: #28a745;">Neuer Preis: ' . esc($newPrice) . ' ' . currency($offer['platform'] ?? null) . '</strong></p>';
+            $rabattBox .= '<p style="margin: 10px 0; color: #856404;"><strong>(' . $discount . '% Rabatt)</strong></p>';
+
+            if ($alreadyPurchased) {
+                // Kontaktdaten Box wenn bereits gekauft
+                $rabattBox .= '<div style="background-color: #d4edda; border: 2px solid #28a745; border-radius: 8px; padding: 20px; margin: 20px 0;">';
+                $rabattBox .= '<h4 style="color: #155724; margin-top: 0;">Kontaktdaten des Kunden</h4><ul style="list-style: none; padding: 0;">';
+                if (!empty($fullOffer['data']['vorname']) || !empty($fullOffer['data']['nachname'])) {
+                    $rabattBox .= '<li><strong>Name:</strong> ' . esc($fullOffer['data']['vorname'] ?? '') . ' ' . esc($fullOffer['data']['nachname'] ?? '') . '</li>';
+                }
+                if (!empty($fullOffer['data']['email'])) {
+                    $rabattBox .= '<li><strong>E-Mail:</strong> <a href="mailto:' . esc($fullOffer['data']['email']) . '">' . esc($fullOffer['data']['email']) . '</a></li>';
+                }
+                $phone = $fullOffer['data']['phone'] ?? $fullOffer['data']['telefon'] ?? $fullOffer['data']['tel'] ?? '';
+                if ($phone) {
+                    $rabattBox .= '<li><strong>Telefon:</strong> <a href="tel:' . esc($phone) . '">' . esc($phone) . '</a></li>';
+                }
+                $rabattBox .= '</ul></div>';
+                $rabattBox .= '<div style="text-align: center; margin-top: 20px;"><p style="margin: 0; font-size: 18px; color: #155724; font-weight: bold;">✓ Diese Anfrage wurde bereits gekauft</p></div>';
+            } else {
+                $rabattBox .= '<div style="text-align: center; margin-top: 20px;"><a href="' . rtrim($siteConfig->backendUrl, '/') . '/offers/buy/' . $offer['id'] . '" style="display: inline-block; background-color: #28a745; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">Jetzt kaufen</a></div>';
+            }
+            $rabattBox .= '</div>';
+
+            // Füge Rabatt-Box am Ende des Field-Displays hinzu
+            $fieldDisplayHtml .= $rabattBox;
+
+            // Replace {{FIELD_DISPLAY}} in body_template
+            $bodyTemplate = str_replace('{{FIELD_DISPLAY}}', $fieldDisplayHtml, $emailTemplate['body_template']);
+
+            // Parse the complete body with all shortcodes
+            $message = $parser->parse($bodyTemplate, $fullOffer['data']);
+        }
 
         $to = $siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail();
 
