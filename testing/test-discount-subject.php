@@ -50,7 +50,7 @@ while ($offer = $offers->fetch_assoc()) {
     $newPriceFormatted = number_format($offer['discounted_price'], 2, '.', '\'');
 
     // Neuer Betreff mit Rabatt und neuem Preis
-    $subject = "{$domain} - {$discount}% Rabatt / Neuer Preis Fr. {$newPriceFormatted} auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
+    $subject = "{$domain} - {$discount}% Rabatt / Neuer Preis Fr. {$newPriceFormatted} auf Anfrage für {$type} ID {$offer['id']} {$offer['zip']} {$offer['city']}";
 
     echo "  ✅ {$subject}\n";
 }

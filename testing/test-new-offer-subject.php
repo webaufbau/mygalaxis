@@ -48,7 +48,7 @@ while ($offer = $offers->fetch_assoc()) {
     $priceFormatted = number_format($price, 2, '.', '\'');
 
     // Neuer Betreff mit Preis
-    $subject = "{$domain} - Neue Anfrage Preis Fr. {$priceFormatted} für {$type} #{$offer['id']} - {$offer['zip']} {$offer['city']}";
+    $subject = "{$domain} - Neue Anfrage Preis Fr. {$priceFormatted} für {$type} ID {$offer['id']} - {$offer['zip']} {$offer['city']}";
 
     echo "  ✅ {$subject}\n";
 }
