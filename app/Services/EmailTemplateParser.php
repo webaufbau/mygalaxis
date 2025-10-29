@@ -347,18 +347,23 @@ class EmailTemplateParser
      */
     protected function parseSiteShortcodes(string $template): string
     {
-        $siteUrl = $this->siteConfig->url ?? base_url();
+        // Try to get URL from different config fields (for backwards compatibility)
+        $siteUrl = $this->siteConfig->url ?? $this->siteConfig->frontendUrl ?? base_url();
 
-        // Extract domain from URL (remove protocol, subdomains, and trailing slashes)
-        // First, remove protocol and path
-        $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $siteUrl);
-
-        // Then extract only the main domain (last two parts: domain.tld)
-        // e.g., my.offertenschweiz.ch -> offertenschweiz.ch
-        // e.g., www.example.com -> example.com
-        $parts = explode('.', $domain);
-        if (count($parts) >= 2) {
-            $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+        // Extract domain from platform string (e.g., my_offertenheld_ch -> offertenheld.ch)
+        $domain = '';
+        if ($this->platform) {
+            // Remove 'my_' prefix and convert underscores to dots
+            $domain = str_replace('my_', '', $this->platform);
+            $domain = str_replace('_', '.', $domain);
+        } else {
+            // Fallback: extract from URL
+            $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $siteUrl);
+            // Remove subdomains (keep only last two parts: domain.tld)
+            $parts = explode('.', $domain);
+            if (count($parts) >= 2) {
+                $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+            }
         }
 
         $replacements = [
@@ -369,6 +374,8 @@ class EmailTemplateParser
 
         log_message('debug', "parseSiteShortcodes - Platform: " . json_encode($this->platform));
         log_message('debug', "parseSiteShortcodes - SiteConfig Name: " . json_encode($this->siteConfig->name ?? 'NULL'));
+        log_message('debug', "parseSiteShortcodes - SiteUrl: " . json_encode($siteUrl));
+        log_message('debug', "parseSiteShortcodes - Extracted Domain: " . json_encode($domain));
         log_message('debug', "parseSiteShortcodes - Template vorher: " . substr($template, 0, 200));
 
         $result = str_replace(array_keys($replacements), array_values($replacements), $template);
