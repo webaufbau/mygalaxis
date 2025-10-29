@@ -21,6 +21,7 @@ use DateTime;
  * - {site_name} - Site name from config
  * - {site_url} - Site URL
  * - {site_domain} - Site domain without protocol (e.g., example.com)
+ * - {site_name|ucfirst} - Site name with first letter uppercase (filters also work for site shortcodes)
  * - [if field:fieldname]...[/if] - Conditional block
  * - [if field:fieldname.subfield]...[/if] - Conditional with nested field
  * - [if field:fieldname > value]...[/if] - Conditional with comparison (>, <, >=, <=, ==, !=)
@@ -343,7 +344,8 @@ class EmailTemplateParser
     }
 
     /**
-     * Parse {site_name}, {site_url} etc.
+     * Parse {site_name}, {site_url}, {site_domain} etc. with optional filters
+     * Supports filters like {site_domain|ucfirst}
      */
     protected function parseSiteShortcodes(string $template): string
     {
@@ -366,10 +368,11 @@ class EmailTemplateParser
             }
         }
 
-        $replacements = [
-            '{site_name}' => $this->siteConfig->name ?? '',
-            '{site_url}'  => $siteUrl,
-            '{site_domain}' => $domain,
+        // Base values for site shortcodes
+        $siteValues = [
+            'site_name' => $this->siteConfig->name ?? '',
+            'site_url'  => $siteUrl,
+            'site_domain' => $domain,
         ];
 
         log_message('debug', "parseSiteShortcodes - Platform: " . json_encode($this->platform));
@@ -378,7 +381,23 @@ class EmailTemplateParser
         log_message('debug', "parseSiteShortcodes - Extracted Domain: " . json_encode($domain));
         log_message('debug', "parseSiteShortcodes - Template vorher: " . substr($template, 0, 200));
 
-        $result = str_replace(array_keys($replacements), array_values($replacements), $template);
+        // Parse site shortcodes with optional filters (e.g., {site_domain|ucfirst})
+        $pattern = '/\{(site_name|site_url|site_domain)(?:\|([a-z]+)(?::([^\}]+))?)?\}/';
+
+        $result = preg_replace_callback($pattern, function ($matches) use ($siteValues) {
+            $shortcode = $matches[1];
+            $filter = $matches[2] ?? null;
+            $filterParam = $matches[3] ?? null;
+
+            $value = $siteValues[$shortcode] ?? '';
+
+            // Apply filter if specified
+            if ($filter && $value) {
+                $value = $this->applyFilter($value, $filter, $filterParam);
+            }
+
+            return esc($value);
+        }, $template);
 
         log_message('debug', "parseSiteShortcodes - Template nachher: " . substr($result, 0, 200));
 
