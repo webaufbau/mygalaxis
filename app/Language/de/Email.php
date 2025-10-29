@@ -10,7 +10,7 @@ return [
     'Email'                 => 'E-Mail',
     'Phone'                 => 'Telefon',
     'ContactInstruction'    => 'Bitte setzen Sie sich direkt mit dem Kunden in Verbindung und unterbreiten Ihre Offerte.',
-    'RequestSummaryTitle'   => 'Zusammenfassung der Anfrage',
+    'RequestSummaryTitle'   => 'Anfragedetails',
     'ViewOffer'             => 'Angebot ansehen',
 
 

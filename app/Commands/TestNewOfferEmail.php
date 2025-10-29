@@ -76,7 +76,7 @@ class TestNewOfferEmail extends BaseCommand
             CLI::newLine();
             CLI::write('📨 E-Mail Details:', 'yellow');
             CLI::write("   An: {$user->getEmail()}");
-            CLI::write("   Betreff: Neue passende Offerte #{$offer['id']}");
+            CLI::write("   Betreff: Format: {site_domain} - Neue Anfrage für {type} #{id} - {zip} {city}");
             CLI::write("   Template: emails/offer_new_detailed.php");
             CLI::newLine();
             CLI::write('📬 MailHog öffnen: https://mygalaxis.ddev.site:8026', 'blue');

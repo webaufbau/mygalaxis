@@ -131,8 +131,8 @@ class SendOfferPurchaseNotification extends BaseCommand
         }
         $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
 
-        // Neuer Betreff: "Domain.ch - Vielen Dank für den Kauf der Anfrage Gartenpflege in Röschenz"
-        $subject = "{$domain} - Vielen Dank für den Kauf der Anfrage {$type} in {$offer['city']}";
+        // Neuer Betreff: "Domain.ch - Vielen Dank für den Kauf der Anfrage Gartenpflege in 4244 Röschenz"
+        $subject = "{$domain} - Vielen Dank für den Kauf der Anfrage {$type} in {$offer['zip']} {$offer['city']}";
 
         $message = view('emails/offer_purchase_to_company', $data);
 
@@ -188,8 +188,8 @@ class SendOfferPurchaseNotification extends BaseCommand
         }
         $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
 
-        // Neuer Betreff: "Domain.ch - Eine Firma interessiert sich für Ihre Anfrage - Gartenpflege in Röschenz"
-        $subject = "{$domain} - Eine Firma interessiert sich für Ihre Anfrage - {$type} in {$offer['city']}";
+        // Neuer Betreff: "Domain.ch - Eine Firma interessiert sich für Ihre Anfrage - Gartenpflege in 4244 Röschenz"
+        $subject = "{$domain} - Eine Firma interessiert sich für Ihre Anfrage - {$type} in {$offer['zip']} {$offer['city']}";
 
         $message = view('emails/offer_purchase_to_customer', $data);
 

@@ -406,7 +406,25 @@ class OfferNotificationSender
         // Versuche field_display_template aus Datenbank zu laden
         $customFieldDisplay = $this->getFieldDisplayFromDatabase($fullOffer, $user, $alreadyPurchased);
 
-        $subject = "Neue passende Offerte #{$fullOffer['id']}";
+        // Extrahiere Domain aus Platform (z.B. my_offertenheld_ch -> offertenheld.ch)
+        $domain = '';
+        if (!empty($fullOffer['platform'])) {
+            $domain = str_replace('my_', '', $fullOffer['platform']);
+            $domain = str_replace('_', '.', $domain);
+        } else {
+            // Fallback: extrahiere aus frontendUrl
+            $url = $siteConfig->frontendUrl ?? base_url();
+            $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
+            $parts = explode('.', $domain);
+            if (count($parts) >= 2) {
+                $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+            }
+        }
+
+        // Typ mit spezifischen Formulierungen für E-Mail-Betreffs
+        $type = $this->getOfferTypeForSubject($fullOffer['type']);
+
+        $subject = "{$domain} - Neue Anfrage für {$type} #{$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
         $message = view('emails/offer_new_detailed', [
             'firma' => $user,
             'offer' => $fullOffer,
@@ -436,6 +454,33 @@ class OfferNotificationSender
         if (!$email->send()) {
             log_message('error', 'Fehler beim Senden an ' . $user->getEmail() . ': ' . print_r($email->printDebugger(), true));
         }
+    }
+
+    /**
+     * Gibt den korrekten Typ-Namen für E-Mail-Betreffs zurück
+     * Spezielle Formulierungen je nach Branche für "Neue Anfrage" E-Mails
+     */
+    protected function getOfferTypeForSubject(string $offerType): string
+    {
+        // Spezielle Formulierungen für Betreffs
+        $typeMapping = [
+            'move'              => 'Umzug',
+            'cleaning'          => 'Reinigung',
+            'move_cleaning'     => 'Umzug + Reinigung',
+            'painting'          => 'Maler/Gipser',
+            'painter'           => 'Maler/Gipser',
+            'gardening'         => 'Garten Arbeiten',
+            'gardener'          => 'Garten Arbeiten',
+            'electrician'       => 'Elektriker Arbeiten',
+            'plumbing'          => 'Sanitär Arbeiten',
+            'heating'           => 'Heizung Arbeiten',
+            'tiling'            => 'Platten Arbeiten',
+            'flooring'          => 'Boden Arbeiten',
+            'furniture_assembly'=> 'Möbelaufbau',
+            'other'             => 'Sonstiges',
+        ];
+
+        return $typeMapping[$offerType] ?? ucfirst(str_replace('_', ' ', $offerType));
     }
 
     /**

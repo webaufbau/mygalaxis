@@ -9,7 +9,7 @@
 
 <hr>
 
-<h3><?= lang('Email.CustomerDataTitle') ?></h3>
+<h3>Details zur gekauften Anfrage</h3>
 
 <?php
 // Extrahiere vollständige Kundendaten aus form_fields
@@ -24,32 +24,51 @@ $email = $formFields['email'] ?? $formFields['e-mail'] ?? $formFields['e_mail'] 
 $phone = $formFields['telefon'] ?? $formFields['phone'] ?? $formFields['tel'] ?? $kunde['phone'] ?? '';
 $mobile = $formFields['mobile'] ?? $formFields['handy'] ?? '';
 
-// Adresse
-$street = $formFields['strasse'] ?? $formFields['street'] ?? $formFields['adresse'] ?? '';
-$houseNumber = $formFields['hausnummer'] ?? $formFields['house_number'] ?? '';
+// Adresse - prüfe auch verschachtelte Struktur
+$street = '';
+$houseNumber = '';
+
+// Direkte Felder
+$street = $formFields['strasse'] ?? $formFields['street'] ?? $formFields['adresse'] ?? $formFields['address_line_1'] ?? '';
+$houseNumber = $formFields['hausnummer'] ?? $formFields['house_number'] ?? $formFields['address_line_2'] ?? '';
+
+// Verschachtelte Adresse (z.B. $formFields['address']['address_line_1'])
+if (empty($street) && isset($formFields['address']) && is_array($formFields['address'])) {
+    $street = $formFields['address']['address_line_1'] ?? $formFields['address']['strasse'] ?? $formFields['address']['street'] ?? '';
+    $houseNumber = $formFields['address']['address_line_2'] ?? $formFields['address']['hausnummer'] ?? '';
+}
+
+// Wenn Adresse selbst ein Array ist
+if (is_array($street)) {
+    $street = $street['strasse'] ?? $street['street'] ?? $street['address_line_1'] ?? '';
+}
+if (is_array($houseNumber)) {
+    $houseNumber = $houseNumber['hausnummer'] ?? $houseNumber['house_number'] ?? $houseNumber['address_line_2'] ?? '';
+}
+
 $zip = $formFields['plz'] ?? $formFields['zip'] ?? $offer['zip'] ?? '';
 $city = $formFields['ort'] ?? $formFields['city'] ?? $offer['city'] ?? '';
 
-// Wenn Adresse ein Array ist (verschachtelt), versuche es zu extrahieren
-if (is_array($street)) {
-    $street = $street['strasse'] ?? $street['street'] ?? '';
-}
-if (is_array($houseNumber)) {
-    $houseNumber = $houseNumber['hausnummer'] ?? $houseNumber['house_number'] ?? '';
+// Typ
+$type = lang('Offers.type.' . $offer['type']);
+if (str_starts_with($type, 'Offers.')) {
+    $type = ucfirst(strtolower(str_replace(['_', '-'], ' ', $offer['type'])));
 }
 ?>
 
 <ul>
+    <li><strong>Art der Anfrage:</strong> <?= esc($type) ?></li>
+
     <?php if (!empty($firstname) || !empty($lastname)): ?>
-        <li><strong><?= lang('Email.Name') ?>:</strong> <?= esc($firstname) ?> <?= esc($lastname) ?></li>
+        <li><strong>Name des Kunden:</strong> <?= esc($firstname) ?> <?= esc($lastname) ?></li>
     <?php endif; ?>
 
     <?php if (!empty($email)): ?>
-        <li><strong><?= lang('Email.Email') ?>:</strong> <a href="mailto:<?= esc($email) ?>"><?= esc($email) ?></a></li>
+        <li><strong>E-Mail des Kunden:</strong> <a href="mailto:<?= esc($email) ?>"><?= esc($email) ?></a></li>
     <?php endif; ?>
 
     <?php if (!empty($phone)): ?>
-        <li><strong><?= lang('Email.Phone') ?>:</strong> <a href="tel:<?= esc($phone) ?>"><?= esc($phone) ?></a></li>
+        <li><strong>Telefon des Kunden:</strong> <a href="tel:<?= esc($phone) ?>"><?= esc($phone) ?></a></li>
     <?php endif; ?>
 
     <?php if (!empty($mobile)): ?>
@@ -57,7 +76,7 @@ if (is_array($houseNumber)) {
     <?php endif; ?>
 
     <?php if (!empty($street)): ?>
-        <li><strong>Strasse:</strong>
+        <li><strong>Adresse des Kunden:</strong>
             <?= esc($street) ?>
             <?php if (!empty($houseNumber)): ?> <?= esc($houseNumber) ?><?php endif; ?>
         </li>

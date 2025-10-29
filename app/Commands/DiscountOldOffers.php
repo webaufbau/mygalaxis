@@ -195,18 +195,12 @@ class DiscountOldOffers extends BaseCommand
 
         $alreadyPurchased = !empty($purchase);
 
-        $type = lang('Offers.type.' . $offer['type']);
-        // Fallback falls Übersetzung fehlt
-        if (str_starts_with($type, 'Offers.')) {
-            $type = ucfirst(strtolower(str_replace(['_', '-'], ' ', $offer['type'])));
-        }
-
-        // Stelle sicher, dass der Typ mit Großbuchstaben beginnt (für deutschen Betreff)
-        $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
+        // Typ mit spezifischen Formulierungen für E-Mail-Betreffs
+        $type = $this->getOfferTypeForSubject($offer['type']);
 
         $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
 
-        // Format: "50% Rabatt auf Anfrage für Gartenpflege #457 4244 Röschenz"
+        // Format: "50% Rabatt auf Anfrage für Garten Arbeiten #457 4244 Röschenz"
         $subject = "{$discount}% Rabatt auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
 
         // Lade E-Mail-Template aus Datenbank
@@ -323,5 +317,32 @@ class DiscountOldOffers extends BaseCommand
         }
 
         return true;
+    }
+
+    /**
+     * Gibt den korrekten Typ-Namen für E-Mail-Betreffs zurück
+     * Spezielle Formulierungen je nach Branche für "Neue Anfrage" E-Mails
+     */
+    protected function getOfferTypeForSubject(string $offerType): string
+    {
+        // Spezielle Formulierungen für Betreffs
+        $typeMapping = [
+            'move'              => 'Umzug',
+            'cleaning'          => 'Reinigung',
+            'move_cleaning'     => 'Umzug + Reinigung',
+            'painting'          => 'Maler/Gipser',
+            'painter'           => 'Maler/Gipser',
+            'gardening'         => 'Garten Arbeiten',
+            'gardener'          => 'Garten Arbeiten',
+            'electrician'       => 'Elektriker Arbeiten',
+            'plumbing'          => 'Sanitär Arbeiten',
+            'heating'           => 'Heizung Arbeiten',
+            'tiling'            => 'Platten Arbeiten',
+            'flooring'          => 'Boden Arbeiten',
+            'furniture_assembly'=> 'Möbelaufbau',
+            'other'             => 'Sonstiges',
+        ];
+
+        return $typeMapping[$offerType] ?? ucfirst(str_replace('_', ' ', $offerType));
     }
 }

@@ -206,9 +206,11 @@
                     <?= lang('Email.discounted_price') ?>: <?= esc(number_format($offer['discounted_price'], 2)) ?> <?= esc($offer['currency'] ?? 'CHF') ?>
                 </strong>
             </p>
+            <?php if (!empty($offer['discount_ends_at'])): ?>
             <p style="margin: 0 0 20px 0; color: #856404;">
                 <em><?= lang('Email.discount_valid_until', [date('d.m.Y', strtotime($offer['discount_ends_at']))]) ?></em>
             </p>
+            <?php endif; ?>
         <?php else: ?>
             <!-- Normaler Preis -->
             <p style="margin: 0 0 15px 0;">
