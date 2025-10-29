@@ -429,9 +429,9 @@ class OfferNotificationSender
 
         // Preis formatieren (entweder discounted_price oder regulärer price)
         $price = !empty($fullOffer['discounted_price']) ? $fullOffer['discounted_price'] : $fullOffer['price'];
-        $priceFormatted = number_format($price, 2, '.', '\'');
+        $priceFormatted = number_format($price, 0, '.', '\'');
 
-        $subject = "Neue Anfrage Preis Fr. {$priceFormatted} für {$type} ID {$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
+        $subject = "Neue Anfrage Preis Fr. {$priceFormatted}.– für {$type} ID {$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
         $message = view('emails/offer_new_detailed', [
             'firma' => $user,
             'offer' => $fullOffer,
