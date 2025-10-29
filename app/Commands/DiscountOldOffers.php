@@ -201,10 +201,13 @@ class DiscountOldOffers extends BaseCommand
             $type = ucfirst(strtolower(str_replace(['_', '-'], ' ', $offer['type'])));
         }
 
+        // Stelle sicher, dass der Typ mit Großbuchstaben beginnt (für deutschen Betreff)
+        $type = mb_strtoupper(mb_substr($type, 0, 1)) . mb_substr($type, 1);
+
         $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
 
-        // Format: "20% Rabatt auf Angebot #32 Heizung 3000 Bern"
-        $subject = "{$discount}% Rabatt auf Angebot #{$offer['id']} {$type} {$offer['zip']} {$offer['city']}";
+        // Format: "50% Rabatt auf Anfrage für Gartenpflege #457 4244 Röschenz"
+        $subject = "{$discount}% Rabatt auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
 
         $message = view('emails/price_update', [
             'firma' => $user,
