@@ -279,6 +279,14 @@
                                             <i class="bi bi-clipboard"></i> Einfügen
                                         </button>
                                     </div>
+
+                                    <div class="shortcode-item mb-3">
+                                        <code class="d-block bg-light p-2 rounded mb-1">{site_domain}</code>
+                                        <small>Domain der Website (z.B. offertenschweiz.ch)</small>
+                                        <button class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="insertShortcode('{site_domain}')">
+                                            <i class="bi bi-clipboard"></i> Einfügen
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

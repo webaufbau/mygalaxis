@@ -20,6 +20,7 @@ use DateTime;
  * - {field:fieldname|replace:search,replacement} - Replace text within value
  * - {site_name} - Site name from config
  * - {site_url} - Site URL
+ * - {site_domain} - Site domain without protocol (e.g., example.com)
  * - [if field:fieldname]...[/if] - Conditional block
  * - [if field:fieldname.subfield]...[/if] - Conditional with nested field
  * - [if field:fieldname > value]...[/if] - Conditional with comparison (>, <, >=, <=, ==, !=)
@@ -346,9 +347,24 @@ class EmailTemplateParser
      */
     protected function parseSiteShortcodes(string $template): string
     {
+        $siteUrl = $this->siteConfig->url ?? base_url();
+
+        // Extract domain from URL (remove protocol, subdomains, and trailing slashes)
+        // First, remove protocol and path
+        $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $siteUrl);
+
+        // Then extract only the main domain (last two parts: domain.tld)
+        // e.g., my.offertenschweiz.ch -> offertenschweiz.ch
+        // e.g., www.example.com -> example.com
+        $parts = explode('.', $domain);
+        if (count($parts) >= 2) {
+            $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+        }
+
         $replacements = [
             '{site_name}' => $this->siteConfig->name ?? '',
-            '{site_url}'  => $this->siteConfig->url ?? base_url(),
+            '{site_url}'  => $siteUrl,
+            '{site_domain}' => $domain,
         ];
 
         log_message('debug', "parseSiteShortcodes - Platform: " . json_encode($this->platform));
