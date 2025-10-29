@@ -195,13 +195,30 @@ class DiscountOldOffers extends BaseCommand
 
         $alreadyPurchased = !empty($purchase);
 
+        // Extrahiere Domain aus Platform
+        $domain = '';
+        if (!empty($offer['platform'])) {
+            $domain = str_replace('my_', '', $offer['platform']);
+            $domain = str_replace('_', '.', $domain);
+        } else {
+            // Fallback: extrahiere aus frontendUrl
+            $url = $siteConfig->frontendUrl ?? base_url();
+            $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
+            $parts = explode('.', $domain);
+            if (count($parts) >= 2) {
+                $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+            }
+        }
+        // Capitalize first letter
+        $domain = ucfirst($domain);
+
         // Typ mit spezifischen Formulierungen für E-Mail-Betreffs
         $type = $this->getOfferTypeForSubject($offer['type']);
 
         $discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
 
-        // Format: "50% Rabatt auf Anfrage für Garten Arbeiten #457 4244 Röschenz"
-        $subject = "{$discount}% Rabatt auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
+        // Format: "offertenschweiz.ch - 50% Rabatt auf Anfrage für Garten Arbeiten #457 4244 Röschenz"
+        $subject = "{$domain} - {$discount}% Rabatt auf Anfrage für {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
 
         // Versuche field_display_template aus Datenbank zu laden für bessere Formatierung
         $customFieldDisplay = null;

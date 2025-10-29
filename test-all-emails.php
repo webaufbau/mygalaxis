@@ -148,27 +148,42 @@ echo "\n";
 echo "\n5. BEWERTUNGS-EMAIL AN KUNDE (REVIEW REQUEST)\n";
 echo str_repeat("-", 80) . "\n";
 
-// Finde gekaufte Offerten mit Kundendaten
-$reviewOffers = $mysqli->query("
-    SELECT DISTINCT o.id, o.type, o.zip, o.city, o.email, o.firstname, o.lastname
-    FROM offers o
-    INNER JOIN offer_purchases op ON op.offer_id = o.id
-    WHERE o.email IS NOT NULL AND o.email != ''
-    AND op.status = 'paid'
+// Bereite Bookings für Review-E-Mails vor
+$reviewBookings = $mysqli->query("
+    SELECT DISTINCT
+        b.id as booking_id,
+        o.type,
+        o.title,
+        o.firstname,
+        o.lastname,
+        o.email
+    FROM bookings b
+    INNER JOIN offers o ON o.id = b.reference_id
+    WHERE b.type = 'offer_purchase'
+    AND o.email IS NOT NULL
+    AND o.email != ''
     LIMIT 5
 ");
 
-echo "Test-Offerten für Bewertungs-E-Mail:\n";
-$reviewOffersList = [];
-while ($row = $reviewOffers->fetch_assoc()) {
-    $reviewOffersList[] = $row;
-    echo "  • {$row['type']}: Offerte #{$row['id']} - {$row['firstname']} {$row['lastname']} ({$row['email']})\n";
+echo "Test-Bookings für Bewertungs-E-Mail:\n";
+$reviewCount = 0;
+while ($row = $reviewBookings->fetch_assoc()) {
+    $reviewCount++;
+    echo "  • {$row['type']}: {$row['title']} - {$row['firstname']} {$row['lastname']} ({$row['email']})\n";
+
+    // Setze Booking zurück für Test
+    $mysqli->query("
+        UPDATE bookings
+        SET review_reminder_sent_at = NULL,
+            created_at = DATE_SUB(NOW(), INTERVAL 6 DAY)
+        WHERE id = {$row['booking_id']}
+    ");
 }
 
-if (count($reviewOffersList) > 0) {
+if ($reviewCount > 0) {
     echo "\n➜ Sende Bewertungs-E-Mails:\n";
-    echo "  Command: php spark offers:send-review-requests\n";
-    echo "  (Hinweis: Dieser Command muss existieren oder erstellt werden)\n\n";
+    passthru("cd /var/www/html && php spark reviews:send-reminder 2>&1 | head -20");
+    echo "\n";
 }
 
 // ============================================================================
@@ -183,7 +198,7 @@ echo "  1. Bestätigungs-Email an Kunde: " . count($testOffers) . " Offerten vor
 echo "  2. Neue Offerte an Firma: 1 E-Mail gesendet\n";
 echo "  3. Kauf-Benachrichtigung: 5 E-Mails gesendet (Firma + Kunde = 10 total)\n";
 echo "  4. Rabatt-Email an Firma: " . count($discountOffers) . " E-Mails gesendet\n";
-echo "  5. Bewertungs-Email an Kunde: " . count($reviewOffersList) . " vorbereitet\n\n";
+echo "  5. Bewertungs-Email an Kunde: {$reviewCount} E-Mails gesendet\n\n";
 
 echo "📬 Prüfe alle E-Mails in MailPit:\n";
 echo "  → https://mygalaxis.ddev.site:8026\n";

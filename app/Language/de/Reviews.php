@@ -14,8 +14,8 @@ return [
 
     'reminderTitle'    => 'Bitte um Bewertung',
     'helloName'        => 'Guten Tag {0},',
-    'reminderIntro'    => 'für Ihr Angebot "{0}" auf {1} möchten wir Sie daran erinnern, dass einige Firmen Ihre Offerte vor 30 Tagen gekauft haben.',
-    'reminderWarning'  => 'Bitte denken Sie daran, die Firmen nach Abschluss der Arbeit zu bewerten. Nur eine Bewertung pro Offerte ist möglich.',
+    'reminderIntro'    => 'Für Ihre Anfrage "{0}" auf {1} möchten wir Sie daran erinnern, dass sich einige Firmen für Ihre Anfrage interessiert haben.',
+    'reminderWarning'  => 'Bitte denken Sie daran, die Firmen nach Abschluss der Arbeit zu bewerten. Nur eine Bewertung pro Anfrage ist möglich.',
     'clickToReview'    => 'Klicken Sie auf den untenstehenden Button, um die Bewertungen zu verwalten:',
     'reviewNow'        => 'Jetzt bewerten',
     'thankYou'         => 'Vielen Dank und beste Grüsse',

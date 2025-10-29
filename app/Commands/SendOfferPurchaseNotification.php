@@ -123,6 +123,8 @@ class SendOfferPurchaseNotification extends BaseCommand
                 $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
             }
         }
+        // Capitalize first letter
+        $domain = ucfirst($domain);
 
         // Typ mit Großbuchstaben
         $type = lang('Offers.type.' . $offer['type']);
@@ -180,6 +182,8 @@ class SendOfferPurchaseNotification extends BaseCommand
                 $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
             }
         }
+        // Capitalize first letter
+        $domain = ucfirst($domain);
 
         // Typ mit Großbuchstaben
         $type = lang('Offers.type.' . $offer['type']);

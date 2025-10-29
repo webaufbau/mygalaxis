@@ -96,6 +96,26 @@ class SendReviewReminder extends BaseCommand
             // Review-Link generieren: öffnet Seite für Anbieter (mit offer hash)
             $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $accessHash;
 
+            // Extrahiere Domain aus Platform
+            $domain = '';
+            if (!empty($offer['platform'])) {
+                $domain = str_replace('my_', '', $offer['platform']);
+                $domain = str_replace('_', '.', $domain);
+            } else {
+                // Fallback: extrahiere aus frontendUrl
+                $url = $siteConfig->frontendUrl ?? base_url();
+                $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
+                $parts = explode('.', $domain);
+                if (count($parts) >= 2) {
+                    $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+                }
+            }
+            // Capitalize first letter
+            $domain = ucfirst($domain);
+
+            // Typ mit spezifischen Formulierungen für E-Mail-Betreffs
+            $type = $this->getOfferTypeForSubject($offer['type']);
+
             // Maildaten
             $emailData = [
                 'offerTitle' => $offer['title'],
@@ -106,7 +126,8 @@ class SendReviewReminder extends BaseCommand
                 'siteConfig' => $siteConfig,
             ];
 
-            $subject = lang('Reviews.emailSubject', [$offer['title']]);
+            // Neuer Betreff: "Domain.ch - Bitte bewerten Sie die Anfrage - Reinigung #353 3000 Bern"
+            $subject = "{$domain} - Bitte bewerten Sie die Anfrage - {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
             $message = view('emails/review_reminder', $emailData);
 
                 if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
@@ -154,6 +175,26 @@ class SendReviewReminder extends BaseCommand
 
                     $reviewLink = rtrim($siteConfig->backendUrl, '/') . '/offer/interested/' . $accessHash;
 
+                    // Extrahiere Domain aus Platform
+                    $domain = '';
+                    if (!empty($offer['platform'])) {
+                        $domain = str_replace('my_', '', $offer['platform']);
+                        $domain = str_replace('_', '.', $domain);
+                    } else {
+                        // Fallback: extrahiere aus frontendUrl
+                        $url = $siteConfig->frontendUrl ?? base_url();
+                        $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
+                        $parts = explode('.', $domain);
+                        if (count($parts) >= 2) {
+                            $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
+                        }
+                    }
+                    // Capitalize first letter
+                    $domain = ucfirst($domain);
+
+                    // Typ mit spezifischen Formulierungen für E-Mail-Betreffs
+                    $type = $this->getOfferTypeForSubject($offer['type']);
+
                     $emailData = [
                         'offerTitle' => $offer['title'],
                         'creatorFirstname' => $offer['firstname'] ?? '',
@@ -164,7 +205,7 @@ class SendReviewReminder extends BaseCommand
                         'isReminder' => true,
                     ];
 
-                    $subject = lang('Reviews.emailSubjectReminder', [$offer['title']]);
+                    $subject = "{$domain} - Bitte bewerten Sie die Anfrage - {$type} #{$offer['id']} {$offer['zip']} {$offer['city']}";
                     $message = view('emails/review_reminder', $emailData);
 
                     if ($this->sendEmail($creatorEmail, $subject, $message, $siteConfig)) {
@@ -210,5 +251,32 @@ class SendReviewReminder extends BaseCommand
         }
 
         return true;
+    }
+
+    /**
+     * Gibt den korrekten Typ-Namen für E-Mail-Betreffs zurück
+     * Spezielle Formulierungen je nach Branche für Bewertungs-E-Mails
+     */
+    protected function getOfferTypeForSubject(string $offerType): string
+    {
+        // Spezielle Formulierungen für Betreffs
+        $typeMapping = [
+            'move'              => 'Umzug',
+            'cleaning'          => 'Reinigung',
+            'move_cleaning'     => 'Umzug + Reinigung',
+            'painting'          => 'Maler/Gipser',
+            'painter'           => 'Maler/Gipser',
+            'gardening'         => 'Garten Arbeiten',
+            'gardener'          => 'Garten Arbeiten',
+            'electrician'       => 'Elektriker Arbeiten',
+            'plumbing'          => 'Sanitär Arbeiten',
+            'heating'           => 'Heizung Arbeiten',
+            'tiling'            => 'Platten Arbeiten',
+            'flooring'          => 'Boden Arbeiten',
+            'furniture_assembly'=> 'Möbelaufbau',
+            'other'             => 'Sonstiges',
+        ];
+
+        return $typeMapping[$offerType] ?? ucfirst(str_replace('_', ' ', $offerType));
     }
 }

@@ -14,8 +14,8 @@ return [
 
     'reminderTitle'    => 'Reminder to Leave a Review',
     'helloName'        => 'Hello {0},',
-    'reminderIntro'    => 'for your offer "{0}" on {1}, we\'d like to remind you that some companies purchased your request 30 days ago.',
-    'reminderWarning'  => 'Please remember to review the companies after the job is completed. Only one review per offer is allowed.',
+    'reminderIntro'    => 'For your request "{0}" on {1}, we\'d like to remind you that some companies have shown interest in your request.',
+    'reminderWarning'  => 'Please remember to review the companies after the job is completed. Only one review per request is allowed.',
     'clickToReview'    => 'Click the button below to manage your reviews:',
     'reviewNow'        => 'Leave a Review Now',
     'thankYou'         => 'Thank you and best regards',

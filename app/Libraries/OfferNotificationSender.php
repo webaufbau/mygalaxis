@@ -420,6 +420,8 @@ class OfferNotificationSender
                 $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
             }
         }
+        // Capitalize first letter
+        $domain = ucfirst($domain);
 
         // Typ mit spezifischen Formulierungen für E-Mail-Betreffs
         $type = $this->getOfferTypeForSubject($fullOffer['type']);

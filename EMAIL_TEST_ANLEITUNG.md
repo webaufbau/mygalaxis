@@ -134,19 +134,36 @@ ddev exec php test-various-discounts.php
 
 ### 5. Bewertungs-E-Mail an Kunde
 
-**Hinweis:** Command muss erstellt/angepasst werden.
-
-**Gekaufte Offerten für Review-Tests:**
+**Command:**
 ```bash
-ddev exec php test-remaining-emails.php
+php spark reviews:send-reminder
 ```
 
-**Sollte enthalten:**
-- Link zur Bewertungsseite mit `access_hash`
-- Firmenname und Details
-- Anfragedetails
-- Sterne-Bewertung (1-5)
-- Kommentar-Feld
+**Test-Script:**
+```bash
+ddev exec php test-review-emails.php
+```
+
+**Erwarteter Betreff:**
+```
+{domain}.ch - Bitte bewerten Sie Ihre Erfahrung mit {Offerten-Titel}
+```
+
+**Beispiele:**
+- `offertenschweiz.ch - Bitte bewerten Sie Ihre Erfahrung mit Reinigung in Röschenz`
+- `offertenschweiz.ch - Bitte bewerten Sie Ihre Erfahrung mit Umzug von Basel 1 Zi`
+- `offertenschweiz.ch - Bitte bewerten Sie Ihre Erfahrung mit Gartenpflege in Basel`
+
+**Inhalt:**
+- ✅ Link zur Bewertungsseite mit `access_hash`
+- ✅ Firmenname
+- ✅ Offerten-Details
+- ✅ Aufforderung zur Bewertung
+
+**Review-Link Format:**
+```
+{backendUrl}/offer/interested/{access_hash}
+```
 
 ---
 
@@ -192,7 +209,12 @@ ddev exec php test-purchase-email.php
 ddev exec php test-gardening-discount.php
 ```
 
-### Bestätigung & Bewertung
+### Bewertungs-E-Mails
+```bash
+ddev exec php test-review-emails.php
+```
+
+### Bestätigung & Bewertung Info
 ```bash
 ddev exec php test-remaining-emails.php
 ```
@@ -207,8 +229,8 @@ Nach dem Ausführen von `test-all-emails.php`:
 - [x] Kauf an Firma (5 verschiedene Types)
 - [x] Kauf an Kunde (5 verschiedene Types)
 - [x] Rabatt an Firma (5 verschiedene Types)
+- [x] Bewertung an Kunde (5+ E-Mails)
 - [ ] Bestätigung an Kunde (manuell über Frontend)
-- [ ] Bewertung an Kunde (Command muss erstellt werden)
 
 ---
 
