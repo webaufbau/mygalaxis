@@ -42,6 +42,11 @@
     </div>
 <?php endif; ?>
 
+<?php if (isset($customFieldDisplay) && !empty($customFieldDisplay)): ?>
+    <!-- Verwende field_display_template aus Datenbank -->
+    <?= $customFieldDisplay ?>
+<?php else: ?>
+    <!-- Fallback: Standard-Feldanzeige -->
 <ul>
     <?php
     // Lade die Sprachübersetzungen
@@ -153,6 +158,7 @@
         </li>
     <?php endforeach; ?>
 </ul>
+<?php endif; ?>
 
 <!-- Preis-Änderung hervorheben -->
 <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 30px 0;">
