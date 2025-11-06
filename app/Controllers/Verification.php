@@ -941,6 +941,9 @@ class Verification extends BaseController {
             // Sende eine einzige E-Mail für alle Offerten dieser Gruppe
             if (count($verifiedOffers) === 1) {
                 // Einzelne Offerte - normale E-Mail
+                // sendOfferNotificationEmail sendet automatisch:
+                // 1. Bestätigungsmail an Kunde
+                // 2. Firmen-Benachrichtigungen (via sendOfferNotificationWithTemplate Helper)
                 $offer = $verifiedOffers[0];
                 $this->sendOfferNotificationEmail(
                     json_decode($offer['form_fields'], true) ?? [],
@@ -949,20 +952,13 @@ class Verification extends BaseController {
                     $offer['verify_type'] ?? null
                 );
 
-                // E-Mail an passende Firmen
-                $notifier = new \App\Libraries\OfferNotificationSender();
-                $notifier->notifyMatchingUsers($offer);
-
                 log_message('info', "E-Mail gesendet für Offerte ID {$offer['id']}");
             } else {
                 // Mehrere Offerten - gruppierte E-Mail
+                // sendGroupedOfferNotificationEmail sendet automatisch:
+                // 1. Gruppierte Bestätigungsmail an Kunde
+                // 2. Firmen-Benachrichtigungen für alle Offerten
                 $this->sendGroupedOfferNotificationEmail($verifiedOffers);
-
-                // E-Mail an passende Firmen für jede Offerte
-                $notifier = new \App\Libraries\OfferNotificationSender();
-                foreach ($verifiedOffers as $offer) {
-                    $notifier->notifyMatchingUsers($offer);
-                }
 
                 $offerIds = array_column($verifiedOffers, 'id');
                 log_message('info', "Gruppierte E-Mail gesendet für Offerten IDs: " . implode(', ', $offerIds));
