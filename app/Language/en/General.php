@@ -6,6 +6,7 @@ return [
     'successMessageUpdate' => 'Data updated successfully.',
 
     'save' => 'Save',
+    'back' => 'Back',
     'newEntry' => 'New entry',
     'edit' => 'Edit',
     'view' => 'View',

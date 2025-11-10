@@ -206,24 +206,42 @@ elseif($siteConfig->phoneCheck == 'de') {
         >
     </div>
 
-
-    <hr class="my-4">
-
-    <h4 class="mt-4"><?= esc(lang('Profile.changePassword')) ?></h4>
-
-    <div class="mb-3">
-        <label class="form-label"><?= esc(lang('Profile.newPassword')) ?></label>
-        <input type="password" name="new_password" class="form-control">
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label"><?= esc(lang('Profile.confirmPassword')) ?></label>
-        <input type="password" name="confirm_password" class="form-control">
-    </div>
-
-
     <button type="submit" class="btn btn-primary"><?= esc(lang('Profile.saveButton')) ?></button>
 </form>
+
+<hr class="my-4">
+
+<!-- Login & Sicherheit -->
+<h4 class="mt-4"><i class="bi bi-shield-lock"></i> <?= esc(lang('Profile.loginAndSecurity')) ?></h4>
+<p class="text-muted"><?= esc(lang('Profile.loginSecurityDescription')) ?></p>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-envelope"></i> <?= esc(lang('Profile.changeEmail')) ?></h5>
+                <p class="card-text text-muted"><?= esc(lang('Profile.changeEmailDescription')) ?></p>
+                <p class="mb-2"><strong><?= esc(lang('Profile.currentEmail')) ?>:</strong><br><?= esc(auth()->user()->email) ?></p>
+                <a href="/profile/email" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-pencil"></i> <?= esc(lang('Profile.changeEmail')) ?>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-key"></i> <?= esc(lang('Profile.changePassword')) ?></h5>
+                <p class="card-text text-muted"><?= esc(lang('Profile.changePasswordDescription')) ?></p>
+                <p class="mb-2"><strong><?= esc(lang('Profile.lastChanged')) ?>:</strong><br><?= esc(lang('Profile.securePassword')) ?></p>
+                <a href="/profile/password" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-pencil"></i> <?= esc(lang('Profile.changePassword')) ?>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     document.getElementById('company-name').addEventListener('input', function () {

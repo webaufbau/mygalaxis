@@ -203,6 +203,13 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     // Profil
     $routes->get('profile', 'Profile::index');
     $routes->post('profile/update', 'Profile::update');
+
+    // Profil - E-Mail & Passwort ändern
+    $routes->get('profile/email', 'Profile::email');
+    $routes->post('profile/email/update', 'Profile::updateEmail');
+    $routes->get('profile/email/confirm/(:any)', 'Profile::confirmEmail/$1');
+    $routes->get('profile/password', 'Profile::password');
+    $routes->post('profile/password/update', 'Profile::updatePassword');
 });
 
 

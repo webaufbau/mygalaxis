@@ -29,4 +29,54 @@ return [
     'updateAccountData'  => 'Kontodaten ändern',
     'loginEmail'         => 'E-Mail-Adresse (Account)',
 
+    // Login & Sicherheit
+    'loginAndSecurity'          => 'Login & Sicherheit',
+    'loginSecurityDescription'  => 'Verwalten Sie Ihre Login-Daten und Sicherheitseinstellungen',
+    'changeEmail'               => 'E-Mail-Adresse ändern',
+    'changeEmailDescription'    => 'Ändern Sie die E-Mail-Adresse für Ihren Login',
+    'changePasswordDescription' => 'Ändern Sie Ihr Passwort für mehr Sicherheit',
+    'currentEmail'              => 'Aktuelle E-Mail-Adresse',
+    'lastChanged'               => 'Zuletzt geändert',
+    'securePassword'            => 'Ihr Passwort ist sicher',
+
+    // E-Mail ändern
+    'newEmail'                  => 'Neue E-Mail-Adresse',
+    'emailChangeWarning'        => 'Sie erhalten eine Bestätigungs-E-Mail an Ihre neue Adresse. Klicken Sie auf den Link in der E-Mail, um die Änderung abzuschließen.',
+    'currentPassword'           => 'Aktuelles Passwort',
+    'currentPasswordHelp'       => 'Aus Sicherheitsgründen benötigen wir Ihr aktuelles Passwort',
+    'currentPasswordRequired'   => 'Bitte geben Sie Ihr aktuelles Passwort ein',
+    'currentPasswordIncorrect'  => 'Das eingegebene Passwort ist nicht korrekt',
+    'emailRequired'             => 'Bitte geben Sie eine E-Mail-Adresse ein',
+    'emailInvalid'              => 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+    'emailAlreadyExists'        => 'Diese E-Mail-Adresse wird bereits verwendet',
+    'emailUpdateSuccess'        => 'Ihre E-Mail-Adresse wurde erfolgreich geändert',
+    'emailChangeRequestSent'    => 'Bestätigungs-E-Mail wurde versendet. Bitte prüfen Sie Ihr neues E-Mail-Postfach.',
+    'emailChangeTokenInvalid'   => 'Der Bestätigungslink ist ungültig oder abgelaufen',
+
+    // E-Mail-Templates
+    'emailChangeConfirmSubject'     => 'E-Mail-Adresse bestätigen',
+    'emailChangeNotificationSubject'=> 'Ihre E-Mail-Adresse wurde geändert',
+    'emailChangeConfirmHeading'     => 'E-Mail-Adresse bestätigen',
+    'emailChangeConfirmGreeting'    => 'Hallo %s,',
+    'emailChangeConfirmText'        => 'Sie haben eine Änderung Ihrer E-Mail-Adresse beantragt. Bitte bestätigen Sie die neue E-Mail-Adresse, indem Sie auf den folgenden Button klicken:',
+    'emailChangeConfirmButton'      => 'E-Mail-Adresse bestätigen',
+    'emailChangeConfirmManualLink'  => 'Falls der Button nicht funktioniert, kopieren Sie bitte folgenden Link in Ihren Browser:',
+    'emailChangeConfirmExpiry'      => 'Dieser Link ist gültig bis: %s',
+    'emailChangeConfirmIgnore'      => 'Falls Sie diese Änderung nicht beantragt haben, ignorieren Sie diese E-Mail einfach.',
+    'emailChangeNotificationHeading' => 'E-Mail-Adresse wird geändert',
+    'emailChangeNotificationGreeting'=> 'Hallo %s,',
+    'emailChangeNotificationAlert'   => 'Ihre E-Mail-Adresse wird geändert',
+    'emailChangeNotificationNewEmail'=> 'Neue E-Mail-Adresse: %s',
+    'emailChangeNotificationConfirmText' => 'Wir haben eine Bestätigungs-E-Mail an Ihre neue Adresse gesendet. Die Änderung wird erst nach der Bestätigung wirksam.',
+    'emailChangeNotificationNotYou'  => 'Falls Sie diese Änderung nicht beantragt haben, kontaktieren Sie bitte umgehend unseren Support.',
+    'emailFooter'                    => 'Mit freundlichen Grüßen,<br>Ihr Team',
+
+    // Passwort ändern
+    'passwordChangeInfo'        => 'Ihr Passwort sollte mindestens 8 Zeichen lang sein',
+    'passwordRequirements'      => 'Mindestens 8 Zeichen',
+    'newPasswordRequired'       => 'Bitte geben Sie ein neues Passwort ein',
+    'confirmPasswordRequired'   => 'Bitte bestätigen Sie Ihr neues Passwort',
+    'passwordMinLength'         => 'Das Passwort muss mindestens 8 Zeichen lang sein',
+    'passwordUpdateSuccess'     => 'Ihr Passwort wurde erfolgreich geändert',
+
 ];

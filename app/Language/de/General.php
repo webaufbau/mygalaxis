@@ -6,6 +6,7 @@ return [
     'successMessageUpdate' => 'Daten erfolgreich aktualisiert.',
 
     'save' => 'Speichern',
+    'back' => 'Zurück',
     'newEntry' => 'Neuer Eintrag',
     'edit' => 'Bearbeiten',
     'view' => 'Ansehen',
