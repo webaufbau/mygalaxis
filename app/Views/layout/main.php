@@ -32,6 +32,13 @@
         footer {
             flex-shrink: 0;
         }
+
+        /* Container max-width anpassen */
+        @media (min-width: 1400px) {
+            .container, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl {
+                max-width: 1400px;
+            }
+        }
     </style>
 
     <?php
@@ -358,7 +365,7 @@ if ($currentLocale !== 'de') {
 </nav>
 
 
-<main class="container mb-5">
+<main class="container-xxl my-5">
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
             <?= esc(session()->getFlashdata('success')) ?>

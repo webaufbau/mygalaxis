@@ -8,6 +8,43 @@
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
+<style>
+    /* Kompaktere Tabellen-Darstellung */
+    #offersTable {
+        font-size: 0.9rem;
+    }
+    #offersTable thead th {
+        padding: 0.5rem 0.3rem;
+        white-space: nowrap;
+        font-size: 0.875rem;
+    }
+    #offersTable tbody td {
+        padding: 0.4rem 0.3rem;
+        vertical-align: middle;
+    }
+    /* Kleinere Badges */
+    #offersTable .badge {
+        font-size: 0.75rem;
+        padding: 0.2em 0.5em;
+    }
+    /* Tabelle scrollbar bei Bedarf */
+    .table-responsive {
+        overflow-x: auto;
+    }
+    /* Spaltenbreiten optimieren */
+    /* Verifiziert-Spalte schmaler */
+    #offersTable th:nth-child(10),
+    #offersTable td:nth-child(10) {
+        max-width: 100px;
+        width: 100px;
+    }
+    /* Name-Spalte breiter */
+    #offersTable th:nth-child(6),
+    #offersTable td:nth-child(6) {
+        min-width: 150px;
+    }
+</style>
+
 <!-- Flash Messages -->
 <?php if (session()->getFlashdata('success')): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -143,10 +180,10 @@
             if(isset($o['verify_type'])) {
                 $verified .= ' ' . $o['verify_type'];
             }
-            $verified = '<div class="badge bg-success">' . $verified . '</div>';
+            $verified = '<div class="badge bg-success" style="font-size: 0.7rem; white-space: nowrap;">' . $verified . '</div>';
         } else {
             $verified = 'Noch nicht';
-            $verified = '<div class="badge bg-danger">' . $verified . '</div>';
+            $verified = '<div class="badge bg-danger" style="font-size: 0.7rem; white-space: nowrap;">' . $verified . '</div>';
         }
 
 
@@ -197,7 +234,27 @@
                 $platform = str_replace('my_', '', $platform); // Entferne "my_"
                 $platform = str_replace('_', '.', $platform);   // Ersetze _ durch .
                 $platform = ucfirst($platform);                 // Erster Buchstabe groß
-                echo '<span class="badge bg-primary">' . esc($platform) . '</span>';
+
+                // Bestimme Farbe basierend auf Plattform
+                $badgeColor = 'bg-secondary'; // Fallback
+                $platformLower = strtolower($o['platform']);
+
+                if (strpos($platformLower, 'offertenschweiz') !== false ||
+                    strpos($platformLower, 'offertenaustria') !== false ||
+                    strpos($platformLower, 'offertendeutschland') !== false) {
+                    // Rosa für Offertenschweiz/Austria/Deutschland
+                    $badgeColor = 'style="background-color: #E91E63; color: white;"';
+                } elseif (strpos($platformLower, 'offertenheld') !== false) {
+                    // Lila/Violett für Offertenheld
+                    $badgeColor = 'style="background-color: #6B5B95; color: white;"';
+                } elseif (strpos($platformLower, 'renovo') !== false) {
+                    // Schwarz für Renovo
+                    $badgeColor = 'style="background-color: #212529; color: white;"';
+                } else {
+                    $badgeColor = 'class="bg-primary"';
+                }
+
+                echo '<span class="badge" ' . $badgeColor . '>' . esc($platform) . '</span>';
             } else {
                 echo '<span class="badge bg-secondary">-</span>';
             }
@@ -205,13 +262,13 @@
         </td>
         <td><?= $utmStatus ?></td>
         <td><?=$verified;?></td>
-        <td>
-            <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm" target="_blank">
+        <td style="white-space: nowrap;">
+            <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm py-0 px-2" style="font-size: 0.75rem;" target="_blank">
                 Details
             </a>
             <form method="post" action="<?= site_url('dashboard/delete/' . $o['id']) ?>" style="display: inline;" onsubmit="return confirm('<?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?> <?= esc($o['firstname'] . ' ' . $o['lastname']) ?> <?= esc($o['city']) ?> - Wirklich löschen?');">
                 <?= csrf_field() ?>
-                <button type="submit" class="btn btn-warning btn-sm">Löschen</button>
+                <button type="submit" class="btn btn-warning btn-sm py-0 px-2" style="font-size: 0.75rem;">Löschen</button>
             </form>
         </td>
     </tr>
