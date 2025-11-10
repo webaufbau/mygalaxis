@@ -24,4 +24,9 @@ return [
     'confirmPassword'  => 'Confirm Password',
     'passwordMismatch' => 'Passwords do not match.',
 
+    'currentAccountData' => 'Your currently saved account data',
+    'currentDataInfo'    => 'This is the data currently saved in your account. You can update it in the form below.',
+    'updateAccountData'  => 'Update account data',
+    'loginEmail'         => 'Email Address (Account)',
+
 ];

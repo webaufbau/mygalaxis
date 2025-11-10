@@ -19,9 +19,14 @@ return [
     'language'           => 'Lingua',
     'languageAccountEmail' => 'Lingua account e e-mail',
 
-    'changePassword'   => 'Changer le mot de passe',
-    'newPassword'      => 'Nouveau mot de passe',
-    'confirmPassword'  => 'Confirmer le mot de passe',
-    'passwordMismatch' => 'Les mots de passe ne correspondent pas.',
+    'changePassword'   => 'Cambia password',
+    'newPassword'      => 'Nuova password',
+    'confirmPassword'  => 'Conferma password',
+    'passwordMismatch' => 'Le password non corrispondono.',
+
+    'currentAccountData' => 'I tuoi dati account attualmente salvati',
+    'currentDataInfo'    => 'Questi sono i dati attualmente salvati nel tuo account. Puoi modificarli nel modulo qui sotto.',
+    'updateAccountData'  => 'Modifica dati account',
+    'loginEmail'         => 'Indirizzo email (account)',
 
 ];

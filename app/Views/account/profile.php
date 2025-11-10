@@ -3,6 +3,7 @@
 
 <?php
 $siteConfig = siteconfig();
+$authUser = auth()->user();
 
 // Firmen-ID / UID
 if($siteConfig->companyUidCheck == 'ch') {
@@ -70,6 +71,31 @@ elseif($siteConfig->phoneCheck == 'de') {
 
 ?>
 <h2 class="my-4"><?= esc(lang('Profile.titleAccount')) ?></h2>
+
+<!-- Aktuelle Kontodaten Übersicht -->
+<div class="alert alert-info mb-4">
+    <h5 class="alert-heading mb-3"><i class="bi bi-info-circle"></i> <?= esc(lang('Profile.currentAccountData')) ?></h5>
+    <div class="row">
+        <div class="col-md-6">
+            <p class="mb-2"><strong><?= esc(lang('Profile.companyName')) ?>:</strong><br><?= esc($user->company_name) ?></p>
+            <p class="mb-2"><strong><?= esc(lang('Profile.contactPerson')) ?>:</strong><br><?= esc($user->contact_person) ?></p>
+            <p class="mb-2"><strong><?= esc(lang('Profile.companyEmail')) ?>:</strong><br><?= esc($user->company_email) ?></p>
+            <p class="mb-0"><strong><?= esc(lang('Profile.phone')) ?>:</strong><br><?= esc($user->company_phone) ?></p>
+        </div>
+        <div class="col-md-6">
+            <p class="mb-2"><strong><?= esc(lang('Profile.loginEmail')) ?>:</strong><br><?= esc($authUser->email) ?></p>
+            <p class="mb-2"><strong><?= esc(lang('Profile.street')) ?>:</strong><br><?= esc($user->company_street) ?></p>
+            <p class="mb-2"><strong><?= esc(lang('Profile.zip')) ?> / <?= esc(lang('Profile.city')) ?>:</strong><br><?= esc($user->company_zip) ?> <?= esc($user->company_city) ?></p>
+            <?php if(!empty($user->company_website)): ?>
+            <p class="mb-0"><strong><?= esc(lang('Profile.website')) ?>:</strong><br><?= esc($user->company_website) ?></p>
+            <?php endif; ?>
+        </div>
+    </div>
+    <hr class="my-3">
+    <small class="text-muted"><i class="bi bi-shield-check"></i> <?= esc(lang('Profile.currentDataInfo')) ?></small>
+</div>
+
+<h4 class="mb-3"><?= esc(lang('Profile.updateAccountData')) ?></h4>
 
 <form method="post" action="/profile/update">
     <?= csrf_field() ?>
@@ -159,30 +185,6 @@ elseif($siteConfig->phoneCheck == 'de') {
             <input type="text" name="company_city" class="form-control" value="<?= esc($user->company_city) ?>" required="required">
         </div>
     </div>
-
-    <?php if(strlen($user->company_street) > 3 && strlen($user->company_zip) > 1 && strlen($user->company_city) > 1) { ?>
-
-        <h5 class="mt-4"><?= esc(lang('Profile.mapPreview')) ?></h5>
-
-        <script>
-            // Dein JS unverändert
-        </script>
-
-        <div id="iframe-map-container" style="width: 100%; height: 600px;" class="mb-3 border">
-            <iframe
-                    id="iframe-map"
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    scrolling="no"
-                    marginheight="0"
-                    marginwidth="0"
-                    src=""
-                    allowfullscreen
-            ></iframe>
-        </div>
-
-    <?php } ?>
 
     <div class="mb-3">
         <label class="form-label"><?= esc(lang('Profile.website')) ?></label>

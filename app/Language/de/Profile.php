@@ -24,4 +24,9 @@ return [
     'confirmPassword'  => 'Passwort bestätigen',
     'passwordMismatch' => 'Die Passwörter stimmen nicht überein.',
 
+    'currentAccountData' => 'Ihre aktuell gespeicherten Kontodaten',
+    'currentDataInfo'    => 'Dies sind die Daten, die aktuell in Ihrem Account gespeichert sind. Sie können diese weiter unten im Formular anpassen.',
+    'updateAccountData'  => 'Kontodaten ändern',
+    'loginEmail'         => 'E-Mail-Adresse (Account)',
+
 ];
