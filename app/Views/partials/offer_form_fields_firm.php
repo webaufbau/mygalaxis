@@ -137,7 +137,7 @@ if (!empty($admin) || !empty($full)):
         'hausnummer' => 'Hausnummer',
         'house_number' => 'Hausnummer',
         'nummer' => 'Hausnummer',
-        'address_line_2' => 'Adresszusatz',
+        'address_line_2' => 'Hausnummer',
     ];
 
     foreach ($formFields as $key => $value) {

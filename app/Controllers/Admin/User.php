@@ -29,6 +29,58 @@ class User extends Crud {
         $this->template->set('text_add_new', '+ Neuer Benutzer');
     }
 
+    public function detail($id)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $userModel = new \App\Models\UserModel();
+        $targetUser = $userModel->find($id);
+
+        if (!$targetUser) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Benutzer nicht gefunden.");
+        }
+
+        // Hole alle Käufe (Bookings) des Benutzers
+        $bookingModel = new \App\Models\BookingModel();
+        $purchases = $bookingModel
+            ->where('user_id', $id)
+            ->where('type', 'offer_purchase')
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        // Hole Angebots-Details für jeden Kauf
+        $offerModel = new \App\Models\OfferModel();
+        foreach ($purchases as &$purchase) {
+            $offer = $offerModel->find($purchase['reference_id']);
+            $purchase['offer'] = $offer;
+        }
+
+        // Hole alle Transaktionen (Credits)
+        $creditModel = new \App\Models\CreditModel();
+        $transactions = $creditModel
+            ->where('user_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        // Berechne Kontostand
+        $balance = 0;
+        foreach ($transactions as $transaction) {
+            $balance += $transaction['amount'];
+        }
+
+        $data = [
+            'user' => $targetUser,
+            'purchases' => $purchases,
+            'transactions' => $transactions,
+            'balance' => $balance,
+        ];
+
+        return view('admin/user_detail', $data);
+    }
+
     public function index() {
         $user = auth()->user();
         if (!$user || !$user->inGroup('admin')) {
@@ -354,6 +406,7 @@ class User extends Crud {
         $actions = $this->model_class->getEntryActions($entity_entity);
 
         if(auth()->user()->inGroup('admin','superadmin')) {
+            $actions .= anchor($this->url_prefix . $this->app_controller . '/' . $entity_entity->{$primary_key_field}, '<i class="bi bi-eye"></i>', 'class="btn btn-default action" title="Details" target="_blank"');
             $actions .= anchor($this->url_prefix . $this->app_controller . '/form/' . $entity_entity->{$primary_key_field} . '?model=' . $this->model_name, '<i class="bi bi-pencil"></i>', 'class="btn btn-default action" title="Bearbeiten"');
             //$actions .= anchor($this->url_prefix . $this->app_controller . '/copy/' . $entity_entity->{$primary_key_field} . '?model=' . $this->model_name, '<i class="bi bi-files"></i>', 'class="btn btn-default action" title="Kopieren"');
             if(auth()->user()->id !== $entity_entity->{$primary_key_field}) {

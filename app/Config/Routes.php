@@ -231,6 +231,7 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
 
 
     $routes->get('user', 'Admin\User::index');
+    $routes->get('user/(:num)', 'Admin\User::detail/$1');
     $routes->match(['GET', 'POST'], 'user/form', 'Admin\User::form');
     $routes->match(['GET', 'POST'], 'user/form/(:num)', 'Admin\User::form/$1');
     $routes->match(['GET', 'POST'], 'user/copy/(:num)', 'Admin\User::copy/$1');

@@ -27,6 +27,12 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 DUMP_FILENAME="mygalaxis_dump_${TIMESTAMP}.sql"
 DUMP_FILENAME_GZ="${DUMP_FILENAME}.gz"
 
+# Auto-confirm Flag
+AUTO_CONFIRM=false
+if [[ "$1" == "-y" ]] || [[ "$1" == "--yes" ]]; then
+    AUTO_CONFIRM=true
+fi
+
 # Banner
 clear
 echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
@@ -230,12 +236,16 @@ echo -e "${BLUE}📥 Importiere Dump in DDEV...${NC}"
 echo -e "${YELLOW}   Dies kann einige Minuten dauern...${NC}"
 
 # Backup-Warnung
-echo -e "${YELLOW}⚠  WARNUNG: Die lokale Datenbank wird überschrieben!${NC}"
-read -p "Möchtest du fortfahren? (j/n): " confirm
+if [ "$AUTO_CONFIRM" = false ]; then
+    echo -e "${YELLOW}⚠  WARNUNG: Die lokale Datenbank wird überschrieben!${NC}"
+    read -p "Möchtest du fortfahren? (j/n): " confirm
 
-if [[ ! $confirm =~ ^[jJyY]$ ]]; then
-    echo -e "${RED}Import abgebrochen.${NC}"
-    exit 0
+    if [[ ! $confirm =~ ^[jJyY]$ ]]; then
+        echo -e "${RED}Import abgebrochen.${NC}"
+        exit 0
+    fi
+else
+    echo -e "${YELLOW}⚠  Auto-confirm aktiv: Überspringe Bestätigung${NC}"
 fi
 
 # Import mit DDEV
@@ -271,10 +281,16 @@ echo ""
 OLD_DUMPS=$(find "${LOCAL_DUMP_DIR}" -name "mygalaxis_dump_*.sql" -mtime +7 2>/dev/null | wc -l | tr -d ' ')
 if [ "$OLD_DUMPS" -gt 0 ]; then
     echo -e "${BLUE}🗑️  ${OLD_DUMPS} alte Dump(s) gefunden (älter als 7 Tage)${NC}"
-    read -p "Möchtest du diese löschen? (j/n): " cleanup
-    if [[ $cleanup =~ ^[jJyY]$ ]]; then
+
+    if [ "$AUTO_CONFIRM" = false ]; then
+        read -p "Möchtest du diese löschen? (j/n): " cleanup
+        if [[ $cleanup =~ ^[jJyY]$ ]]; then
+            find "${LOCAL_DUMP_DIR}" -name "mygalaxis_dump_*.sql" -mtime +7 -delete
+            echo -e "${GREEN}✓ Alte Dumps gelöscht${NC}"
+        fi
+    else
         find "${LOCAL_DUMP_DIR}" -name "mygalaxis_dump_*.sql" -mtime +7 -delete
-        echo -e "${GREEN}✓ Alte Dumps gelöscht${NC}"
+        echo -e "${GREEN}✓ Alte Dumps automatisch gelöscht${NC}"
     fi
 fi
 

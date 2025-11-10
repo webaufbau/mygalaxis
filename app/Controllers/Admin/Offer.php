@@ -65,7 +65,7 @@ class Offer extends BaseController
         // Käufer-Informationen holen
         $bookingModel = new \App\Models\BookingModel();
         $purchases = $bookingModel
-            ->select('bookings.*, users.username, users.contact_person')
+            ->select('bookings.*, users.username, users.contact_person, users.company_name')
             ->join('users', 'users.id = bookings.user_id')
             ->where('bookings.type', 'offer_purchase')
             ->where('bookings.reference_id', $offer['id'])

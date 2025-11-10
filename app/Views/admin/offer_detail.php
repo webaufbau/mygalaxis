@@ -140,7 +140,6 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
     <thead>
         <tr>
             <th>Firma / Kontaktperson</th>
-            <th>Username</th>
             <th>Bezahlter Preis</th>
             <th>Gekauft am</th>
         </tr>
@@ -148,10 +147,18 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
     <tbody>
         <?php foreach ($purchases as $purchase): ?>
         <tr>
-            <td><?= esc($purchase['contact_person'] ?? 'N/A') ?></td>
             <td>
-                <a href="<?= site_url('admin/user/' . $purchase['user_id']) ?>">
-                    <?= esc($purchase['username']) ?>
+                <a href="<?= site_url('admin/user/' . $purchase['user_id']) ?>" target="_blank">
+                    <?php
+                    // Zeige Kontaktperson oder Firmenname, je nachdem was vorhanden ist
+                    if (!empty($purchase['contact_person'])) {
+                        echo esc($purchase['contact_person']);
+                    } elseif (!empty($purchase['company_name'])) {
+                        echo esc($purchase['company_name']);
+                    } else {
+                        echo 'N/A';
+                    }
+                    ?>
                 </a>
             </td>
             <td><?= number_format(abs($purchase['paid_amount'] ?? $purchase['amount']), 2) ?> <?= currency() ?></td>
