@@ -2,34 +2,121 @@
 
 <?= $this->section('content') ?>
 
-<h2>Angebotsdetails #<?= esc($offer['id']) ?></h2>
+<?php
+// Typ-Namen für Überschrift (wie in E-Mail-Betreffs)
+$typeMapping = [
+    'move'              => 'Umzug',
+    'cleaning'          => 'Reinigung',
+    'move_cleaning'     => 'Umzug + Reinigung',
+    'painting'          => 'Maler/Gipser',
+    'painter'           => 'Maler/Gipser',
+    'gardening'         => 'Garten Arbeiten',
+    'gardener'          => 'Garten Arbeiten',
+    'electrician'       => 'Elektriker Arbeiten',
+    'plumbing'          => 'Sanitär Arbeiten',
+    'heating'           => 'Heizung Arbeiten',
+    'tiling'            => 'Platten Arbeiten',
+    'flooring'          => 'Boden Arbeiten',
+    'furniture_assembly'=> 'Möbelaufbau',
+    'other'             => 'Sonstiges',
+];
+$typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer['type']));
+?>
+<h2 class="mb-4"><?= esc($typeName) ?> <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?> ID <?= esc($offer['id']) ?> Anfrage</h2>
 
-<p><strong>Typ:</strong> <?= esc(lang('Offers.type.' . $offer['type'])) ?></p>
-<p><strong>Status:</strong> <?= esc(lang('Offers.status.' . $offer['status'])) ?></p>
-<p><strong>Name:</strong> <?= esc($offer['firstname'] . ' ' . $offer['lastname']) ?></p>
-<p><strong>Ort:</strong> <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?></p>
-<p><strong>Verkauft:</strong> <?= $purchaseCount ?> / <?= \App\Models\OfferModel::MAX_PURCHASES ?> mal</p>
+<!-- Angebotsinformationen -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Angebotsdaten</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td><strong>ID:</strong></td>
+                        <td><?= esc($offer['id']) ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Datum/Uhrzeit:</strong></td>
+                        <td><?= \CodeIgniter\I18n\Time::parse($offer['created_at'])->setTimezone(app_timezone())->format('d.m.Y - H:i') ?> Uhr</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Plattform:</strong></td>
+                        <td>
+                            <?php
+                            if (!empty($offer['platform'])) {
+                                $platform = $offer['platform'];
+                                $platform = str_replace('my_', '', $platform);
+                                $platform = str_replace('_', '.', $platform);
+                                $platform = ucfirst($platform);
+                                echo '<span class="badge bg-primary">' . esc($platform) . '</span>';
+                            } else {
+                                echo '<span class="badge bg-secondary">-</span>';
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Typ:</strong></td>
+                        <td><?= esc(lang('Offers.type.' . $offer['type'])) ?></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Kundendaten</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td><strong>Name:</strong></td>
+                        <td><?= esc($offer['firstname'] . ' ' . $offer['lastname']) ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ort:</strong></td>
+                        <td><?= esc($offer['zip']) ?> <?= esc($offer['city']) ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Verkauft:</strong></td>
+                        <td><?= $purchaseCount ?> / <?= \App\Models\OfferModel::MAX_PURCHASES ?> mal</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-<h4>Preise:</h4>
-<table style="border-collapse: collapse; margin-bottom: 20px;">
-    <tr>
-        <td style="padding: 5px;"><strong>Aktueller Preis (DB):</strong></td>
-        <td style="padding: 5px;"><?= esc($offer['price']) ?> CHF</td>
-        <td style="padding: 5px; color: #666; font-size: 0.9em;">(gespeicherter Wert)</td>
-    </tr>
-    <tr>
-        <td style="padding: 5px;"><strong>Berechneter Basispreis:</strong></td>
-        <td style="padding: 5px;"><?= esc($calculatedPrice) ?> CHF</td>
-        <td style="padding: 5px; color: #666; font-size: 0.9em;">(nach aktuellen Regeln)</td>
-    </tr>
-    <?php if ($discountedPrice < $calculatedPrice): ?>
-    <tr>
-        <td style="padding: 5px;"><strong>Rabattpreis:</strong></td>
-        <td style="padding: 5px; color: green; font-weight: bold;"><?= esc($discountedPrice) ?> CHF</td>
-        <td style="padding: 5px; color: green; font-size: 0.9em;">(<?= $discountPercent ?>% Rabatt aktiv)</td>
-    </tr>
-    <?php endif; ?>
-</table>
+<!-- Preisinformationen Card -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Preisinformationen</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-sm mb-0">
+            <tr>
+                <td style="width: 250px;"><strong>Aktueller Preis (DB):</strong></td>
+                <td><strong><?= esc($offer['price']) ?> CHF</strong></td>
+                <td class="text-muted">(gespeicherter Wert)</td>
+            </tr>
+            <tr>
+                <td><strong>Berechneter Basispreis:</strong></td>
+                <td><strong><?= esc($calculatedPrice) ?> CHF</strong></td>
+                <td class="text-muted">(nach aktuellen Regeln)</td>
+            </tr>
+            <?php if ($discountedPrice < $calculatedPrice): ?>
+            <tr class="table-success">
+                <td><strong>Rabattpreis:</strong></td>
+                <td><strong class="text-success"><?= esc($discountedPrice) ?> CHF</strong></td>
+                <td class="text-success">(<?= $discountPercent ?>% Rabatt aktiv)</td>
+            </tr>
+            <?php endif; ?>
+        </table>
+    </div>
+</div>
 
 <?php if ($calculatedPrice == 0 && !empty($priceDebugInfo)): ?>
     <p style="background-color: #f8d7da; padding: 10px; border-left: 4px solid #dc3545; margin-bottom: 20px;">

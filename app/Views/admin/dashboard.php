@@ -121,12 +121,14 @@
 <table id="offersTable" class="table table-bordered table-striped">
     <thead>
     <tr>
+        <th>ID</th>
         <th>Datum</th>
         <th>Typ</th>
         <th>PLZ</th>
         <th>Ort</th>
         <th>Name</th>
         <th>Käufe</th>
+        <th>Plattform</th>
         <th>Kampagne</th>
         <th>Verifiziert</th>
         <th></th>
@@ -174,6 +176,7 @@
 
         ?>
     <tr>
+        <td><?= esc($o['id']) ?></td>
         <?php
         // DateTime direkt aus DB-Wert erstellen ohne Timezone-Konvertierung
         $date = new DateTime($o['created_at']);
@@ -186,6 +189,20 @@
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td><?= esc($o['buyers']) ?></td>
+        <td>
+            <?php
+            if (!empty($o['platform'])) {
+                // Formatiere Plattform: my_offertenschweiz_ch -> Offertenschweiz.ch
+                $platform = $o['platform'];
+                $platform = str_replace('my_', '', $platform); // Entferne "my_"
+                $platform = str_replace('_', '.', $platform);   // Ersetze _ durch .
+                $platform = ucfirst($platform);                 // Erster Buchstabe groß
+                echo '<span class="badge bg-primary">' . esc($platform) . '</span>';
+            } else {
+                echo '<span class="badge bg-secondary">-</span>';
+            }
+            ?>
+        </td>
         <td><?= $utmStatus ?></td>
         <td><?=$verified;?></td>
         <td>
@@ -215,7 +232,7 @@
             // Optional: Standard-Sortierung, Seitenlänge etc. kannst du hier anpassen
             pageLength: 10,
             stateSave: true,
-            order: [[0, 'desc']] // z.B. nach Datum absteigend sortieren
+            order: [[1, 'desc']] // Nach Datum (zweite Spalte) absteigend sortieren
         });
     });
 </script>
