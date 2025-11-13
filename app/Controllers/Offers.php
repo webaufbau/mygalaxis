@@ -105,12 +105,13 @@ class Offers extends BaseController
             }
         }
 
-        // Suche & Status (optional)
-        $search = $this->request->getGet('search');
-        if ($search) {
+        // Branchen-Filter (Mehrfachauswahl)
+        $selectedTypes = $this->request->getGet('types') ?? [];
+        if (!empty($selectedTypes) && is_array($selectedTypes)) {
             $builder->groupStart();
-            $builder->like('title', $search);
-            $builder->orLike('form_fields', $search);
+            foreach ($selectedTypes as $type) {
+                $builder->orWhere('type', $type);
+            }
             $builder->groupEnd();
         }
 
@@ -177,13 +178,26 @@ class Offers extends BaseController
         $pager = \Config\Services::pager();
         $pager->store('default', $page, $perPage, $totalOffers);
 
+        // Lade nur die Branchen, die der User in seinen Filtern hat
+        $categoryOptions = new \Config\CategoryOptions();
+        $allCategoryTypes = $categoryOptions->categoryTypes;
+
+        // Filter nur die Branchen, die der User ausgewählt hat
+        $userCategoryTypes = [];
+        foreach ($userCategories as $categoryKey) {
+            if (isset($allCategoryTypes[$categoryKey])) {
+                $userCategoryTypes[$categoryKey] = $allCategoryTypes[$categoryKey];
+            }
+        }
+
         return view('offers/index', [
             'offers' => $offers,
             'purchasedOfferIds' => $purchasedOfferIds,
-            'search' => $search,
+            'selectedTypes' => $selectedTypes,
+            'categoryTypes' => $userCategoryTypes,
             'filter' => $filter,
             'pager' => $pager,
-            'title' => 'Angebote'
+            'title' => lang('Offers.title')
         ]);
 
     }

@@ -168,4 +168,45 @@ return [
 
     'isUniqueEmail' => 'We operate multiple portals. Your email address is already linked to an account. You can log in with your email or request direct access to your existing account via the magic link.',
 
+    // Modern Auth Pages
+    'loginTitle' => 'Sign in',
+    'loginWelcome' => 'Welcome back',
+    'loginSubtitle' => 'Sign in to your account',
+    'loginButton' => 'Sign in',
+    'emailPlaceholder' => 'john@example.com',
+    'passwordPlaceholder' => 'Your password',
+    'or' => 'or',
+    'noAccount' => 'Don\'t have an account?',
+    'registerNow' => 'Register for free',
+
+    // Benefits Section
+    'benefitsTitle' => 'Win new customers',
+    'benefitsSubtitle' => 'Quality customer inquiries from your region',
+    'testimonialText' => '"Thanks to this platform, we regularly receive new orders. The quality of inquiries is excellent!"',
+    'feature1' => 'Verified customer inquiries',
+    'feature2' => 'Fair prices per inquiry',
+    'feature3' => 'Instant notification',
+    'feature4' => 'Available everywhere',
+    'sslEncrypted' => 'SSL encrypted',
+    'secureServers' => 'Secure servers',
+    'gdprCompliant' => 'GDPR compliant',
+
+    // Magic Link
+    'magicLinkTitle' => 'Forgot password?',
+    'magicLinkSubtitleText' => 'No problem! Enter your email address and we\'ll send you a magic link to sign in.',
+    'sendMagicLink' => 'Send magic link',
+    'backToLoginLink' => 'Back to login',
+    'magicLinkBenefitsTitle' => 'Magic Link Login',
+    'magicLinkBenefitsSubtitle' => 'Simple and secure - without password',
+    'magicLinkHowItWorks' => 'How it works',
+    'magicLinkStep1' => '1. Enter your email address',
+    'magicLinkStep2' => '2. Click the link in the email',
+    'magicLinkStep3' => '3. You will be logged in automatically',
+    'magicLinkSecure' => 'Secure & encrypted',
+    'magicLinkValid' => 'Link valid for 60 minutes',
+    'magicLinkNoPassword' => 'No password required',
+    'magicLinkFastAccess' => 'Fast access',
+    'magicLinkInfo' => 'You will receive an email with a one-time login link. This link can only be used once and expires after 60 minutes.',
+
+    'registerhp' => 'Honeypot field',
 ];

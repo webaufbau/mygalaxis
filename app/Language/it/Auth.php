@@ -164,8 +164,49 @@ return [
     'acceptAGBRequired' => 'Devi accettare i termini e condizioni.',
 
 
-    'linkNotClickable' => 'If the link is not clickable in your email client, please copy and paste the following link into your browser:',
+    'linkNotClickable' => 'Se il link non è cliccabile nel tuo client e-mail, copia e incolla il seguente link nel tuo browser:',
 
     'isUniqueEmail' => 'Gestiamo più portali. Il tuo indirizzo e-mail è già collegato a un account. Puoi accedere con la tua e-mail o richiedere l\'accesso diretto al tuo account esistente tramite il Magic Link.',
 
+    // Modern Auth Pages
+    'loginTitle' => 'Accedi',
+    'loginWelcome' => 'Bentornato',
+    'loginSubtitle' => 'Accedi al tuo account',
+    'loginButton' => 'Accedi',
+    'emailPlaceholder' => 'mario@esempio.it',
+    'passwordPlaceholder' => 'La tua password',
+    'or' => 'oppure',
+    'noAccount' => 'Non hai ancora un account?',
+    'registerNow' => 'Registrati gratuitamente',
+
+    // Benefits Section
+    'benefitsTitle' => 'Acquisisci nuovi clienti',
+    'benefitsSubtitle' => 'Richieste qualificate di clienti dalla tua regione',
+    'testimonialText' => '"Grazie a questa piattaforma, riceviamo regolarmente nuovi ordini. La qualità delle richieste è eccellente!"',
+    'feature1' => 'Richieste clienti verificate',
+    'feature2' => 'Prezzi equi per richiesta',
+    'feature3' => 'Notifica istantanea',
+    'feature4' => 'Disponibile ovunque',
+    'sslEncrypted' => 'Crittografato SSL',
+    'secureServers' => 'Server sicuri',
+    'gdprCompliant' => 'Conforme GDPR',
+
+    // Magic Link
+    'magicLinkTitle' => 'Password dimenticata?',
+    'magicLinkSubtitleText' => 'Nessun problema! Inserisci il tuo indirizzo e-mail e ti invieremo un Magic Link per accedere.',
+    'sendMagicLink' => 'Invia Magic Link',
+    'backToLoginLink' => 'Torna al login',
+    'magicLinkBenefitsTitle' => 'Accesso con Magic Link',
+    'magicLinkBenefitsSubtitle' => 'Semplice e sicuro - senza password',
+    'magicLinkHowItWorks' => 'Come funziona',
+    'magicLinkStep1' => '1. Inserisci il tuo indirizzo e-mail',
+    'magicLinkStep2' => '2. Clicca sul link nell\'e-mail',
+    'magicLinkStep3' => '3. Sarai connesso automaticamente',
+    'magicLinkSecure' => 'Sicuro e crittografato',
+    'magicLinkValid' => 'Link valido per 60 minuti',
+    'magicLinkNoPassword' => 'Nessuna password richiesta',
+    'magicLinkFastAccess' => 'Accesso rapido',
+    'magicLinkInfo' => 'Riceverai un\'e-mail con un link di accesso unico. Questo link può essere utilizzato una sola volta e scade dopo 60 minuti.',
+
+    'registerhp' => 'Campo honeypot',
 ];

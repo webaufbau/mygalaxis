@@ -13,6 +13,11 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+    <!-- DataTables CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
     <!-- Eigene Styles -->
     <link rel="stylesheet" href="/css/app.css?v=<?=filemtime(FCPATH . 'css/app.css')?>">
 
@@ -260,47 +265,33 @@ if ($currentLocale !== 'de') {
                 <?php if (auth()->user()->inGroup('user')): ?>
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link <?= ($segment1 === '' || $segment1 === 'dashboard') ? 'active' : '' ?>" href="<?= site_url('dashboard') ?>">
-                                <?= esc(lang('Navigation.overview')) ?>
+                            <a class="nav-link <?= $segment1 === 'offers' ? 'active' : '' ?>" href="<?= site_url('offers') ?>">
+                                <i class="bi bi-inbox me-1"></i><?= esc(lang('Navigation.requests')) ?>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'filter' ? 'active' : '' ?>" href="<?= site_url('filter') ?>">
-                                <?= esc(lang('Navigation.filter')) ?>
-                            </a>
-                        </li>
-                        <?php /* <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle <?= $segment1 === 'offers' ? 'active' : '' ?>" href="#" id="offersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <?= esc(lang('Navigation.requests')) ?>
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="offersDropdown">
-                                <li><a class="dropdown-item" href="<?= site_url('offers') ?>"><?= esc(lang('Navigation.openRequests')) ?></a></li>
-                                <li><a class="dropdown-item" href="<?= site_url('offers/mine') ?>"><?= esc(lang('Navigation.purchasedRequests')) ?></a></li>
-                            </ul>
-                        </li>*/ ?>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 === 'offers' ? 'active' : '' ?>" href="<?= site_url('offers') ?>">
-                                <?= esc(lang('Navigation.openRequests')) ?>
+                                <i class="bi bi-funnel me-1"></i><?= esc(lang('Navigation.industriesRegions')) ?>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'finance' ? 'active' : '' ?>" href="<?= site_url('finance') ?>">
-                                <?= esc(lang('Navigation.finance')) ?>
+                                <i class="bi bi-credit-card me-1"></i><?= esc(lang('Navigation.finance')) ?>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'agenda' ? 'active' : '' ?>" href="<?= site_url('agenda') ?>">
-                                <?= esc(lang('Navigation.agenda')) ?>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 === 'profile' ? 'active' : '' ?>" href="<?= site_url('profile') ?>">
-                                <?= esc(lang('Navigation.myAccount')) ?>
+                                <i class="bi bi-calendar me-1"></i><?= esc(lang('Navigation.agenda')) ?>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'reviews' ? 'active' : '' ?>" href="<?= site_url('reviews') ?>">
-                                <?= esc(lang('Navigation.reviews')) ?>
+                                <i class="bi bi-star me-1"></i><?= esc(lang('Navigation.reviews')) ?>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $segment1 === 'profile' ? 'active' : '' ?>" href="<?= site_url('profile') ?>">
+                                <i class="bi bi-person me-1"></i><?= esc(lang('Navigation.myAccount')) ?>
                             </a>
                         </li>
                     </ul>

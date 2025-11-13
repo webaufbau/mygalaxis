@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Définir les filtres',
+    'title' => 'Définir Secteurs/Régions',
     'categories' => 'Catégories',
     'cantonsRegions' => 'Cantons / Régions',
     'customZip' => 'NPA personnalisé',

@@ -13,6 +13,7 @@ return [
     'mapPreview'           => 'Location Preview (Google Maps)',
     'website'              => 'Website',
     'companyEmail'         => 'Email (Company)',
+    'companyEmailHelp'     => 'This email is shown to customers (e.g., when purchasing offers, on invoices). You can enter a different email here if you want customers to see a different email. Your login email remains private.',
     'phone'                => 'Phone',
     'saveButton'           => 'Save',
 
@@ -28,6 +29,11 @@ return [
     'currentDataInfo'    => 'This is the data currently saved in your account. You can update it in the form below.',
     'updateAccountData'  => 'Update account data',
     'loginEmail'         => 'Email Address (Account)',
+    'loginEmailReceivesNotifications' => 'All system emails (new offers, notifications, etc.) are sent to this address',
+    'loginEmailNotice'   => 'Important: Login Email vs. Company Email',
+    'loginEmailNoticeText' => 'Here you only change your login email address for account access. You will also receive all system emails (new offers, notifications, etc.) at this address. This email is private and will NOT be shown to customers.',
+    'changeCompanyEmailHere' => 'To change your company email (shown to customers), go to',
+    'goToProfile'        => 'My Profile',
 
     // Login & Security
     'loginAndSecurity'          => 'Login & Security',

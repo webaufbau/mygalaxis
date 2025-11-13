@@ -295,5 +295,122 @@ class SaferpayService
         return $response;
     }
 
+    /**
+     * Alias Insert - Registriert nur eine Karte/Zahlungsmittel OHNE Zahlung
+     * Wird verwendet, um ein Zahlungsmittel zu hinterlegen/ändern ohne Guthaben aufzuladen
+     *
+     * Verwendet Payment Page mit 1 CHF Betrag + RegisterAlias
+     * Autorisierung wird durchgeführt, aber KEIN Capture → keine Belastung
+     *
+     * @param string $successUrl URL für erfolgreiche Registrierung
+     * @param string $failUrl URL für fehlgeschlagene Registrierung
+     * @param string $type Zahlungsmittel-Typ: 'card' oder 'twint'
+     * @return array Response mit RedirectUrl und Token
+     * @throws \Exception
+     */
+    public function insertAliasOnly(string $successUrl, string $failUrl, string $type = 'card'): array
+    {
+        // Verwende Payment Page Initialize mit 1 CHF + RegisterAlias
+        // Autorisierung ohne Capture = keine Belastung
+        $url = $this->config->apiBaseUrl . '/Payment/v1/PaymentPage/Initialize';
+
+        $user = auth()->user();
+
+        // Bestimme Währung, Sprache und Land basierend auf User-Platform
+        $currencyCode = currency($user->platform ?? null);
+        $languageCode = languageCode($user->platform ?? null);
+        $countryCode = countryCode($user->platform ?? null);
+
+        // Zeige BEIDE Zahlungsmittel - User wählt auf Saferpay-Seite
+        $paymentMethods = ["CARD", "TWINT"];
+
+        $data = [
+            "RequestHeader" => [
+                "SpecVersion" => "1.35",
+                "CustomerId" => $this->config->customerId,
+                "RequestId" => uniqid(),
+                "RetryIndicator" => 0
+            ],
+            "TerminalId" => $this->config->terminalId,
+            "Payment" => [
+                "Amount" => [
+                    "Value" => 100, // 1 CHF (= 100 Rappen) - wird NICHT gecaptured, nur autorisiert!
+                    "CurrencyCode" => $currencyCode
+                ],
+                "OrderId" => 'alias_register_' . uniqid(),
+                "Description" => "Zahlungsmittel registrieren (keine Belastung)"
+            ],
+            "PaymentMethods" => $paymentMethods,
+            "Payer" => [
+                "LanguageCode" => $languageCode,
+                "Email" => $user->getEmail(),
+                "FirstName" => $user->contact_person ?? '',
+                "LastName" => $user->company_name ?? '',
+                "Phone" => $user->company_phone ?? '',
+                "BillingAddress" => [
+                    "Street" => $user->company_street ?? '',
+                    "Zip" => $user->company_zip ?? '',
+                    "City" => $user->company_city ?? '',
+                    "CountryCode" => $countryCode
+                ],
+            ],
+            "ReturnUrl" => [
+                "Url" => $successUrl
+            ],
+            "RegisterAlias" => [
+                "IdGenerator" => "RANDOM"
+            ]
+        ];
+
+        log_message('info', 'Saferpay Payment Page Initialize (Alias Only, Type: ' . $type . ') Request: ' . json_encode($data));
+
+        $response = $this->sendRequest($url, $data);
+
+        log_message('info', 'Saferpay Payment Page Initialize (Alias Only) Response: ' . json_encode($response));
+
+        // Prüfe ob Response erfolgreich ist
+        if (!isset($response['Token']) || !isset($response['RedirectUrl'])) {
+            throw new \Exception("Fehler bei Alias Register: " . json_encode($response));
+        }
+
+        return [
+            'Token' => $response['Token'],
+            'RedirectUrl' => $response['RedirectUrl'],
+            'Expiration' => $response['Expiration'] ?? null,
+        ];
+    }
+
+    /**
+     * Assert Alias - Holt die Alias-Informationen nach erfolgreicher Registrierung
+     *
+     * @param string $token Der Token aus der Insert Response
+     * @return array Response mit Alias-Informationen
+     * @throws \Exception
+     */
+    public function assertAlias(string $token): array
+    {
+        $url = $this->config->apiBaseUrl . '/Payment/v1/Alias/AssertInsert';
+
+        $data = [
+            "RequestHeader" => [
+                "SpecVersion" => "1.35",
+                "CustomerId" => $this->config->customerId,
+                "RequestId" => uniqid(),
+                "RetryIndicator" => 0
+            ],
+            "Token" => $token
+        ];
+
+        log_message('info', 'Saferpay Alias AssertInsert Request: ' . json_encode($data));
+        $response = $this->sendRequest($url, $data);
+        log_message('info', 'Saferpay Alias AssertInsert Response: ' . json_encode($response));
+
+        if (!isset($response['Alias'])) {
+            throw new \Exception("Alias Assert fehlgeschlagen: " . json_encode($response));
+        }
+
+        return $response;
+    }
+
 
 }

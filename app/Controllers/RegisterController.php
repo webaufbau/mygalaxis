@@ -169,24 +169,30 @@ class RegisterController extends ShieldRegister {
             $user->language = $locale;
             $user->setAttribute('language', $locale);
 
-            // Platform ermitteln: Erst HTTP_HOST, falls leer/ungültig dann Ordnername als Fallback
-            $hostname = $_SERVER['HTTP_HOST'] ?? '';
+            // Platform aus SiteConfig backendUrl ableiten
+            $siteConfig = siteconfig();
+            $backendUrl = $siteConfig->backendUrl ?? '';
+
+            // Parse URL und hole Host (z.B. my.offertenschweiz.ch -> my_offertenschweiz_ch)
+            $parsedUrl = parse_url($backendUrl);
+            $hostname = $parsedUrl['host'] ?? '';
             $platform = str_replace(['.', '-'], '_', $hostname);
 
-            // Fallback: Wenn HTTP_HOST leer oder ungültig (z.B. localhost, IP), nutze Ordnername
-            if (empty($platform) || $platform === 'localhost' || preg_match('/^\d+_\d+_\d+_\d+/', $platform)) {
+            // Fallback: Wenn backendUrl leer oder ungültig, nutze Ordnername
+            if (empty($platform)) {
                 $rootPath = ROOTPATH; // z.B. /var/www/my_offertenheld_ch/
                 $platform = basename(rtrim($rootPath, '/'));
-            } else {
-                // HTTP_HOST Format: Domain -> Ordner-Format mit my_ prefix
-                // z.B. offertenschweiz.ch -> my_offertenschweiz_ch
-                if (strpos($platform, 'my_') !== 0) {
-                    $platform = 'my_' . $platform;
-                }
             }
 
             $user->platform = $platform;
             $user->setAttribute('platform', $platform);
+
+            // Wenn company_email leer ist, setze Login-E-Mail als Standard
+            $companyEmail = $this->request->getPost('company_email');
+            if (empty($companyEmail)) {
+                $user->company_email = $this->request->getPost('email');
+                $user->setAttribute('company_email', $this->request->getPost('email'));
+            }
 
             try {
                 /*d($this->request->getPost());

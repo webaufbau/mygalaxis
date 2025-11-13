@@ -13,6 +13,7 @@ return [
     'mapPreview'         => 'Aperçu de l\'emplacement (Google Maps)',
     'website'            => 'Site web',
     'companyEmail'       => 'E-mail (entreprise)',
+    'companyEmailHelp'   => 'Cet e-mail est affiché aux clients (p. ex. lors de l\'achat d\'offres, sur les factures). Vous pouvez saisir une autre adresse e-mail ici si vous souhaitez que les clients voient une autre adresse. Votre e-mail de connexion reste privé.',
     'phone'              => 'Téléphone',
     'saveButton'         => 'Enregistrer',
 
@@ -28,6 +29,11 @@ return [
     'currentDataInfo'    => 'Ce sont les données actuellement enregistrées dans votre compte. Vous pouvez les modifier dans le formulaire ci-dessous.',
     'updateAccountData'  => 'Modifier les données du compte',
     'loginEmail'         => 'Adresse e-mail (compte)',
+    'loginEmailReceivesNotifications' => 'Tous les e-mails système (nouvelles offres, notifications, etc.) sont envoyés à cette adresse',
+    'loginEmailNotice'   => 'Attention : E-mail de connexion vs. E-mail de l\'entreprise',
+    'loginEmailNoticeText' => 'Ici, vous ne modifiez que votre adresse e-mail de connexion pour l\'accès au compte. Vous recevrez également tous les e-mails système (nouvelles offres, notifications, etc.) à cette adresse. Cet e-mail est privé et ne sera PAS affiché aux clients.',
+    'changeCompanyEmailHere' => 'Pour modifier votre e-mail d\'entreprise (visible par les clients), allez à',
+    'goToProfile'        => 'Mon Profil',
 
     // Connexion & Sécurité
     'loginAndSecurity'          => 'Connexion & Sécurité',

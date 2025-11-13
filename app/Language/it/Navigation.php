@@ -2,6 +2,7 @@
 return [
     'overview' => 'Panoramica',
     'filter' => 'Filtro',
+    'industriesRegions' => 'Settori/Regioni',
     'requests' => 'Richieste',
     'openRequests' => 'Richieste aperte',
     'purchasedRequests' => 'Richieste acquistate',

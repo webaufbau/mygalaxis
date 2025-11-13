@@ -3,26 +3,72 @@
 
 <h2 class="my-4"><?= esc(lang('Offers.title')) ?></h2>
 
-<form method="get" class="row mb-4 g-3 align-items-center">
-    <div class="col-auto">
-        <input
-                type="search"
-                name="search"
-                value="<?= esc($search) ?>"
-                class="form-control"
-                placeholder="<?= lang('Offers.searchPlaceholder') ?>"
-                aria-label="<?= lang('Offers.searchAriaLabel') ?>"
-        >
-    </div>
-    <div class="col-auto">
-        <select name="filter" class="form-select" onchange="this.form.submit()">
-            <option value=""><?= lang('Offers.allStatuses') ?></option>
-            <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.filterAvailable') ?></option>
-            <option value="purchased" <?= ($filter === 'purchased') ? 'selected' : '' ?>><?= lang('Offers.filterPurchased') ?></option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary"><?= lang('Offers.filterButton') ?></button>
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Hinweis:</strong> Hier werden alle Branchen und Projekte angezeigt, die registriert wurden. Sie können einzelne oder mehrere Branchen auswählen, um die Anzeige zu filtern.
+</div>
+
+<form method="get" class="mb-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-funnel me-2"></i><strong>Filter</strong>
+        </div>
+        <div class="card-body">
+            <!-- Branchen-Filter (Mehrfachauswahl als Buttons) -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Branchen filtern:</label>
+                <?php if (empty($categoryTypes)): ?>
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Sie haben noch keine Branchen ausgewählt. Bitte gehen Sie zu
+                        <a href="<?= site_url('filter') ?>" class="alert-link">Branchen/Regionen</a>,
+                        um Ihre Branchen zu konfigurieren.
+                    </div>
+                <?php else: ?>
+                    <div class="d-flex flex-wrap gap-2">
+                        <?php foreach ($categoryTypes as $typeKey => $typeName): ?>
+                            <?php $isSelected = in_array($typeKey, $selectedTypes); ?>
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    class="btn-check"
+                                    name="types[]"
+                                    value="<?= esc($typeKey) ?>"
+                                    id="type_<?= esc($typeKey) ?>"
+                                    autocomplete="off"
+                                    <?= $isSelected ? 'checked' : '' ?>
+                                >
+                                <label class="btn btn-outline-primary" for="type_<?= esc($typeKey) ?>">
+                                    <i class="bi bi-tag me-1"></i><?= esc($typeName) ?>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-info-circle me-1"></i>Sie sehen nur die Branchen, die Sie unter <a href="<?= site_url('filter') ?>">Branchen/Regionen</a> ausgewählt haben.
+                    </small>
+                <?php endif; ?>
+            </div>
+
+            <!-- Status-Filter -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Status:</label>
+                <select name="filter" class="form-select">
+                    <option value=""><?= lang('Offers.allStatuses') ?></option>
+                    <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.filterAvailable') ?></option>
+                    <option value="purchased" <?= ($filter === 'purchased') ? 'selected' : '' ?>><?= lang('Offers.filterPurchased') ?></option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i><?= lang('Offers.filterButton') ?>
+                </button>
+                <a href="<?= site_url('offers') ?>" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>Filter zurücksetzen
+                </a>
+            </div>
+        </div>
     </div>
 </form>
 

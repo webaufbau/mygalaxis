@@ -1,8 +1,11 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('content') ?>
 
-<h2><?= esc(lang('Calendar.agendaTitle')) ?></h2>
-<p><?= esc(lang('Calendar.agendaDescription')) ?></p>
+<h4 class="mb-2"><?= esc(lang('Calendar.agendaTitle')) ?></h4>
+<div class="alert alert-info mb-3 small" role="alert">
+    <i class="bi bi-info-circle me-2"></i>
+    <?= esc(lang('Calendar.agendaDescription')) ?>
+</div>
 
 <?php
 $monthNames = lang('Calendar.monthNames');
@@ -15,7 +18,7 @@ if (!is_array($monthNames)) {
 <div id="calendar"></div>
 
 <!-- CSS -->
-<link rel="stylesheet" href="<?= base_url('css/calendar-gc.css') ?>">
+<link rel="stylesheet" href="<?= base_url('css/calendar-gc.css?v=' . filemtime(FCPATH . 'css/calendar-gc.css')) ?>">
 
 <!-- JS -->
 <script src="<?= base_url('js/calendar-gc.js') ?>"></script>
@@ -110,6 +113,22 @@ if (!is_array($monthNames)) {
                     calendar.setEvents(events);
                     calendar.setDate(pickedDate);
                     $('#calendar').removeClass('d-none');
+
+                    // Markiere vergangene Daten
+                    var today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    $('.gc-calendar table.calendar td.current-month').each(function() {
+                        var $cell = $(this);
+                        var $dayNumber = $cell.find('.day-number');
+                        var dayText = $dayNumber.text().trim();
+
+                        if (dayText) {
+                            var cellDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), parseInt(dayText));
+                            if (cellDate < today) {
+                                $cell.addClass('past-date');
+                            }
+                        }
+                    });
 
                     var checkboxes = $('.check-if-change');
                     checkboxes.change(function (event) {

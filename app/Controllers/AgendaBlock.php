@@ -27,6 +27,12 @@ class AgendaBlock extends BaseController
             return $this->response->setStatusCode(400)->setJSON(['error' => 'Ungültiges Datum']);
         }
 
+        // Verhindere das Blockieren von vergangenen Daten
+        $today = date('Y-m-d');
+        if ($date < $today) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Vergangene Daten können nicht blockiert werden']);
+        }
+
         $model = new BlockedDayModel();
 
         if ($model->isBlocked($userId, $date)) {

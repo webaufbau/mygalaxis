@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Impostare il filtro',
+    'title' => 'Impostare Settori/Regioni',
     'categories' => 'Categorie',
     'cantonsRegions' => 'Cantoni / Regioni',
     'customZip' => 'CAP personalizzati',

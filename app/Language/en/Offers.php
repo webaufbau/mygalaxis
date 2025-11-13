@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Offers',
+    'title' => 'Requests',
     'searchPlaceholder' => 'Search...',
     'searchAriaLabel' => 'Search',
     'allStatuses' => 'All statuses',

@@ -1,7 +1,7 @@
 <?php
 return [
     'agendaTitle' => 'Agenda : Bloquer l\'achat automatique',
-    'agendaDescription' => 'Cliquez sur une date pour la bloquer ou la débloquer.',
+    'agendaDescription' => 'Les dates correspondantes peuvent être bloquées si vous êtes complet ces jours-là, pour des vacances, etc. Pour ces dates bloquées, vous ne recevrez aucune demande et aucun achat automatique ne sera effectué ce jour-là. Cliquez sur une date pour la bloquer.',
     'blocked' => 'Bloqué',
 
     'allMonths' => 'Tous les mois',

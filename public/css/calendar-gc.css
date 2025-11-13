@@ -3,7 +3,7 @@
 .gc-calendar {
     font-family: 'Inter', sans-serif;
     background-color: #fff;
-    padding: 1rem;
+    padding: 0.5rem;
 }
 
 .gc-calendar .gc-calendar-header {
@@ -12,12 +12,11 @@
     height: max-content;
     display: flex;
     align-items: center;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
 }
 
 .gc-calendar .gc-calendar-header button.prev, .gc-calendar .gc-calendar-header button.next {
-    height: 36px;
-    /* width: 24px; */
+    height: 30px;
     left: 0px;
     top: 0px;
     border-radius: 100px;
@@ -26,13 +25,13 @@
     position: relative;
     display: inline-block;
     border: 0;
-    padding: 4px 15px;
-    font-size: 18px;
+    padding: 2px 12px;
+    font-size: 16px;
     box-shadow: inset 0px -1px 0px #EDF2F7;
     cursor: pointer;
     color: #7A7A9D;
     font-weight: bold;
-    margin-right: 10px;
+    margin-right: 8px;
 }
 
 .gc-calendar .gc-calendar-header button.prev:hover, .gc-calendar .gc-calendar-header button.next:hover {
@@ -52,10 +51,10 @@
 .gc-calendar .gc-calendar-header .gc-calendar-month-year {
     font-style: normal;
     font-weight: 600;
-    font-size: 28px;
+    font-size: 20px;
     color: #38385c;
     line-height: 136.02%;
-    min-width: 220px;
+    min-width: 180px;
 }
 
 .gc-calendar table.calendar {
@@ -75,7 +74,7 @@
 }
 
 .gc-calendar table.calendar td {
-    height: 150px;
+    height: 80px;
     position: relative;
     padding-top: 3px;
     vertical-align: top;
@@ -84,6 +83,16 @@
 
 .gc-calendar table.calendar td.prev-month .day-number, .gc-calendar table.calendar td.next-month .day-number {
     color: #B5B5BD
+}
+
+/* Vergangene Daten deaktivieren */
+.gc-calendar table.calendar td.past-date {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.gc-calendar table.calendar td.past-date .day-number {
+    color: #B5B5BD;
 }
 
 .gc-calendar table.calendar td .day-number {
@@ -273,5 +282,67 @@
         -webkit-transform: translateX(1000px);
         transform: translateX(1000px);
         opacity: 0;
+    }
+}
+
+/* Kompaktere Ansicht für Tablets und kleinere Laptops */
+@media (max-width: 1280px) {
+    .gc-calendar table.calendar td {
+        height: 45px;
+    }
+}
+
+/* Noch kompakter für kleinere Tablets (z.B. iPad) */
+@media (max-width: 900px) {
+    .gc-calendar table.calendar td {
+        height: 35px;
+    }
+}
+
+/* Mobile Ansicht */
+@media (max-width: 500px) {
+    .gc-calendar {
+        padding: 0.1rem;
+        overflow-x: auto;
+    }
+
+    .gc-calendar table.calendar {
+        min-width: 100%;
+    }
+
+    .gc-calendar table.calendar td {
+        height: 50px;
+        padding-top: 2px;
+    }
+
+    .gc-calendar table.calendar td .day-number {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 20px;
+    }
+
+    .gc-calendar table.calendar th {
+        font-size: 9px;
+        padding-bottom: 4px;
+    }
+
+    .gc-calendar .gc-calendar-header .gc-calendar-month-year {
+        font-size: 16px;
+        min-width: 120px;
+    }
+
+    .gc-calendar .gc-calendar-header {
+        margin-bottom: 8px;
+    }
+
+    .gc-calendar .gc-calendar-header button.prev, .gc-calendar .gc-calendar-header button.next {
+        height: 28px;
+        padding: 2px 8px;
+        font-size: 14px;
+        margin-right: 5px;
+    }
+
+    .gc-calendar .gc-calendar-header button.prev {
+        margin-left: 5px;
     }
 }

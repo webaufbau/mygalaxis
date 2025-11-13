@@ -52,6 +52,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'stripe_customer_id',
             'language',
             'welcome_email_sent',
+            'platform',
         ];
     }
 
@@ -132,6 +133,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'Firma',
             'Branchen',
             'Ort (Firma)',
+            'Plattform',
             'E-Mail',
             'Autom. Kauf',
             'Letzter Login',
@@ -176,6 +178,32 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             $filter_categories_display = implode(', ', $filter_categories_display);
         }
 
+        // Plattform-Namen und Farben
+        $platformMapping = [
+            'my_offertenheld_ch'     => 'Offertenheld.ch',
+            'my_offertenschweiz_ch'  => 'Offertenschweiz.ch',
+            'my_renovo24_ch'         => 'Renovo24.ch',
+        ];
+
+        // Plattform-Farben wie im Dashboard
+        $platformName = $platformMapping[$entity->platform ?? ''] ?? ($entity->platform ?? '-');
+        $platformLower = strtolower($entity->platform ?? '');
+
+        $badgeStyle = 'class="badge bg-secondary"'; // Fallback
+        if (strpos($platformLower, 'offertenschweiz') !== false ||
+            strpos($platformLower, 'offertenaustria') !== false ||
+            strpos($platformLower, 'offertendeutschland') !== false) {
+            // Rosa für Offertenschweiz/Austria/Deutschland
+            $badgeStyle = 'style="background-color: #E91E63; color: white;"';
+        } elseif (strpos($platformLower, 'offertenheld') !== false) {
+            // Lila/Violett für Offertenheld
+            $badgeStyle = 'style="background-color: #6B5B95; color: white;"';
+        } elseif (strpos($platformLower, 'renovo') !== false) {
+            // Schwarz für Renovo
+            $badgeStyle = 'style="background-color: #212529; color: white;"';
+        }
+
+        $platformBadge = $entity->platform ? '<span class="badge" ' . $badgeStyle . '>' . esc($platformName) . '</span>' : '-';
 
         return [
             $entity->id,
@@ -185,6 +213,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             esc($entity->company_name ?? '-'),
             $filter_categories_display,
             esc(($entity->company_zip ?? '') . ' ' . ($entity->company_city ?? '')),
+            $platformBadge,
             esc($entity->getEmail() ?? '-'),
             $entity->auto_purchase ? 'Ja' : 'Nein',
             '<span class="text-nowrap">' . $last_login_date . '</span>',
@@ -580,6 +609,14 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             $group_options[$group] = $group_description['title'];
         }
 
+        // Plattform-Optionen für Filter
+        $platform_options = [
+            '' => 'Alle Plattformen',
+            'my_offertenheld_ch' => 'Offertenheld.ch',
+            'my_offertenschweiz_ch' => 'Offertenschweiz.ch',
+            'my_renovo24_ch' => 'Renovo24.ch',
+        ];
+
         $filter_data = [
             'fields' => [
                 'query' => [
@@ -620,6 +657,13 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                     'type' => 'dropdown',
                     'options' => $group_options,
                     'name' => 'user_group',
+                    'onchange' => 'this.form.submit()',
+                ],
+                'platform' => [
+                    'type' => 'dropdown',
+                    'options' => $platform_options,
+                    'name' => 'platform',
+                    'where' => '( platform = \'%value%\' )',
                     'onchange' => 'this.form.submit()',
                 ],
             ],

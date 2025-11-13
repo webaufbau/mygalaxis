@@ -1,7 +1,7 @@
 <?php
 return [
     'agendaTitle' => 'Agenda: Automatischen Kauf blockieren',
-    'agendaDescription' => 'Klicke auf ein Datum, um es zu sperren oder entsperren.',
+    'agendaDescription' => 'Entsprechende Daten können blockiert werden, falls Sie an den entsprechenden Tagen ausgebucht sind, um Urlaub etc. Für diese blockierten Daten erhalten Sie keine Anfragen und keine Sofortkäufe werden an dem Tag durchgeführt. Klicken Sie auf ein Datum um es zu blockieren.',
     'blocked' => 'Blockiert',
 
     'allMonths' => 'Alle Monate',

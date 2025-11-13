@@ -24,6 +24,7 @@ class Finance extends BaseController
 
         $bookingModel = new BookingModel();
         $paymentMethodModel = new PaymentMethodModel();
+        $userPaymentMethodModel = new UserPaymentMethodModel();
 
         $year = $this->request->getGet('year');
         $month = $this->request->getGet('month');
@@ -50,6 +51,40 @@ class Finance extends BaseController
             ->where('user_id', $user->id)
             ->first()['amount'] ?? 0;
 
+        // Guthaben-Aufschlüsselung berechnen
+        // Einzahlungen (topup type)
+        $topups = $bookingModel->selectSum('amount')
+            ->where('user_id', $user->id)
+            ->where('type', 'topup')
+            ->first()['amount'] ?? 0;
+
+        // Ausgaben (negative amounts - offer_purchase etc.)
+        $expenses = $bookingModel->selectSum('amount')
+            ->where('user_id', $user->id)
+            ->where('amount <', 0)
+            ->first()['amount'] ?? 0;
+
+        // Lade gespeicherte Zahlungsmethoden des Users
+        $userPaymentMethods = $userPaymentMethodModel->where('user_id', $user->id)->findAll();
+        $hasSavedCard = !empty($userPaymentMethods);
+
+        // Extrahiere Zahlungsmittel-Details (card_brand) aus der neuesten Methode
+        $cardBrand = null;
+        $cardMasked = null;
+        if ($hasSavedCard) {
+            // Hole die neueste Zahlungsmethode
+            $latestMethod = $userPaymentMethodModel
+                ->where('user_id', $user->id)
+                ->orderBy('created_at', 'DESC')
+                ->first();
+
+            if ($latestMethod && !empty($latestMethod['provider_data'])) {
+                $providerData = json_decode($latestMethod['provider_data'], true);
+                $cardBrand = $providerData['card_brand'] ?? null;
+                $cardMasked = $providerData['card_masked'] ?? null;
+            }
+        }
+
         // Falls kein Filter gesetzt, Standardwerte verwenden
         $currentYear = $year ?: date('Y');
         $currentMonth = $month ?: ''; // leer bedeutet "Alle Monate"
@@ -62,13 +97,20 @@ class Finance extends BaseController
 
         return view('account/finance', [
             'title' => 'Finanzen',
+            'user' => $user,
             'bookings' => $bookings,
             'pager' => $pager,
             'balance' => $balance,
+            'topups' => $topups,
+            'expenses' => $expenses,
             'years' => $years,
             'currentYear' => $currentYear,
             'currentMonth' => $currentMonth,
             'monthlyTurnover' => $monthlyTurnover,
+            'userPaymentMethods' => $userPaymentMethods,
+            'hasSavedCard' => $hasSavedCard,
+            'cardBrand' => $cardBrand,
+            'cardMasked' => $cardMasked,
         ]);
     }
 
@@ -545,6 +587,161 @@ class Finance extends BaseController
         }
 
         return redirect()->back()->with('error', lang('Finance.errorNotFoundOrDenied'));
+    }
+
+    /**
+     * Zahlungsmittel hinterlegen/ändern - OHNE Guthaben aufzuladen
+     * Verwendet Saferpay Payment Page mit 1 CHF Autorisierung (kein Capture!)
+     */
+    public function registerPaymentMethod()
+    {
+        if (!auth()->loggedIn()) {
+            return redirect()->to('/login');
+        }
+
+        $user = auth()->user();
+
+        // Hole gewählten Type (card oder twint)
+        $type = $this->request->getGet('type') ?? 'card';
+
+        try {
+            // Bei Payment Page wird der Token NICHT in der URL ersetzt
+            // Stattdessen speichern wir ihn in der Session
+            $successUrl = base_url('finance/register-payment-method/success');
+            $failUrl = base_url('finance/register-payment-method/fail');
+
+            $response = $this->saferpay->insertAliasOnly($successUrl, $failUrl, $type);
+
+            // Token in Session speichern für späteren Assert
+            session()->set('alias_insert_token', $response['Token']);
+
+            log_message('info', 'Alias Insert Token gespeichert in Session für User #' . $user->id . ': ' . $response['Token']);
+
+            // Weiterleitung zu Saferpay
+            return redirect()->to($response['RedirectUrl']);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Alias Insert fehlgeschlagen für User #' . $user->id . ': ' . $e->getMessage());
+            return redirect()->to('/finance')->with('error', 'Zahlungsmittel konnte nicht registriert werden: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Callback nach erfolgreicher Zahlungsmittel-Registrierung
+     */
+    public function registerPaymentMethodSuccess()
+    {
+        if (!auth()->loggedIn()) {
+            return redirect()->to('/login');
+        }
+
+        $user = auth()->user();
+
+        // Saferpay ersetzt {TOKEN} in der ReturnUrl - hole aus GET Parameter
+        $token = $this->request->getGet('token');
+
+        // Falls nicht in URL, versuche aus Session (Fallback)
+        if (!$token) {
+            $token = session()->get('alias_insert_token');
+        }
+
+        // Debug logging
+        log_message('info', 'Alias Registration Success Callback - User #' . $user->id . ', Token aus URL: ' . ($this->request->getGet('token') ?? 'null') . ', Token aus Session: ' . (session()->get('alias_insert_token') ?? 'null'));
+        log_message('info', 'Verwendeter Token: ' . ($token ?? 'null'));
+        log_message('info', 'Alle GET Parameter: ' . json_encode($this->request->getGet()));
+
+        if (!$token) {
+            log_message('error', 'Kein Token für Alias Assert gefunden - User #' . $user->id);
+            return redirect()->to('/finance')->with('error', 'Zahlungsmittel-Registrierung fehlgeschlagen: Kein Token gefunden');
+        }
+
+        try {
+            // Assert Transaction (Payment Page) - hole die Karteninformationen + Alias
+            // Versuche zuerst mit RetryIndicator = 0
+            try {
+                $response = $this->saferpay->assertTransaction($token, 0);
+                log_message('info', 'Payment Page Assert erfolgreich (Retry=0) für Alias Registration - User #' . $user->id . ': ' . json_encode($response));
+            } catch (\Exception $e) {
+                // Falls fehlgeschlagen, versuche mit RetryIndicator = 1
+                log_message('warning', 'Payment Page Assert fehlgeschlagen mit Retry=0, versuche Retry=1 für User #' . $user->id . ': ' . $e->getMessage());
+                $response = $this->saferpay->assertTransaction($token, 1);
+                log_message('info', 'Payment Page Assert erfolgreich (Retry=1) für Alias Registration - User #' . $user->id . ': ' . json_encode($response));
+            }
+
+            // Extrahiere Alias-Informationen (aus Payment Page Assert)
+            $registrationResult = $response['RegistrationResult'] ?? null;
+
+            if (!$registrationResult || !isset($registrationResult['Alias']['Id'])) {
+                throw new \Exception('Keine Alias-ID in Response gefunden');
+            }
+
+            $alias = $registrationResult['Alias'];
+            $aliasId = $alias['Id'];
+            $aliasLifetime = $alias['Lifetime'] ?? null;
+
+            // Extrahiere Karten-Details
+            $paymentMeans = $response['PaymentMeans'] ?? [];
+            $card = $paymentMeans['Card'] ?? [];
+            $brand = $paymentMeans['Brand'] ?? [];
+
+            // WICHTIG: Wir machen KEIN Capture! Die Autorisierung verfällt automatisch.
+            // Es wird KEINE Zahlung durchgeführt - nur der Alias wird gespeichert.
+
+            // Lösche alte Zahlungsmethoden für diesen User
+            $paymentMethodModel = new UserPaymentMethodModel();
+            $paymentMethodModel->where('user_id', $user->id)
+                ->where('payment_method_code', 'saferpay')
+                ->delete();
+
+            log_message('info', 'Alte Zahlungsmethoden gelöscht für User #' . $user->id);
+
+            // Speichere neue Zahlungsmethode
+            $platform = $user->platform ?? 'mygalaxis';
+
+            $paymentMethodModel->save([
+                'user_id' => $user->id,
+                'payment_method_code' => 'saferpay',
+                'platform' => $platform,
+                'provider_data' => json_encode([
+                    'alias_id' => $aliasId,
+                    'alias_lifetime' => $aliasLifetime,
+                    'card_masked' => $paymentMeans['DisplayText'] ?? null,
+                    'card_brand' => $brand['Name'] ?? null,
+                    'card_exp_month' => $card['ExpMonth'] ?? null,
+                    'card_exp_year' => $card['ExpYear'] ?? null,
+                ]),
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            log_message('info', 'Neue Zahlungsmethode gespeichert für User #' . $user->id . ', Alias: ' . $aliasId);
+
+            // Token aus Session entfernen
+            session()->remove('alias_insert_token');
+
+            return redirect()->to('/finance')->with('success', 'Zahlungsmittel erfolgreich hinterlegt!');
+
+        } catch (\Exception $e) {
+            log_message('error', 'Alias Assert fehlgeschlagen für User #' . $user->id . ': ' . $e->getMessage());
+            return redirect()->to('/finance')->with('error', 'Zahlungsmittel-Registrierung fehlgeschlagen: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Callback bei fehlgeschlagener Zahlungsmittel-Registrierung
+     */
+    public function registerPaymentMethodFail()
+    {
+        if (!auth()->loggedIn()) {
+            return redirect()->to('/login');
+        }
+
+        $user = auth()->user();
+        log_message('warning', 'Zahlungsmittel-Registrierung abgebrochen für User #' . $user->id);
+
+        // Token aus Session entfernen
+        session()->remove('alias_insert_token');
+
+        return redirect()->to('/finance')->with('error', 'Zahlungsmittel-Registrierung wurde abgebrochen.');
     }
 
     public function pdf()

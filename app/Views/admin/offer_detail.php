@@ -50,7 +50,25 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                                 $platform = str_replace('my_', '', $platform);
                                 $platform = str_replace('_', '.', $platform);
                                 $platform = ucfirst($platform);
-                                echo '<span class="badge bg-primary">' . esc($platform) . '</span>';
+
+                                // Plattform-Farben wie im Dashboard
+                                $platformLower = strtolower($offer['platform']);
+                                $badgeStyle = 'class="badge bg-secondary"'; // Fallback
+
+                                if (strpos($platformLower, 'offertenschweiz') !== false ||
+                                    strpos($platformLower, 'offertenaustria') !== false ||
+                                    strpos($platformLower, 'offertendeutschland') !== false) {
+                                    // Rosa für Offertenschweiz/Austria/Deutschland
+                                    $badgeStyle = 'style="background-color: #E91E63; color: white;"';
+                                } elseif (strpos($platformLower, 'offertenheld') !== false) {
+                                    // Lila/Violett für Offertenheld
+                                    $badgeStyle = 'style="background-color: #6B5B95; color: white;"';
+                                } elseif (strpos($platformLower, 'renovo') !== false) {
+                                    // Schwarz für Renovo
+                                    $badgeStyle = 'style="background-color: #212529; color: white;"';
+                                }
+
+                                echo '<span class="badge" ' . $badgeStyle . '>' . esc($platform) . '</span>';
                             } else {
                                 echo '<span class="badge bg-secondary">-</span>';
                             }

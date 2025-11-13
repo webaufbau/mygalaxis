@@ -1,7 +1,7 @@
 <?php
 return [
     'agendaTitle' => 'Agenda: Block Automatic Purchase',
-    'agendaDescription' => 'Click on a date to block or unblock it.',
+    'agendaDescription' => 'Corresponding dates can be blocked if you are fully booked on those days, for vacation, etc. For these blocked dates, you will not receive any requests and no automatic purchases will be made on that day. Click on a date to block it.',
     'blocked' => 'Blocked',
 
     'allMonths' => 'All Months',

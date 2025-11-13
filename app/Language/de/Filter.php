@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Filter einstellen',
+    'title' => 'Branchen/Regionen einstellen',
     'categories' => 'Branchen',
     'cantonsRegions' => 'Kantone / Regionen',
     'customZip' => 'Individuelle PLZ',

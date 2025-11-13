@@ -83,7 +83,11 @@ elseif($siteConfig->phoneCheck == 'de') {
             <p class="mb-0"><strong><?= esc(lang('Profile.phone')) ?>:</strong><br><?= esc($user->company_phone) ?></p>
         </div>
         <div class="col-md-6">
-            <p class="mb-2"><strong><?= esc(lang('Profile.loginEmail')) ?>:</strong><br><?= esc($authUser->email) ?></p>
+            <p class="mb-2">
+                <strong><?= esc(lang('Profile.loginEmail')) ?>:</strong><br>
+                <?= esc($authUser->email) ?><br>
+                <small class="text-muted"><i class="bi bi-envelope"></i> <?= esc(lang('Profile.loginEmailReceivesNotifications')) ?></small>
+            </p>
             <p class="mb-2"><strong><?= esc(lang('Profile.street')) ?>:</strong><br><?= esc($user->company_street) ?></p>
             <p class="mb-2"><strong><?= esc(lang('Profile.zip')) ?> / <?= esc(lang('Profile.city')) ?>:</strong><br><?= esc($user->company_zip) ?> <?= esc($user->company_city) ?></p>
             <?php if(!empty($user->company_website)): ?>
@@ -114,20 +118,6 @@ elseif($siteConfig->phoneCheck == 'de') {
                 <option value="<?= esc($code) ?>" <?= $selected ?>><?= esc($name) ?></option>
             <?php endforeach; ?>
         </select>
-    </div>
-
-    <div class="form-check form-switch mb-4">
-        <input
-                class="form-check-input"
-                type="checkbox"
-                id="auto_purchase"
-                name="auto_purchase"
-                value="1"
-            <?= old('auto_purchase', $user->auto_purchase) ? 'checked' : '' ?>
-        >
-        <label class="form-check-label" for="auto_purchase">
-            <?= esc(lang('Profile.autoPurchase')) ?>
-        </label>
     </div>
 
     <div class="form-check form-switch mb-4">
@@ -194,6 +184,7 @@ elseif($siteConfig->phoneCheck == 'de') {
     <div class="mb-3">
         <label class="form-label"><?= esc(lang('Profile.companyEmail')) ?> *</label>
         <input type="email" name="company_email" class="form-control" value="<?= esc($user->company_email) ?>">
+        <small class="form-text text-muted"><?= esc(lang('Profile.companyEmailHelp')) ?></small>
     </div>
 
     <div class="mb-3">

@@ -77,7 +77,7 @@ class SiteConfig extends BaseConfig
         ],
         'headerBackgroundColor' => [
             'type' => 'color',
-            'label' => 'Verfikationsprozess Header Hintergrund Farbe',
+            'label' => 'Primärfarbe Website (Login, Register, Magic-Link, Verifikation)',
         ],
         'logoHeightPixel' => [
             'type' => 'text',

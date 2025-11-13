@@ -168,4 +168,45 @@ return [
 
     'isUniqueEmail' => 'Nous exploitons plusieurs portails. Votre adresse e-mail est déjà associée à un compte. Vous pouvez vous connecter avec votre e-mail ou demander un accès direct à votre compte existant via le lien magique.',
 
+    // Modern Auth Pages
+    'loginTitle' => 'Connexion',
+    'loginWelcome' => 'Bienvenue',
+    'loginSubtitle' => 'Connectez-vous à votre compte',
+    'loginButton' => 'Se connecter',
+    'emailPlaceholder' => 'jean@exemple.ch',
+    'passwordPlaceholder' => 'Votre mot de passe',
+    'or' => 'ou',
+    'noAccount' => 'Pas encore de compte ?',
+    'registerNow' => 'S\'inscrire gratuitement',
+
+    // Benefits Section
+    'benefitsTitle' => 'Gagnez de nouveaux clients',
+    'benefitsSubtitle' => 'Demandes de clients qualifiés de votre région',
+    'testimonialText' => '"Grâce à cette plateforme, nous recevons régulièrement de nouvelles commandes. La qualité des demandes est excellente !"',
+    'feature1' => 'Demandes de clients vérifiées',
+    'feature2' => 'Prix équitables par demande',
+    'feature3' => 'Notification instantanée',
+    'feature4' => 'Disponible partout',
+    'sslEncrypted' => 'Crypté SSL',
+    'secureServers' => 'Serveurs sécurisés',
+    'gdprCompliant' => 'Conforme RGPD',
+
+    // Magic Link
+    'magicLinkTitle' => 'Mot de passe oublié ?',
+    'magicLinkSubtitleText' => 'Pas de problème ! Entrez votre adresse e-mail et nous vous enverrons un lien magique pour vous connecter.',
+    'sendMagicLink' => 'Envoyer le lien magique',
+    'backToLoginLink' => 'Retour à la connexion',
+    'magicLinkBenefitsTitle' => 'Connexion par lien magique',
+    'magicLinkBenefitsSubtitle' => 'Simple et sécurisé - sans mot de passe',
+    'magicLinkHowItWorks' => 'Comment ça marche',
+    'magicLinkStep1' => '1. Entrez votre adresse e-mail',
+    'magicLinkStep2' => '2. Cliquez sur le lien dans l\'e-mail',
+    'magicLinkStep3' => '3. Vous serez connecté automatiquement',
+    'magicLinkSecure' => 'Sécurisé et crypté',
+    'magicLinkValid' => 'Lien valable 60 minutes',
+    'magicLinkNoPassword' => 'Aucun mot de passe requis',
+    'magicLinkFastAccess' => 'Accès rapide',
+    'magicLinkInfo' => 'Vous recevrez un e-mail avec un lien de connexion unique. Ce lien ne peut être utilisé qu\'une seule fois et expire après 60 minutes.',
+
+    'registerhp' => 'Champ honeypot',
 ];

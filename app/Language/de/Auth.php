@@ -168,5 +168,45 @@ return [
 
     'isUniqueEmail' => 'Wir betreiben mehrere Portale. Ihre E-Mail-Adresse ist bereits mit einem Konto verknüpft. Sie können sich mit Ihrer E-Mail-Adresse anmelden oder über den Passwort-Vergessen-Link direkt Zugriff auf Ihr bestehendes Konto anfordern.',
 
+    // Modern Auth Pages
+    'loginTitle' => 'Anmelden',
+    'loginWelcome' => 'Willkommen zurück',
+    'loginSubtitle' => 'Melden Sie sich in Ihrem Konto an',
+    'loginButton' => 'Anmelden',
+    'emailPlaceholder' => 'max@beispiel.ch',
+    'passwordPlaceholder' => 'Ihr Passwort',
+    'or' => 'oder',
+    'noAccount' => 'Noch kein Konto?',
+    'registerNow' => 'Jetzt kostenlos registrieren',
 
+    // Benefits Section
+    'benefitsTitle' => 'Neue Kunden gewinnen',
+    'benefitsSubtitle' => 'Qualifizierte Kundenanfragen aus Ihrer Region',
+    'testimonialText' => '"Dank dieser Plattform erhalten wir regelmässig neue Aufträge. Die Qualität der Anfragen ist ausgezeichnet!"',
+    'feature1' => 'Geprüfte Kundenanfragen',
+    'feature2' => 'Faire Preise pro Anfrage',
+    'feature3' => 'Sofortige Benachrichtigung',
+    'feature4' => 'Überall verfügbar',
+    'sslEncrypted' => 'SSL-verschlüsselt',
+    'secureServers' => 'Sichere Server',
+    'gdprCompliant' => 'DSGVO-konform',
+
+    // Magic Link
+    'magicLinkTitle' => 'Passwort vergessen?',
+    'magicLinkSubtitleText' => 'Kein Problem! Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Magic Link zum Anmelden.',
+    'sendMagicLink' => 'Magic Link senden',
+    'backToLoginLink' => 'Zurück zum Login',
+    'magicLinkBenefitsTitle' => 'Magic Link Login',
+    'magicLinkBenefitsSubtitle' => 'Einfach und sicher - ohne Passwort',
+    'magicLinkHowItWorks' => 'So funktioniert\'s',
+    'magicLinkStep1' => '1. Geben Sie Ihre E-Mail-Adresse ein',
+    'magicLinkStep2' => '2. Klicken Sie auf den Link in der E-Mail',
+    'magicLinkStep3' => '3. Sie werden automatisch eingeloggt',
+    'magicLinkSecure' => 'Sicher & verschlüsselt',
+    'magicLinkValid' => 'Link gültig für 60 Minuten',
+    'magicLinkNoPassword' => 'Kein Passwort notwendig',
+    'magicLinkFastAccess' => 'Schneller Zugang',
+    'magicLinkInfo' => 'Sie erhalten eine E-Mail mit einem einmaligen Login-Link. Dieser Link kann nur einmal verwendet werden und verfällt nach 60 Minuten.',
+
+    'registerhp' => 'Honeypot Feld',
 ];

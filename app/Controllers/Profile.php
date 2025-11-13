@@ -48,8 +48,18 @@ class Profile extends Controller
             'language',
         ]);
 
-        $data['auto_purchase'] = $this->request->getPost('auto_purchase') ? 1 : 0;
+        $newAutoPurchaseValue = $this->request->getPost('auto_purchase') ? 1 : 0;
+        $data['auto_purchase'] = $newAutoPurchaseValue;
         $data['email_notifications_enabled'] = $this->request->getPost('email_notifications_enabled') ? 1 : 0;
+
+        // Wenn auto_purchase gerade aktiviert wird, setze das Aktivierungsdatum
+        if ($newAutoPurchaseValue == 1 && empty($user->auto_purchase)) {
+            $data['auto_purchase_activated_at'] = date('Y-m-d H:i:s');
+        }
+        // Wenn deaktiviert wird, lösche das Datum
+        elseif ($newAutoPurchaseValue == 0 && !empty($user->auto_purchase)) {
+            $data['auto_purchase_activated_at'] = null;
+        }
 
         if (!$userModel->update($user->id, $data)) {
             return redirect()->back()

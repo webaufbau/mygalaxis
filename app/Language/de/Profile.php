@@ -13,6 +13,7 @@ return [
     'mapPreview'         => 'Vorschau Standort (Google Maps)',
     'website'            => 'Website',
     'companyEmail'       => 'E-Mail (Firma)',
+    'companyEmailHelp'   => 'Diese E-Mail wird Kunden angezeigt (z.B. bei Angebotsverkauf, auf Rechnungen). Sie können hier eine andere E-Mail eintragen, falls Kunden eine andere E-Mail sehen sollen. Ihre Login-E-Mail bleibt privat.',
     'phone'              => 'Telefon',
     'saveButton'         => 'Speichern',
 
@@ -28,6 +29,11 @@ return [
     'currentDataInfo'    => 'Dies sind die Daten, die aktuell in Ihrem Account gespeichert sind. Sie können diese weiter unten im Formular anpassen.',
     'updateAccountData'  => 'Kontodaten ändern',
     'loginEmail'         => 'E-Mail-Adresse (Account)',
+    'loginEmailReceivesNotifications' => 'An diese Adresse gehen alle System-E-Mails (neue Offerten, Benachrichtigungen, etc.)',
+    'loginEmailNotice'   => 'Achtung: Login-E-Mail vs. Firmen-E-Mail',
+    'loginEmailNoticeText' => 'Hier ändern Sie nur Ihre Login-E-Mail-Adresse für den Account-Zugang. An diese E-Mail erhalten Sie auch alle System-E-Mails (neue Offerten, Benachrichtigungen, etc.). Diese E-Mail ist privat und wird NICHT den Kunden angezeigt.',
+    'changeCompanyEmailHere' => 'Um Ihre Firmen-E-Mail (die Kunden sehen) zu ändern, gehen Sie zu',
+    'goToProfile'        => 'Mein Profil',
 
     // Login & Sicherheit
     'loginAndSecurity'          => 'Login & Sicherheit',

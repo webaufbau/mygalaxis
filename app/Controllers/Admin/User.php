@@ -71,14 +71,136 @@ class User extends Crud {
             $balance += $transaction['amount'];
         }
 
+        // Hole Bewertungen des Benutzers
+        $reviewModel = new \App\Models\ReviewModel();
+        $reviews = $reviewModel
+            ->where('recipient_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        // Hole Agenda (Abwesenheiten / blocked days) des Benutzers
+        $blockedDayModel = new \App\Models\BlockedDayModel();
+        $blockedDays = $blockedDayModel
+            ->where('user_id', $id)
+            ->orderBy('date', 'DESC')
+            ->findAll();
+
+        // Parse User-Filter
+        $filterCategories = [];
+        if (!empty($targetUser->filter_categories)) {
+            $filterCategories = is_string($targetUser->filter_categories)
+                ? explode(',', $targetUser->filter_categories)
+                : $targetUser->filter_categories;
+        }
+
+        $filterCantons = [];
+        if (!empty($targetUser->filter_cantons)) {
+            $filterCantons = is_string($targetUser->filter_cantons)
+                ? explode(',', $targetUser->filter_cantons)
+                : json_decode($targetUser->filter_cantons, true) ?? [];
+        }
+
+        $filterRegions = [];
+        if (!empty($targetUser->filter_regions)) {
+            $filterRegions = is_string($targetUser->filter_regions)
+                ? explode(',', $targetUser->filter_regions)
+                : json_decode($targetUser->filter_regions, true) ?? [];
+        }
+
+        $filterLanguages = [];
+        if (!empty($targetUser->filter_languages)) {
+            $filterLanguages = is_string($targetUser->filter_languages)
+                ? json_decode($targetUser->filter_languages, true)
+                : $targetUser->filter_languages;
+        }
+
+        // Hole Notizen für diesen Benutzer
+        $userNoteModel = new \App\Models\UserNoteModel();
+
+        // Filter aus Request holen
+        $noteType = $this->request->getGet('note_type') ?? 'all';
+        $dateFrom = $this->request->getGet('date_from');
+        $dateTo = $this->request->getGet('date_to');
+
+        $notes = $userNoteModel->getNotesForUser($id, $noteType, $dateFrom, $dateTo);
+        $noteCounts = $userNoteModel->countByType($id);
+
         $data = [
             'user' => $targetUser,
             'purchases' => $purchases,
             'transactions' => $transactions,
             'balance' => $balance,
+            'reviews' => $reviews,
+            'blockedDays' => $blockedDays,
+            'filterCategories' => $filterCategories,
+            'filterCantons' => $filterCantons,
+            'filterRegions' => $filterRegions,
+            'filterLanguages' => $filterLanguages,
+            'notes' => $notes,
+            'noteCounts' => $noteCounts,
+            'noteType' => $noteType,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
         ];
 
         return view('admin/user_detail', $data);
+    }
+
+    public function addNote($id)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $userModel = new \App\Models\UserModel();
+        $targetUser = $userModel->find($id);
+
+        if (!$targetUser) {
+            session()->setFlashdata('error', 'Benutzer nicht gefunden.');
+            return redirect()->to('/admin/user');
+        }
+
+        $userNoteModel = new \App\Models\UserNoteModel();
+
+        $noteData = [
+            'user_id' => $id,
+            'admin_user_id' => $user->id,
+            'type' => $this->request->getPost('note_type'),
+            'note_text' => $this->request->getPost('note_text'),
+        ];
+
+        if ($userNoteModel->insert($noteData)) {
+            session()->setFlashdata('success', 'Notiz erfolgreich hinzugefügt.');
+        } else {
+            session()->setFlashdata('error', 'Fehler beim Speichern der Notiz: ' . implode(', ', $userNoteModel->errors()));
+        }
+
+        return redirect()->to('/admin/user/' . $id . '#notes');
+    }
+
+    public function deleteNote($userId, $noteId)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $userNoteModel = new \App\Models\UserNoteModel();
+        $note = $userNoteModel->find($noteId);
+
+        if (!$note || $note['user_id'] != $userId) {
+            session()->setFlashdata('error', 'Notiz nicht gefunden.');
+            return redirect()->to('/admin/user/' . $userId . '#notes');
+        }
+
+        if ($userNoteModel->delete($noteId)) {
+            session()->setFlashdata('success', 'Notiz erfolgreich gelöscht.');
+        } else {
+            session()->setFlashdata('error', 'Fehler beim Löschen der Notiz.');
+        }
+
+        return redirect()->to('/admin/user/' . $userId . '#notes');
     }
 
     public function index() {

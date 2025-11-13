@@ -178,6 +178,11 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('finance/topupSuccess', 'Finance::topupSuccess');
     $routes->get('finance/topupFail', 'Finance::topupFail');
 
+    // Zahlungsmittel hinterlegen/ändern (Alias Insert ohne Zahlung)
+    $routes->get('finance/register-payment-method', 'Finance::registerPaymentMethod', ['filter' => 'auth']);
+    $routes->get('finance/register-payment-method/success', 'Finance::registerPaymentMethodSuccess');
+    $routes->get('finance/register-payment-method/fail', 'Finance::registerPaymentMethodFail');
+
     // Direktkauf via Saferpay (Rückleitungen außerhalb von auth-Filter)
     $routes->get('offers/buyDirectSuccess', 'Offers::buyDirectSuccess');
     $routes->get('offers/buyDirectFail', 'Offers::buyDirectFail');
@@ -232,6 +237,8 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
 
     $routes->get('user', 'Admin\User::index');
     $routes->get('user/(:num)', 'Admin\User::detail/$1');
+    $routes->post('user/add-note/(:num)', 'Admin\User::addNote/$1');
+    $routes->get('user/delete-note/(:num)/(:num)', 'Admin\User::deleteNote/$1/$2');
     $routes->match(['GET', 'POST'], 'user/form', 'Admin\User::form');
     $routes->match(['GET', 'POST'], 'user/form/(:num)', 'Admin\User::form/$1');
     $routes->match(['GET', 'POST'], 'user/copy/(:num)', 'Admin\User::copy/$1');

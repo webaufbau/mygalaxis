@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Set Filter',
+    'title' => 'Set Industries/Regions',
     'categories' => 'Categories',
     'cantonsRegions' => 'Cantons / Regions',
     'customZip' => 'Custom ZIP Codes',

@@ -26,6 +26,15 @@ class Reviews extends BaseController {
             ->orderBy('created_at', 'DESC')
             ->paginate($perPage, 'default', $page);
 
+        // Lade Offer-Informationen für jedes Review
+        $offerModel = new \App\Models\OfferModel();
+        foreach ($reviews as $review) {
+            if ($review->offer_id) {
+                $offer = $offerModel->find($review->offer_id);
+                $review->offer = $offer;
+            }
+        }
+
         $totalReviews = $reviewModel->where('recipient_id', $user->id)->countAllResults();
 
         $avgReviewEntity = $reviewModel->where('recipient_id', $user->id)->selectAvg('rating')->first();

@@ -20,6 +20,31 @@ $typeMapping = [
     'furniture_assembly'=> 'Möbelaufbau',
     'other'             => 'Sonstiges',
 ];
+
+// Plattform-Namen Mapping
+$platformMapping = [
+    'my_offertenheld_ch'     => 'Offertenheld.ch',
+    'my_offertenschweiz_ch'  => 'Offertenschweiz.ch',
+    'my_renovo24_ch'         => 'Renovo24.ch',
+];
+
+// Plattform-Farben wie im Dashboard
+$platformName = $platformMapping[$user->platform ?? ''] ?? ($user->platform ?? '-');
+$platformLower = strtolower($user->platform ?? '');
+
+$badgeStyle = 'class="badge bg-secondary"'; // Fallback
+if (strpos($platformLower, 'offertenschweiz') !== false ||
+    strpos($platformLower, 'offertenaustria') !== false ||
+    strpos($platformLower, 'offertendeutschland') !== false) {
+    // Rosa für Offertenschweiz/Austria/Deutschland
+    $badgeStyle = 'style="background-color: #E91E63; color: white;"';
+} elseif (strpos($platformLower, 'offertenheld') !== false) {
+    // Lila/Violett für Offertenheld
+    $badgeStyle = 'style="background-color: #6B5B95; color: white;"';
+} elseif (strpos($platformLower, 'renovo') !== false) {
+    // Schwarz für Renovo
+    $badgeStyle = 'style="background-color: #212529; color: white;"';
+}
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -34,7 +59,57 @@ $typeMapping = [
     </div>
 </div>
 
-<!-- Benutzerinformationen -->
+<!-- Tab Navigation -->
+<ul class="nav nav-tabs mb-4" id="userDetailTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="company-tab" data-bs-toggle="tab" data-bs-target="#company" type="button" role="tab" aria-controls="company" aria-selected="true">
+            <i class="bi bi-building"></i> Firmendaten
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="offers-tab" data-bs-toggle="tab" data-bs-target="#offers" type="button" role="tab" aria-controls="offers" aria-selected="false">
+            <i class="bi bi-cart-check"></i> Anfragen <?php if (!empty($purchases)): ?>(<?= count($purchases) ?>)<?php endif; ?>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab" aria-controls="categories" aria-selected="false">
+            <i class="bi bi-tags"></i> Branchen
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="regions-tab" data-bs-toggle="tab" data-bs-target="#regions" type="button" role="tab" aria-controls="regions" aria-selected="false">
+            <i class="bi bi-geo-alt"></i> Regionen
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="finance-tab" data-bs-toggle="tab" data-bs-target="#finance" type="button" role="tab" aria-controls="finance" aria-selected="false">
+            <i class="bi bi-wallet2"></i> Finanzen
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">
+            <i class="bi bi-star"></i> Bewertungen
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="agenda-tab" data-bs-toggle="tab" data-bs-target="#agenda" type="button" role="tab" aria-controls="agenda" aria-selected="false">
+            <i class="bi bi-calendar3"></i> Agenda
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">
+            <i class="bi bi-sticky"></i> Notizen
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="userDetailTabsContent">
+
+    <!-- Tab 1: Firmendaten -->
+    <div class="tab-pane fade show active" id="company" role="tabpanel" aria-labelledby="company-tab">
+
+        <!-- Benutzerinformationen -->
 <div class="row mb-4">
     <div class="col-md-6">
         <div class="card">
@@ -94,6 +169,12 @@ $typeMapping = [
                         <td><?= esc($user->email) ?></td>
                     </tr>
                     <tr>
+                        <td><strong>Plattform:</strong></td>
+                        <td>
+                            <span class="badge" <?= $badgeStyle ?>><?= esc($platformName) ?></span>
+                        </td>
+                    </tr>
+                    <tr>
                         <td><strong>Aktiv:</strong></td>
                         <td>
                             <?php if ($user->active): ?>
@@ -127,23 +208,27 @@ $typeMapping = [
     </div>
 </div>
 
-<!-- Kontostand -->
-<div class="card mb-4">
-    <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="bi bi-wallet2"></i> Kontostand</h5>
-    </div>
-    <div class="card-body">
-        <h3 class="mb-0">
-            <?php if ($balance >= 0): ?>
-                <span class="text-success"><?= number_format($balance, 2) ?> CHF</span>
-            <?php else: ?>
-                <span class="text-danger"><?= number_format($balance, 2) ?> CHF</span>
-            <?php endif; ?>
-        </h3>
-    </div>
-</div>
+        <!-- Kontostand -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-wallet2"></i> Kontostand</h5>
+            </div>
+            <div class="card-body">
+                <h3 class="mb-0">
+                    <?php if ($balance >= 0): ?>
+                        <span class="text-success"><?= number_format($balance, 2) ?> CHF</span>
+                    <?php else: ?>
+                        <span class="text-danger"><?= number_format($balance, 2) ?> CHF</span>
+                    <?php endif; ?>
+                </h3>
+            </div>
+        </div>
 
-<!-- Gekaufte Angebote -->
+    </div>
+    <!-- Ende Tab 1: Firmendaten -->
+
+    <!-- Tab 2: Anfragen (Gekaufte Angebote) -->
+    <div class="tab-pane fade" id="offers" role="tabpanel" aria-labelledby="offers-tab">
 <?php if (!empty($purchases)): ?>
 <div class="card mb-4">
     <div class="card-header bg-warning text-dark">
@@ -151,11 +236,12 @@ $typeMapping = [
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-striped table-hover table-sm">
+            <table class="table table-striped table-hover table-sm" id="purchasesTable">
                 <thead>
                     <tr>
                         <th>Datum</th>
                         <th>Angebot</th>
+                        <th>Plattform</th>
                         <th>Typ</th>
                         <th>Ort</th>
                         <th class="text-end">Preis</th>
@@ -168,12 +254,38 @@ $typeMapping = [
                             <?php
                             $offer = $purchase['offer'];
                             $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer['type']));
+                            $offerTitle = $typeName . ' ' . $offer['zip'] . ' ' . $offer['city'] . ' ID ' . $offer['id'] . ' Anfrage';
+
+                            // Plattform-Farben
+                            $platformLower = strtolower($offer['platform'] ?? '');
+                            $badgeStyle = 'class="badge bg-secondary"';
+                            if (strpos($platformLower, 'offertenschweiz') !== false ||
+                                strpos($platformLower, 'offertenaustria') !== false ||
+                                strpos($platformLower, 'offertendeutschland') !== false) {
+                                $badgeStyle = 'style="background-color: #E91E63; color: white;"';
+                            } elseif (strpos($platformLower, 'offertenheld') !== false) {
+                                $badgeStyle = 'style="background-color: #6B5B95; color: white;"';
+                            } elseif (strpos($platformLower, 'renovo') !== false) {
+                                $badgeStyle = 'style="background-color: #212529; color: white;"';
+                            }
+
+                            $platformDisplay = $offer['platform'] ?? '';
+                            $platformDisplay = str_replace('my_', '', $platformDisplay);
+                            $platformDisplay = str_replace('_', '.', $platformDisplay);
+                            $platformDisplay = ucfirst($platformDisplay);
                             ?>
                             <tr>
                                 <td><?= \CodeIgniter\I18n\Time::parse($purchase['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?></td>
                                 <td>
-                                    <strong>ID <?= esc($offer['id']) ?></strong><br>
+                                    <strong><?= esc($offerTitle) ?></strong><br>
                                     <small class="text-muted"><?= esc($offer['firstname']) ?> <?= esc($offer['lastname']) ?></small>
+                                </td>
+                                <td>
+                                    <?php if ($platformDisplay): ?>
+                                        <span class="badge" <?= $badgeStyle ?>><?= esc($platformDisplay) ?></span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary">-</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td><?= esc($typeName) ?></td>
                                 <td><?= esc($offer['zip']) ?> <?= esc($offer['city']) ?></td>
@@ -193,13 +305,167 @@ $typeMapping = [
         </div>
     </div>
 </div>
-<?php else: ?>
-<div class="alert alert-info">
-    <i class="bi bi-info-circle"></i> Dieser Benutzer hat noch keine Angebote gekauft.
-</div>
-<?php endif; ?>
+<script>
+        $(document).ready(function() {
+            $('#purchasesTable').DataTable({
+                "order": [[0, "desc"]], // Sortiere nach Datum absteigend
+                "pageLength": 25,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json"
+                }
+            });
+        });
+        </script>
+        <?php else: ?>
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Dieser Benutzer hat noch keine Angebote gekauft.
+        </div>
+        <?php endif; ?>
 
-<!-- Transaktionen -->
+    </div>
+    <!-- Ende Tab 2: Anfragen -->
+
+    <!-- Tab 3: Branchen -->
+    <div class="tab-pane fade" id="categories" role="tabpanel" aria-labelledby="categories-tab">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-tags"></i> Branchen-Filter</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($filterCategories)): ?>
+                    <p class="text-muted mb-3">Dieser Benutzer erhält Anfragen für folgende Branchen:</p>
+                    <div class="row">
+                        <?php foreach ($filterCategories as $category): ?>
+                            <?php
+                            $categoryName = $typeMapping[trim($category)] ?? ucfirst(str_replace('_', ' ', trim($category)));
+                            ?>
+                            <div class="col-md-4 col-sm-6 mb-2">
+                                <span class="badge bg-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                                    <i class="bi bi-check-circle me-1"></i> <?= esc($categoryName) ?>
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Keine Branchen-Filter festgelegt. Dieser Benutzer erhält keine Anfragen.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <!-- Ende Tab 3: Branchen -->
+
+    <!-- Tab 4: Regionen -->
+    <div class="tab-pane fade" id="regions" role="tabpanel" aria-labelledby="regions-tab">
+
+        <!-- Kantone -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Kantone</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($filterCantons)): ?>
+                    <p class="text-muted mb-3">Dieser Benutzer erhält Anfragen aus folgenden Kantonen:</p>
+                    <div class="row">
+                        <?php foreach ($filterCantons as $canton): ?>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                                    <i class="bi bi-check-circle me-1"></i> <?= esc(trim($canton)) ?>
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Keine Kantone ausgewählt.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Bezirke/Regionen -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-map"></i> Bezirke / Regionen</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($filterRegions)): ?>
+                    <p class="text-muted mb-3">Dieser Benutzer erhält Anfragen aus folgenden Bezirken/Regionen (<?= count($filterRegions) ?> gesamt):</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover" id="regionsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Bezirk / Region</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $counter = 1; ?>
+                                <?php foreach ($filterRegions as $region): ?>
+                                    <tr>
+                                        <td><?= $counter++ ?></td>
+                                        <td><?= esc(trim($region)) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <script>
+                    $(document).ready(function() {
+                        $('#regionsTable').DataTable({
+                            "order": [[1, "asc"]],
+                            "pageLength": 25,
+                            "language": {
+                                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json"
+                            }
+                        });
+                    });
+                    </script>
+                <?php else: ?>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Keine Bezirke/Regionen ausgewählt.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Eigene PLZ -->
+        <?php if (!empty($user->filter_custom_zip)): ?>
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-mailbox"></i> Eigene Postleitzahlen</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">Zusätzliche benutzerdefinierte Postleitzahlen:</p>
+                <code><?= esc($user->filter_custom_zip) ?></code>
+            </div>
+        </div>
+        <?php endif; ?>
+
+    </div>
+    <!-- Ende Tab 4: Regionen -->
+
+    <!-- Tab 5: Finanzen (Transaktionen) -->
+    <div class="tab-pane fade" id="finance" role="tabpanel" aria-labelledby="finance-tab">
+
+        <!-- Kontostand -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-wallet2"></i> Aktueller Kontostand</h5>
+            </div>
+            <div class="card-body">
+                <h3 class="mb-0">
+                    <?php if ($balance >= 0): ?>
+                        <span class="text-success"><?= number_format($balance, 2) ?> CHF</span>
+                    <?php else: ?>
+                        <span class="text-danger"><?= number_format($balance, 2) ?> CHF</span>
+                    <?php endif; ?>
+                </h3>
+            </div>
+        </div>
+
+        <!-- Transaktionen -->
 <?php if (!empty($transactions)): ?>
 <div class="card mb-4">
     <div class="card-header bg-secondary text-white">
@@ -262,10 +528,348 @@ $typeMapping = [
         </div>
     </div>
 </div>
-<?php else: ?>
-<div class="alert alert-info">
-    <i class="bi bi-info-circle"></i> Keine Transaktionen vorhanden.
+        <?php else: ?>
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Keine Transaktionen vorhanden.
+        </div>
+        <?php endif; ?>
+
+    </div>
+    <!-- Ende Tab 5: Finanzen -->
+
+    <!-- Tab 6: Bewertungen -->
+    <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+        <?php if (!empty($reviews)): ?>
+            <?php
+            // Berechne Durchschnittsbewertung
+            $totalRating = 0;
+            $ratingCount = count($reviews);
+            foreach ($reviews as $review) {
+                $totalRating += $review['rating'];
+            }
+            $averageRating = $ratingCount > 0 ? round($totalRating / $ratingCount, 1) : 0;
+            ?>
+
+            <!-- Zusammenfassung -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-star-fill"></i> Bewertungs-Übersicht</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3 class="mb-0">
+                                <span class="text-warning">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <?php if ($i <= floor($averageRating)): ?>
+                                            <i class="bi bi-star-fill"></i>
+                                        <?php elseif ($i - $averageRating < 1 && $i - $averageRating > 0): ?>
+                                            <i class="bi bi-star-half"></i>
+                                        <?php else: ?>
+                                            <i class="bi bi-star"></i>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
+                                </span>
+                                <span class="ms-2"><?= number_format($averageRating, 1) ?></span>
+                            </h3>
+                            <p class="text-muted mb-0">Durchschnitt aus <?= $ratingCount ?> Bewertung<?= $ratingCount != 1 ? 'en' : '' ?></p>
+                        </div>
+                        <div class="col-md-6">
+                            <?php
+                            // Berechne Bewertungsverteilung
+                            $ratingDistribution = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+                            foreach ($reviews as $review) {
+                                $ratingDistribution[$review['rating']]++;
+                            }
+                            ?>
+                            <?php foreach ([5, 4, 3, 2, 1] as $stars): ?>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="me-2" style="width: 60px;"><?= $stars ?> <i class="bi bi-star-fill text-warning"></i></span>
+                                    <div class="progress flex-grow-1" style="height: 20px;">
+                                        <div class="progress-bar bg-warning" role="progressbar"
+                                             style="width: <?= $ratingCount > 0 ? ($ratingDistribution[$stars] / $ratingCount * 100) : 0 ?>%">
+                                            <?= $ratingDistribution[$stars] ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bewertungen Liste -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-quote"></i> Alle Bewertungen (<?= count($reviews) ?>)</h5>
+                </div>
+                <div class="card-body">
+                    <?php foreach ($reviews as $review): ?>
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <?= esc($review['created_by_firstname']) ?> <?= esc($review['created_by_lastname']) ?>
+                                        <small class="text-muted">aus <?= esc($review['created_by_zip']) ?> <?= esc($review['created_by_city']) ?></small>
+                                    </h6>
+                                    <div class="text-warning">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <?php if ($i <= $review['rating']): ?>
+                                                <i class="bi bi-star-fill"></i>
+                                            <?php else: ?>
+                                                <i class="bi bi-star"></i>
+                                            <?php endif; ?>
+                                        <?php endfor; ?>
+                                        <span class="text-dark ms-2">(<?= $review['rating'] ?>/5)</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    <?= \CodeIgniter\I18n\Time::parse($review['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?>
+                                </small>
+                            </div>
+                            <?php if (!empty($review['comment'])): ?>
+                                <p class="mb-1"><?= nl2br(esc($review['comment'])) ?></p>
+                            <?php endif; ?>
+                            <?php if (!empty($review['offer_id'])): ?>
+                                <small class="text-muted">
+                                    <i class="bi bi-link-45deg"></i>
+                                    <a href="<?= site_url('admin/offer/' . $review['offer_id']) ?>" target="_blank">
+                                        Angebot #<?= $review['offer_id'] ?>
+                                    </a>
+                                </small>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Dieser Benutzer hat noch keine Bewertungen erhalten.
+            </div>
+        <?php endif; ?>
+    </div>
+    <!-- Ende Tab 6: Bewertungen -->
+
+    <!-- Tab 7: Agenda -->
+    <div class="tab-pane fade" id="agenda" role="tabpanel" aria-labelledby="agenda-tab">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-x"></i> Abwesenheiten / Gesperrte Tage</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($blockedDays)): ?>
+                    <p class="text-muted mb-3">An diesen Tagen erhält der Benutzer keine neuen Anfragen (<?= count($blockedDays) ?> gesamt):</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover" id="agendaTable">
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Wochentag</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($blockedDays as $blockedDay): ?>
+                                    <?php
+                                    $date = \CodeIgniter\I18n\Time::parse($blockedDay['date'])->setTimezone(app_timezone());
+                                    $today = \CodeIgniter\I18n\Time::now()->setTimezone(app_timezone())->format('Y-m-d');
+                                    $blockedDate = $date->format('Y-m-d');
+                                    $isPast = $blockedDate < $today;
+                                    $isToday = $blockedDate === $today;
+                                    ?>
+                                    <tr class="<?= $isPast ? 'text-muted' : '' ?>">
+                                        <td>
+                                            <strong><?= $date->format('d.m.Y') ?></strong>
+                                        </td>
+                                        <td><?= $date->format('l') ?></td>
+                                        <td>
+                                            <?php if ($isToday): ?>
+                                                <span class="badge bg-warning">Heute</span>
+                                            <?php elseif ($isPast): ?>
+                                                <span class="badge bg-secondary">Vergangen</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-danger">Geplant</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <script>
+                    $(document).ready(function() {
+                        $('#agendaTable').DataTable({
+                            "order": [[0, "desc"]],
+                            "pageLength": 25,
+                            "language": {
+                                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json"
+                            }
+                        });
+                    });
+                    </script>
+                <?php else: ?>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Keine Abwesenheiten eingetragen. Der Benutzer ist immer verfügbar.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <!-- Ende Tab 7: Agenda -->
+
+    <!-- Tab 8: Notizen -->
+    <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+
+        <!-- Neue Notiz hinzufügen -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Neue Notiz hinzufügen</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    <i class="bi bi-info-circle"></i> Notizen sind nur für Administratoren sichtbar und werden nicht dem Benutzer angezeigt.
+                </p>
+
+                <form action="<?= site_url('admin/user/add-note/' . $user->id) ?>" method="post">
+                    <?= csrf_field() ?>
+
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="note_type" class="form-label"><strong>Kontakt-Typ</strong></label>
+                            <select class="form-select" id="note_type" name="note_type" required>
+                                <option value="phone">Telefonisch</option>
+                                <option value="email">Per E-Mail</option>
+                            </select>
+                        </div>
+                        <div class="col-md-9 mb-3">
+                            <label for="note_text" class="form-label"><strong>Notiz-Text</strong></label>
+                            <textarea
+                                class="form-control"
+                                id="note_text"
+                                name="note_text"
+                                rows="3"
+                                placeholder="Beschreiben Sie hier die Konversation oder wichtige Informationen..."
+                                required
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Notiz hinzufügen
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Filter & Notizen-Liste -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul"></i> Alle Notizen
+                    <span class="badge bg-light text-dark ms-2"><?= $noteCounts['all'] ?> gesamt</span>
+                    <span class="badge bg-info ms-1"><?= $noteCounts['phone'] ?> telefonisch</span>
+                    <span class="badge bg-success ms-1"><?= $noteCounts['email'] ?> per E-Mail</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Filter-Formular -->
+                <form method="get" action="<?= site_url('admin/user/' . $user->id) ?>" class="mb-3">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label for="note_type_filter" class="form-label"><strong>Typ</strong></label>
+                            <select class="form-select" id="note_type_filter" name="note_type">
+                                <option value="all" <?= $noteType === 'all' ? 'selected' : '' ?>>Alle</option>
+                                <option value="phone" <?= $noteType === 'phone' ? 'selected' : '' ?>>Telefonisch</option>
+                                <option value="email" <?= $noteType === 'email' ? 'selected' : '' ?>>Per E-Mail</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label"><strong>Von Datum</strong></label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="<?= esc($dateFrom ?? '') ?>">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label"><strong>Bis Datum</strong></label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="<?= esc($dateTo ?? '') ?>">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-filter"></i> Filter anwenden
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- DataTables mit Notizen -->
+                <?php if (!empty($notes)): ?>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover table-sm" id="notesTable">
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Typ</th>
+                                    <th>Notiz</th>
+                                    <th>Erfasst von</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($notes as $note): ?>
+                                    <tr>
+                                        <td>
+                                            <strong><?= \CodeIgniter\I18n\Time::parse($note['created_at'])->setTimezone(app_timezone())->format('d.m.Y') ?></strong><br>
+                                            <small class="text-muted"><?= \CodeIgniter\I18n\Time::parse($note['created_at'])->setTimezone(app_timezone())->format('H:i') ?> Uhr</small>
+                                        </td>
+                                        <td>
+                                            <?php if ($note['type'] === 'phone'): ?>
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-telephone"></i> Telefonisch
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-envelope"></i> E-Mail
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?= nl2br(esc($note['note_text'])) ?></td>
+                                        <td>
+                                            <small class="text-muted">
+                                                <?= esc($note['admin_name'] ?? 'Unbekannt') ?>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <a href="<?= site_url('admin/user/delete-note/' . $user->id . '/' . $note['id']) ?>"
+                                               class="btn btn-sm btn-danger del"
+                                               title="Notiz löschen">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <script>
+                    $(document).ready(function() {
+                        $('#notesTable').DataTable({
+                            "order": [[0, "desc"]], // Sortiere nach Datum absteigend
+                            "pageLength": 25,
+                            "language": {
+                                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json"
+                            }
+                        });
+                    });
+                    </script>
+                <?php else: ?>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Noch keine Notizen vorhanden. Fügen Sie oben die erste Notiz hinzu.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <!-- Ende Tab 8: Notizen -->
+
 </div>
-<?php endif; ?>
+<!-- Ende Tab Content -->
 
 <?= $this->endSection() ?>
