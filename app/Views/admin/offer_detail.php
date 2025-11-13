@@ -154,7 +154,7 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
 
 <?php if (!empty($purchases)): ?>
 <h4>Käufer (<?= count($purchases) ?>):</h4>
-<table class="table table-striped table-sm mb-4">
+<table id="purchases-table" class="table table-striped table-sm mb-4">
     <thead>
         <tr>
             <th>Firma / Kontaktperson</th>
@@ -308,5 +308,23 @@ $excludeKeys = ['uuid', 'file_upload', '__submission', 'service_url'];
     </div>
 <?php endif; ?>
 
+<!-- DataTables CSS & JS -->
+<?php if (!empty($purchases)): ?>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#purchases-table').DataTable({
+        order: [[2, 'desc']], // Nach Kaufdatum absteigend sortieren
+        pageLength: 10,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+        }
+    });
+});
+</script>
+<?php endif; ?>
 
 <?= $this->endSection() ?>
