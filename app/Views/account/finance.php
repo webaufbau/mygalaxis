@@ -336,8 +336,8 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
 <?php else: ?>
 
     <div class="table-responsive" style="overflow-y: auto;">
-        <table class="table table-bordered table-hover align-middle mb-0">
-            <thead class="table-light position-sticky top-0" style="z-index: 10;">
+        <table id="finance-transactions-table" class="table table-bordered table-hover align-middle mb-0">
+            <thead class="table-light">
             <tr>
                 <th><?= esc(lang('Finance.date')) ?></th>
                 <th><?= esc(lang('Finance.type')) ?></th>
@@ -387,11 +387,28 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
             </tbody>
         </table>
     </div>
-
-    <!-- Pagination -->
-    <div class="mt-3">
-        <?= $pager->links('default', 'bootstrap5') ?>
-    </div>
 <?php endif; ?>
+
+<!-- DataTables CSS & JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    <?php if (!empty($bookings)): ?>
+    $('#finance-transactions-table').DataTable({
+        order: [[0, 'desc']], // Nach Datum absteigend sortieren
+        pageLength: 25,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+        },
+        columnDefs: [
+            { orderable: false, targets: [5] } // Rechnung-Spalte nicht sortierbar
+        ]
+    });
+    <?php endif; ?>
+});
+</script>
 
 <?= $this->endSection() ?>
