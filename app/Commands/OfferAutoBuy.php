@@ -120,7 +120,8 @@ class OfferAutoBuy extends BaseCommand
 
                 if ($result === true) {
                     $activatedAt = $user->auto_purchase_activated_at ?? 'unbekannt';
-                    $this->log("   ✅ Auto-Kauf #{$processedCount + 1} erfolgreich für User #{$user->id} (aktiviert: {$activatedAt})", 'green');
+                    $purchaseNumber = $processedCount + 1;
+                    $this->log("   ✅ Auto-Kauf #{$purchaseNumber} erfolgreich für User #{$user->id} (aktiviert: {$activatedAt})", 'green');
                     $processedCount++;
                 } else {
                     // Detaillierte Fehlermeldung
