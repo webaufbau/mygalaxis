@@ -330,64 +330,169 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
     <?php endif; ?>
 </form>
 
-<!-- Tabelle -->
-<?php if (empty($bookings)): ?>
-    <div class="alert alert-warning"><?= esc(lang('Finance.noBookings')) ?></div>
-<?php else: ?>
-
-    <div class="table-responsive" style="overflow-y: auto;">
-        <table id="finance-transactions-table" class="table table-bordered table-hover align-middle mb-0">
-            <thead class="table-light">
-            <tr>
-                <th><?= esc(lang('Finance.date')) ?></th>
-                <th><?= esc(lang('Finance.type')) ?></th>
-                <th><?= esc(lang('Finance.description')) ?></th>
-                <th class="text-end"><?= esc(lang('Finance.cardPayment')) ?></th>
-                <th class="text-end"><?= esc(lang('Finance.balanceChange')) ?></th>
-                <th><?= esc(lang('Finance.invoice')) ?></th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($bookings as $entry): ?>
-                <tr>
-                    <td><?= date('d.m.Y', strtotime($entry['created_at'])) ?></td>
-                    <td><?= esc(lang('Offers.credit_type.'.$entry['type'])) ?></td>
-                    <td><?= esc($entry['description']) ?></td>
-                    <!-- Kartenzahlung Spalte -->
-                    <td class="text-end">
-                        <?php if (!empty($entry['paid_amount']) && $entry['paid_amount'] > 0): ?>
-                            <span class="text-primary">
-                                <?= number_format($entry['paid_amount'], 2, ".", "'") ?> <?= currency() ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="text-muted">-</span>
-                        <?php endif; ?>
-                    </td>
-                    <!-- Guthaben-Änderung Spalte -->
-                    <td class="text-end">
-                        <?php if ($entry['amount'] != 0): ?>
-                            <span class="<?= $entry['amount'] < 0 ? 'text-danger' : 'text-success' ?>">
-                                <?= number_format($entry['amount'], 2, ".", "'") ?> <?= currency() ?>
-                            </span>
-                        <?php else: ?>
-                            <span class="text-muted">0.00 <?= currency() ?></span>
-                        <?php endif; ?>
-                    </td>
-                    <!-- Rechnung -->
-                    <td>
-                        <?php if ($entry['type'] === 'offer_purchase'): ?>
-                            <a href="<?= site_url('finance/invoice/'.$entry['id']) ?>"
-                               class="btn btn-sm btn-secondary">
-                                <i class="bi bi-file-earmark-pdf"></i> RE<?=strtoupper(siteconfig()->siteCountry);?><?=$entry['id'];?>
-                            </a>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+<!-- SECTION 1: Gekaufte Anfragen -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-basket me-2"></i>Gekaufte Anfragen</h5>
     </div>
-<?php endif; ?>
+    <div class="card-body">
+        <?php if (empty($purchases)): ?>
+            <div class="alert alert-info mb-0">Keine Käufe im gewählten Zeitraum.</div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table id="purchases-table" class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Datum</th>
+                        <th>Typ</th>
+                        <th>Beschreibung</th>
+                        <th class="text-end">Kartenzahlung</th>
+                        <th class="text-end">Guthaben-Änderung</th>
+                        <th>Rechnung</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($purchases as $entry): ?>
+                        <tr>
+                            <td><?= date('d.m.Y', strtotime($entry['created_at'])) ?></td>
+                            <td><?= esc(lang('Offers.credit_type.'.$entry['type'])) ?></td>
+                            <td><?= esc($entry['description']) ?></td>
+                            <td class="text-end">
+                                <?php if (!empty($entry['paid_amount']) && $entry['paid_amount'] > 0): ?>
+                                    <span class="text-primary">
+                                        <?= number_format($entry['paid_amount'], 2, ".", "'") ?> <?= currency() ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-end">
+                                <?php if ($entry['amount'] != 0): ?>
+                                    <span class="text-danger">
+                                        <?= number_format($entry['amount'], 2, ".", "'") ?> <?= currency() ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <a href="<?= site_url('finance/invoice/'.$entry['id']) ?>"
+                                   class="btn btn-sm btn-secondary">
+                                    <i class="bi bi-file-earmark-pdf"></i> RE<?=strtoupper(siteconfig()->siteCountry);?><?=$entry['id'];?>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- SECTION 2: Gutschriftenübersicht -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-wallet2 me-2"></i>Gutschriftenübersicht</h5>
+    </div>
+    <div class="card-body">
+        <?php if (empty($credits)): ?>
+            <div class="alert alert-info mb-0">Keine Gutschriften im gewählten Zeitraum.</div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table id="credits-table" class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Beleg</th>
+                        <th>Datum</th>
+                        <th class="text-end">Guthaben</th>
+                        <th class="text-end">Saldo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($credits as $entry): ?>
+                        <tr>
+                            <td>
+                                <?php if ($entry['amount'] > 0): ?>
+                                    <span class="text-success">
+                                        <i class="bi bi-plus-circle-fill me-1"></i>
+                                        Aufladung
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-secondary">
+                                        <i class="bi bi-dash-circle-fill me-1"></i>
+                                        Abzug
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= date('d.m.Y H:i', strtotime($entry['created_at'])) ?> Uhr</td>
+                            <td class="text-end">
+                                <span class="<?= $entry['amount'] > 0 ? 'text-success' : 'text-secondary' ?>">
+                                    <?= $entry['amount'] > 0 ? '+' : '' ?><?= number_format($entry['amount'], 2, ".", "'") ?> <?= currency() ?>
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <strong class="<?= $entry['running_balance'] >= 0 ? 'text-success' : 'text-danger' ?>">
+                                    <?= number_format($entry['running_balance'], 2, ".", "'") ?> <?= currency() ?>
+                                </strong>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- SECTION 3: Ausgestellte Monatsrechnungen -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Ausgestellte Monatsrechnungen</h5>
+    </div>
+    <div class="card-body">
+        <?php if (empty($monthlyInvoices)): ?>
+            <div class="alert alert-info mb-0">Keine Monatsrechnungen vorhanden.</div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table id="monthly-invoices-table" class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Beleg</th>
+                        <th>Art</th>
+                        <th>Periode</th>
+                        <th>Ausgestellt am</th>
+                        <th class="text-end">Brutto Betrag inkl. MWST</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($monthlyInvoices as $invoice): ?>
+                        <tr>
+                            <td>
+                                <a href="<?= site_url('finance/monthly-invoice-pdf/'.$invoice['period']) ?>"
+                                   class="btn btn-sm btn-warning">
+                                    <i class="bi bi-file-earmark-pdf"></i> <?= esc($invoice['invoice_number']) ?>
+                                </a>
+                            </td>
+                            <td>Monatsrechnung</td>
+                            <td>
+                                <?php
+                                $periodDate = DateTime::createFromFormat('Y-m', $invoice['period']);
+                                echo $periodDate ? $periodDate->format('m/Y') : $invoice['period'];
+                                ?>
+                            </td>
+                            <td><?= date('d.m.Y', strtotime($invoice['created_at'])) ?></td>
+                            <td class="text-end">
+                                <strong><?= number_format($invoice['amount'], 2, ".", "'") ?> <?= currency() ?></strong>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
 
 <!-- DataTables CSS & JS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
@@ -396,8 +501,9 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
 
 <script>
 $(document).ready(function() {
-    <?php if (!empty($bookings)): ?>
-    $('#finance-transactions-table').DataTable({
+    // Gekaufte Anfragen Tabelle
+    <?php if (!empty($purchases)): ?>
+    $('#purchases-table').DataTable({
         order: [[0, 'desc']], // Nach Datum absteigend sortieren
         pageLength: 25,
         language: {
@@ -408,7 +514,201 @@ $(document).ready(function() {
         ]
     });
     <?php endif; ?>
+
+    // Gutschriftenübersicht Tabelle
+    <?php if (!empty($credits)): ?>
+    $('#credits-table').DataTable({
+        order: [[1, 'desc']], // Nach Datum absteigend sortieren
+        pageLength: 25,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+        }
+    });
+    <?php endif; ?>
+
+    // Monatsrechnungen Tabelle
+    <?php if (!empty($monthlyInvoices)): ?>
+    $('#monthly-invoices-table').DataTable({
+        order: [[2, 'desc']], // Nach Periode absteigend sortieren
+        pageLength: 10,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+        },
+        columnDefs: [
+            { orderable: false, targets: [0] } // Beleg-Spalte nicht sortierbar
+        ]
+    });
+    <?php endif; ?>
+
+    // Referrals Table
+    <?php if (!empty($userReferrals)): ?>
+    $('#referrals-table').DataTable({
+        order: [[3, 'desc']], // Nach Datum absteigend sortieren
+        pageLength: 10,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+        }
+    });
+    <?php endif; ?>
 });
 </script>
+
+<!-- SECTION 4: Weiterempfehlungen & Guthaben -->
+<div class="card mb-4 shadow-sm border-success">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-people me-2"></i>Weiterempfehlung & Guthaben erhalten</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-success">
+            <h5><i class="bi bi-gift me-2"></i>Für jede erfolgreich vermittelte Firma erhalten Sie 50 CHF Gutschrift!</h5>
+            <p class="mb-0">Teilen Sie Ihren persönlichen Affiliate-Link und erhalten Sie eine Gutschrift, sobald sich eine neue Firma über Ihren Link registriert und vom Admin genehmigt wird.</p>
+        </div>
+
+        <!-- Affiliate Link -->
+        <?php if (!empty($affiliateLink)): ?>
+        <div class="card mb-4 bg-light">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-link-45deg me-2"></i>Ihr persönlicher Affiliate-Link:</h6>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="affiliateLink" value="<?= esc($affiliateLink) ?>" readonly>
+                    <button class="btn btn-primary" type="button" onclick="copyAffiliateLink()">
+                        <i class="bi bi-clipboard"></i> Kopieren
+                    </button>
+                </div>
+                <small class="form-text text-muted mt-2 d-block">
+                    Affiliate-Code: <strong><?= esc($affiliateCode) ?></strong>
+                </small>
+            </div>
+        </div>
+
+        <script>
+        function copyAffiliateLink() {
+            var copyText = document.getElementById("affiliateLink");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+
+            // Visual feedback
+            var btn = event.target.closest('button');
+            var originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i> Kopiert!';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-success');
+
+            setTimeout(function() {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-primary');
+            }, 2000);
+        }
+        </script>
+        <?php endif; ?>
+
+        <!-- Statistik -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="text-primary"><?= $referralStats['total'] ?></h2>
+                        <p class="text-muted mb-0">Total Vermittlungen</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="text-warning"><?= $referralStats['pending'] ?></h2>
+                        <p class="text-muted mb-0">Ausstehend</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="text-success"><?= $referralStats['credited'] ?></h2>
+                        <p class="text-muted mb-0">Gutgeschrieben</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-success text-white">
+                    <div class="card-body">
+                        <h2><?= number_format($referralStats['total_earned'], 2, '.', "'") ?> CHF</h2>
+                        <p class="mb-0">Verdient</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referrals Tabelle -->
+        <?php if (empty($userReferrals)): ?>
+            <div class="alert alert-info mb-0">
+                <i class="bi bi-info-circle me-2"></i>Sie haben noch keine Firmen weitervermittelt. Teilen Sie Ihren Affiliate-Link, um Gutschriften zu erhalten!
+            </div>
+        <?php else: ?>
+            <h6 class="mb-3"><i class="bi bi-list-ul me-2"></i>Ihre Weiterempfehlungen:</h6>
+            <div class="table-responsive">
+                <table id="referrals-table" class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Firma</th>
+                            <th>E-Mail</th>
+                            <th>Status</th>
+                            <th>Datum</th>
+                            <th class="text-end">Gutschrift</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($userReferrals as $referral): ?>
+                            <tr>
+                                <td>
+                                    <?php if (!empty($referral['referred_company_name'])): ?>
+                                        <strong><?= esc($referral['referred_company_name']) ?></strong>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= esc($referral['referred_email']) ?></td>
+                                <td>
+                                    <?php
+                                    $statusBadge = match($referral['status']) {
+                                        'pending' => 'bg-warning text-dark',
+                                        'credited' => 'bg-success',
+                                        'rejected' => 'bg-danger',
+                                        default => 'bg-secondary'
+                                    };
+                                    $statusText = match($referral['status']) {
+                                        'pending' => 'Ausstehend',
+                                        'credited' => 'Gutgeschrieben',
+                                        'rejected' => 'Abgelehnt',
+                                        default => $referral['status']
+                                    };
+                                    ?>
+                                    <span class="badge <?= $statusBadge ?>">
+                                        <?= $statusText ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <small><?= date('d.m.Y H:i', strtotime($referral['created_at'])) ?></small>
+                                </td>
+                                <td class="text-end">
+                                    <?php if ($referral['status'] === 'credited'): ?>
+                                        <strong class="text-success">
+                                            <?= number_format($referral['credit_amount'], 2, '.', "'") ?> CHF
+                                        </strong>
+                                    <?php else: ?>
+                                        <span class="text-muted">
+                                            <?= number_format($referral['credit_amount'], 2, '.', "'") ?> CHF
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
 
 <?= $this->endSection() ?>

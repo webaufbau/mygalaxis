@@ -157,6 +157,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('', 'Finance::index');
         $routes->get('invoice/(:num)', 'Finance::invoice/$1');
         $routes->get('monthly-invoice/(:num)/(:num)', 'Finance::monthlyInvoice/$1/$2');
+        $routes->get('monthly-invoice-pdf/(:segment)', 'Finance::monthlyInvoicePdf/$1');
         $routes->match(['GET', 'POST'], 'topup', 'Finance::topup');
         $routes->match(['GET', 'POST'], 'startAddPaymentMethodAjax', 'Finance::startAddPaymentMethodAjax');
         $routes->get('pdf', 'Finance::pdf');
@@ -309,6 +310,9 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('email-templates/preview/(:num)', 'Admin\EmailTemplates::preview/$1');
     $routes->get('email-templates/shortcode-help', 'Admin\EmailTemplates::shortcodeHelp');
 
+    // Email Field Translations (Global)
+    $routes->match(['GET', 'POST'], 'email-field-translations', 'Admin\EmailFieldTranslations::index');
+
     // Audit Log
     $routes->get('audit-log', 'Admin\AuditLog::index');
     $routes->get('audit-log/uuid/(:segment)', 'Admin\AuditLog::byUuid/$1');
@@ -323,5 +327,21 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->post('field-display-rules/edit/(:num)', 'Admin\FieldDisplayRules::update/$1');
     $routes->get('field-display-rules/delete/(:num)', 'Admin\FieldDisplayRules::delete/$1');
     $routes->post('field-display-rules/toggle-active/(:num)', 'Admin\FieldDisplayRules::toggleActive/$1');
+
+    // Invoices (Rechnungen)
+    $routes->get('invoices', 'Admin\Invoices::index');
+    $routes->get('invoices/download-pdf/(:segment)/(:num)', 'Admin\Invoices::downloadPdf/$1/$2');
+
+    // Trash (Papierkorb)
+    $routes->get('trash', 'Admin\Trash::index');
+    $routes->get('trash/view/(:num)', 'Admin\Trash::view/$1');
+    $routes->get('trash/restore/(:num)', 'Admin\Trash::restore/$1');
+    $routes->get('trash/delete-permanently/(:num)', 'Admin\Trash::deletePermanently/$1');
+
+    // Referrals (Weiterempfehlungen)
+    $routes->get('referrals', 'Admin\Referrals::index');
+    $routes->post('referrals/give-credit/(:num)', 'Admin\Referrals::giveCredit/$1');
+    $routes->post('referrals/reject/(:num)', 'Admin\Referrals::reject/$1');
+    $routes->match(['GET', 'POST'], 'referrals/manual-credit', 'Admin\Referrals::manualCredit');
 
 });

@@ -104,7 +104,7 @@
         <td><?= date('d.m.Y', strtotime($booking['created_at'])) ?></td>
         <td><?= esc($booking['id']) ?></td>
         <td><?= esc($booking['description']) ?></td>
-        <td><?= number_format(abs($booking['amount']), 2, ".", "'") ?></td>
+        <td><?= number_format(abs($booking['paid_amount'] ?? $booking['amount']), 2, ".", "'") ?></td>
     </tr>
     <?php endforeach; ?>
     </tbody>

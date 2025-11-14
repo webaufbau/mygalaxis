@@ -4,9 +4,14 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>E-Mail Templates</h1>
-    <a href="/admin/email-templates/create" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Neues Template
-    </a>
+    <div>
+        <a href="/admin/email-field-translations" class="btn btn-warning me-2">
+            <i class="bi bi-translate"></i> Feldwerte-Übersetzungen
+        </a>
+        <a href="/admin/email-templates/create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Neues Template
+        </a>
+    </div>
 </div>
 
     <?php if (session()->has('success')): ?>

@@ -341,6 +341,21 @@ if ($currentLocale !== 'de') {
                             <i class="bi bi-envelope me-1"></i> Templates
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= ($segment1 === 'admin' && service('uri')->getSegment(2) === 'invoices') ? 'active' : '' ?>" href="/admin/invoices">
+                            <i class="bi bi-file-earmark-text me-1"></i> Rechnungen
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= ($segment1 === 'admin' && service('uri')->getSegment(2) === 'trash') ? 'active' : '' ?>" href="/admin/trash">
+                            <i class="bi bi-trash me-1"></i> Papierkorb
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= ($segment1 === 'admin' && service('uri')->getSegment(2) === 'referrals') ? 'active' : '' ?>" href="/admin/referrals">
+                            <i class="bi bi-people me-1"></i> Weiterempfehlungen
+                        </a>
+                    </li>
 
                     <?php } ?>
                     <!-- Logout Right -->

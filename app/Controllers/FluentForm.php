@@ -671,7 +671,16 @@ class FluentForm extends BaseController
                     $insertData['price'] = $comboPrice;
                     $insertData['form_fields_combo'] = json_encode($previousFormFields, JSON_UNESCAPED_UNICODE);
 
-                    // vorige Anfrage $matchingOffers löschen
+                    // vorige Anfrage archivieren und löschen
+                    $offerTrashModel = new \App\Models\OfferTrashModel();
+                    $previousOfferType = $previousOffer['type'] ?? 'unknown';
+                    $offerTrashModel->archiveOffer(
+                        $previousOffer['id'],
+                        $previousOfferType,
+                        null,
+                        "Merged into combo offer (move_cleaning)"
+                    );
+
                     $offerModel->delete($previousOffer['id']);
 
                     log_message('info', "Combo offer created: move_cleaning from {$currentType} + {$other_type_has_to_be}, deleted offer #{$previousOffer['id']}");

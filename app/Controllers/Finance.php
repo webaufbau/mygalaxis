@@ -25,21 +25,64 @@ class Finance extends BaseController
         $bookingModel = new BookingModel();
         $paymentMethodModel = new PaymentMethodModel();
         $userPaymentMethodModel = new UserPaymentMethodModel();
+        $monthlyInvoiceModel = new \App\Models\MonthlyInvoiceModel();
 
         $year = $this->request->getGet('year');
         $month = $this->request->getGet('month');
 
-        $builder = $bookingModel->where('user_id', $user->id);
+        // 1) Gekaufte Anfragen (nur offer_purchase)
+        $purchasesBuilder = $bookingModel->where('user_id', $user->id)
+            ->where('type', 'offer_purchase');
 
         if ($year) {
-            $builder->where('YEAR(created_at)', $year);
+            $purchasesBuilder->where('YEAR(created_at)', $year);
         }
         if ($month) {
-            $builder->where('MONTH(created_at)', $month);
+            $purchasesBuilder->where('MONTH(created_at)', $month);
         }
 
-        $bookings = $builder->orderBy('created_at', 'DESC')->paginate(15);
-        $pager = $bookingModel->pager;
+        $purchases = $purchasesBuilder->orderBy('created_at', 'DESC')->findAll();
+
+        // 2) Gutschriften (topup)
+        $creditsBuilder = $bookingModel->where('user_id', $user->id)
+            ->where('type', 'topup');
+
+        if ($year) {
+            $creditsBuilder->where('YEAR(created_at)', $year);
+        }
+        if ($month) {
+            $creditsBuilder->where('MONTH(created_at)', $month);
+        }
+
+        $credits = $creditsBuilder->orderBy('created_at', 'ASC')->findAll();
+
+        // Berechne laufenden Saldo für Gutschriften (chronologisch aufsteigend)
+        $runningBalance = 0;
+        $creditsWithBalance = [];
+        foreach ($credits as $credit) {
+            $runningBalance += $credit['amount'];
+            $credit['running_balance'] = $runningBalance;
+            $creditsWithBalance[] = $credit;
+        }
+
+        // Danach wieder absteigend sortieren für die Anzeige
+        $credits = array_reverse($creditsWithBalance);
+
+        // 3) Monatsrechnungen
+        $monthlyInvoicesBuilder = $monthlyInvoiceModel->where('user_id', $user->id);
+
+        if ($year) {
+            $monthlyInvoicesBuilder->where('YEAR(STR_TO_DATE(CONCAT(period, \'-01\'), \'%Y-%m-%d\'))', $year);
+        }
+        if ($month) {
+            $monthlyInvoicesBuilder->where('MONTH(STR_TO_DATE(CONCAT(period, \'-01\'), \'%Y-%m-%d\'))', $month);
+        }
+
+        $monthlyInvoices = $monthlyInvoicesBuilder->orderBy('period', 'DESC')->findAll();
+
+        // Alte $bookings Variable für Kompatibilität (wird nicht mehr verwendet)
+        $bookings = [];
+        $pager = null;
 
         $years = $bookingModel->select("YEAR(created_at) as year")
             ->where('user_id', $user->id)
@@ -95,11 +138,21 @@ class Finance extends BaseController
             ->where('YEAR(created_at)', $currentYear)
             ->first()['amount'] ?? 0;
 
+        // Weiterempfehlungs-Daten
+        $referralModel = new \App\Models\ReferralModel();
+        $userReferrals = $referralModel->getReferralsByUser($user->id);
+        $referralStats = $referralModel->getUserStats($user->id);
+        $affiliateCode = $user->affiliate_code;
+        $affiliateLink = !empty($affiliateCode) ? site_url('register?ref=' . $affiliateCode) : null;
+
         return view('account/finance', [
             'title' => 'Finanzen',
             'user' => $user,
-            'bookings' => $bookings,
+            'bookings' => $bookings, // Veraltet, für Kompatibilität
             'pager' => $pager,
+            'purchases' => $purchases, // NEU: Nur Käufe
+            'credits' => $credits, // NEU: Nur Gutschriften mit Saldo
+            'monthlyInvoices' => $monthlyInvoices, // NEU: Monatsrechnungen
             'balance' => $balance,
             'topups' => $topups,
             'expenses' => $expenses,
@@ -110,6 +163,10 @@ class Finance extends BaseController
             'userPaymentMethods' => $userPaymentMethods,
             'hasSavedCard' => $hasSavedCard,
             'cardBrand' => $cardBrand,
+            'userReferrals' => $userReferrals,
+            'referralStats' => $referralStats,
+            'affiliateCode' => $affiliateCode,
+            'affiliateLink' => $affiliateLink,
             'cardMasked' => $cardMasked,
         ]);
     }
@@ -897,6 +954,60 @@ class Finance extends BaseController
             ->setBody($mpdf->Output($invoice_name . ".pdf", 'S'));
     }
 
+    /**
+     * Monatsrechnung über monthly_invoices Tabelle generieren
+     * URL: /finance/monthly-invoice-pdf/{period} z.B. /finance/monthly-invoice-pdf/2025-11
+     */
+    public function monthlyInvoicePdf($period)
+    {
+        $user = auth()->user();
+        $monthlyInvoiceModel = new \App\Models\MonthlyInvoiceModel();
+
+        // Hole oder erstelle Monatsrechnung
+        $invoice = $monthlyInvoiceModel->getOrCreateForPeriod($user->id, $period);
+
+        if (!$invoice || $invoice['amount'] == 0) {
+            return redirect()->back()->with('error', 'Keine Käufe in diesem Monat vorhanden.');
+        }
+
+        // Hole alle Käufe für diesen Monat
+        $bookingModel = new BookingModel();
+        $year = substr($period, 0, 4);
+        $month = substr($period, 5, 2);
+
+        $startDate = $period . '-01 00:00:00';
+        $endDate = date('Y-m-t 23:59:59', strtotime($startDate));
+
+        $bookings = $bookingModel
+            ->where('user_id', $user->id)
+            ->where('type', 'offer_purchase')
+            ->where('created_at >=', $startDate)
+            ->where('created_at <=', $endDate)
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        // Land aus User-Platform extrahieren
+        $country = strtoupper(siteconfig()->siteCountry ?? 'CH');
+
+        $html = view('account/pdf_monthly_invoice', [
+            'user' => $user,
+            'bookings' => $bookings,
+            'invoice' => $invoice,
+            'invoice_name' => $invoice['invoice_number'],
+            'country' => $country,
+            'year' => $year,
+            'month' => $month,
+            'total' => $invoice['amount']
+        ]);
+
+        $mpdf = new \Mpdf\Mpdf(['default_font' => 'helvetica']);
+        $mpdf->WriteHTML($html);
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setBody($mpdf->Output($invoice['invoice_number'] . ".pdf", 'S'));
+    }
 
 
 }
+

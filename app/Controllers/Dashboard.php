@@ -58,6 +58,7 @@ class Dashboard extends Controller
         }
 
         $offerModel = new \App\Models\OfferModel();
+        $offerTrashModel = new \App\Models\OfferTrashModel();
         $deleteId = (int)$id;
 
         // Check ob das Angebot existiert
@@ -71,15 +72,24 @@ class Dashboard extends Controller
                 $user->username
             ));
 
-            // Versuche zu löschen
-            $deleted = $offerModel->delete($deleteId, true); // true = permanent delete
+            // Zuerst archivieren in Papierkorb
+            $offerType = $offer['type'] ?? 'unknown';
+            $archived = $offerTrashModel->archiveOffer($deleteId, $offerType, $user->id, 'Admin deletion');
 
-            if ($deleted) {
-                log_message('info', sprintf('Offer ID %d erfolgreich gelöscht', $deleteId));
-                session()->setFlashdata('success', 'Angebot #' . $deleteId . ' wurde erfolgreich gelöscht.');
+            if ($archived) {
+                // Dann löschen
+                $deleted = $offerModel->delete($deleteId, true); // true = permanent delete
+
+                if ($deleted) {
+                    log_message('info', sprintf('Offer ID %d erfolgreich gelöscht und archiviert', $deleteId));
+                    session()->setFlashdata('success', 'Angebot #' . $deleteId . ' wurde gelöscht und in den Papierkorb verschoben.');
+                } else {
+                    log_message('error', sprintf('Offer ID %d konnte nicht gelöscht werden (aber archiviert)', $deleteId));
+                    session()->setFlashdata('error', 'Fehler beim Löschen von Angebot #' . $deleteId . ' (aber im Papierkorb gesichert).');
+                }
             } else {
-                log_message('error', sprintf('Offer ID %d konnte nicht gelöscht werden', $deleteId));
-                session()->setFlashdata('error', 'Fehler beim Löschen von Angebot #' . $deleteId);
+                log_message('error', sprintf('Offer ID %d konnte nicht archiviert werden - Löschung abgebrochen', $deleteId));
+                session()->setFlashdata('error', 'Fehler beim Archivieren von Angebot #' . $deleteId . ' - Löschung abgebrochen.');
             }
         } else {
             log_message('warning', sprintf('Offer ID %d nicht gefunden zum Löschen', $deleteId));

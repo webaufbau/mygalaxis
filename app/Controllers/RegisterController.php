@@ -58,6 +58,35 @@ class RegisterController extends ShieldRegister {
     }
 
     /**
+     * Display the registration form and store referral code if present
+     */
+    public function registerView()
+    {
+        // Check for referral code in URL
+        $refCode = $this->request->getGet('ref');
+
+        if (!empty($refCode)) {
+            // Store in cookie for 30 days
+            helper('cookie');
+            set_cookie([
+                'name'   => 'referral_code',
+                'value'  => $refCode,
+                'expire' => 60 * 60 * 24 * 30, // 30 Tage
+                'secure' => is_https(), // Nur über HTTPS wenn verfügbar
+                'httponly' => true, // Nicht per JavaScript zugreifbar
+                'samesite' => 'Lax',
+            ]);
+
+            // Auch in Session speichern als Backup
+            session()->set('referral_code', $refCode);
+            log_message('info', "Referral code stored in cookie (30 days) and session: {$refCode}");
+        }
+
+        // Call parent method to display registration form
+        return parent::registerView();
+    }
+
+    /**
      * Attempts to register the user.
      */
     public function myregisterAction() {
@@ -210,6 +239,14 @@ class RegisterController extends ShieldRegister {
             // To get the complete user object with ID, we need to get from the database
             $user = $users->findById($users->getInsertID());
 
+            // Generate unique affiliate code for new user
+            $affiliateCode = $this->generateUniqueAffiliateCode();
+            if ($affiliateCode) {
+                $db = \Config\Database::connect();
+                $db->table('users')->where('id', $user->id)->update(['affiliate_code' => $affiliateCode]);
+                log_message('info', "Generated affiliate code for new user #{$user->id}: {$affiliateCode}");
+            }
+
             $db = \Config\Database::connect();
             $zip = $this->request->getPost('company_zip');
 
@@ -246,6 +283,9 @@ class RegisterController extends ShieldRegister {
 
             // Add to default group
             $users->addToDefaultGroup($user);
+
+            // Track referral if affiliate code was used
+            $this->trackReferral($user);
 
             Events::trigger('register', $user);
 
@@ -286,6 +326,138 @@ class RegisterController extends ShieldRegister {
         $rules = $config->registration;
 
         return $rules;
+    }
+
+    /**
+     * Generate unique affiliate code for new user
+     *
+     * @return string|null
+     */
+    private function generateUniqueAffiliateCode(): ?string
+    {
+        $userModel = new \App\Models\UserModel();
+        $maxAttempts = 10;
+
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            // Generate code: Format REF-XXXXX (5 alphanumeric characters)
+            $code = 'REF-' . strtoupper(substr(md5(uniqid((string)time(), true)), 0, 5));
+
+            // Check if unique
+            $exists = $userModel->where('affiliate_code', $code)->first();
+
+            if (!$exists) {
+                return $code;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Track referral if affiliate code was used during registration
+     *
+     * @param User $user
+     * @return void
+     */
+    private function trackReferral($user): void
+    {
+        // Check for referral code in cookie first, then session as fallback
+        helper('cookie');
+        $referralCode = get_cookie('referral_code') ?? session()->get('referral_code');
+
+        if (empty($referralCode)) {
+            return;
+        }
+
+        // Find referrer by affiliate code
+        $referralModel = new \App\Models\ReferralModel();
+        $referrerId = $referralModel->getUserIdByCode($referralCode);
+
+        if (!$referrerId) {
+            log_message('warning', "Invalid referral code used during registration: {$referralCode}");
+            session()->remove('referral_code');
+            return;
+        }
+
+        // Don't allow self-referrals
+        if ($referrerId == $user->id) {
+            log_message('warning', "Self-referral attempted by user #{$user->id}");
+            session()->remove('referral_code');
+            return;
+        }
+
+        // Create referral entry
+        $ipAddress = $this->request->getIPAddress();
+        $companyName = $this->request->getPost('company_name');
+
+        $referralId = $referralModel->createReferral(
+            $referrerId,
+            $referralCode,
+            $user->email,
+            $companyName,
+            $ipAddress,
+            $user->id
+        );
+
+        if ($referralId) {
+            log_message('info', "Referral tracked: User #{$referrerId} referred #{$user->id} (Referral ID: {$referralId})");
+
+            // Send admin email notification
+            $this->sendReferralNotification($referralId, $referrerId, $user);
+
+            // Remove referral code from both session and cookie
+            session()->remove('referral_code');
+            delete_cookie('referral_code');
+        } else {
+            log_message('error', "Failed to create referral entry for user #{$user->id}");
+        }
+    }
+
+    /**
+     * Send email notification to admin about new referral
+     *
+     * @param int $referralId
+     * @param int $referrerId
+     * @param User $newUser
+     * @return void
+     */
+    private function sendReferralNotification(int $referralId, int $referrerId, $newUser): void
+    {
+        try {
+            $referrerModel = new \App\Models\UserModel();
+            $referrer = $referrerModel->find($referrerId);
+
+            if (!$referrer) {
+                return;
+            }
+
+            // Get admin email from site config
+            $siteConfig = siteconfig();
+            $adminEmail = $siteConfig->email ?? 'admin@offertenschweiz.ch';
+
+            $email = \Config\Services::email();
+            $email->setTo($adminEmail);
+            $email->setSubject('Neue Weiterempfehlung: ' . ($newUser->company_name ?? $newUser->email));
+
+            $message = "Eine neue Firma wurde über eine Weiterempfehlung registriert:\n\n";
+            $message .= "Vermittelt von:\n";
+            $message .= "- Firma: " . ($referrer->company_name ?? '-') . "\n";
+            $message .= "- E-Mail: " . $referrer->email . "\n\n";
+            $message .= "Neue Firma:\n";
+            $message .= "- Firma: " . ($newUser->company_name ?? '-') . "\n";
+            $message .= "- E-Mail: " . $newUser->email . "\n\n";
+            $message .= "Referral-ID: #{$referralId}\n";
+            $message .= "IP-Adresse: " . $this->request->getIPAddress() . "\n\n";
+            $message .= "Bitte prüfen Sie die Weiterempfehlung im Admin-Bereich:\n";
+            $message .= site_url('admin/referrals');
+
+            $email->setMessage($message);
+            $email->send();
+
+            log_message('info', "Referral notification email sent to admin for referral #{$referralId}");
+        } catch (\Exception $e) {
+            log_message('error', "Failed to send referral notification email: " . $e->getMessage());
+        }
     }
 
 }
