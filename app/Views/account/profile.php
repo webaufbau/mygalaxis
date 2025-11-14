@@ -121,6 +121,7 @@ elseif($siteConfig->phoneCheck == 'de') {
     </div>
 
     <div class="form-check form-switch mb-4">
+        <input type="hidden" name="email_notifications_enabled" value="0">
         <input
                 class="form-check-input"
                 type="checkbox"
