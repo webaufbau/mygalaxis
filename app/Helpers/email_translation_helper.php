@@ -165,3 +165,59 @@ if (!function_exists('get_user_language')) {
         return 'de';
     }
 }
+
+if (!function_exists('translate_email_field_values')) {
+    /**
+     * Übersetzt Feldwerte in einem gerenderten Email-Content
+     *
+     * Diese Funktion übersetzt die tatsächlichen Werte (z.B. "Ja" -> "Yes", "Nein" -> "No")
+     * im bereits gerenderten HTML-Content.
+     *
+     * @param string $content Gerenderter Email-Content mit Feldwerten
+     * @param string $targetLanguage Zielsprache (en, fr, it)
+     * @return string Content mit übersetzten Feldwerten
+     */
+    function translate_email_field_values(string $content, string $targetLanguage): string
+    {
+        // Wenn Sprache Deutsch, gib Original zurück
+        if ($targetLanguage === 'de') {
+            return $content;
+        }
+
+        // Lade globale Übersetzungen
+        $translations = load_global_translations();
+
+        if (empty($translations) || !isset($translations[$targetLanguage])) {
+            return $content;
+        }
+
+        // Parse translations for target language
+        $translationMap = parse_translation_string($translations[$targetLanguage]);
+
+        if (empty($translationMap)) {
+            return $content;
+        }
+
+        // Übersetze Werte im Content
+        // Wichtig: Längste Strings zuerst, um Teilstring-Probleme zu vermeiden
+        // z.B. "Andere" sollte vor "Andere" übersetzt werden
+        uksort($translationMap, function($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+
+        foreach ($translationMap as $german => $translation) {
+            // Escape für Regex
+            $germanEscaped = preg_quote($german, '/');
+
+            // Ersetze nur ganze Wörter/Phrasen (mit Word Boundaries)
+            // Aber auch innerhalb von HTML-Tags und am Zeilenanfang/-ende
+            $content = preg_replace(
+                '/(?<![a-zA-ZäöüÄÖÜß])' . $germanEscaped . '(?![a-zA-ZäöüÄÖÜß])/u',
+                $translation,
+                $content
+            );
+        }
+
+        return $content;
+    }
+}

@@ -292,6 +292,13 @@ class EmailTemplates extends AdminBase
         $parsedBody = $parser->parse($bodyTemplate, $formData);
         $parsedSubject = $parser->parse($template['subject'], $formData);
 
+        // Translate field values if template language is not German
+        helper('email_translation');
+        if ($template['language'] !== 'de') {
+            $parsedBody = translate_email_field_values($parsedBody, $template['language']);
+            $parsedSubject = translate_email_field_values($parsedSubject, $template['language']);
+        }
+
         // Extrahiere separate Felder für Vorschau (wie im OfferNotificationSender)
         $extractedFields = [];
         if ($selectedOffer) {

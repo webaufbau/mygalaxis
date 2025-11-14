@@ -175,6 +175,13 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
         // Parse the complete body with all shortcodes
         $parsedBody = $parser->parse($bodyTemplate, $data, $excludedFields);
 
+        // Translate field values if template language is not German
+        helper('email_translation');
+        if ($template['language'] !== 'de') {
+            $parsedBody = translate_email_field_values($parsedBody, $template['language']);
+            $parsedSubject = translate_email_field_values($parsedSubject, $template['language']);
+        }
+
         // Wrap in email layout
         $view = \Config\Services::renderer();
         $fullEmail = $view->setData([
