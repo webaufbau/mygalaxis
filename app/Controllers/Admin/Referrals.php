@@ -43,12 +43,15 @@ class Referrals extends BaseController
         // Hole alle Referrals
         $referrals = $this->referralModel->getAllReferrals($filters);
 
-        // Hole alle manuellen Gutschriften
+        // Hole alle manuellen Gutschriften (nur vom Admin erstellte, nicht Kunden-Aufladungen)
         $db = \Config\Database::connect();
         $manualCredits = $db->table('bookings')
             ->select('bookings.*, users.company_name, users.username as user_email')
             ->join('users', 'users.id = bookings.user_id')
             ->where('bookings.payment_method', 'manual_credit')
+            ->where('bookings.type', 'topup')
+            ->notLike('bookings.description', 'Guthabenaufladung%')
+            ->notLike('bookings.description', 'Guthaben aufgeladen%')
             ->orderBy('bookings.created_at', 'DESC')
             ->limit(100)
             ->get()
