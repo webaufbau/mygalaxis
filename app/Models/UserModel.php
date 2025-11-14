@@ -53,6 +53,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'language',
             'welcome_email_sent',
             'platform',
+            'email_notifications_enabled',
         ];
     }
 
