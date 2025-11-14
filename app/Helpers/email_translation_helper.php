@@ -93,6 +93,9 @@ if (!function_exists('parse_translation_string')) {
             return $map;
         }
 
+        // Normalize line endings (handle \r\n, \r, and \n)
+        $translationString = str_replace(["\r\n", "\r"], "\n", $translationString);
+
         $lines = explode("\n", $translationString);
 
         foreach ($lines as $line) {
