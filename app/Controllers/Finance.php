@@ -140,12 +140,15 @@ class Finance extends BaseController
 
         // Weiterempfehlungs-Daten
         $referralModel = new \App\Models\ReferralModel();
-        $userModel = new \App\Models\UserModel();
 
         // Generiere affiliate_code falls noch nicht vorhanden
         if (empty($user->affiliate_code)) {
             $affiliateCode = $this->generateAffiliateCode();
-            $userModel->update($user->id, ['affiliate_code' => $affiliateCode]);
+
+            // Direkt über Query Builder updaten (Shield UserModel unterstützt kein normales update())
+            $db = \Config\Database::connect();
+            $db->table('users')->where('id', $user->id)->update(['affiliate_code' => $affiliateCode]);
+
             $user->affiliate_code = $affiliateCode;
         }
 
