@@ -309,7 +309,13 @@ class Offers extends BaseController
 
                 // Versuche aus wohnung_groesse (z.B. "3-Zimmer", "5-Zimmer")
                 if (isset($formFields['wohnung_groesse']) && $formFields['wohnung_groesse'] !== 'Andere') {
-                    $rooms = $formFields['wohnung_groesse'];
+                    // Parse "X-Zimmer" Format und übersetze
+                    if (preg_match('/^(\d+)-Zimmer$/', $formFields['wohnung_groesse'], $matches)) {
+                        $rooms = $matches[1] . '-' . lang('Offers.title_rooms');
+                    } else {
+                        // Falls Format anders ist, verwende direkt
+                        $rooms = $formFields['wohnung_groesse'];
+                    }
                 }
                 // Oder aus komplett_anzahlzimmer
                 elseif (isset($formFields['komplett_anzahlzimmer'])) {
