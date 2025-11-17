@@ -82,7 +82,7 @@
                     <div class="flex-grow-1 me-3">
                         <span class="title fw-bold d-block">
                             <i class="bi bi-check-circle-fill text-success me-1"></i>
-                            <?= esc($offer['title']) ?>
+                            <?= esc($offer['dynamic_title'] ?? $offer['title']) ?>
                         </span>
                         <small class="text-muted">
                             <?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?> ·

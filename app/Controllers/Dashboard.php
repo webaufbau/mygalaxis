@@ -243,6 +243,10 @@ class Dashboard extends Controller
                 // Offer-Info für Statistik hinzufügen
                 $offer['price_paid'] = $booking['paid_amount']; // Verwende paid_amount statt amount
                 $offer['purchased_at'] = $booking['created_at']; // Add purchase timestamp
+
+                // Generiere dynamischen Titel
+                $offer['dynamic_title'] = $this->generateDynamicTitle($offer);
+
                 $purchasedOffers[] = $offer;
             }
         }
@@ -270,5 +274,145 @@ class Dashboard extends Controller
         return view('account/dashboard', $data);
     }
 
+    /**
+     * Generiert einen dynamischen, übersetzten Titel für ein Angebot
+     */
+    private function generateDynamicTitle($offer): string
+    {
+        // Typ übersetzen
+        $typeKey = $offer['type'];
+        $translatedType = lang('Offers.type.' . $typeKey);
+
+        // Stadt
+        $city = $offer['city'] ?? '';
+
+        // Form fields parsen
+        $formFields = [];
+        if (!empty($offer['form_fields'])) {
+            $formFields = json_decode($offer['form_fields'], true) ?? [];
+        }
+
+        // Branchenspezifische Titelgenerierung
+        $titleParts = [$translatedType];
+
+        if (!empty($city)) {
+            // "move" verwendet "von", alle anderen "in"
+            $preposition = ($typeKey === 'move' || $typeKey === 'move_cleaning')
+                ? lang('Offers.title_from')
+                : lang('Offers.title_in');
+
+            $titleParts[] = $preposition;
+            $titleParts[] = $city;
+        }
+
+        // Zusätzliche Details je nach Branche
+        $additionalInfo = $this->extractAdditionalTitleInfo($typeKey, $formFields);
+        if (!empty($additionalInfo)) {
+            $titleParts[] = $additionalInfo;
+        }
+
+        return implode(' ', $titleParts);
+    }
+
+    /**
+     * Extrahiert branchenspezifische Zusatzinformationen für den Titel
+     */
+    private function extractAdditionalTitleInfo(string $typeKey, array $formFields): string
+    {
+        $parts = [];
+
+        switch ($typeKey) {
+            case 'move':
+            case 'move_cleaning':
+                $rooms = $formFields['auszug_zimmer']
+                    ?? $formFields['einzug_zimmer']
+                    ?? $formFields['zimmer']
+                    ?? null;
+
+                if ($rooms) {
+                    $parts[] = $rooms . ' ' . lang('Offers.title_rooms');
+                }
+                break;
+
+            case 'cleaning':
+                $rooms = null;
+
+                if (isset($formFields['wohnung_groesse']) && $formFields['wohnung_groesse'] !== 'Andere') {
+                    if (preg_match('/^(\d+)-Zimmer$/', $formFields['wohnung_groesse'], $matches)) {
+                        $rooms = $matches[1] . '-' . lang('Offers.title_rooms');
+                    } else {
+                        $rooms = $formFields['wohnung_groesse'];
+                    }
+                }
+                elseif (isset($formFields['komplett_anzahlzimmer'])) {
+                    $rooms = $formFields['komplett_anzahlzimmer'] . ' ' . lang('Offers.title_rooms');
+                }
+                elseif (isset($formFields['zimmer'])) {
+                    $rooms = $formFields['zimmer'] . ' ' . lang('Offers.title_rooms');
+                }
+                elseif (isset($formFields['wohnung_groesse_andere'])) {
+                    $rooms = $formFields['wohnung_groesse_andere'] . ' ' . lang('Offers.title_rooms');
+                }
+
+                if ($rooms) {
+                    $parts[] = $rooms;
+                }
+
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                }
+                break;
+
+            case 'painting':
+            case 'painter':
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                } elseif (isset($formFields['neubau']) && $formFields['neubau'] === 'Ja') {
+                    $parts[] = lang('Offers.title_neubau');
+                }
+                break;
+
+            case 'gardening':
+            case 'gardener':
+                $services = [];
+                if (isset($formFields['holz_wpc_dielen']) && $formFields['holz_wpc_dielen'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_decking');
+                }
+                if (isset($formFields['teich_arbeiten']) && $formFields['teich_arbeiten'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_pond');
+                }
+                if (isset($formFields['hecken_baeume']) && $formFields['hecken_baeume'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_hedges');
+                }
+                if (isset($formFields['rasen']) && $formFields['rasen'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_lawn');
+                }
+
+                if (!empty($services)) {
+                    $parts[] = implode(', ', $services);
+                }
+                break;
+
+            case 'plumbing':
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                } elseif (isset($formFields['property_type']) && !empty($formFields['property_type'])) {
+                    $parts[] = $formFields['property_type'];
+                }
+                break;
+
+            case 'electrician':
+            case 'flooring':
+            case 'heating':
+            case 'tiling':
+            case 'furniture_assembly':
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                }
+                break;
+        }
+
+        return !empty($parts) ? '- ' . implode(' - ', $parts) : '';
+    }
 
 }

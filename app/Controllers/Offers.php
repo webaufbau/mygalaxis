@@ -428,10 +428,13 @@ class Offers extends BaseController
             $offer['purchased_at'] = $booking['created_at'];
         }
 
+        // Generiere dynamischen Titel
+        $dynamicTitle = $this->generateDynamicTitle($offer);
+
         return view('offers/show', [
             'offer' => $offer,
             'isPurchased' => $isPurchased,
-            'title' => $offer['title']
+            'title' => $dynamicTitle
         ]);
     }
 
@@ -480,6 +483,11 @@ class Offers extends BaseController
                 return strtotime($b['purchased_at']) <=> strtotime($a['purchased_at']);
             });
 
+            // Generiere dynamische Titel für Angebote
+            foreach ($offers as &$offer) {
+                $offer['dynamic_title'] = $this->generateDynamicTitle($offer);
+            }
+            unset($offer);
         }
 
         return view('offers/mine', [
