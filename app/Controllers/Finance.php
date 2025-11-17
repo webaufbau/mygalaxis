@@ -140,10 +140,19 @@ class Finance extends BaseController
 
         // Weiterempfehlungs-Daten
         $referralModel = new \App\Models\ReferralModel();
+        $userModel = new UserModel();
+
+        // Generiere affiliate_code falls noch nicht vorhanden
+        if (empty($user->affiliate_code)) {
+            $affiliateCode = $this->generateAffiliateCode();
+            $userModel->update($user->id, ['affiliate_code' => $affiliateCode]);
+            $user->affiliate_code = $affiliateCode;
+        }
+
         $userReferrals = $referralModel->getReferralsByUser($user->id);
         $referralStats = $referralModel->getUserStats($user->id);
         $affiliateCode = $user->affiliate_code;
-        $affiliateLink = !empty($affiliateCode) ? site_url('register?ref=' . $affiliateCode) : null;
+        $affiliateLink = site_url('register?ref=' . $affiliateCode);
 
         return view('account/finance', [
             'title' => 'Finanzen',
@@ -952,6 +961,24 @@ class Finance extends BaseController
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
             ->setBody($mpdf->Output($invoice_name . ".pdf", 'S'));
+    }
+
+    /**
+     * Generiert einen eindeutigen Affiliate-Code
+     */
+    private function generateAffiliateCode(): string
+    {
+        $userModel = new UserModel();
+
+        do {
+            // Generiere einen 8-stelligen Code aus Buchstaben und Zahlen
+            $code = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+
+            // Prüfe ob Code bereits existiert
+            $exists = $userModel->where('affiliate_code', $code)->first();
+        } while ($exists);
+
+        return $code;
     }
 
     /**
