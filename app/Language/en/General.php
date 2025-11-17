@@ -20,6 +20,20 @@ return [
 
     'note' => 'Note',
 
+    // Contact data
+    'firstName' => 'First name',
+    'lastName' => 'Last name',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'street' => 'Street',
+    'houseNumber' => 'House number',
+    'zipCode' => 'Postal code',
+    'city' => 'City',
+    'category' => 'Category',
+    'customerInfo' => 'Customer information',
+    'purchasedOn' => 'Purchased on',
+    'details' => 'Details',
+
     // Month names
     'months' => [
         1 => 'January',

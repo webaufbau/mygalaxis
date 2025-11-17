@@ -20,6 +20,20 @@ return [
 
     'note' => 'Nota',
 
+    // Dati di contatto
+    'firstName' => 'Nome',
+    'lastName' => 'Cognome',
+    'email' => 'Email',
+    'phone' => 'Telefono',
+    'street' => 'Via',
+    'houseNumber' => 'Numero civico',
+    'zipCode' => 'Codice postale',
+    'city' => 'Città',
+    'category' => 'Categoria',
+    'customerInfo' => 'Informazioni cliente',
+    'purchasedOn' => 'Acquistato il',
+    'details' => 'Dettagli',
+
     // Nomi dei mesi
     'months' => [
         1 => 'Gennaio',

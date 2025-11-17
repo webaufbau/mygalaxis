@@ -101,24 +101,24 @@ if (!$useCustomTemplate) {
 if (!empty($admin) || !empty($full)):
     // Sammle Kontaktinformationen
     $contactKeys = [
-        'vorname' => 'Vorname',
-        'firstname' => 'Vorname',
-        'first_name' => 'Vorname',
-        'nachname' => 'Nachname',
-        'lastname' => 'Nachname',
-        'last_name' => 'Nachname',
-        'surname' => 'Nachname',
-        'email' => 'E-Mail',
-        'e_mail' => 'E-Mail',
-        'email_address' => 'E-Mail',
-        'mail' => 'E-Mail',
-        'e_mail_adresse' => 'E-Mail',
-        'telefon' => 'Telefon',
-        'telefonnummer' => 'Telefon',
-        'phone' => 'Telefon',
-        'telephone' => 'Telefon',
-        'phone_number' => 'Telefon',
-        'tel' => 'Telefon'
+        'vorname' => lang('General.firstName'),
+        'firstname' => lang('General.firstName'),
+        'first_name' => lang('General.firstName'),
+        'nachname' => lang('General.lastName'),
+        'lastname' => lang('General.lastName'),
+        'last_name' => lang('General.lastName'),
+        'surname' => lang('General.lastName'),
+        'email' => lang('General.email'),
+        'e_mail' => lang('General.email'),
+        'email_address' => lang('General.email'),
+        'mail' => lang('General.email'),
+        'e_mail_adresse' => lang('General.email'),
+        'telefon' => lang('General.phone'),
+        'telefonnummer' => lang('General.phone'),
+        'phone' => lang('General.phone'),
+        'telephone' => lang('General.phone'),
+        'phone_number' => lang('General.phone'),
+        'tel' => lang('General.phone')
     ];
 
     $customerInfo = [];
@@ -137,13 +137,13 @@ if (!empty($admin) || !empty($full)):
 
     // Sammle Adressinformationen (verschachtelte Arrays und direkte Felder)
     $addressKeys = [
-        'strasse' => 'Straße',
-        'street' => 'Straße',
-        'address_line_1' => 'Straße',
-        'hausnummer' => 'Hausnummer',
-        'house_number' => 'Hausnummer',
-        'nummer' => 'Hausnummer',
-        'address_line_2' => 'Hausnummer',
+        'strasse' => lang('General.street'),
+        'street' => lang('General.street'),
+        'address_line_1' => lang('General.street'),
+        'hausnummer' => lang('General.houseNumber'),
+        'house_number' => lang('General.houseNumber'),
+        'nummer' => lang('General.houseNumber'),
+        'address_line_2' => lang('General.houseNumber'),
     ];
 
     foreach ($formFields as $key => $value) {
@@ -178,7 +178,7 @@ if (!empty($admin) || !empty($full)):
 ?>
     <div class="card mb-4 <?= $cardBorderClass ?>">
         <div class="card-header <?= $cardHeaderClass ?>">
-            <h4 class="mb-0"><i class="bi bi-person-circle <?= $iconColorClass ?>"></i> Kundeninformationen</h4>
+            <h4 class="mb-0"><i class="bi bi-person-circle <?= $iconColorClass ?>"></i> <?= esc(lang('General.customerInfo')) ?></h4>
         </div>
         <div class="card-body">
             <div class="row">
@@ -208,19 +208,19 @@ if (!empty($admin) || !empty($full)):
                     <?php if (!empty($offer['zip']) || !empty($offer['city']) || !empty($offer['type'])): ?>
                         <p class="mb-2">
                             <?php if (!empty($offer['zip'])): ?>
-                                <strong>Postleitzahl:</strong> <?= esc($offer['zip']) ?><br>
+                                <strong><?= esc(lang('General.zipCode')) ?>:</strong> <?= esc($offer['zip']) ?><br>
                             <?php endif; ?>
                             <?php if (!empty($offer['city'])): ?>
-                                <strong>Ort:</strong> <?= esc($offer['city']) ?><br>
+                                <strong><?= esc(lang('General.city')) ?>:</strong> <?= esc($offer['city']) ?><br>
                             <?php endif; ?>
                             <?php if (!empty($offer['type'])): ?>
-                                <strong>Kategorie:</strong> <?= esc(lang('Offers.type.' . $offer['type'])) ?><br>
+                                <strong><?= esc(lang('General.category')) ?>:</strong> <?= esc(lang('Offers.type.' . $offer['type'])) ?><br>
                             <?php endif; ?>
                         </p>
                     <?php endif; ?>
                     <?php if (!empty($offer['purchased_at'])): ?>
                         <p class="text-muted mb-0">
-                            <small>Gekauft am: <?= date('d.m.Y - H:i', strtotime($offer['purchased_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
+                            <small><?= esc(lang('General.purchasedOn')) ?>: <?= date('d.m.Y - H:i', strtotime($offer['purchased_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?></small>
                         </p>
                     <?php endif; ?>
                 </div>
@@ -235,7 +235,7 @@ endif;
 <?php if ($wrapInCard): ?>
 <div class="card">
     <div class="card-header">
-        <h4 class="mb-0">Details</h4>
+        <h4 class="mb-0"><?= esc(lang('General.details')) ?></h4>
     </div>
     <div class="card-body">
 <?php endif; ?>
