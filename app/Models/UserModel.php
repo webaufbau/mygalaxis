@@ -54,6 +54,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'welcome_email_sent',
             'platform',
             'email_notifications_enabled',
+            'stats_always_open',
         ];
     }
 
