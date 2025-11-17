@@ -721,18 +721,18 @@ class Offers extends BaseController
         }
 
         // Gekaufte Anfragen
-        $purchasedQuery = $bookingModel
-            ->where('user_id', $userId)
-            ->where('type', 'offer_purchase');
+        $purchasedQuery = $bookingModel->builder();
+        $purchasedQuery->where('user_id', $userId);
+        $purchasedQuery->where('type', 'offer_purchase');
 
-        if ($fromDate) {
+        if (!empty($fromDate)) {
             $purchasedQuery->where('created_at >=', $fromDate);
         }
-        if ($toDate) {
+        if (!empty($toDate)) {
             $purchasedQuery->where('created_at <=', $toDate);
         }
 
-        $purchasedBookings = $purchasedQuery->findAll();
+        $purchasedBookings = $purchasedQuery->get()->getResultArray();
         $purchasedCount = count($purchasedBookings);
         $purchasedTotal = abs(array_sum(array_column($purchasedBookings, 'paid_amount')));
         $purchasedAvg = $purchasedCount > 0 ? $purchasedTotal / $purchasedCount : 0;
@@ -764,9 +764,9 @@ class Offers extends BaseController
         $relevantZips = $zipcodeService->getZipsByCantonAndRegion($userCantons, $userRegions, $siteCountry);
         $allZips = array_unique(array_merge($relevantZips, $userCustomZips));
 
-        $notPurchasedQuery = $offerModel->builder()
-            ->where('verified', 1)
-            ->where('price >', 0);
+        $notPurchasedQuery = $offerModel->builder();
+        $notPurchasedQuery->where('verified', 1);
+        $notPurchasedQuery->where('price >', 0);
 
         if (!empty($purchasedOfferIds)) {
             $notPurchasedQuery->whereNotIn('id', $purchasedOfferIds);
@@ -784,10 +784,10 @@ class Offers extends BaseController
             $notPurchasedQuery->groupEnd();
         }
 
-        if ($fromDate) {
+        if (!empty($fromDate)) {
             $notPurchasedQuery->where('created_at >=', $fromDate);
         }
-        if ($toDate) {
+        if (!empty($toDate)) {
             $notPurchasedQuery->where('created_at <=', $toDate);
         }
 
