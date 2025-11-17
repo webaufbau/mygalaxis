@@ -20,6 +20,12 @@ return [
     'language'           => 'Sprache',
     'languageAccountEmail' => 'Sprache Account und E-Mails',
 
+    'statsAlwaysOpen'      => 'Statistiken auf Anfragen-Seite immer geöffnet lassen',
+    'statsAlwaysOpenHelp'  => 'Wenn aktiviert, bleibt die Statistik-Sektion auf der Anfragen-Seite immer aufgeklappt.',
+
+    'emailNotifications'     => 'Tägliche Update-E-Mails erhalten',
+    'emailNotificationsHelp' => 'Deaktivieren Sie diese Option, um keine täglichen Benachrichtigungen über neue Offerten mehr zu erhalten.',
+
     'changePassword'   => 'Passwort ändern',
     'newPassword'      => 'Neues Passwort',
     'confirmPassword'  => 'Passwort bestätigen',

@@ -63,10 +63,16 @@ class Filters extends Controller
         $categoryOptions = new \Config\CategoryOptions();
         $appConfig = new \Config\App();
 
+        // Übersetze Branchen-Namen in die aktuelle Sprache
+        $translatedTypes = [];
+        foreach ($categoryOptions->categoryTypes as $typeKey => $typeName) {
+            $translatedTypes[$typeKey] = lang('Offers.type.' . $typeKey);
+        }
+
         $data = [
             'cantons' => $cantons,
-            'categories' => $categoryOptions->categoryTypes,
-            'types' => $categoryOptions->categoryTypes,
+            'categories' => $translatedTypes,
+            'types' => $translatedTypes,
             'languages' => $appConfig->supportedLocales,
             'user_filters' => [
                 'filter_categories' => explode(',', $user->filter_categories ?? ''),

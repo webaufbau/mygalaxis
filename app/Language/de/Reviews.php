@@ -21,4 +21,5 @@ return [
     'thankYou'         => 'Vielen Dank und beste Grüsse',
     'generatedAt'      => 'Generiert am {0}',
 
+    'ratedOn'          => 'Bewertet am',
 ];

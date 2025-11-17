@@ -20,4 +20,6 @@ return [
     'reviewNow'          => 'Valuta ora',
     'thankYou'           => 'Grazie mille e cordiali saluti',
     'generatedAt'        => 'Generato il {0}',
+
+    'ratedOn'            => 'Valutato il',
 ];

@@ -448,9 +448,9 @@ class Auth extends ShieldAuth
                 return '/admin/user';
             }
 
-            // Regular users go to user dashboard
+            // Regular users (companies) go directly to offers page
             if ($user->inGroup('user')) {
-                return '/dashboard';
+                return '/offers';
             }
         }
 

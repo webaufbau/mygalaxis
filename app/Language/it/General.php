@@ -17,4 +17,22 @@ return [
 
     'processingRequest' => 'La tua richiesta è in elaborazione...',
     'pleaseWait'       => 'Attendere un momento, per favore.',
+
+    'note' => 'Nota',
+
+    // Nomi dei mesi
+    'months' => [
+        1 => 'Gennaio',
+        2 => 'Febbraio',
+        3 => 'Marzo',
+        4 => 'Aprile',
+        5 => 'Maggio',
+        6 => 'Giugno',
+        7 => 'Luglio',
+        8 => 'Agosto',
+        9 => 'Settembre',
+        10 => 'Ottobre',
+        11 => 'Novembre',
+        12 => 'Dicembre',
+    ],
 ];

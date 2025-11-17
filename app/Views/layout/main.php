@@ -100,7 +100,7 @@ if ($currentLocale !== 'de') {
                     <?php if ($isFirm): ?>
                     <div class="role-switch">
                         <?php if ($isAdminArea): ?>
-                            <a href="<?= site_url('dashboard') ?>" class="btn btn-sm btn-light">
+                            <a href="<?= site_url('offers') ?>" class="btn btn-sm btn-light">
                                 <i class="bi bi-building me-1"></i>Zur Firmen-Ansicht wechseln
                             </a>
                         <?php else: ?>
@@ -249,7 +249,14 @@ if ($currentLocale !== 'de') {
 <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
     <div class="container-xxl d-flex justify-content-between align-items-center">
         <!-- Logo -->
-        <a class="navbar-brand fw-bold text-primary" href="<?= auth()->loggedIn() ? site_url('dashboard') : lang_url('login') ?>">
+        <a class="navbar-brand fw-bold text-primary" href="<?php
+            if (auth()->loggedIn()) {
+                $user = auth()->user();
+                echo $user->inGroup('admin') ? site_url('admin/user') : site_url('offers');
+            } else {
+                echo lang_url('login');
+            }
+        ?>">
             <?= esc(siteconfig()->name) ?>
         </a>
 

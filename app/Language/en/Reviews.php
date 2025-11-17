@@ -20,5 +20,6 @@ return [
     'reviewNow'        => 'Leave a Review Now',
     'thankYou'         => 'Thank you and best regards',
     'generatedAt'      => 'Generated on {0}',
-    
+
+    'ratedOn'          => 'Rated on',
 ];

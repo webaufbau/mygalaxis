@@ -20,4 +20,6 @@ return [
     'reviewNow'          => 'Évaluer maintenant',
     'thankYou'           => 'Merci beaucoup et meilleures salutations',
     'generatedAt'        => 'Généré le {0}',
+
+    'ratedOn'            => 'Évalué le',
 ];

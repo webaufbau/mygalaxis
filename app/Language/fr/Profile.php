@@ -20,6 +20,12 @@ return [
     'language'           => 'Langue',
     'languageAccountEmail' => 'Langue du compte et des e-mails',
 
+    'statsAlwaysOpen'      => 'Garder les statistiques toujours ouvertes sur la page des demandes',
+    'statsAlwaysOpenHelp'  => 'Si activé, la section statistiques sur la page des demandes restera dépliée.',
+
+    'emailNotifications'     => 'Recevoir les e-mails de mise à jour quotidiens',
+    'emailNotificationsHelp' => 'Désactivez cette option pour ne plus recevoir de notifications quotidiennes sur les nouvelles offres.',
+
     'changePassword'   => 'Changer le mot de passe',
     'newPassword'      => 'Nouveau mot de passe',
     'confirmPassword'  => 'Confirmer le mot de passe',

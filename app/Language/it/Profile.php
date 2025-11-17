@@ -20,6 +20,12 @@ return [
     'language'           => 'Lingua',
     'languageAccountEmail' => 'Lingua account e e-mail',
 
+    'statsAlwaysOpen'      => 'Mantenere le statistiche sempre aperte nella pagina delle richieste',
+    'statsAlwaysOpenHelp'  => 'Se attivato, la sezione statistiche nella pagina delle richieste rimarrà espansa.',
+
+    'emailNotifications'     => 'Ricevi e-mail di aggiornamento giornaliere',
+    'emailNotificationsHelp' => 'Disattiva questa opzione per non ricevere più notifiche giornaliere sulle nuove offerte.',
+
     'changePassword'   => 'Cambia password',
     'newPassword'      => 'Nuova password',
     'confirmPassword'  => 'Conferma password',

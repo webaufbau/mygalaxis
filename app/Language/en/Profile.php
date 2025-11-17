@@ -20,6 +20,12 @@ return [
     'language'             => 'Language',
     'languageAccountEmail' => 'Account and Email Language',
 
+    'statsAlwaysOpen'      => 'Keep statistics on requests page always open',
+    'statsAlwaysOpenHelp'  => 'When enabled, the statistics section on the requests page will stay expanded.',
+
+    'emailNotifications'     => 'Receive daily update emails',
+    'emailNotificationsHelp' => 'Disable this option to stop receiving daily notifications about new offers.',
+
     'changePassword'   => 'Change Password',
     'newPassword'      => 'New Password',
     'confirmPassword'  => 'Confirm Password',

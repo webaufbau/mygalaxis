@@ -222,9 +222,9 @@ if ($userRole === 'admin') {
                     <li><a href="/admin/offers">📋 Offerten verwalten</a></li>
                     <li><a href="/admin/user">👥 Benutzer verwalten</a></li>
                 <?php elseif ($userRole === 'user'): ?>
-                    <li><a href="/dashboard">📊 Dashboard</a></li>
-                    <li><a href="/offers">📋 Meine Offerten</a></li>
+                    <li><a href="/offers">📋 Meine Anfragen</a></li>
                     <li><a href="/profile">👤 Mein Profil</a></li>
+                    <li><a href="/finance">💰 Finanzen</a></li>
                 <?php else: ?>
                     <li><a href="/">🏠 Startseite</a></li>
                     <li><a href="/login">🔑 Login</a></li>

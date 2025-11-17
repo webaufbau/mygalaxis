@@ -58,7 +58,9 @@ if (!empty($offer['type'])) {
     $offerModel = new \App\Models\OfferModel();
     $subtype = $offerModel->detectSubtype($formFields);
 
-    $template = $emailTemplateModel->getTemplateForOffer($offer['type'], 'de', $subtype);
+    // Verwende die aktuelle Sprache des Benutzers
+    $currentLocale = service('request')->getLocale();
+    $template = $emailTemplateModel->getTemplateForOffer($offer['type'], $currentLocale, $subtype);
 
     if ($template && !empty($template['field_display_template'])) {
         // Verwende das field_display_template aus dem Email Template
@@ -67,6 +69,10 @@ if (!empty($offer['type'])) {
         // Parse das Template mit den Formulardaten
         $parser = new \App\Services\EmailTemplateParser();
         $parsedHtml = $parser->parse($template['field_display_template'], $formFields, $excludedFields);
+
+        // Übersetze Feldwerte (z.B. "Ja" -> "Yes", "Nein" -> "No")
+        helper('email_translation');
+        $parsedHtml = translate_email_field_values($parsedHtml, $currentLocale);
 
         // Wenn wrapInCard false ist, entferne die Card-Struktur aus dem Template
         if (!$wrapInCard) {

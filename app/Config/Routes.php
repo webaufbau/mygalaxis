@@ -12,7 +12,12 @@ $routes = service('routes');
 // Homepage-Logik: Weiterleitung je nach Login-Status
 $routes->get('/', function () {
     if (auth()->loggedIn()) {
-        return redirect()->to('/dashboard');
+        $user = auth()->user();
+        // Admins zu admin panel, Firmen zu Anfragen
+        if ($user->inGroup('admin')) {
+            return redirect()->to('/admin/user');
+        }
+        return redirect()->to('/offers');
     }
     return redirect()->to('/login');
 });

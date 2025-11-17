@@ -76,7 +76,7 @@
                     <?php if ($isFirm): ?>
                     <div class="role-switch">
                         <?php if ($isAdminArea): ?>
-                            <a href="<?= site_url('dashboard') ?>" class="btn btn-sm btn-light">
+                            <a href="<?= site_url('offers') ?>" class="btn btn-sm btn-light">
                                 <i class="bi bi-building me-1"></i>Zur Firmen-Ansicht wechseln
                             </a>
                         <?php else: ?>
@@ -225,7 +225,14 @@
 <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
     <div class="container-xxl d-flex justify-content-between align-items-center">
         <!-- Logo -->
-        <a class="navbar-brand fw-bold text-primary" href="<?= auth()->loggedIn() ? site_url('dashboard') : '/' ?>">
+        <a class="navbar-brand fw-bold text-primary" href="<?php
+            if (auth()->loggedIn()) {
+                $user = auth()->user();
+                echo $user->inGroup('admin') ? site_url('admin/user') : site_url('offers');
+            } else {
+                echo '/';
+            }
+        ?>">
             <?=$siteConfig->name;?>
         </a>
 
@@ -246,7 +253,7 @@
                 <?php if(auth()->user()->inGroup('user')) { ?>
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link <?= ($segment1 === '' || $segment1 === 'dashboard') ? 'active' : '' ?>" href="/dashboard">XÜbersichtX</a>
+                            <a class="nav-link <?= ($segment1 === '' || $segment1 === 'offers') ? 'active' : '' ?>" href="/offers">Anfragen</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link <?= $segment1 === 'filter' ? 'active' : '' ?>" href="/filter">Filter</a>

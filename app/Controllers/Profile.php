@@ -51,6 +51,7 @@ class Profile extends Controller
         $newAutoPurchaseValue = $this->request->getPost('auto_purchase') ? 1 : 0;
         $data['auto_purchase'] = $newAutoPurchaseValue;
         $data['email_notifications_enabled'] = $this->request->getPost('email_notifications_enabled') ? 1 : 0;
+        $data['stats_always_open'] = $this->request->getPost('stats_always_open') ? 1 : 0;
 
         // Wenn auto_purchase gerade aktiviert wird, setze das Aktivierungsdatum
         if ($newAutoPurchaseValue == 1 && empty($user->auto_purchase)) {

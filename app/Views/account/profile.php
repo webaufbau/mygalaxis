@@ -131,10 +131,28 @@ elseif($siteConfig->phoneCheck == 'de') {
             <?= old('email_notifications_enabled', ($user->email_notifications_enabled ?? 1)) == 1 ? 'checked' : '' ?>
         >
         <label class="form-check-label" for="email_notifications_enabled">
-            Tägliche Update-E-Mails erhalten
+            <?= esc(lang('Profile.emailNotifications')) ?>
         </label>
         <small class="form-text text-muted d-block">
-            Deaktivieren Sie diese Option, um keine täglichen Benachrichtigungen über neue Offerten mehr zu erhalten.
+            <?= esc(lang('Profile.emailNotificationsHelp')) ?>
+        </small>
+    </div>
+
+    <div class="form-check form-switch mb-4">
+        <input type="hidden" name="stats_always_open" value="0">
+        <input
+                class="form-check-input"
+                type="checkbox"
+                id="stats_always_open"
+                name="stats_always_open"
+                value="1"
+            <?= old('stats_always_open', ($user->stats_always_open ?? 0)) == 1 ? 'checked' : '' ?>
+        >
+        <label class="form-check-label" for="stats_always_open">
+            <?= esc(lang('Profile.statsAlwaysOpen')) ?>
+        </label>
+        <small class="form-text text-muted d-block">
+            <?= esc(lang('Profile.statsAlwaysOpenHelp')) ?>
         </small>
     </div>
 

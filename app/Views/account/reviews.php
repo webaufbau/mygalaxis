@@ -55,7 +55,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <small class="text-muted">
-                            <i class="bi bi-chat-left-text me-1"></i>Bewertet am: <?= date('d.m.Y', strtotime($review->created_at)) ?>
+                            <i class="bi bi-chat-left-text me-1"></i><?= esc(lang('Reviews.ratedOn')) ?>: <?= date('d.m.Y', strtotime($review->created_at)) ?>
                         </small>
                         <br>
                         <?php for ($i = 1; $i <= 5; $i++): ?>
