@@ -57,24 +57,24 @@ $addressInfo = [];
 if ($isPurchased) {
     $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
     $contactKeys = [
-        'vorname' => 'Vorname',
-        'firstname' => 'Vorname',
-        'first_name' => 'Vorname',
-        'nachname' => 'Nachname',
-        'lastname' => 'Nachname',
-        'last_name' => 'Nachname',
-        'surname' => 'Nachname',
-        'email' => 'E-Mail',
-        'e_mail' => 'E-Mail',
-        'email_address' => 'E-Mail',
-        'mail' => 'E-Mail',
-        'e_mail_adresse' => 'E-Mail',
-        'telefon' => 'Telefon',
-        'telefonnummer' => 'Telefon',
-        'phone' => 'Telefon',
-        'telephone' => 'Telefon',
-        'phone_number' => 'Telefon',
-        'tel' => 'Telefon'
+        'vorname' => lang('General.firstName'),
+        'firstname' => lang('General.firstName'),
+        'first_name' => lang('General.firstName'),
+        'nachname' => lang('General.lastName'),
+        'lastname' => lang('General.lastName'),
+        'last_name' => lang('General.lastName'),
+        'surname' => lang('General.lastName'),
+        'email' => lang('General.email'),
+        'e_mail' => lang('General.email'),
+        'email_address' => lang('General.email'),
+        'mail' => lang('General.email'),
+        'e_mail_adresse' => lang('General.email'),
+        'telefon' => lang('General.phone'),
+        'telefonnummer' => lang('General.phone'),
+        'phone' => lang('General.phone'),
+        'telephone' => lang('General.phone'),
+        'phone_number' => lang('General.phone'),
+        'tel' => lang('General.phone')
     ];
 
     // Sammle Kontaktdaten
@@ -90,13 +90,13 @@ if ($isPurchased) {
 
     // Sammle Adressinformationen (verschachtelte Arrays und direkte Felder)
     $addressKeys = [
-        'strasse' => 'Straße',
-        'street' => 'Straße',
-        'address_line_1' => 'Straße',
-        'hausnummer' => 'Hausnummer',
-        'house_number' => 'Hausnummer',
-        'nummer' => 'Hausnummer',
-        'address_line_2' => 'Adresszusatz',
+        'strasse' => lang('General.street'),
+        'street' => lang('General.street'),
+        'address_line_1' => lang('General.street'),
+        'hausnummer' => lang('General.houseNumber'),
+        'house_number' => lang('General.houseNumber'),
+        'nummer' => lang('General.houseNumber'),
+        'address_line_2' => lang('General.houseNumber'),
     ];
 
     foreach ($formFields as $key => $value) {
@@ -137,7 +137,7 @@ if ($isPurchased) {
     <!-- Kundeninformationen prominent anzeigen wenn gekauft -->
     <div class="card mb-4 border-success">
         <div class="card-header bg-success bg-opacity-10">
-            <h4 class="mb-0"><i class="bi bi-person-circle text-success"></i> Kundeninformationen</h4>
+            <h4 class="mb-0"><i class="bi bi-person-circle text-success"></i> <?= esc(lang('General.customerInfo')) ?></h4>
         </div>
         <div class="card-body">
             <div class="row">
@@ -145,9 +145,9 @@ if ($isPurchased) {
                     <?php foreach ($customerInfo as $label => $value): ?>
                         <p class="mb-2">
                             <strong><?= esc($label) ?>:</strong>
-                            <?php if ($label === 'E-Mail'): ?>
+                            <?php if ($label === lang('General.email')): ?>
                                 <a href="mailto:<?= esc($value) ?>"><?= esc($value) ?></a>
-                            <?php elseif ($label === 'Telefon'): ?>
+                            <?php elseif ($label === lang('General.phone')): ?>
                                 <a href="tel:<?= esc($value) ?>"><?= esc($value) ?></a>
                             <?php else: ?>
                                 <?= esc($value) ?>
