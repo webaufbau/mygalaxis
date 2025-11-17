@@ -28,7 +28,9 @@ use DateTime;
  * - [if field:fieldname contains value]...[/if] - Check if array/string contains value
  * - [if field:fieldname]...[else]...[/if] - Conditional with else block
  * - [if field:a || field:b]...[/if] - OR condition (any field is truthy)
+ * - [if field:a or field:b]...[/if] - OR condition (alternative syntax)
  * - [if field:a && field:b]...[/if] - AND condition (all fields must be truthy)
+ * - [if field:a and field:b]...[/if] - AND condition (alternative syntax)
  * - [show_all exclude="field1,field2"] - Show all fields except excluded ones
  * - [show_field name="fieldname" label="Custom Label"] - Show single field with custom label
  */
@@ -124,11 +126,22 @@ class EmailTemplateParser
     }
 
     /**
-     * Evaluate a condition string that may contain ||, &&
+     * Evaluate a condition string that may contain ||, &&, or, and
      */
     protected function evaluateCondition(string $conditionString): bool
     {
         // Check for OR operator first (lowest precedence)
+        // Support both " or " (word) and "||" (symbols)
+        if (preg_match('/\s+or\s+/i', $conditionString)) {
+            $parts = preg_split('/\s+or\s+/i', $conditionString);
+            foreach ($parts as $part) {
+                if ($this->evaluateCondition(trim($part))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         if (strpos($conditionString, '||') !== false) {
             $parts = explode('||', $conditionString);
             foreach ($parts as $part) {
@@ -140,6 +153,17 @@ class EmailTemplateParser
         }
 
         // Check for AND operator
+        // Support both " and " (word) and "&&" (symbols)
+        if (preg_match('/\s+and\s+/i', $conditionString)) {
+            $parts = preg_split('/\s+and\s+/i', $conditionString);
+            foreach ($parts as $part) {
+                if (!$this->evaluateCondition(trim($part))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         if (strpos($conditionString, '&&') !== false) {
             $parts = explode('&&', $conditionString);
             foreach ($parts as $part) {

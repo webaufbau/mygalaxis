@@ -4,10 +4,10 @@
 
     <h2>Ihr Firmenbereich im Überblick:</h2>
 
-    <h3>1️⃣ Übersicht</h3>
+    <h3>1. Übersicht</h3>
     <p>Hier sehen Sie alle Aktivitäten Ihres Kontos, gekaufte Angebote, Kaufdatum und Beträge.</p>
 
-    <h3>2️⃣ Filter</h3>
+    <h3>2. Filter</h3>
     <p>Legen Sie fest, welche Angebote für Sie interessant sind:</p>
     <ul>
         <li>Branchen: z.B. Umzug, Reinigung, Maler, Gartenpflege, Sanitär usw.</li>
@@ -28,27 +28,27 @@
         ?></li>
     </ul>
 
-    <h3>3️⃣ Offene Anfragen</h3>
+    <h3>3. Offene Anfragen</h3>
     <p>Alle aktuellen Angebote, die noch verfügbar sind. Sehen Sie sich Details, Ort, Datum und Preis an und kaufen Sie passende Anfragen.</p>
 
-    <h3>4️⃣ Finanzen</h3>
+    <h3>4. Finanzen</h3>
     <p>Verwalten Sie Ihr Guthaben, sehen Sie Ihre Transaktionen und behalten Sie Ausgaben und Einnahmen im Blick.</p>
 
-    <h3>5️⃣ Agenda</h3>
+    <h3>5. Agenda</h3>
     <p>Planen Sie Ihre Aktivitäten und blockieren Sie E-Mails an bestimmten Tagen, z.B. Wochenenden oder Urlaub.</p>
 
-    <h3>6️⃣ Mein Konto</h3>
+    <h3>6. Mein Konto</h3>
     <p>Verwalten Sie Ihre Firmeninformationen, Spracheinstellungen und aktivieren oder deaktivieren Sie den automatischen Kauf passender Angebote.</p>
 
-    <h3>7️⃣ Bewertungen</h3>
+    <h3>7. Bewertungen</h3>
     <p>Erhalten Sie Feedback von Kunden, sehen Sie Ihre durchschnittliche Bewertung und die Anzahl der gekauften Anfragen.</p>
 
-    <h3>8️⃣ Abmelden</h3>
+    <h3>8. Abmelden</h3>
     <p>Loggen Sie sich sicher aus Ihrem Konto aus.</p>
 
-    <p>Wir wünschen Ihnen viel Erfolg mit <?=$website_name;?>! 💼</p>
+    <p>Wir wünschen Ihnen viel Erfolg mit <?=$website_name;?>!</p>
 
-    <a href="<?= esc($backend_url) ?>" class="button">Zu Ihrem Dashboard</a>
+    <a href="<?= esc($backend_url) ?>" class="button">Zu Ihrem Konto</a>
 
     <p style="font-size:12px;color:#888888;">
         <?=$website_name;?> – Ihr Portal für passende Firmenanfragen.

@@ -154,3 +154,30 @@ git_deploy_token.php
 public/.htaccess
 public/adminer.php
 public/git-deploy/.htaccess
+
+#-------------------------
+# Screenshots & Images in Root
+#-------------------------
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.webp
+
+#-------------------------
+# SQL Dumps & Database Files
+#-------------------------
+/*.sql
+writable/dumps/*
+!writable/dumps/.gitkeep
+
+#-------------------------
+# Deployment & Test Scripts in Root
+#-------------------------
+/deploy-*.sh
+/deploy-*.log
+/update_*.php
+/update_*.sql
+/test-*.php
+/test-*.sql
+/*-Template.txt
