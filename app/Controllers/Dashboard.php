@@ -261,6 +261,26 @@ class Dashboard extends Controller
             $totalMissed = 0; // Sicherheitskorrektur
         }
 
+        // Affiliate/Referral System
+        $userModel = new \App\Models\UserModel();
+        $referralModel = new \App\Models\ReferralModel();
+
+        // Generiere affiliate_code falls noch nicht vorhanden
+        if (empty($user->affiliate_code)) {
+            $affiliateCode = $this->generateAffiliateCode();
+            $userModel->update($user->id, ['affiliate_code' => $affiliateCode]);
+            $user->affiliate_code = $affiliateCode;
+        }
+
+        // Lade Referral-Statistiken
+        $referralStats = $referralModel->getUserStats($user->id);
+
+        // Lade Referrals
+        $referrals = $referralModel->getReferralsByUser($user->id);
+
+        // Generiere Affiliate-Link
+        $affiliateLink = base_url('register?ref=' . $user->affiliate_code);
+
         $data = [
             'title' => 'Dashboard',
             'user' => $user,
@@ -269,9 +289,30 @@ class Dashboard extends Controller
             'totalSpent' => 0,
             'totalPurchased' => $totalPurchased,
             'totalMissed' => $totalMissed,
+            'affiliateLink' => $affiliateLink,
+            'referralStats' => $referralStats,
+            'referrals' => $referrals,
         ];
 
         return view('account/dashboard', $data);
+    }
+
+    /**
+     * Generiert einen eindeutigen Affiliate-Code
+     */
+    private function generateAffiliateCode(): string
+    {
+        $userModel = new \App\Models\UserModel();
+
+        do {
+            // Generiere einen 8-stelligen Code aus Buchstaben und Zahlen
+            $code = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+
+            // Prüfe ob Code bereits existiert
+            $exists = $userModel->where('affiliate_code', $code)->first();
+        } while ($exists);
+
+        return $code;
     }
 
     /**

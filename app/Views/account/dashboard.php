@@ -232,7 +232,157 @@
     </div>
 <?php endif; ?>
 
+<!-- Affiliate Link Section -->
+<div class="mt-5">
+    <h2 class="mb-3">
+        <i class="bi bi-share-fill me-2"></i>Empfehlungsprogramm
+    </h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="card-text">
+                Empfehlen Sie <?= esc(siteconfig()->name) ?> an andere Dienstleister und verdienen Sie Geld!
+                Teilen Sie Ihren persönlichen Link und erhalten Sie eine Provision für jeden neuen Kunden.
+            </p>
+
+            <div class="input-group mb-3">
+                <input type="text"
+                       class="form-control"
+                       id="affiliateLink"
+                       value="<?= esc($affiliateLink) ?>"
+                       readonly>
+                <button class="btn btn-primary"
+                        type="button"
+                        onclick="copyAffiliateLink()">
+                    <i class="bi bi-clipboard me-1"></i>Link kopieren
+                </button>
+            </div>
+
+            <div class="alert alert-info mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>So funktioniert's:</strong> Teilen Sie Ihren Link mit anderen Dienstleistern.
+                Wenn sich jemand über Ihren Link registriert und aktiv wird, erhalten Sie eine Provision.
+            </div>
+        </div>
+    </div>
+
+    <!-- Referral Statistics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary mb-0"><?= $referralStats['total'] ?? 0 ?></h5>
+                    <small class="text-muted">Gesamt Empfehlungen</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning mb-0"><?= $referralStats['pending'] ?? 0 ?></h5>
+                    <small class="text-muted">Ausstehend</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success mb-0"><?= $referralStats['credited'] ?? 0 ?></h5>
+                    <small class="text-muted">Gutgeschrieben</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info mb-0"><?= number_format($referralStats['total_earned'] ?? 0, 2) ?> <?= currency() ?></h5>
+                    <small class="text-muted">Gesamt verdient</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Referrals Table -->
+    <?php if (!empty($referrals)): ?>
+        <h3 class="mb-3">Ihre Empfehlungen</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Empfohlener Benutzer</th>
+                        <th>Registriert am</th>
+                        <th>Status</th>
+                        <th>Provision</th>
+                        <th>Gutgeschrieben am</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($referrals as $referral): ?>
+                        <tr>
+                            <td><?= esc($referral['referred_username'] ?? 'User #' . $referral['referred_id']) ?></td>
+                            <td><?= date('d.m.Y H:i', strtotime($referral['created_at'])) ?></td>
+                            <td>
+                                <?php
+                                $statusClass = 'secondary';
+                                $statusText = 'Ausstehend';
+                                if ($referral['status'] === 'credited') {
+                                    $statusClass = 'success';
+                                    $statusText = 'Gutgeschrieben';
+                                } elseif ($referral['status'] === 'rejected') {
+                                    $statusClass = 'danger';
+                                    $statusText = 'Abgelehnt';
+                                }
+                                ?>
+                                <span class="badge bg-<?= $statusClass ?>"><?= $statusText ?></span>
+                            </td>
+                            <td>
+                                <?php if (!empty($referral['commission_amount'])): ?>
+                                    <?= number_format($referral['commission_amount'], 2) ?> <?= currency() ?>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($referral['credited_at'])): ?>
+                                    <?= date('d.m.Y', strtotime($referral['credited_at'])) ?>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+</div>
+
 <script>
+    function copyAffiliateLink() {
+        const linkInput = document.getElementById('affiliateLink');
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999); // For mobile devices
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(linkInput.value).then(() => {
+            // Show success feedback
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Kopiert!';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-success');
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-primary');
+            }, 2000);
+        }).catch(err => {
+            console.error('Fehler beim Kopieren:', err);
+            alert('Fehler beim Kopieren des Links. Bitte manuell kopieren.');
+        });
+    }
+
     document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(link => {
         const targetSelector = link.getAttribute('href');
         const iconSelector = link.getAttribute('data-toggle-icon');
