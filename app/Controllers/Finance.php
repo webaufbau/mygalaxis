@@ -140,7 +140,7 @@ class Finance extends BaseController
 
         // Weiterempfehlungs-Daten
         $referralModel = new \App\Models\ReferralModel();
-        $userModel = new UserModel();
+        $userModel = new \App\Models\UserModel();
 
         // Generiere affiliate_code falls noch nicht vorhanden
         if (empty($user->affiliate_code)) {
@@ -968,7 +968,7 @@ class Finance extends BaseController
      */
     private function generateAffiliateCode(): string
     {
-        $userModel = new UserModel();
+        $userModel = new \App\Models\UserModel();
 
         do {
             // Generiere einen 8-stelligen Code aus Buchstaben und Zahlen
