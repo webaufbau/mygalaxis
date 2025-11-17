@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Impostare Settori/Regioni',
-    'categories' => 'Categorie',
+    'categories' => 'Settori',
     'cantonsRegions' => 'Cantoni / Regioni',
     'customZip' => 'CAP personalizzati',
     'customZipPlaceholder' => 'es. 3000, 3012',

@@ -183,11 +183,44 @@ class Offers extends BaseController
         $allCategoryTypes = $categoryOptions->categoryTypes;
 
         // Filter nur die Branchen, die der User ausgewählt hat
+        // und übersetze sie in die aktuelle Sprache
         $userCategoryTypes = [];
         foreach ($userCategories as $categoryKey) {
             if (isset($allCategoryTypes[$categoryKey])) {
-                $userCategoryTypes[$categoryKey] = $allCategoryTypes[$categoryKey];
+                $userCategoryTypes[$categoryKey] = lang('Offers.type.' . $categoryKey);
             }
+        }
+
+        // ============================================================
+        // Statistiken berechnen
+        // ============================================================
+
+        // Zeitraum-Filter aus GET-Parametern
+        $fromMonth = $this->request->getGet('from_month');
+        $fromYear = $this->request->getGet('from_year');
+        $toMonth = $this->request->getGet('to_month');
+        $toYear = $this->request->getGet('to_year');
+
+        // Validierung: Von-Datum darf nicht nach Bis-Datum liegen
+        $statsError = null;
+        if ($fromYear && $toYear) {
+            $fromDate = ($fromYear * 100) + ($fromMonth ?: 1);
+            $toDate = ($toYear * 100) + ($toMonth ?: 12);
+            if ($fromDate > $toDate) {
+                $statsError = lang('Offers.stats.error_invalid_period');
+                $fromMonth = $fromYear = $toMonth = $toYear = null; // Reset filter
+            }
+        }
+
+        // Gefilterte Statistiken (nur für Zeitraum)
+        $filteredStats = $this->calculateStatistics($userId, $fromMonth, $fromYear, $toMonth, $toYear);
+
+        // Fix-Statistiken (seit Registrierung)
+        $totalStats = $this->calculateStatistics($userId, null, null, null, null);
+
+        // Generiere dynamische Titel für Angebote
+        foreach ($offers as &$offer) {
+            $offer['dynamic_title'] = $this->generateDynamicTitle($offer);
         }
 
         return view('offers/index', [
@@ -197,9 +230,165 @@ class Offers extends BaseController
             'categoryTypes' => $userCategoryTypes,
             'filter' => $filter,
             'pager' => $pager,
-            'title' => lang('Offers.title')
+            'title' => lang('Offers.title'),
+            'filteredStats' => $filteredStats,
+            'totalStats' => $totalStats,
+            'fromMonth' => $fromMonth,
+            'fromYear' => $fromYear,
+            'toMonth' => $toMonth,
+            'toYear' => $toYear,
+            'statsError' => $statsError,
         ]);
 
+    }
+
+    /**
+     * Generiert einen dynamischen, übersetzten Titel für ein Angebot
+     */
+    private function generateDynamicTitle($offer): string
+    {
+        // Typ übersetzen
+        $typeKey = $offer['type'];
+        $translatedType = lang('Offers.type.' . $typeKey);
+
+        // Stadt
+        $city = $offer['city'] ?? '';
+
+        // Form fields parsen
+        $formFields = [];
+        if (!empty($offer['form_fields'])) {
+            $formFields = json_decode($offer['form_fields'], true) ?? [];
+        }
+
+        // Branchenspezifische Titelgenerierung
+        $titleParts = [$translatedType];
+
+        if (!empty($city)) {
+            // "move" verwendet "von", alle anderen "in"
+            $preposition = ($typeKey === 'move' || $typeKey === 'move_cleaning')
+                ? lang('Offers.title_from')
+                : lang('Offers.title_in');
+
+            $titleParts[] = $preposition;
+            $titleParts[] = $city;
+        }
+
+        // Zusätzliche Details je nach Branche
+        $additionalInfo = $this->extractAdditionalTitleInfo($typeKey, $formFields);
+        if (!empty($additionalInfo)) {
+            $titleParts[] = $additionalInfo;
+        }
+
+        return implode(' ', $titleParts);
+    }
+
+    /**
+     * Extrahiert branchenspezifische Zusatzinformationen für den Titel
+     */
+    private function extractAdditionalTitleInfo(string $typeKey, array $formFields): string
+    {
+        $parts = [];
+
+        switch ($typeKey) {
+            case 'move':
+            case 'move_cleaning':
+                // Umzug: Zimmeranzahl aus auszug_zimmer oder einzug_zimmer
+                $rooms = $formFields['auszug_zimmer']
+                    ?? $formFields['einzug_zimmer']
+                    ?? $formFields['zimmer']
+                    ?? null;
+
+                if ($rooms) {
+                    $parts[] = $rooms . ' ' . lang('Offers.title_rooms');
+                }
+                break;
+
+            case 'cleaning':
+                // Reinigung: Zimmeranzahl aus verschiedenen Quellen
+                $rooms = null;
+
+                // Versuche aus wohnung_groesse (z.B. "3-Zimmer", "5-Zimmer")
+                if (isset($formFields['wohnung_groesse']) && $formFields['wohnung_groesse'] !== 'Andere') {
+                    $rooms = $formFields['wohnung_groesse'];
+                }
+                // Oder aus komplett_anzahlzimmer
+                elseif (isset($formFields['komplett_anzahlzimmer'])) {
+                    $rooms = $formFields['komplett_anzahlzimmer'] . ' ' . lang('Offers.title_rooms');
+                }
+                // Oder aus anderen Zimmerfeldnamen
+                elseif (isset($formFields['zimmer'])) {
+                    $rooms = $formFields['zimmer'] . ' ' . lang('Offers.title_rooms');
+                }
+                // Oder wohnung_groesse_andere (wenn "Andere" gewählt)
+                elseif (isset($formFields['wohnung_groesse_andere'])) {
+                    $rooms = $formFields['wohnung_groesse_andere'] . ' ' . lang('Offers.title_rooms');
+                }
+
+                if ($rooms) {
+                    $parts[] = $rooms;
+                }
+
+                // Objektart (z.B. "EFH", "Einfamilienhaus")
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                }
+                break;
+
+            case 'painting':
+            case 'painter':
+                // Malerarbeiten: Objektart oder Neubau-Status
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                } elseif (isset($formFields['neubau']) && $formFields['neubau'] === 'Ja') {
+                    $parts[] = lang('Offers.title_neubau');
+                }
+                break;
+
+            case 'gardening':
+            case 'gardener':
+                // Gartenpflege: Dienstleistungen
+                $services = [];
+                if (isset($formFields['holz_wpc_dielen']) && $formFields['holz_wpc_dielen'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_decking');
+                }
+                if (isset($formFields['teich_arbeiten']) && $formFields['teich_arbeiten'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_pond');
+                }
+                if (isset($formFields['hecken_baeume']) && $formFields['hecken_baeume'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_hedges');
+                }
+                if (isset($formFields['rasen']) && $formFields['rasen'] === 'Ja') {
+                    $services[] = lang('Offers.title_gardening_lawn');
+                }
+
+                if (!empty($services)) {
+                    $parts[] = implode(', ', $services);
+                }
+                break;
+
+            case 'plumbing':
+                // Sanitär: Objektart
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                } elseif (isset($formFields['property_type']) && !empty($formFields['property_type'])) {
+                    $parts[] = $formFields['property_type'];
+                }
+                break;
+
+            case 'electrician':
+            case 'flooring':
+            case 'heating':
+            case 'tiling':
+            case 'furniture_assembly':
+                // Andere Branchen: Objektart falls vorhanden
+                if (isset($formFields['objektart']) && !empty($formFields['objektart'])) {
+                    $parts[] = $formFields['objektart'];
+                }
+                break;
+        }
+
+        // Verbinde mit " - " wenn mehrere Teile vorhanden
+        return !empty($parts) ? '- ' . implode(' - ', $parts) : '';
     }
 
     public function show($id)
@@ -500,6 +689,125 @@ class Offers extends BaseController
         // Auftrag bestätigen...
     }
 
+    /**
+     * Berechnet Statistiken für gekaufte und nicht gekaufte Anfragen
+     *
+     * @param int $userId User ID
+     * @param string|null $fromMonth Monat von (1-12)
+     * @param string|null $fromYear Jahr von
+     * @param string|null $toMonth Monat bis (1-12)
+     * @param string|null $toYear Jahr bis
+     * @return array Statistiken
+     */
+    private function calculateStatistics($userId, $fromMonth = null, $fromYear = null, $toMonth = null, $toYear = null)
+    {
+        $bookingModel = new \App\Models\BookingModel();
+        $offerModel = new \App\Models\OfferModel();
 
+        // Zeitraum-Filter erstellen
+        $fromDate = null;
+        $toDate = null;
+
+        // Von-Datum: Wenn Jahr angegeben, nutze Jan 1 oder spezifischen Monat
+        if ($fromYear) {
+            $month = $fromMonth ?: 1; // Falls kein Monat, nehme Januar
+            $fromDate = sprintf('%04d-%02d-01 00:00:00', $fromYear, $month);
+        }
+
+        // Bis-Datum: Wenn Jahr angegeben, nutze Dez 31 oder spezifischen Monat
+        if ($toYear) {
+            $month = $toMonth ?: 12; // Falls kein Monat, nehme Dezember
+            $toDate = sprintf('%04d-%02d-%02d 23:59:59', $toYear, $month, cal_days_in_month(CAL_GREGORIAN, $month, $toYear));
+        }
+
+        // Gekaufte Anfragen
+        $purchasedQuery = $bookingModel
+            ->where('user_id', $userId)
+            ->where('type', 'offer_purchase');
+
+        if ($fromDate) {
+            $purchasedQuery->where('created_at >=', $fromDate);
+        }
+        if ($toDate) {
+            $purchasedQuery->where('created_at <=', $toDate);
+        }
+
+        $purchasedBookings = $purchasedQuery->findAll();
+        $purchasedCount = count($purchasedBookings);
+        $purchasedTotal = abs(array_sum(array_column($purchasedBookings, 'paid_amount')));
+        $purchasedAvg = $purchasedCount > 0 ? $purchasedTotal / $purchasedCount : 0;
+
+        // Nicht gekaufte Anfragen (alle verfügbaren Angebote die der User sehen kann)
+        $purchasedOfferIds = array_column($purchasedBookings, 'reference_id');
+
+        // Hier müssen wir die gleiche Logik wie in index() verwenden
+        $user = auth()->user();
+        $userCantons = $user->filter_cantons ?? [];
+        $userRegions = $user->filter_regions ?? [];
+        $userCategories = $user->filter_categories ?? [];
+        $userCustomZips = $user->filter_custom_zip ?? '';
+
+        if (is_string($userCantons)) {
+            $userCantons = array_filter(array_map('trim', explode(',', $userCantons)));
+        }
+        if (is_string($userRegions)) {
+            $userRegions = array_filter(array_map('trim', explode(',', $userRegions)));
+        }
+        if (is_string($userCategories)) {
+            $userCategories = array_filter(array_map('trim', explode(',', $userCategories)));
+        }
+        $userCustomZips = array_filter(array_map('trim', explode(',', $userCustomZips)));
+
+        $zipcodeService = new \App\Libraries\ZipcodeService();
+        $siteConfig = siteconfig();
+        $siteCountry = $siteConfig->siteCountry ?? null;
+        $relevantZips = $zipcodeService->getZipsByCantonAndRegion($userCantons, $userRegions, $siteCountry);
+        $allZips = array_unique(array_merge($relevantZips, $userCustomZips));
+
+        $notPurchasedQuery = $offerModel->builder()
+            ->where('verified', 1)
+            ->where('price >', 0);
+
+        if (!empty($purchasedOfferIds)) {
+            $notPurchasedQuery->whereNotIn('id', $purchasedOfferIds);
+        }
+
+        if (!empty($allZips)) {
+            $notPurchasedQuery->whereIn('zip', $allZips);
+        }
+
+        if (!empty($userCategories)) {
+            $notPurchasedQuery->groupStart();
+            foreach ($userCategories as $category) {
+                $notPurchasedQuery->orWhere('type', $category);
+            }
+            $notPurchasedQuery->groupEnd();
+        }
+
+        if ($fromDate) {
+            $notPurchasedQuery->where('created_at >=', $fromDate);
+        }
+        if ($toDate) {
+            $notPurchasedQuery->where('created_at <=', $toDate);
+        }
+
+        $notPurchased = $notPurchasedQuery->get()->getResultArray();
+        $notPurchasedCount = count($notPurchased);
+        $notPurchasedTotal = array_sum(array_column($notPurchased, 'price'));
+        $notPurchasedAvg = $notPurchasedCount > 0 ? $notPurchasedTotal / $notPurchasedCount : 0;
+
+        return [
+            'purchased' => [
+                'count' => $purchasedCount,
+                'total' => $purchasedTotal,
+                'avg' => $purchasedAvg,
+            ],
+            'not_purchased' => [
+                'count' => $notPurchasedCount,
+                'total' => $notPurchasedTotal,
+                'avg' => $notPurchasedAvg,
+            ],
+        ];
+    }
 
 }

@@ -2,6 +2,16 @@
 
 return [
     'title' => 'Demandes',
+    'info_text' => 'Ici sont affichés tous les secteurs et projets enregistrés. Vous pouvez sélectionner un ou plusieurs secteurs pour filtrer l\'affichage.',
+    'filter_title' => 'Filtre',
+    'filter_categories_label' => 'Filtrer les secteurs:',
+    'filter_no_categories' => 'Vous n\'avez pas encore sélectionné de secteurs. Veuillez aller à',
+    'filter_no_categories_link' => 'Secteurs/Régions',
+    'filter_no_categories_suffix' => 'pour configurer vos secteurs.',
+    'filter_categories_info' => 'Vous ne voyez que les secteurs que vous avez sélectionnés sous',
+    'filter_categories_info_suffix' => '.',
+    'filter_status_label' => 'Statut:',
+    'filter_reset' => 'Réinitialiser le filtre',
     'searchPlaceholder' => 'Rechercher...',
     'searchAriaLabel' => 'Recherche',
     'allStatuses' => 'Tous les statuts',
@@ -748,4 +758,36 @@ return [
 
     'priceNotAvailable' => 'Prix n.d.',
     'time_suffix' => 'h',
+
+    'title_from' => 'de',
+    'title_in' => 'à',
+    'title_rooms' => 'pièces',
+    'title_sqm' => 'm²',
+    'title_neubau' => 'Nouveau Bâtiment',
+    'title_gardening_decking' => 'Bois / Terrasse WPC',
+    'title_gardening_pond' => 'Travaux d\'Étang',
+    'title_gardening_hedges' => 'Haies / Arbres',
+    'title_gardening_lawn' => 'Pelouse',
+
+    // Section statistiques
+    'stats' => [
+        'title' => 'Statistiques & Analyse',
+        'from_month' => 'De (Mois)',
+        'to_month' => 'À (Mois)',
+        'year' => 'Année',
+        'filter_button' => 'Filtrer',
+        'reset_button' => 'Réinitialiser',
+        'period' => 'Période',
+        'purchased' => 'Demandes achetées',
+        'not_purchased' => 'Demandes non achetées',
+        'total_order_value' => 'Valeur totale des commandes',
+        'in_period' => 'durant la période sélectionnée',
+        'total_since_registration' => 'Total (depuis l\'inscription)',
+        'total_purchased' => 'Total des demandes achetées',
+        'total_not_purchased' => 'Total des demandes non achetées',
+        'pieces' => 'Pièces',
+        'total' => 'Total',
+        'average' => 'Moy',
+        'error_invalid_period' => 'Période invalide : La date de début ne peut pas être postérieure à la date de fin.',
+    ],
 ];

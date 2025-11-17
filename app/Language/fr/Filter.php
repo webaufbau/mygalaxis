@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Définir Secteurs/Régions',
-    'categories' => 'Catégories',
+    'categories' => 'Secteurs',
     'cantonsRegions' => 'Cantons / Régions',
     'customZip' => 'NPA personnalisé',
     'customZipPlaceholder' => 'par ex. 3000, 3012',

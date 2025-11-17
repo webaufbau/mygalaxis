@@ -2,6 +2,16 @@
 
 return [
     'title' => 'Anfragen',
+    'info_text' => 'Hier werden alle Branchen und Projekte angezeigt, die registriert wurden. Sie können einzelne oder mehrere Branchen auswählen, um die Anzeige zu filtern.',
+    'filter_title' => 'Filter',
+    'filter_categories_label' => 'Branchen filtern:',
+    'filter_no_categories' => 'Sie haben noch keine Branchen ausgewählt. Bitte gehen Sie zu',
+    'filter_no_categories_link' => 'Branchen/Regionen',
+    'filter_no_categories_suffix' => 'um Ihre Branchen zu konfigurieren.',
+    'filter_categories_info' => 'Sie sehen nur die Branchen, die Sie unter',
+    'filter_categories_info_suffix' => 'ausgewählt haben.',
+    'filter_status_label' => 'Status:',
+    'filter_reset' => 'Filter zurücksetzen',
     'searchPlaceholder' => 'Suchen...',
     'searchAriaLabel' => 'Suche',
     'allStatuses' => 'Alle Status',
@@ -742,4 +752,36 @@ return [
 
     'priceNotAvailable' => 'Preis n.v.',
     'time_suffix' => 'Uhr',
+
+    'title_from' => 'von',
+    'title_in' => 'in',
+    'title_rooms' => 'Zi',
+    'title_sqm' => 'm²',
+    'title_neubau' => 'Neubau',
+    'title_gardening_decking' => 'Holz / WPC Dielen',
+    'title_gardening_pond' => 'Teich-Arbeiten',
+    'title_gardening_hedges' => 'Hecken / Bäume',
+    'title_gardening_lawn' => 'Rasen',
+
+    // Statistik-Sektion
+    'stats' => [
+        'title' => 'Statistiken & Auswertung',
+        'from_month' => 'Von (Monat)',
+        'to_month' => 'Bis (Monat)',
+        'year' => 'Jahr',
+        'filter_button' => 'Filtern',
+        'reset_button' => 'Zurücksetzen',
+        'period' => 'Zeitraum',
+        'purchased' => 'Gekaufte Anfragen',
+        'not_purchased' => 'Nicht gekaufte Anfragen',
+        'total_order_value' => 'Total Bestellwert',
+        'in_period' => 'im gewählten Zeitraum',
+        'total_since_registration' => 'Gesamt (seit Registrierung)',
+        'total_purchased' => 'Total gekaufte Anfragen',
+        'total_not_purchased' => 'Total nicht gekaufte Anfragen',
+        'pieces' => 'Stk',
+        'total' => 'Total',
+        'average' => 'Ø',
+        'error_invalid_period' => 'Ungültiger Zeitraum: Das Von-Datum darf nicht nach dem Bis-Datum liegen.',
+    ],
 ];

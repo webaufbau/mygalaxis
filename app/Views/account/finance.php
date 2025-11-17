@@ -14,7 +14,7 @@
             <div class="card-body">
                 <!-- Aktueller Saldo -->
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                    <span class="fs-5"><strong>Saldo:</strong></span>
+                    <span class="fs-5"><strong><?= esc(lang('Finance.balance')) ?>:</strong></span>
                     <span class="fs-3 fw-bold <?= $balance >= 0 ? 'text-success' : 'text-danger' ?>">
                         <?= number_format($balance, 2, ".", "'") ?> <?= currency() ?>
                     </span>
@@ -23,11 +23,11 @@
                 <!-- Aufschlüsselung -->
                 <div class="small">
                     <div class="d-flex justify-content-between mb-2">
-                        <span><i class="bi bi-plus-circle me-1 text-primary"></i>Einzahlungen:</span>
+                        <span><i class="bi bi-plus-circle me-1 text-primary"></i><?= esc(lang('Finance.deposits')) ?>:</span>
                         <span class="text-primary"><?= number_format($topups, 2, ".", "'") ?> <?= currency() ?></span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span><i class="bi bi-dash-circle me-1 text-danger"></i>Ausgaben:</span>
+                        <span><i class="bi bi-dash-circle me-1 text-danger"></i><?= esc(lang('Finance.expenses')) ?>:</span>
                         <span class="text-danger"><?= number_format($expenses, 2, ".", "'") ?> <?= currency() ?></span>
                     </div>
                 </div>
@@ -37,7 +37,7 @@
         <!-- Guthaben aufladen -->
         <div class="card shadow-sm">
             <div class="card-header bg-success text-white">
-                <strong><i class="bi bi-plus-circle me-2"></i>Guthaben aufladen</strong>
+                <strong><i class="bi bi-plus-circle me-2"></i><?= esc(lang('Finance.topupButton')) ?></strong>
             </div>
             <div class="card-body">
                 <form action="<?= site_url('finance/topup') ?>" method="post" id="topupForm">
@@ -45,7 +45,7 @@
 
                     <!-- Schnell-Auswahl Buttons -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Betrag wählen:</label>
+                        <label class="form-label fw-bold"><?= esc(lang('Finance.selectAmount')) ?>:</label>
                         <div class="d-flex flex-wrap gap-2">
                             <button type="button" class="btn btn-outline-success topup-quick-btn" data-amount="10">10 <?= currency() ?></button>
                             <button type="button" class="btn btn-outline-success topup-quick-btn" data-amount="20">20 <?= currency() ?></button>
@@ -58,12 +58,12 @@
 
                     <!-- Eigener Betrag -->
                     <div class="mb-3">
-                        <label for="amount" class="form-label fw-bold">Oder eigenen Betrag eingeben:</label>
+                        <label for="amount" class="form-label fw-bold"><?= esc(lang('Finance.orEnterCustomAmount')) ?>:</label>
                         <div class="input-group">
                             <input type="number" step="0.01" min="10" name="amount" id="amount" class="form-control" value="100" required>
                             <span class="input-group-text"><?= currency() ?></span>
                         </div>
-                        <small class="text-muted">Mindestbetrag: 10 <?= currency() ?></small>
+                        <small class="text-muted"><?= esc(lang('Finance.minimumAmount')) ?>: 10 <?= currency() ?></small>
                     </div>
 
                     <!-- AGB Switch -->
@@ -74,7 +74,7 @@
 
                     <!-- Submit Button -->
                     <button type="submit" class="btn btn-success w-100">
-                        <i class="bi bi-credit-card me-1"></i>Jetzt aufladen
+                        <i class="bi bi-credit-card me-1"></i><?= esc(lang('Finance.topupNow')) ?>
                     </button>
                 </form>
             </div>
@@ -83,7 +83,7 @@
         <!-- Hinterlegte Karte -->
         <div class="card shadow-sm mt-4">
             <div class="card-header bg-warning text-dark">
-                <strong><i class="bi bi-credit-card-2-front me-2"></i>Hinterlegte Karte</strong>
+                <strong><i class="bi bi-credit-card-2-front me-2"></i><?= esc(lang('Finance.savedCard')) ?></strong>
             </div>
             <div class="card-body">
                 <?php if ($hasSavedCard): ?>
@@ -93,53 +93,50 @@
                         <i class="bi bi-check-circle me-2"></i>
                         <strong>
                             <?php if (!empty($cardBrand)): ?>
-                                <?= esc($cardBrand) ?> hinterlegt
+                                <?= esc($cardBrand) ?> <?= esc(lang('Finance.savedCardRegistered')) ?>
                             <?php else: ?>
-                                Kreditkarte hinterlegt
+                                <?= esc(lang('Finance.creditCardRegistered')) ?>
                             <?php endif; ?>
                         </strong>
                     </div>
                     <p class="mb-3">
                         <i class="bi bi-shield-check text-success me-2"></i>
                         <?php if (!empty($cardBrand)): ?>
-                            Ihr Zahlungsmittel (<?= esc($cardBrand) ?>) ist sicher bei <strong>Worldline (Saferpay)</strong> gespeichert.
+                            <?= sprintf(lang('Finance.paymentMethodStoredSecurely'), esc($cardBrand)) ?>
                         <?php else: ?>
-                            Ihre Kreditkarte ist sicher bei <strong>Worldline (Saferpay)</strong> gespeichert.
+                            <?= lang('Finance.creditCardStoredSecurely') ?>
                         <?php endif; ?>
                     </p>
                     <div class="d-grid gap-2">
                         <a href="<?= site_url('finance/register-payment-method') ?>" class="btn btn-outline-primary">
-                            <i class="bi bi-pencil me-1"></i>Zahlungsmittel ändern
+                            <i class="bi bi-pencil me-1"></i><?= esc(lang('Finance.changePaymentMethod')) ?>
                         </a>
                     </div>
 
                     <div class="alert alert-light mt-3 mb-0">
                         <i class="bi bi-info-circle me-2"></i>
                         <small>
-                            Wählen Sie zwischen <strong>Kreditkarte oder TWINT</strong>.
-                            Beim Ändern wird die alte Zahlungsmethode ersetzt. Es erfolgt keine Belastung.
+                            <?= lang('Finance.choosePaymentMethodInfo') ?>
                         </small>
                     </div>
                 <?php else: ?>
                     <!-- Noch keine Karte -->
                     <div class="alert alert-warning mb-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Noch keine Karte hinterlegt</strong>
+                        <strong><?= esc(lang('Finance.noCardRegistered')) ?></strong>
                     </div>
                     <p class="mb-3">
-                        Hinterlegen Sie ein Zahlungsmittel, um den automatischen Kauf zu nutzen
-                        oder Guthaben aufzuladen.
+                        <?= esc(lang('Finance.registerPaymentMethodInfo')) ?>
                     </p>
                     <div class="d-grid gap-2">
                         <a href="<?= site_url('finance/register-payment-method') ?>" class="btn btn-primary">
-                            <i class="bi bi-credit-card me-1"></i>Zahlungsmittel hinterlegen
+                            <i class="bi bi-credit-card me-1"></i><?= esc(lang('Finance.registerPaymentMethod')) ?>
                         </a>
                     </div>
                     <div class="alert alert-light mt-3 mb-0">
                         <i class="bi bi-info-circle me-2"></i>
                         <small>
-                            <strong>Verfügbar:</strong> Kreditkarte (Visa, Mastercard) oder TWINT.
-                            Sie können auch beim ersten Guthaben-Aufladen ein Zahlungsmittel hinterlegen.
+                            <?= lang('Finance.availablePaymentMethods') ?>
                         </small>
                     </div>
                 <?php endif; ?>
@@ -152,63 +149,56 @@
         <!-- Sofortkauf Info -->
         <div class="card mb-4 shadow-sm border-info">
             <div class="card-header bg-info text-white">
-                <strong><i class="bi bi-lightning-charge me-2"></i>Sofortkauf & Automatischer Kauf</strong>
+                <strong><i class="bi bi-lightning-charge me-2"></i><?= esc(lang('Finance.instantAutoPurchase')) ?></strong>
             </div>
             <div class="card-body">
                 <h6 class="fw-bold mb-3">
                     <i class="bi bi-check-circle text-success me-2"></i>
-                    Anfragen sofort erhalten – ohne manuellen Kauf!
+                    <?= esc(lang('Finance.getRequestsInstantly')) ?>
                 </h6>
 
                 <p class="mb-3">
-                    Beim <strong>Sofortkauf</strong> erhalten Sie passende Anfragen <strong>sofort nach dem Eingang im System</strong>,
-                    ohne diese vorher anschauen zu müssen. Somit sichern Sie sich zu <strong>100% die Anfragen</strong> –
-                    auch wenn Sie unterwegs oder anderweitig beschäftigt sind.
+                    <?= lang('Finance.instantPurchaseDescription') ?>
                 </p>
 
                 <div class="alert alert-warning mb-3">
                     <small>
                         <i class="bi bi-people-fill me-1"></i>
-                        <strong>Hinweis:</strong> Pro Anfrage können maximal 3 Firmen kaufen.
-                        Wenn Sie den automatischen Kauf aktivieren, werden Sie nach dem <strong>Aktivierungsdatum</strong> berücksichtigt.
-                        Die ersten 3 Firmen (nach Aktivierungsdatum sortiert) mit gültigem Zahlungsmittel erhalten die Anfrage automatisch.
+                        <?= lang('Finance.maxCompaniesNote') ?>
                     </small>
                 </div>
 
-                <h6 class="fw-bold mb-2">So funktioniert's:</h6>
+                <h6 class="fw-bold mb-2"><?= esc(lang('Finance.howItWorks')) ?>:</h6>
                 <ul class="small mb-3">
                     <li class="mb-2">
                         <i class="bi bi-1-circle text-primary me-1"></i>
-                        <strong>Aktivieren Sie unten</strong> den automatischen Kauf
+                        <?= lang('Finance.step1') ?>
                     </li>
                     <li class="mb-2">
                         <i class="bi bi-2-circle text-primary me-1"></i>
-                        System prüft: Guthaben vorhanden ODER hinterlegte Karte verfügbar
+                        <?= esc(lang('Finance.step2')) ?>
                     </li>
                     <li class="mb-2">
                         <i class="bi bi-3-circle text-primary me-1"></i>
-                        System prüft: Sind Sie an diesem Tag über <a href="<?= site_url('agenda') ?>">Agenda</a> blockiert?
+                        <?= sprintf(lang('Finance.step3'), site_url('agenda')) ?>
                     </li>
                     <li class="mb-2">
                         <i class="bi bi-4-circle text-primary me-1"></i>
-                        Wenn alles OK: <strong>Anfrage wird automatisch gekauft</strong>
+                        <?= lang('Finance.step4') ?>
                     </li>
                 </ul>
 
                 <div class="alert alert-info mb-3">
                     <small>
                         <i class="bi bi-info-circle me-1"></i>
-                        <strong>Priorität:</strong> Falls Sie kein Guthaben oder keine Karte hinterlegt haben,
-                        oder an dem Tag blockiert sind, erhält automatisch die nächste Firma in der Warteschlange den Zuschlag.
+                        <?= lang('Finance.priorityNote') ?>
                     </small>
                 </div>
 
                 <div class="alert alert-light mb-0">
                     <i class="bi bi-shield-check text-success me-2"></i>
                     <small>
-                        <strong>Zahlungsmethode:</strong> Beim ersten Kauf werden Ihre Kartendaten sicher bei
-                        <strong>Worldline (Saferpay)</strong> gespeichert. Danach erfolgen alle automatischen Käufe
-                        von Ihrem Guthaben oder Ihrer gespeicherten Karte.
+                        <?= lang('Finance.paymentMethodNote') ?>
                     </small>
                 </div>
             </div>
@@ -217,7 +207,7 @@
         <!-- Einstellungen -->
         <div class="card shadow-sm">
             <div class="card-header bg-secondary text-white">
-                <strong><i class="bi bi-gear me-2"></i>Kaufeinstellungen</strong>
+                <strong><i class="bi bi-gear me-2"></i><?= esc(lang('Finance.purchaseSettings')) ?></strong>
             </div>
             <div class="card-body">
                 <form action="<?= site_url('profile/update') ?>" method="post">
@@ -233,7 +223,7 @@
                             <?= !empty($user->auto_purchase) ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="auto_purchase">
-                            <strong>Automatischer Kauf aktivieren</strong>
+                            <strong><?= esc(lang('Finance.enableAutoPurchase')) ?></strong>
                         </label>
                     </div>
 
@@ -241,25 +231,23 @@
                         <div class="alert alert-success mb-3">
                             <i class="bi bi-calendar-check me-1"></i>
                             <small>
-                                <strong>Aktiviert seit:</strong>
-                                <?= date('d.m.Y H:i', strtotime($user->auto_purchase_activated_at)) ?> Uhr
+                                <strong><?= esc(lang('Finance.activatedSince')) ?>:</strong>
+                                <?= date('d.m.Y H:i', strtotime($user->auto_purchase_activated_at)) ?> <?= esc(lang('Finance.clock')) ?>
                             </small>
                             <br>
                             <small class="text-muted">
-                                Sie befinden sich in der Warteschlange für automatische Käufe.
-                                Die Priorität wird nach diesem Datum bestimmt.
+                                <?= esc(lang('Finance.queueInfo')) ?>
                             </small>
                         </div>
                     <?php endif; ?>
 
                     <p class="small text-muted mb-3">
                         <i class="bi bi-info-circle me-1"></i>
-                        Wenn aktiviert, werden passende Anfragen automatisch für Sie gekauft.
-                        Die Bezahlung erfolgt entweder von Ihrem Guthaben oder direkt von Ihrer gespeicherten Karte.
+                        <?= esc(lang('Finance.autoPurchaseInfo')) ?>
                     </p>
 
                     <button type="submit" class="btn btn-secondary w-100">
-                        <i class="bi bi-check-lg me-1"></i>Einstellungen speichern
+                        <i class="bi bi-check-lg me-1"></i><?= esc(lang('Finance.saveSettings')) ?>
                     </button>
                 </form>
             </div>
@@ -325,7 +313,7 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
     <?php if (!empty($currentMonth) && !empty($currentYear)): ?>
         <a href="<?= site_url('finance/monthly-invoice/' . $currentYear . '/' . $currentMonth) ?>"
            class="btn btn-sm btn-success">
-            <i class="bi bi-file-earmark-text"></i> Monatsrechnung
+            <i class="bi bi-file-earmark-text"></i> <?= esc(lang('Finance.monthlyInvoice')) ?>
         </a>
     <?php endif; ?>
 </form>
@@ -333,22 +321,22 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
 <!-- SECTION 1: Gekaufte Anfragen -->
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="bi bi-basket me-2"></i>Gekaufte Anfragen</h5>
+        <h5 class="mb-0"><i class="bi bi-basket me-2"></i><?= esc(lang('Finance.purchasedRequests')) ?></h5>
     </div>
     <div class="card-body">
         <?php if (empty($purchases)): ?>
-            <div class="alert alert-info mb-0">Keine Käufe im gewählten Zeitraum.</div>
+            <div class="alert alert-info mb-0"><?= esc(lang('Finance.noPurchasesInPeriod')) ?></div>
         <?php else: ?>
             <div class="table-responsive">
                 <table id="purchases-table" class="table table-bordered table-hover align-middle mb-0">
                     <thead class="table-light">
                     <tr>
-                        <th>Datum</th>
-                        <th>Typ</th>
-                        <th>Beschreibung</th>
-                        <th class="text-end">Kartenzahlung</th>
-                        <th class="text-end">Guthaben-Änderung</th>
-                        <th>Rechnung</th>
+                        <th><?= esc(lang('Finance.date')) ?></th>
+                        <th><?= esc(lang('Finance.type')) ?></th>
+                        <th><?= esc(lang('Finance.description')) ?></th>
+                        <th class="text-end"><?= esc(lang('Finance.cardPayment')) ?></th>
+                        <th class="text-end"><?= esc(lang('Finance.balanceChange')) ?></th>
+                        <th><?= esc(lang('Finance.invoice')) ?></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -393,20 +381,20 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
 <!-- SECTION 2: Gutschriftenübersicht -->
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="bi bi-wallet2 me-2"></i>Gutschriftenübersicht</h5>
+        <h5 class="mb-0"><i class="bi bi-wallet2 me-2"></i><?= esc(lang('Finance.creditsOverview')) ?></h5>
     </div>
     <div class="card-body">
         <?php if (empty($credits)): ?>
-            <div class="alert alert-info mb-0">Keine Gutschriften im gewählten Zeitraum.</div>
+            <div class="alert alert-info mb-0"><?= esc(lang('Finance.noCreditsInPeriod')) ?></div>
         <?php else: ?>
             <div class="table-responsive">
                 <table id="credits-table" class="table table-bordered table-hover align-middle mb-0">
                     <thead class="table-light">
                     <tr>
-                        <th>Beleg</th>
-                        <th>Datum</th>
-                        <th class="text-end">Guthaben</th>
-                        <th class="text-end">Saldo</th>
+                        <th><?= esc(lang('Finance.receipt')) ?></th>
+                        <th><?= esc(lang('Finance.date')) ?></th>
+                        <th class="text-end"><?= esc(lang('Finance.credit')) ?></th>
+                        <th class="text-end"><?= esc(lang('Finance.balance')) ?></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -416,16 +404,16 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
                                 <?php if ($entry['amount'] > 0): ?>
                                     <span class="text-success">
                                         <i class="bi bi-plus-circle-fill me-1"></i>
-                                        Aufladung
+                                        <?= esc(lang('Finance.topup')) ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="text-secondary">
                                         <i class="bi bi-dash-circle-fill me-1"></i>
-                                        Abzug
+                                        <?= esc(lang('Finance.deduction')) ?>
                                     </span>
                                 <?php endif; ?>
                             </td>
-                            <td><?= date('d.m.Y H:i', strtotime($entry['created_at'])) ?> Uhr</td>
+                            <td><?= date('d.m.Y H:i', strtotime($entry['created_at'])) ?> <?= esc(lang('Finance.clock')) ?></td>
                             <td class="text-end">
                                 <span class="<?= $entry['amount'] > 0 ? 'text-success' : 'text-secondary' ?>">
                                     <?= $entry['amount'] > 0 ? '+' : '' ?><?= number_format($entry['amount'], 2, ".", "'") ?> <?= currency() ?>
@@ -448,21 +436,21 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
 <!-- SECTION 3: Ausgestellte Monatsrechnungen -->
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-warning text-dark">
-        <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Ausgestellte Monatsrechnungen</h5>
+        <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i><?= esc(lang('Finance.issuedMonthlyInvoices')) ?></h5>
     </div>
     <div class="card-body">
         <?php if (empty($monthlyInvoices)): ?>
-            <div class="alert alert-info mb-0">Keine Monatsrechnungen vorhanden.</div>
+            <div class="alert alert-info mb-0"><?= esc(lang('Finance.noMonthlyInvoices')) ?></div>
         <?php else: ?>
             <div class="table-responsive">
                 <table id="monthly-invoices-table" class="table table-bordered table-hover align-middle mb-0">
                     <thead class="table-light">
                     <tr>
-                        <th>Beleg</th>
-                        <th>Art</th>
-                        <th>Periode</th>
-                        <th>Ausgestellt am</th>
-                        <th class="text-end">Brutto Betrag inkl. MWST</th>
+                        <th><?= esc(lang('Finance.receipt')) ?></th>
+                        <th><?= esc(lang('Finance.invoiceType')) ?></th>
+                        <th><?= esc(lang('Finance.period')) ?></th>
+                        <th><?= esc(lang('Finance.issuedOn')) ?></th>
+                        <th class="text-end"><?= esc(lang('Finance.grossAmountInclVat')) ?></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -474,7 +462,7 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
                                     <i class="bi bi-file-earmark-pdf"></i> <?= esc($invoice['invoice_number']) ?>
                                 </a>
                             </td>
-                            <td>Monatsrechnung</td>
+                            <td><?= esc(lang('Finance.monthlyInvoice')) ?></td>
                             <td>
                                 <?php
                                 $periodDate = DateTime::createFromFormat('Y-m', $invoice['period']);
@@ -501,13 +489,26 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
 
 <script>
 $(document).ready(function() {
+    // DataTables Sprache basierend auf aktueller Benutzersprache
+    <?php
+    $locale = service('request')->getLocale();
+    $dtLanguageMap = [
+        'de' => 'de-DE',
+        'en' => 'en-GB',
+        'fr' => 'fr-FR',
+        'it' => 'it-IT'
+    ];
+    $dtLanguage = $dtLanguageMap[$locale] ?? 'de-DE';
+    ?>
+    const dtLanguageUrl = 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/<?= $dtLanguage ?>.json';
+
     // Gekaufte Anfragen Tabelle
     <?php if (!empty($purchases)): ?>
     $('#purchases-table').DataTable({
         order: [[0, 'desc']], // Nach Datum absteigend sortieren
         pageLength: 25,
         language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+            url: dtLanguageUrl
         },
         columnDefs: [
             { orderable: false, targets: [5] } // Rechnung-Spalte nicht sortierbar
@@ -521,7 +522,7 @@ $(document).ready(function() {
         order: [[1, 'desc']], // Nach Datum absteigend sortieren
         pageLength: 25,
         language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+            url: dtLanguageUrl
         }
     });
     <?php endif; ?>
@@ -532,7 +533,7 @@ $(document).ready(function() {
         order: [[2, 'desc']], // Nach Periode absteigend sortieren
         pageLength: 10,
         language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+            url: dtLanguageUrl
         },
         columnDefs: [
             { orderable: false, targets: [0] } // Beleg-Spalte nicht sortierbar
@@ -546,7 +547,7 @@ $(document).ready(function() {
         order: [[3, 'desc']], // Nach Datum absteigend sortieren
         pageLength: 10,
         language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
+            url: dtLanguageUrl
         }
     });
     <?php endif; ?>
@@ -556,27 +557,27 @@ $(document).ready(function() {
 <!-- SECTION 4: Weiterempfehlungen & Guthaben -->
 <div class="card mb-4 shadow-sm border-success">
     <div class="card-header bg-success text-white">
-        <h5 class="mb-0"><i class="bi bi-people me-2"></i>Weiterempfehlung & Guthaben erhalten</h5>
+        <h5 class="mb-0"><i class="bi bi-people me-2"></i><?= esc(lang('Finance.referralAndCredit')) ?></h5>
     </div>
     <div class="card-body">
         <div class="alert alert-success">
-            <h5><i class="bi bi-gift me-2"></i>Für jede erfolgreich vermittelte Firma erhalten Sie 50 CHF Gutschrift!</h5>
-            <p class="mb-0">Teilen Sie Ihren persönlichen Affiliate-Link und erhalten Sie eine Gutschrift, sobald sich eine neue Firma über Ihren Link registriert und vom Admin genehmigt wird.</p>
+            <h5><i class="bi bi-gift me-2"></i><?= esc(lang('Finance.referralReward')) ?></h5>
+            <p class="mb-0"><?= esc(lang('Finance.referralInfo')) ?></p>
         </div>
 
         <!-- Affiliate Link -->
         <?php if (!empty($affiliateLink)): ?>
         <div class="card mb-4 bg-light">
             <div class="card-body">
-                <h6 class="card-title"><i class="bi bi-link-45deg me-2"></i>Ihr persönlicher Affiliate-Link:</h6>
+                <h6 class="card-title"><i class="bi bi-link-45deg me-2"></i><?= esc(lang('Finance.yourAffiliateLink')) ?>:</h6>
                 <div class="input-group">
                     <input type="text" class="form-control" id="affiliateLink" value="<?= esc($affiliateLink) ?>" readonly>
                     <button class="btn btn-primary" type="button" onclick="copyAffiliateLink()">
-                        <i class="bi bi-clipboard"></i> Kopieren
+                        <i class="bi bi-clipboard"></i> <?= esc(lang('Finance.copy')) ?>
                     </button>
                 </div>
                 <small class="form-text text-muted mt-2 d-block">
-                    Affiliate-Code: <strong><?= esc($affiliateCode) ?></strong>
+                    <?= esc(lang('Finance.affiliateCode')) ?>: <strong><?= esc($affiliateCode) ?></strong>
                 </small>
             </div>
         </div>
@@ -591,7 +592,7 @@ $(document).ready(function() {
             // Visual feedback
             var btn = event.target.closest('button');
             var originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-check"></i> Kopiert!';
+            btn.innerHTML = '<i class="bi bi-check"></i> <?= esc(lang('Finance.copied')) ?>!';
             btn.classList.remove('btn-primary');
             btn.classList.add('btn-success');
 
@@ -610,7 +611,7 @@ $(document).ready(function() {
                 <div class="card text-center">
                     <div class="card-body">
                         <h2 class="text-primary"><?= $referralStats['total'] ?></h2>
-                        <p class="text-muted mb-0">Total Vermittlungen</p>
+                        <p class="text-muted mb-0"><?= esc(lang('Finance.totalReferrals')) ?></p>
                     </div>
                 </div>
             </div>
@@ -618,7 +619,7 @@ $(document).ready(function() {
                 <div class="card text-center">
                     <div class="card-body">
                         <h2 class="text-warning"><?= $referralStats['pending'] ?></h2>
-                        <p class="text-muted mb-0">Ausstehend</p>
+                        <p class="text-muted mb-0"><?= esc(lang('Finance.pending')) ?></p>
                     </div>
                 </div>
             </div>
@@ -626,7 +627,7 @@ $(document).ready(function() {
                 <div class="card text-center">
                     <div class="card-body">
                         <h2 class="text-success"><?= $referralStats['credited'] ?></h2>
-                        <p class="text-muted mb-0">Gutgeschrieben</p>
+                        <p class="text-muted mb-0"><?= esc(lang('Finance.credited')) ?></p>
                     </div>
                 </div>
             </div>
@@ -634,7 +635,7 @@ $(document).ready(function() {
                 <div class="card text-center bg-success text-white">
                     <div class="card-body">
                         <h2><?= number_format($referralStats['total_earned'], 2, '.', "'") ?> CHF</h2>
-                        <p class="mb-0">Verdient</p>
+                        <p class="mb-0"><?= esc(lang('Finance.earned')) ?></p>
                     </div>
                 </div>
             </div>
@@ -643,19 +644,19 @@ $(document).ready(function() {
         <!-- Referrals Tabelle -->
         <?php if (empty($userReferrals)): ?>
             <div class="alert alert-info mb-0">
-                <i class="bi bi-info-circle me-2"></i>Sie haben noch keine Firmen weitervermittelt. Teilen Sie Ihren Affiliate-Link, um Gutschriften zu erhalten!
+                <i class="bi bi-info-circle me-2"></i><?= esc(lang('Finance.noReferralsYet')) ?>
             </div>
         <?php else: ?>
-            <h6 class="mb-3"><i class="bi bi-list-ul me-2"></i>Ihre Weiterempfehlungen:</h6>
+            <h6 class="mb-3"><i class="bi bi-list-ul me-2"></i><?= esc(lang('Finance.yourReferrals')) ?>:</h6>
             <div class="table-responsive">
                 <table id="referrals-table" class="table table-bordered table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Firma</th>
-                            <th>E-Mail</th>
-                            <th>Status</th>
-                            <th>Datum</th>
-                            <th class="text-end">Gutschrift</th>
+                            <th><?= esc(lang('Finance.company')) ?></th>
+                            <th><?= esc(lang('Finance.email')) ?></th>
+                            <th><?= esc(lang('Finance.status')) ?></th>
+                            <th><?= esc(lang('Finance.date')) ?></th>
+                            <th class="text-end"><?= esc(lang('Finance.credit')) ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -678,14 +679,14 @@ $(document).ready(function() {
                                         default => 'bg-secondary'
                                     };
                                     $statusText = match($referral['status']) {
-                                        'pending' => 'Ausstehend',
-                                        'credited' => 'Gutgeschrieben',
-                                        'rejected' => 'Abgelehnt',
+                                        'pending' => lang('Finance.statusPending'),
+                                        'credited' => lang('Finance.statusCredited'),
+                                        'rejected' => lang('Finance.statusRejected'),
                                         default => $referral['status']
                                     };
                                     ?>
                                     <span class="badge <?= $statusBadge ?>">
-                                        <?= $statusText ?>
+                                        <?= esc($statusText) ?>
                                     </span>
                                 </td>
                                 <td>

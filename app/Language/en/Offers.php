@@ -2,6 +2,16 @@
 
 return [
     'title' => 'Requests',
+    'info_text' => 'Here all registered industries and projects are displayed. You can select one or more industries to filter the display.',
+    'filter_title' => 'Filter',
+    'filter_categories_label' => 'Filter industries:',
+    'filter_no_categories' => 'You have not selected any industries yet. Please go to',
+    'filter_no_categories_link' => 'Industries/Regions',
+    'filter_no_categories_suffix' => 'to configure your industries.',
+    'filter_categories_info' => 'You only see the industries that you have selected under',
+    'filter_categories_info_suffix' => '.',
+    'filter_status_label' => 'Status:',
+    'filter_reset' => 'Reset filter',
     'searchPlaceholder' => 'Search...',
     'searchAriaLabel' => 'Search',
     'allStatuses' => 'All statuses',
@@ -749,4 +759,36 @@ return [
 
     'priceNotAvailable' => 'Price n/a',
     'time_suffix' => '',
+
+    'title_from' => 'from',
+    'title_in' => 'in',
+    'title_rooms' => 'rooms',
+    'title_sqm' => 'sqm',
+    'title_neubau' => 'New Building',
+    'title_gardening_decking' => 'Wood / WPC Decking',
+    'title_gardening_pond' => 'Pond Works',
+    'title_gardening_hedges' => 'Hedges / Trees',
+    'title_gardening_lawn' => 'Lawn',
+
+    // Statistics section
+    'stats' => [
+        'title' => 'Statistics & Analysis',
+        'from_month' => 'From (Month)',
+        'to_month' => 'To (Month)',
+        'year' => 'Year',
+        'filter_button' => 'Filter',
+        'reset_button' => 'Reset',
+        'period' => 'Period',
+        'purchased' => 'Purchased Requests',
+        'not_purchased' => 'Not Purchased Requests',
+        'total_order_value' => 'Total Order Value',
+        'in_period' => 'in selected period',
+        'total_since_registration' => 'Total (since registration)',
+        'total_purchased' => 'Total Purchased Requests',
+        'total_not_purchased' => 'Total Not Purchased Requests',
+        'pieces' => 'Pcs',
+        'total' => 'Total',
+        'average' => 'Avg',
+        'error_invalid_period' => 'Invalid period: The from date cannot be later than the to date.',
+    ],
 ];

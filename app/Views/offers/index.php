@@ -5,24 +5,24 @@
 
 <div class="alert alert-info mb-4">
     <i class="bi bi-info-circle me-2"></i>
-    <strong>Hinweis:</strong> Hier werden alle Branchen und Projekte angezeigt, die registriert wurden. Sie können einzelne oder mehrere Branchen auswählen, um die Anzeige zu filtern.
+    <strong><?= lang('General.note') ?? 'Note' ?>:</strong> <?= lang('Offers.info_text') ?>
 </div>
 
 <form method="get" class="mb-4">
     <div class="card">
         <div class="card-header bg-primary text-white">
-            <i class="bi bi-funnel me-2"></i><strong>Filter</strong>
+            <i class="bi bi-funnel me-2"></i><strong><?= lang('Offers.filter_title') ?></strong>
         </div>
         <div class="card-body">
             <!-- Branchen-Filter (Mehrfachauswahl als Buttons) -->
             <div class="mb-3">
-                <label class="form-label fw-bold">Branchen filtern:</label>
+                <label class="form-label fw-bold"><?= lang('Offers.filter_categories_label') ?></label>
                 <?php if (empty($categoryTypes)): ?>
                     <div class="alert alert-warning mb-0">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        Sie haben noch keine Branchen ausgewählt. Bitte gehen Sie zu
-                        <a href="<?= site_url('filter') ?>" class="alert-link">Branchen/Regionen</a>,
-                        um Ihre Branchen zu konfigurieren.
+                        <?= lang('Offers.filter_no_categories') ?>
+                        <a href="<?= site_url('filter') ?>" class="alert-link"><?= lang('Offers.filter_no_categories_link') ?></a>,
+                        <?= lang('Offers.filter_no_categories_suffix') ?>
                     </div>
                 <?php else: ?>
                     <div class="d-flex flex-wrap gap-2">
@@ -45,14 +45,14 @@
                         <?php endforeach; ?>
                     </div>
                     <small class="text-muted d-block mt-2">
-                        <i class="bi bi-info-circle me-1"></i>Sie sehen nur die Branchen, die Sie unter <a href="<?= site_url('filter') ?>">Branchen/Regionen</a> ausgewählt haben.
+                        <i class="bi bi-info-circle me-1"></i><?= lang('Offers.filter_categories_info') ?> <a href="<?= site_url('filter') ?>"><?= lang('Offers.filter_no_categories_link') ?></a> <?= lang('Offers.filter_categories_info_suffix') ?>
                     </small>
                 <?php endif; ?>
             </div>
 
             <!-- Status-Filter -->
             <div class="mb-3">
-                <label class="form-label fw-bold">Status:</label>
+                <label class="form-label fw-bold"><?= lang('Offers.filter_status_label') ?></label>
                 <select name="filter" class="form-select">
                     <option value=""><?= lang('Offers.allStatuses') ?></option>
                     <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.filterAvailable') ?></option>
@@ -65,12 +65,175 @@
                     <i class="bi bi-search me-1"></i><?= lang('Offers.filterButton') ?>
                 </button>
                 <a href="<?= site_url('offers') ?>" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle me-1"></i>Filter zurücksetzen
+                    <i class="bi bi-x-circle me-1"></i><?= lang('Offers.filter_reset') ?>
                 </a>
             </div>
         </div>
     </div>
 </form>
+
+<!-- Statistiken -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white" data-bs-toggle="collapse" data-bs-target="#statsCollapse" style="cursor: pointer;">
+        <i class="bi bi-bar-chart me-2"></i><strong><?= lang('Offers.stats.title') ?></strong>
+        <i class="bi bi-chevron-down float-end" style="transition: transform 0.3s ease;"></i>
+    </div>
+    <div id="statsCollapse" class="collapse <?= (auth()->user()->stats_always_open || ($fromYear && $toYear)) ? 'show' : '' ?>">
+        <div class="card-body">
+        <?php if (!empty($statsError)): ?>
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i><?= esc($statsError) ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Zeitraum-Filter -->
+        <form method="get" class="mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-bold"><?= lang('Offers.stats.from_month') ?></label>
+                    <select name="from_month" class="form-select">
+                        <option value="">-</option>
+                        <?php
+                        $months = lang('General.months');
+                        for ($m = 1; $m <= 12; $m++):
+                        ?>
+                            <option value="<?= $m ?>" <?= ($fromMonth == $m) ? 'selected' : '' ?>>
+                                <?= $months[$m] ?>
+                            </option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold"><?= lang('Offers.stats.year') ?> *</label>
+                    <select name="from_year" class="form-select" required>
+                        <option value="">-</option>
+                        <?php
+                        $currentYear = (int)date('Y');
+                        $startYear = max(2025, $currentYear - 5); // Start bei 2025 (Plattform-Start)
+                        $endYear = $currentYear + 2; // 2 Jahre in die Zukunft
+                        for ($y = $endYear; $y >= $startYear; $y--):
+                        ?>
+                            <option value="<?= $y ?>" <?= ($fromYear == $y) ? 'selected' : '' ?>>
+                                <?= $y ?>
+                            </option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold"><?= lang('Offers.stats.to_month') ?></label>
+                    <select name="to_month" class="form-select">
+                        <option value="">-</option>
+                        <?php for ($m = 1; $m <= 12; $m++): ?>
+                            <option value="<?= $m ?>" <?= ($toMonth == $m) ? 'selected' : '' ?>>
+                                <?= $months[$m] ?>
+                            </option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold"><?= lang('Offers.stats.year') ?> *</label>
+                    <select name="to_year" class="form-select" required>
+                        <option value="">-</option>
+                        <?php
+                        for ($y = $endYear; $y >= $startYear; $y--):
+                        ?>
+                            <option value="<?= $y ?>" <?= ($toYear == $y) ? 'selected' : '' ?>>
+                                <?= $y ?>
+                            </option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter me-1"></i><?= lang('Offers.stats.filter_button') ?>
+                    </button>
+                    <a href="<?= site_url('offers') ?>" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i><?= lang('Offers.stats.reset_button') ?>
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <hr>
+
+        <!-- Gefilterte Statistiken (nur wenn Zeitraum gesetzt) -->
+        <?php if ($fromYear && $toYear): ?>
+        <div class="alert alert-light border mb-3">
+            <h6 class="mb-3">
+                <i class="bi bi-calendar-range me-2"></i><?= lang('Offers.stats.period') ?>:
+                <?php if ($fromMonth): ?>
+                    <?= $months[$fromMonth] ?>
+                <?php endif; ?>
+                <?= $fromYear ?>
+                -
+                <?php if ($toMonth): ?>
+                    <?= $months[$toMonth] ?>
+                <?php endif; ?>
+                <?= $toYear ?>
+            </h6>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="card bg-success bg-opacity-10 border-success h-100">
+                        <div class="card-body">
+                            <h6 class="card-title"><?= lang('Offers.stats.purchased') ?></h6>
+                            <p class="mb-1"><strong><?= number_format($filteredStats['purchased']['count'], 0, ',', "'") ?> <?= lang('Offers.stats.pieces') ?></strong></p>
+                            <p class="mb-1"><?= lang('Offers.stats.total') ?>: <?= currency() ?> <?= number_format($filteredStats['purchased']['total'], 2, '.', "'") ?></p>
+                            <p class="mb-0 text-muted"><?= lang('Offers.stats.average') ?> <?= currency() ?> <?= number_format($filteredStats['purchased']['avg'], 2, '.', "'") ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-warning bg-opacity-10 border-warning h-100">
+                        <div class="card-body">
+                            <h6 class="card-title"><?= lang('Offers.stats.not_purchased') ?></h6>
+                            <p class="mb-1"><strong><?= number_format($filteredStats['not_purchased']['count'], 0, ',', "'") ?> <?= lang('Offers.stats.pieces') ?></strong></p>
+                            <p class="mb-1"><?= lang('Offers.stats.total') ?>: <?= currency() ?> <?= number_format($filteredStats['not_purchased']['total'], 2, '.', "'") ?></p>
+                            <p class="mb-0 text-muted"><?= lang('Offers.stats.average') ?> <?= currency() ?> <?= number_format($filteredStats['not_purchased']['avg'], 2, '.', "'") ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-primary bg-opacity-10 border-primary h-100">
+                        <div class="card-body">
+                            <h6 class="card-title"><?= lang('Offers.stats.total_order_value') ?></h6>
+                            <p class="mb-1"><strong><?= currency() ?> <?= number_format($filteredStats['purchased']['total'] + $filteredStats['not_purchased']['total'], 2, '.', "'") ?></strong></p>
+                            <p class="mb-0 text-muted"><?= lang('Offers.stats.in_period') ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Fix-Statistiken (seit Registrierung) -->
+        <h6 class="mb-3">
+            <i class="bi bi-infinity me-2"></i><?= lang('Offers.stats.total_since_registration') ?>
+        </h6>
+        <div class="row text-center">
+            <div class="col-md-6">
+                <div class="card bg-success bg-opacity-10 border-success h-100">
+                    <div class="card-body">
+                        <h6 class="card-title"><?= lang('Offers.stats.total_purchased') ?></h6>
+                        <p class="mb-1"><strong><?= number_format($totalStats['purchased']['count'], 0, ',', "'") ?> <?= lang('Offers.stats.pieces') ?></strong></p>
+                        <p class="mb-1"><?= lang('Offers.stats.total') ?>: <?= currency() ?> <?= number_format($totalStats['purchased']['total'], 2, '.', "'") ?></p>
+                        <p class="mb-0 text-muted"><?= lang('Offers.stats.average') ?> <?= currency() ?> <?= number_format($totalStats['purchased']['avg'], 2, '.', "'") ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-warning bg-opacity-10 border-warning h-100">
+                    <div class="card-body">
+                        <h6 class="card-title"><?= lang('Offers.stats.total_not_purchased') ?></h6>
+                        <p class="mb-1"><strong><?= number_format($totalStats['not_purchased']['count'], 0, ',', "'") ?> <?= lang('Offers.stats.pieces') ?></strong></p>
+                        <p class="mb-1"><?= lang('Offers.stats.total') ?>: <?= currency() ?> <?= number_format($totalStats['not_purchased']['total'], 2, '.', "'") ?></p>
+                        <p class="mb-0 text-muted"><?= lang('Offers.stats.average') ?> <?= currency() ?> <?= number_format($totalStats['not_purchased']['avg'], 2, '.', "'") ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
 
 <?php if (empty($offers)): ?>
     <div class="alert alert-info">
@@ -101,7 +264,7 @@
                     <div class="flex-grow-1 me-3">
                         <span class="title fw-bold d-block">
                             <?= $isPurchased ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '' ?>
-                            <?= esc($offer['title']) ?>
+                            <?= esc($offer['dynamic_title'] ?? $offer['title']) ?>
                         </span>
                         <small class="text-muted">
                             <?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?> ·
@@ -308,6 +471,30 @@
             icon.classList.add('bi-chevron-right');
         });
     });
+
+    // Statistik-Collapse Icon Toggle
+    const statsCollapse = document.getElementById('statsCollapse');
+    const statsHeader = document.querySelector('[data-bs-target="#statsCollapse"]');
+    if (statsCollapse && statsHeader) {
+        const chevronIcon = statsHeader.querySelector('.bi-chevron-down');
+
+        statsCollapse.addEventListener('show.bs.collapse', () => {
+            if (chevronIcon) {
+                chevronIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        statsCollapse.addEventListener('hide.bs.collapse', () => {
+            if (chevronIcon) {
+                chevronIcon.style.transform = 'rotate(-90deg)';
+            }
+        });
+
+        // Initial state
+        if (!statsCollapse.classList.contains('show') && chevronIcon) {
+            chevronIcon.style.transform = 'rotate(-90deg)';
+        }
+    }
 </script>
 
 <?= $this->endSection() ?>

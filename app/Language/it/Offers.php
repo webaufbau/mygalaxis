@@ -2,6 +2,16 @@
 
 return [
     'title' => 'Richieste',
+    'info_text' => 'Qui vengono visualizzati tutti i settori e progetti registrati. Puoi selezionare uno o più settori per filtrare la visualizzazione.',
+    'filter_title' => 'Filtro',
+    'filter_categories_label' => 'Filtra settori:',
+    'filter_no_categories' => 'Non hai ancora selezionato alcun settore. Vai a',
+    'filter_no_categories_link' => 'Settori/Regioni',
+    'filter_no_categories_suffix' => 'per configurare i tuoi settori.',
+    'filter_categories_info' => 'Vedi solo i settori che hai selezionato sotto',
+    'filter_categories_info_suffix' => '.',
+    'filter_status_label' => 'Stato:',
+    'filter_reset' => 'Ripristina filtro',
     'searchPlaceholder' => 'Cerca...',
     'searchAriaLabel' => 'Cerca',
     'allStatuses' => 'Tutti gli stati',
@@ -748,4 +758,36 @@ return [
 
     'priceNotAvailable' => 'Prezzo n.d.',
     'time_suffix' => '',
+
+    'title_from' => 'da',
+    'title_in' => 'a',
+    'title_rooms' => 'camere',
+    'title_sqm' => 'm²',
+    'title_neubau' => 'Nuovo Edificio',
+    'title_gardening_decking' => 'Legno / Decking WPC',
+    'title_gardening_pond' => 'Lavori Laghetto',
+    'title_gardening_hedges' => 'Siepi / Alberi',
+    'title_gardening_lawn' => 'Prato',
+
+    // Sezione statistiche
+    'stats' => [
+        'title' => 'Statistiche & Analisi',
+        'from_month' => 'Da (Mese)',
+        'to_month' => 'A (Mese)',
+        'year' => 'Anno',
+        'filter_button' => 'Filtra',
+        'reset_button' => 'Ripristina',
+        'period' => 'Periodo',
+        'purchased' => 'Richieste acquistate',
+        'not_purchased' => 'Richieste non acquistate',
+        'total_order_value' => 'Valore totale ordini',
+        'in_period' => 'nel periodo selezionato',
+        'total_since_registration' => 'Totale (dalla registrazione)',
+        'total_purchased' => 'Totale richieste acquistate',
+        'total_not_purchased' => 'Totale richieste non acquistate',
+        'pieces' => 'Pz',
+        'total' => 'Totale',
+        'average' => 'Media',
+        'error_invalid_period' => 'Periodo non valido: La data di inizio non può essere successiva alla data di fine.',
+    ],
 ];

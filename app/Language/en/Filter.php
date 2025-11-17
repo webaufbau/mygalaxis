@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Set Industries/Regions',
-    'categories' => 'Categories',
+    'categories' => 'Industries',
     'cantonsRegions' => 'Cantons / Regions',
     'customZip' => 'Custom ZIP Codes',
     'customZipPlaceholder' => 'e.g. 3000, 3012',
