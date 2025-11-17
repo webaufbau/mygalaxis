@@ -78,7 +78,7 @@
         <i class="bi bi-bar-chart me-2"></i><strong><?= lang('Offers.stats.title') ?></strong>
         <i class="bi bi-chevron-down float-end" style="transition: transform 0.3s ease;"></i>
     </div>
-    <div id="statsCollapse" class="collapse <?= (auth()->user()->stats_always_open || ($fromYear && $toYear)) ? 'show' : '' ?>">
+    <div id="statsCollapse" class="collapse <?= (auth()->user()->stats_always_open || ($fromYear || $toYear || $fromMonth || $toMonth)) ? 'show' : '' ?>">
         <div class="card-body">
         <?php if (!empty($statsError)): ?>
             <div class="alert alert-danger" role="alert">
