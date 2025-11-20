@@ -68,18 +68,30 @@ class RegisterController extends ShieldRegister {
         if (!empty($refCode)) {
             // Store in cookie for 30 days
             helper('cookie');
+
+            // DDEV-kompatibel: secure=false für lokale Entwicklung
+            $isSecure = (ENVIRONMENT === 'production') ? is_https() : false;
+
             set_cookie([
                 'name'   => 'referral_code',
                 'value'  => $refCode,
                 'expire' => 60 * 60 * 24 * 30, // 30 Tage
-                'secure' => is_https(), // Nur über HTTPS wenn verfügbar
+                'secure' => $isSecure,
                 'httponly' => true, // Nicht per JavaScript zugreifbar
                 'samesite' => 'Lax',
+                'domain' => '', // Leer = aktuelle Domain
+                'path' => '/',
             ]);
 
             // Auch in Session speichern als Backup
             session()->set('referral_code', $refCode);
-            log_message('info', "Referral code stored in cookie (30 days) and session: {$refCode}");
+            log_message('info', "Referral code stored: Cookie (secure={$isSecure}, 30d) + Session: {$refCode}");
+        }
+
+        // Debug: Prüfe ob Cookie gesetzt wurde
+        $cookieValue = get_cookie('referral_code');
+        if ($cookieValue) {
+            log_message('debug', "Referral cookie verified immediately after set: {$cookieValue}");
         }
 
         // Call parent method to display registration form
@@ -361,13 +373,23 @@ class RegisterController extends ShieldRegister {
      */
     private function trackReferral($user): void
     {
-        // Check for referral code in cookie first, then session as fallback
+        // Check for referral code in multiple sources (POST hat höchste Priorität)
         helper('cookie');
-        $referralCode = get_cookie('referral_code') ?? session()->get('referral_code');
+        $postCode = $this->request->getPost('referral_code');
+        $cookieCode = get_cookie('referral_code');
+        $sessionCode = session()->get('referral_code');
+
+        log_message('debug', "Referral tracking for user #{$user->id}: POST='" . ($postCode ?: 'empty') . "', Cookie='" . ($cookieCode ?: 'empty') . "', Session='" . ($sessionCode ?: 'empty') . "'");
+
+        // Priorität: POST > Cookie > Session
+        $referralCode = $postCode ?? $cookieCode ?? $sessionCode;
 
         if (empty($referralCode)) {
+            log_message('warning', "No referral code found in POST/Cookie/Session for user #{$user->id}");
             return;
         }
+
+        log_message('info', "Processing referral for user #{$user->id} with code: {$referralCode} (source: " . ($postCode ? 'POST' : ($cookieCode ? 'Cookie' : 'Session')) . ")");
 
         // Find referrer by affiliate code
         $referralModel = new \App\Models\ReferralModel();

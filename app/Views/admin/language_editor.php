@@ -1,3 +1,6 @@
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
+
 <?php
 function renderInputs($translations, $namePrefix) {
     $output = '';
@@ -16,7 +19,7 @@ function renderInputs($translations, $namePrefix) {
 
 ?>
 
-<div class=" mt-5">
+<div class="container-fluid py-4">
     <h2>Texte</h2>
 
     <form action="<?= site_url('admin/language-editor/update'); ?>" method="post" id="language-form">
@@ -95,3 +98,5 @@ function renderInputs($translations, $namePrefix) {
         }
     }
 </script>
+
+<?= $this->endSection() ?>

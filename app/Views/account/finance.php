@@ -313,14 +313,14 @@
                             <br>
                             <small class="text-muted">
                                 <i class="bi bi-info-circle me-1"></i>
-                                Sie sind in der Warteschlange seit diesem Zeitpunkt. Frühere Aktivierungen haben Vorrang bei automatischen Käufen.
+                                <?= esc(lang('Finance.queueInfoShort')) ?>
                             </small>
                         </div>
                     <?php elseif (!empty($user->auto_purchase)): ?>
                         <div class="alert alert-warning mb-3">
                             <i class="bi bi-exclamation-triangle me-1"></i>
                             <small>
-                                <strong>Hinweis:</strong> Aktivierungsdatum fehlt. Bitte speichern Sie die Einstellungen erneut.
+                                <?= lang('Finance.activationDateMissing') ?>
                             </small>
                         </div>
                     <?php endif; ?>
@@ -488,7 +488,15 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
                                 <?php if ($entry['amount'] > 0): ?>
                                     <span class="text-success">
                                         <i class="bi bi-plus-circle-fill me-1"></i>
-                                        <?= esc(lang('Finance.topup')) ?>
+                                        <?php
+                                        // Prüfe ob es eine Weiterempfehlungs-Gutschrift ist
+                                        if (stripos($entry['description'], 'Weiterempfehlungs-Gutschrift') !== false) {
+                                            echo '<i class="bi bi-people-fill me-1"></i>';
+                                            echo esc($entry['description']);
+                                        } else {
+                                            echo esc(lang('Finance.topup'));
+                                        }
+                                        ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="text-secondary">
@@ -497,7 +505,7 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
                                     </span>
                                 <?php endif; ?>
                             </td>
-                            <td><?= date('d.m.Y H:i', strtotime($entry['created_at'])) ?> <?= esc(lang('Finance.clock')) ?></td>
+                            <td data-order="<?= strtotime($entry['created_at']) ?>"><?= date('d.m.Y H:i', strtotime($entry['created_at'])) ?> <?= esc(lang('Finance.clock')) ?></td>
                             <td class="text-end">
                                 <span class="<?= $entry['amount'] > 0 ? 'text-success' : 'text-secondary' ?>">
                                     <?= $entry['amount'] > 0 ? '+' : '' ?><?= number_format($entry['amount'], 2, ".", "'") ?> <?= currency() ?>

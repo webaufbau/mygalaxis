@@ -359,6 +359,16 @@ $currentLocale = service('request')->getLocale();
             <form method="post" action="<?= lang_url('register') ?>" class="needs-validation" novalidate>
                 <?= csrf_field() ?>
 
+                <!-- Referral Code (verstecktes Feld) -->
+                <?php
+                helper('cookie');
+                $request = service('request');
+                $refCode = $request->getGet('ref') ?? get_cookie('referral_code') ?? session()->get('referral_code');
+                if (!empty($refCode)):
+                ?>
+                <input type="hidden" name="referral_code" value="<?= esc($refCode) ?>">
+                <?php endif; ?>
+
                 <!-- Honeypot Protection -->
                 <div class="mb-2 d-none">
                     <label for="registerHP" class="form-label"><?= lang('Auth.registerhp') ?></label>

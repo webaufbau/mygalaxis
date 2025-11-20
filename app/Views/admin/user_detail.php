@@ -541,11 +541,16 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
     <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
         <?php if (!empty($reviews)): ?>
             <?php
+            // Helper-Funktion: Hole Wert aus Array oder Object
+            $getVal = function($item, $key) {
+                return is_array($item) ? ($item[$key] ?? null) : ($item->$key ?? null);
+            };
+
             // Berechne Durchschnittsbewertung
             $totalRating = 0;
             $ratingCount = count($reviews);
             foreach ($reviews as $review) {
-                $totalRating += $review['rating'];
+                $totalRating += $getVal($review, 'rating');
             }
             $averageRating = $ratingCount > 0 ? round($totalRating / $ratingCount, 1) : 0;
             ?>
@@ -579,7 +584,7 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                             // Berechne Bewertungsverteilung
                             $ratingDistribution = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
                             foreach ($reviews as $review) {
-                                $ratingDistribution[$review['rating']]++;
+                                $ratingDistribution[$getVal($review, 'rating')]++;
                             }
                             ?>
                             <?php foreach ([5, 4, 3, 2, 1] as $stars): ?>
@@ -609,32 +614,32 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
                                     <h6 class="mb-1">
-                                        <?= esc($review['created_by_firstname']) ?> <?= esc($review['created_by_lastname']) ?>
-                                        <small class="text-muted">aus <?= esc($review['created_by_zip']) ?> <?= esc($review['created_by_city']) ?></small>
+                                        <?= esc($getVal($review, 'created_by_firstname')) ?> <?= esc($getVal($review, 'created_by_lastname')) ?>
+                                        <small class="text-muted">aus <?= esc($getVal($review, 'created_by_zip')) ?> <?= esc($getVal($review, 'created_by_city')) ?></small>
                                     </h6>
                                     <div class="text-warning">
                                         <?php for ($i = 1; $i <= 5; $i++): ?>
-                                            <?php if ($i <= $review['rating']): ?>
+                                            <?php if ($i <= $getVal($review, 'rating')): ?>
                                                 <i class="bi bi-star-fill"></i>
                                             <?php else: ?>
                                                 <i class="bi bi-star"></i>
                                             <?php endif; ?>
                                         <?php endfor; ?>
-                                        <span class="text-dark ms-2">(<?= $review['rating'] ?>/5)</span>
+                                        <span class="text-dark ms-2">(<?= $getVal($review, 'rating') ?>/5)</span>
                                     </div>
                                 </div>
                                 <small class="text-muted">
-                                    <?= \CodeIgniter\I18n\Time::parse($review['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?>
+                                    <?= \CodeIgniter\I18n\Time::parse($getVal($review, 'created_at'))->setTimezone(app_timezone())->format('d.m.Y H:i') ?>
                                 </small>
                             </div>
-                            <?php if (!empty($review['comment'])): ?>
-                                <p class="mb-1"><?= nl2br(esc($review['comment'])) ?></p>
+                            <?php if (!empty($getVal($review, 'comment'))): ?>
+                                <p class="mb-1"><?= nl2br(esc($getVal($review, 'comment'))) ?></p>
                             <?php endif; ?>
-                            <?php if (!empty($review['offer_id'])): ?>
+                            <?php if (!empty($getVal($review, 'offer_id'))): ?>
                                 <small class="text-muted">
                                     <i class="bi bi-link-45deg"></i>
-                                    <a href="<?= site_url('admin/offer/' . $review['offer_id']) ?>" target="_blank">
-                                        Angebot #<?= $review['offer_id'] ?>
+                                    <a href="<?= site_url('admin/offer/' . $getVal($review, 'offer_id')) ?>" target="_blank">
+                                        Angebot #<?= $getVal($review, 'offer_id') ?>
                                     </a>
                                 </small>
                             <?php endif; ?>

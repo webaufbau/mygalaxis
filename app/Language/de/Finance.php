@@ -127,6 +127,8 @@ return [
     'activatedSince' => 'Aktiviert seit',
     'clock' => 'Uhr',
     'queueInfo' => 'Sie befinden sich in der Warteschlange für automatische Käufe. Die Priorität wird nach diesem Datum bestimmt.',
+    'queueInfoShort' => 'Sie sind in der Warteschlange seit diesem Zeitpunkt. Frühere Aktivierungen haben Vorrang bei automatischen Käufen.',
+    'activationDateMissing' => '<strong>Hinweis:</strong> Aktivierungsdatum fehlt. Bitte speichern Sie die Einstellungen erneut.',
     'autoPurchaseInfo' => 'Wenn aktiviert, werden passende Anfragen automatisch für Sie gekauft. Die Bezahlung erfolgt entweder von Ihrem Guthaben oder direkt von Ihrer gespeicherten Karte.',
     'saveSettings' => 'Einstellungen speichern',
 

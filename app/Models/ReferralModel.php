@@ -101,12 +101,15 @@ class ReferralModel extends Model
     {
         $builder = $this->builder();
 
-        // Join with users to get referrer info
+        // Join with users to get referrer info AND referred user info
         $builder->select('referrals.*,
                           referrer.username as referrer_username,
                           referrer.company_name as referrer_company,
-                          credited_by.username as credited_by_username')
+                          referrer.created_at as referrer_registered_at,
+                          credited_by.username as credited_by_username,
+                          referred.created_at as referred_registered_at')
             ->join('users as referrer', 'referrer.id = referrals.referrer_user_id', 'left')
+            ->join('users as referred', 'referred.id = referrals.referred_user_id', 'left')
             ->join('users as credited_by', 'credited_by.id = referrals.credited_by_user_id', 'left');
 
         // Apply filters

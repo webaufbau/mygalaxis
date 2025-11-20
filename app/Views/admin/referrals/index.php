@@ -106,6 +106,7 @@
                                 <th>Betrag</th>
                                 <th>Datum</th>
                                 <th>Gutgeschrieben von</th>
+                                <th>Admin-Notiz</th>
                                 <th>Aktionen</th>
                             </tr>
                         </thead>
@@ -114,18 +115,40 @@
                                 <tr>
                                     <td><strong><?= esc($referral['id']) ?></strong></td>
                                     <td>
-                                        <strong><?= esc($referral['referrer_company']) ?></strong>
+                                        <a href="<?= site_url('admin/user/' . $referral['referrer_user_id']) ?>" class="text-decoration-none" title="Firma überprüfen" target="_blank">
+                                            <strong><?= esc($referral['referrer_company']) ?></strong>
+                                            <i class="bi bi-box-arrow-up-right ms-1 small text-muted"></i>
+                                        </a>
                                         <br>
                                         <small class="text-muted"><?= esc($referral['referrer_username']) ?></small>
                                     </td>
                                     <td>
-                                        <?php if (!empty($referral['referred_company_name'])): ?>
-                                            <strong><?= esc($referral['referred_company_name']) ?></strong>
+                                        <?php if (!empty($referral['referred_user_id'])): ?>
+                                            <a href="<?= site_url('admin/user/' . $referral['referred_user_id']) ?>" class="text-decoration-none" title="Firma überprüfen" target="_blank">
+                                                <?php if (!empty($referral['referred_company_name'])): ?>
+                                                    <strong><?= esc($referral['referred_company_name']) ?></strong>
+                                                <?php else: ?>
+                                                    <strong><?= esc($referral['referred_email']) ?></strong>
+                                                <?php endif; ?>
+                                                <i class="bi bi-box-arrow-up-right ms-1 small text-muted"></i>
+                                            </a>
                                         <?php else: ?>
-                                            <span class="text-muted">-</span>
+                                            <?php if (!empty($referral['referred_company_name'])): ?>
+                                                <strong><?= esc($referral['referred_company_name']) ?></strong>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= esc($referral['referred_email']) ?></td>
+                                    <td>
+                                        <?php if (!empty($referral['referred_user_id'])): ?>
+                                            <a href="<?= site_url('admin/user/' . $referral['referred_user_id']) ?>" class="text-decoration-none" title="Firma überprüfen">
+                                                <?= esc($referral['referred_email']) ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <?= esc($referral['referred_email']) ?>
+                                        <?php endif; ?>
+                                    </td>
                                     <td>
                                         <small><code><?= esc($referral['ip_address'] ?? '-') ?></code></small>
                                         <?php if (!empty($referral['ip_warning'])): ?>
@@ -170,6 +193,15 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
+                                        <?php if (!empty($referral['admin_note'])): ?>
+                                            <small class="text-muted" title="<?= esc($referral['admin_note']) ?>">
+                                                <?= esc(mb_substr($referral['admin_note'], 0, 50)) ?><?= mb_strlen($referral['admin_note']) > 50 ? '...' : '' ?>
+                                            </small>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
                                         <?php if ($referral['status'] === 'pending'): ?>
                                             <div class="btn-group btn-group-sm" role="group">
                                                 <!-- Gutschrift geben Button mit Modal -->
@@ -200,9 +232,69 @@
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                <p>Gutschrift geben für:</p>
-                                                                <p><strong><?= esc($referral['referrer_company']) ?></strong></p>
-                                                                <p>Neue Firma: <strong><?= esc($referral['referred_email']) ?></strong></p>
+                                                                <div class="alert alert-info">
+                                                                    <h6 class="mb-2"><i class="bi bi-building"></i> Vermittler (erhält Gutschrift):</h6>
+                                                                    <p class="mb-1">
+                                                                        <strong><?= esc($referral['referrer_company']) ?></strong><br>
+                                                                        <small class="text-muted"><?= esc($referral['referrer_username']) ?></small><br>
+                                                                        <?php if (!empty($referral['referrer_registered_at'])): ?>
+                                                                            <small class="text-muted">
+                                                                                <i class="bi bi-calendar-check"></i> Dabei seit:
+                                                                                <?= date('d.m.Y', strtotime($referral['referrer_registered_at'])) ?>
+                                                                                <span class="badge bg-secondary ms-1">
+                                                                                    <?php
+                                                                                    $days = floor((time() - strtotime($referral['referrer_registered_at'])) / 86400);
+                                                                                    echo $days . ' Tage';
+                                                                                    ?>
+                                                                                </span>
+                                                                            </small><br>
+                                                                        <?php endif; ?>
+                                                                        <a href="<?= site_url('admin/user/' . $referral['referrer_user_id']) ?>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                                                            <i class="bi bi-box-arrow-up-right"></i> Firma überprüfen
+                                                                        </a>
+                                                                    </p>
+                                                                </div>
+
+                                                                <div class="alert alert-success">
+                                                                    <h6 class="mb-2"><i class="bi bi-person-plus"></i> Neue Firma (wurde vermittelt):</h6>
+                                                                    <p class="mb-1">
+                                                                        <strong><?= esc($referral['referred_company_name']) ?: 'Kein Firmenname' ?></strong><br>
+                                                                        <small class="text-muted"><?= esc($referral['referred_email']) ?></small><br>
+                                                                        <?php if (!empty($referral['referred_registered_at'])): ?>
+                                                                            <small class="text-muted">
+                                                                                <i class="bi bi-calendar-check"></i> Registriert am:
+                                                                                <?= date('d.m.Y H:i', strtotime($referral['referred_registered_at'])) ?>
+                                                                                <span class="badge bg-success ms-1">
+                                                                                    <?php
+                                                                                    $seconds = time() - strtotime($referral['referred_registered_at']);
+                                                                                    if ($seconds < 60) {
+                                                                                        echo 'vor ' . $seconds . ' Sekunden';
+                                                                                    } elseif ($seconds < 3600) {
+                                                                                        $minutes = floor($seconds / 60);
+                                                                                        echo 'vor ' . $minutes . ' Minute' . ($minutes != 1 ? 'n' : '');
+                                                                                    } elseif ($seconds < 86400) {
+                                                                                        $hours = floor($seconds / 3600);
+                                                                                        echo 'vor ' . $hours . ' Stunde' . ($hours != 1 ? 'n' : '');
+                                                                                    } else {
+                                                                                        $days = floor($seconds / 86400);
+                                                                                        echo 'vor ' . $days . ' Tag' . ($days != 1 ? 'en' : '');
+                                                                                    }
+                                                                                    ?>
+                                                                                </span>
+                                                                            </small><br>
+                                                                        <?php endif; ?>
+                                                                        <?php if (!empty($referral['referred_user_id'])): ?>
+                                                                            <a href="<?= site_url('admin/user/' . $referral['referred_user_id']) ?>" target="_blank" class="btn btn-sm btn-outline-success mt-2">
+                                                                                <i class="bi bi-box-arrow-up-right"></i> Firma überprüfen
+                                                                            </a>
+                                                                        <?php endif; ?>
+                                                                    </p>
+                                                                    <?php if (!empty($referral['ip_address'])): ?>
+                                                                        <small><code>IP: <?= esc($referral['ip_address']) ?></code></small>
+                                                                    <?php endif; ?>
+                                                                </div>
+
+                                                                <hr>
 
                                                                 <div class="mb-3">
                                                                     <label for="amount<?= $referral['id'] ?>" class="form-label">Betrag (CHF):</label>
@@ -213,7 +305,10 @@
                                                                 </div>
 
                                                                 <div class="mb-3">
-                                                                    <label for="note<?= $referral['id'] ?>" class="form-label">Notiz:</label>
+                                                                    <label for="note<?= $referral['id'] ?>" class="form-label">
+                                                                        <strong>Interne Notiz:</strong>
+                                                                        <br><small class="text-muted">Diese Notiz ist nur intern sichtbar und wird NICHT an die Firma gesendet.</small>
+                                                                    </label>
                                                                     <textarea name="note" id="note<?= $referral['id'] ?>"
                                                                               class="form-control" rows="3">Weiterempfehlungs-Gutschrift genehmigt</textarea>
                                                                 </div>
@@ -238,13 +333,40 @@
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                <p>Möchten Sie diese Weiterempfehlung wirklich ablehnen?</p>
-                                                                <p><strong><?= esc($referral['referrer_company']) ?></strong> → <?= esc($referral['referred_email']) ?></p>
+                                                                <div class="alert alert-warning">
+                                                                    <h6 class="mb-2"><i class="bi bi-exclamation-triangle"></i> Möchten Sie diese Weiterempfehlung wirklich ablehnen?</h6>
+                                                                </div>
+
+                                                                <div class="alert alert-light border">
+                                                                    <h6 class="mb-2"><i class="bi bi-building"></i> Vermittler:</h6>
+                                                                    <p class="mb-1">
+                                                                        <strong><?= esc($referral['referrer_company']) ?></strong><br>
+                                                                        <small class="text-muted"><?= esc($referral['referrer_username']) ?></small>
+                                                                    </p>
+                                                                </div>
+
+                                                                <div class="alert alert-light border">
+                                                                    <h6 class="mb-2"><i class="bi bi-person-plus"></i> Neue Firma:</h6>
+                                                                    <p class="mb-1">
+                                                                        <strong><?= esc($referral['referred_company_name']) ?: 'Kein Firmenname' ?></strong><br>
+                                                                        <small class="text-muted"><?= esc($referral['referred_email']) ?></small>
+                                                                        <?php if (!empty($referral['referred_registered_at'])): ?>
+                                                                            <br><small class="text-muted">
+                                                                                <i class="bi bi-calendar-check"></i>
+                                                                                <?= date('d.m.Y H:i', strtotime($referral['referred_registered_at'])) ?>
+                                                                            </small>
+                                                                        <?php endif; ?>
+                                                                    </p>
+                                                                </div>
 
                                                                 <div class="mb-3">
-                                                                    <label for="reject_note<?= $referral['id'] ?>" class="form-label">Grund (optional):</label>
+                                                                    <label for="reject_note<?= $referral['id'] ?>" class="form-label">
+                                                                        <strong>Grund der Ablehnung (optional):</strong>
+                                                                        <br><small class="text-muted">Diese Notiz ist nur intern sichtbar und wird NICHT an die Firma gesendet.</small>
+                                                                    </label>
                                                                     <textarea name="note" id="reject_note<?= $referral['id'] ?>"
-                                                                              class="form-control" rows="3"></textarea>
+                                                                              class="form-control" rows="3"
+                                                                              placeholder="z.B. Fake-Registrierung, gleiche IP-Adresse, Testaccount..."></textarea>
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
