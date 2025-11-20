@@ -23,9 +23,10 @@ class DiscountOldOffers extends BaseCommand
         $calculator = new \App\Libraries\OfferPriceCalculator();
         $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
 
-        // Hol alle Offers
+        // Hol alle Offers - NUR VERIFIZIERTE
         $offers = $offerModel
             ->where('price >', 0)
+            ->where('verified', 1)
             ->findAll();
 
         if (empty($offers)) {

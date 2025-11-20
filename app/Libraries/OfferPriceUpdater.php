@@ -24,6 +24,12 @@ class OfferPriceUpdater
 
     public function updateOfferAndNotify(array $offer): bool
     {
+        // KRITISCHER SECURITY-CHECK: Nur verifizierte Offerten dürfen Rabatt-E-Mails auslösen
+        if (empty($offer['verified']) || $offer['verified'] != 1) {
+            log_message('warning', "Offerte #{$offer['id']} ist nicht verifiziert - keine Rabatt-Benachrichtigungen gesendet");
+            return false;
+        }
+
         // Prüfe ob Offerte ausverkauft ist (>= MAX_PURCHASES paid purchases)
         $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
         $purchaseCount = $offerPurchaseModel

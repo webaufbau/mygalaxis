@@ -23,6 +23,12 @@ class OfferNotificationSender
      */
     public function notifyMatchingUsers(array $offer): int
     {
+        // KRITISCHER SECURITY-CHECK: Nur verifizierte Offerten dürfen E-Mails auslösen
+        if (empty($offer['verified']) || $offer['verified'] != 1) {
+            log_message('warning', "Offerte #{$offer['id']} ist nicht verifiziert - keine Firmen-Benachrichtigungen gesendet");
+            return 0;
+        }
+
         $users = $this->userModel->findAll();
         $today = date('Y-m-d');
         $sentCount = 0;
