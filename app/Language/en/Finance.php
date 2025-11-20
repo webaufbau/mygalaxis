@@ -89,14 +89,14 @@ return [
     'backToOffers' => 'Back to offers',
 
     // Payment Methods
-    'savedCard' => 'Saved Card',
+    'savedCard' => 'Saved Payment Method',
     'savedCardRegistered' => 'registered',
     'creditCardRegistered' => 'Credit card registered',
     'paymentMethodStoredSecurely' => 'Your payment method (%s) is securely stored with <strong>Worldline (Saferpay)</strong>.',
     'creditCardStoredSecurely' => 'Your credit card is securely stored with <strong>Worldline (Saferpay)</strong>.',
     'changePaymentMethod' => 'Change payment method',
     'choosePaymentMethodInfo' => 'Choose between <strong>credit card or TWINT</strong>. Changing will replace the old payment method. No charge will be made.',
-    'noCardRegistered' => 'No card registered yet',
+    'noCardRegistered' => 'No payment method registered yet',
     'registerPaymentMethodInfo' => 'Register a payment method to use automatic purchase or top up your balance.',
     'registerPaymentMethod' => 'Register payment method',
     'availablePaymentMethods' => '<strong>Available:</strong> Credit card (Visa, Mastercard) or TWINT. You can also register a payment method when first topping up your balance.',
@@ -159,4 +159,8 @@ return [
     'statusPending' => 'Pending',
     'statusCredited' => 'Credited',
     'statusRejected' => 'Rejected',
+
+    // Multi-Card System
+    'primaryCardSet' => 'Card was set as primary payment method',
+    'cardRemoved' => 'Card was successfully removed',
 ];
