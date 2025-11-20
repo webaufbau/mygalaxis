@@ -111,6 +111,28 @@ class Finance extends BaseController
         $userPaymentMethods = $userPaymentMethodModel->getUserCards($user->id);
         $hasSavedCard = !empty($userPaymentMethods);
 
+        // Auto-Fix: Wenn Saferpay-Karten vorhanden aber keine als Primary markiert, setze älteste als Primary
+        $saferpayCards = array_filter($userPaymentMethods, fn($c) => $c['payment_method_code'] === 'saferpay');
+        if (!empty($saferpayCards)) {
+            $hasPrimary = false;
+            foreach ($saferpayCards as $card) {
+                if ($card['is_primary'] == 1) {
+                    $hasPrimary = true;
+                    break;
+                }
+            }
+
+            if (!$hasPrimary) {
+                // Setze die älteste Karte als Primary
+                $oldestCard = array_values($saferpayCards)[0]; // bereits nach created_at sortiert
+                $userPaymentMethodModel->update($oldestCard['id'], ['is_primary' => 1]);
+                log_message('info', "Auto-fixed: Set card #{$oldestCard['id']} as primary for user #{$user->id}");
+
+                // Reload nach Update
+                $userPaymentMethods = $userPaymentMethodModel->getUserCards($user->id);
+            }
+        }
+
         // Hole Primary und Secondary Karte
         $primaryCard = $userPaymentMethodModel->getPrimaryCard($user->id);
         $secondaryCard = $userPaymentMethodModel->getSecondaryCard($user->id);
@@ -689,6 +711,9 @@ class Finance extends BaseController
         // Hole gewählten Type (card oder twint)
         $type = $this->request->getGet('type') ?? 'card';
 
+        // Hole replace Parameter (falls User eine Karte ersetzen möchte)
+        $replaceCardId = $this->request->getGet('replace') ?? null;
+
         try {
             // Bei Payment Page wird der Token NICHT in der URL ersetzt
             // Stattdessen speichern wir ihn in der Session
@@ -697,8 +722,11 @@ class Finance extends BaseController
 
             $response = $this->saferpay->insertAliasOnly($successUrl, $failUrl, $type);
 
-            // Token in Session speichern für späteren Assert
+            // Token + replace ID in Session speichern für späteren Assert
             session()->set('alias_insert_token', $response['Token']);
+            if ($replaceCardId) {
+                session()->set('replace_card_id', $replaceCardId);
+            }
 
             log_message('info', 'Alias Insert Token gespeichert in Session für User #' . $user->id . ': ' . $response['Token']);
 
@@ -772,30 +800,137 @@ class Finance extends BaseController
             // WICHTIG: Wir machen KEIN Capture! Die Autorisierung verfällt automatisch.
             // Es wird KEINE Zahlung durchgeführt - nur der Alias wird gespeichert.
 
-            // Lösche alte Zahlungsmethoden für diesen User
             $paymentMethodModel = new UserPaymentMethodModel();
-            $paymentMethodModel->where('user_id', $user->id)
-                ->where('payment_method_code', 'saferpay')
-                ->delete();
 
-            log_message('info', 'Alte Zahlungsmethoden gelöscht für User #' . $user->id);
+            // Extrahiere Kartendetails ZUERST (vor dem Löschen/Prüfen)
+            $cardBrand = $brand['Name'] ?? null;
+            $cardExpMonth = $card['ExpMonth'] ?? null;
+            $cardExpYear = $card['ExpYear'] ?? null;
+            $cardMasked = $paymentMeans['DisplayText'] ?? null;
+
+            // Last 4 Ziffern extrahieren
+            $cardLast4 = null;
+            if ($cardMasked && preg_match('/(\d{4})\s*$/', $cardMasked, $matches)) {
+                $cardLast4 = $matches[1];
+            }
+
+            // Expiry formatieren als MM/YYYY
+            $cardExpiry = null;
+            if ($cardExpMonth && $cardExpYear) {
+                $cardExpiry = sprintf('%02d/%04d', $cardExpMonth, $cardExpYear);
+            }
+
+            // Prüfe wie viele Saferpay-Karten bereits vorhanden sind
+            $existingCards = $paymentMethodModel
+                ->where('user_id', $user->id)
+                ->where('payment_method_code', 'saferpay')
+                ->findAll();
+
+            // DUPLIKAT-PRÜFUNG: Prüfe ob diese Karte (Last4 + ExpYear) bereits existiert
+            foreach ($existingCards as $existingCard) {
+                $existingLast4 = $existingCard['card_last4'];
+                $existingExpiry = $existingCard['card_expiry'];
+
+                // Falls Last4 oder Expiry in provider_data gespeichert sind
+                if (empty($existingLast4) || empty($existingExpiry)) {
+                    $providerData = json_decode($existingCard['provider_data'], true);
+                    if (empty($existingLast4) && !empty($providerData['card_masked'])) {
+                        if (preg_match('/(\d{4})\s*$/', $providerData['card_masked'], $m)) {
+                            $existingLast4 = $m[1];
+                        }
+                    }
+                    if (empty($existingExpiry) && isset($providerData['card_exp_year'])) {
+                        $existingExpiry = sprintf('%02d/%04d', $providerData['card_exp_month'], $providerData['card_exp_year']);
+                    }
+                }
+
+                // Vergleiche Last4 und Expiry
+                if ($existingLast4 === $cardLast4 && $existingExpiry === $cardExpiry) {
+                    log_message('warning', 'Duplikat erkannt: Karte mit Last4=' . $cardLast4 . ' und Expiry=' . $cardExpiry . ' existiert bereits für User #' . $user->id);
+                    return redirect()->to('/finance')->with('error', 'Diese Karte ist bereits hinterlegt. Sie können nicht dieselbe Karte als Primär und Sekundär verwenden.');
+                }
+            }
+
+            // REPLACE-LOGIK: Prüfe ob User eine Karte ersetzen möchte
+            $replaceCardId = session()->get('replace_card_id');
+            $wasPrimary = false;
+
+            if ($replaceCardId) {
+                // Finde die zu ersetzende Karte
+                $cardToReplace = null;
+                foreach ($existingCards as $card) {
+                    if ($card['id'] == $replaceCardId && $card['user_id'] == $user->id) {
+                        $cardToReplace = $card;
+                        $wasPrimary = ($card['is_primary'] == 1);
+                        break;
+                    }
+                }
+
+                if ($cardToReplace) {
+                    $paymentMethodModel->delete($replaceCardId);
+                    log_message('info', 'Karte (ID: ' . $replaceCardId . ') ersetzt für User #' . $user->id);
+
+                    // Aktualisiere existingCards nach Löschung
+                    $existingCards = array_filter($existingCards, fn($c) => $c['id'] != $replaceCardId);
+                }
+
+                // Lösche replace_card_id aus Session
+                session()->remove('replace_card_id');
+            }
+
+            // Normale Logik: Wenn bereits 2 Karten vorhanden, lösche älteste Secondary
+            if (count($existingCards) >= 2) {
+                // Finde die älteste Secondary-Karte zum Löschen
+                $cardToDelete = null;
+                foreach ($existingCards as $card) {
+                    if ($card['is_primary'] == 0) {
+                        if (!$cardToDelete || $card['created_at'] < $cardToDelete['created_at']) {
+                            $cardToDelete = $card;
+                        }
+                    }
+                }
+
+                // Wenn alle Primary sind (sollte nicht passieren), nimm die älteste
+                if (!$cardToDelete) {
+                    $cardToDelete = $existingCards[0];
+                    foreach ($existingCards as $card) {
+                        if ($card['created_at'] < $cardToDelete['created_at']) {
+                            $cardToDelete = $card;
+                        }
+                    }
+                }
+
+                $paymentMethodModel->delete($cardToDelete['id']);
+                log_message('info', 'Älteste Karte (ID: ' . $cardToDelete['id'] . ') gelöscht für User #' . $user->id . ' (Limit: 2 Karten)');
+
+                // Aktualisiere existingCards nach Löschung
+                $existingCards = array_filter($existingCards, fn($c) => $c['id'] != $cardToDelete['id']);
+            }
 
             // Speichere neue Zahlungsmethode
             $platform = $user->platform ?? 'mygalaxis';
 
-            $paymentMethodModel->save([
+            // Bestimme is_primary: Wenn Replace und war Primary ODER erste Karte
+            $isPrimary = ($wasPrimary || count($existingCards) === 0) ? 1 : 0;
+
+            $paymentMethodModel->saveCard([
                 'user_id' => $user->id,
                 'payment_method_code' => 'saferpay',
+                'is_primary' => $isPrimary,
+                'card_last4' => $cardLast4,
+                'card_brand' => $cardBrand,
+                'card_expiry' => $cardExpiry,
                 'platform' => $platform,
                 'provider_data' => json_encode([
                     'alias_id' => $aliasId,
                     'alias_lifetime' => $aliasLifetime,
-                    'card_masked' => $paymentMeans['DisplayText'] ?? null,
-                    'card_brand' => $brand['Name'] ?? null,
-                    'card_exp_month' => $card['ExpMonth'] ?? null,
-                    'card_exp_year' => $card['ExpYear'] ?? null,
+                    'card_masked' => $cardMasked,
+                    'card_brand' => $cardBrand,
+                    'card_exp_month' => $cardExpMonth,
+                    'card_exp_year' => $cardExpYear,
                 ]),
                 'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
             ]);
 
             log_message('info', 'Neue Zahlungsmethode gespeichert für User #' . $user->id . ', Alias: ' . $aliasId);
@@ -1052,6 +1187,42 @@ class Finance extends BaseController
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
             ->setBody($mpdf->Output($invoice['invoice_number'] . ".pdf", 'S'));
+    }
+
+    /**
+     * Update Auto-Purchase Einstellungen
+     */
+    public function updateSettings()
+    {
+        $user = auth()->user();
+        $autoPurchase = $this->request->getPost('auto_purchase') ? 1 : 0;
+
+        // Hole aktuellen Status
+        $db = \Config\Database::connect();
+        $currentUser = $db->table('users')->where('id', $user->id)->get()->getRow();
+
+        // Wenn Auto-Purchase aktiviert wird und noch kein Aktivierungsdatum gesetzt ist
+        if ($autoPurchase == 1 && empty($currentUser->auto_purchase_activated_at)) {
+            $db->table('users')->where('id', $user->id)->update([
+                'auto_purchase' => 1,
+                'auto_purchase_activated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+        // Wenn Auto-Purchase deaktiviert wird
+        elseif ($autoPurchase == 0) {
+            $db->table('users')->where('id', $user->id)->update([
+                'auto_purchase' => 0,
+                // Aktivierungsdatum NICHT löschen - bleibt erhalten für History
+            ]);
+        }
+        // Wenn bereits aktiviert und wieder aktiviert wird
+        else {
+            $db->table('users')->where('id', $user->id)->update([
+                'auto_purchase' => 1
+            ]);
+        }
+
+        return redirect()->to('/finance')->with('success', 'Einstellungen erfolgreich gespeichert');
     }
 
     /**

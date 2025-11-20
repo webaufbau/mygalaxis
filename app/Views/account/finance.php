@@ -86,11 +86,39 @@
                 <strong><i class="bi bi-credit-card-2-front me-2"></i><?= esc(lang('Finance.savedCard')) ?></strong>
             </div>
             <div class="card-body">
-                <?php if ($hasSavedCard): ?>
-                    <!-- Liste aller Karten -->
-                    <?php foreach ($userPaymentMethods as $card): ?>
+                <?php
+                // Filtere nur Saferpay-Karten
+                $saferpayCards = [];
+                if ($hasSavedCard) {
+                    $saferpayCards = array_filter($userPaymentMethods, function($card) {
+                        return $card['payment_method_code'] === 'saferpay';
+                    });
+                    $saferpayCards = array_values($saferpayCards); // Re-index
+                }
+                ?>
+
+                <?php if (!empty($saferpayCards)): ?>
+                    <?php
+                    // Prüfe einmal, ob irgendeine Karte als Primary markiert ist
+                    $hasPrimaryCard = false;
+                    foreach ($saferpayCards as $c) {
+                        if ($c['is_primary'] == 1) {
+                            $hasPrimaryCard = true;
+                            break;
+                        }
+                    }
+                    ?>
+
+                    <!-- Liste aller Saferpay-Karten -->
+                    <?php foreach ($saferpayCards as $index => $card): ?>
                         <?php
-                        $isPrimary = $card['is_primary'] == 1;
+                        // Wenn nur eine Karte oder keine Primary markiert: erste Karte ist Primary
+                        if (count($saferpayCards) == 1 || !$hasPrimaryCard) {
+                            $isPrimary = ($index == 0);
+                        } else {
+                            $isPrimary = ($card['is_primary'] == 1);
+                        }
+
                         $isExpired = false;
                         if ($card['card_expiry']) {
                             $parts = explode('/', $card['card_expiry']);
@@ -102,6 +130,22 @@
                                 $isExpired = $expDate < new DateTime();
                             }
                         }
+
+                        // Kartendetails aus provider_data holen falls Felder leer sind
+                        $cardBrand = $card['card_brand'];
+                        $cardLast4 = $card['card_last4'];
+                        if (empty($cardBrand) || empty($cardLast4)) {
+                            $providerData = !empty($card['provider_data']) ? json_decode($card['provider_data'], true) : [];
+                            if (empty($cardBrand)) {
+                                $cardBrand = $providerData['card_brand'] ?? 'Kreditkarte';
+                            }
+                            if (empty($cardLast4) && !empty($providerData['card_masked'])) {
+                                // Extrahiere Last 4 aus card_masked (z.B. "9000 xxxx xxxx 0006")
+                                if (preg_match('/(\d{4})\s*$/', $providerData['card_masked'], $matches)) {
+                                    $cardLast4 = $matches[1];
+                                }
+                            }
+                        }
                         ?>
                         <div class="alert <?= $isPrimary ? 'alert-success' : 'alert-secondary' ?> mb-2 d-flex justify-content-between align-items-center">
                             <div class="flex-grow-1">
@@ -111,33 +155,34 @@
                                 <?php if ($isExpired): ?>
                                     <span class="badge bg-danger me-2">Abgelaufen</span>
                                 <?php endif; ?>
-                                <strong><?= esc($card['card_brand'] ?? 'Kreditkarte') ?></strong>
-                                <?php if ($card['card_last4']): ?>
-                                    •••• <?= esc($card['card_last4']) ?>
+                                <strong><?= esc($cardBrand) ?></strong>
+                                <?php if ($cardLast4): ?>
+                                    •••• <?= esc($cardLast4) ?>
                                 <?php endif; ?>
                                 <?php if ($card['card_expiry']): ?>
                                     <small class="text-muted ms-2">(<?= esc($card['card_expiry']) ?>)</small>
                                 <?php endif; ?>
                             </div>
                             <div class="btn-group btn-group-sm" role="group">
-                                <?php if (!$isPrimary): ?>
+                                <?php if (!$isPrimary && count($saferpayCards) > 1): ?>
                                     <a href="<?= site_url('finance/set-primary-card/' . $card['id']) ?>"
                                        class="btn btn-outline-primary btn-sm"
                                        onclick="return confirm('Als primäre Karte setzen?')">
                                         <i class="bi bi-star"></i> Als Primär setzen
                                     </a>
                                 <?php endif; ?>
-                                <a href="<?= site_url('finance/remove-card/' . $card['id']) ?>"
-                                   class="btn btn-outline-danger btn-sm"
-                                   onclick="return confirm('Karte wirklich entfernen?')">
-                                    <i class="bi bi-trash"></i> Entfernen
-                                </a>
+                                <?php if (count($saferpayCards) > 1 || !$isPrimary): ?>
+                                    <a href="<?= site_url('finance/register-payment-method?replace=' . $card['id']) ?>"
+                                       class="btn btn-warning btn-sm text-dark">
+                                        <i class="bi bi-arrow-repeat"></i> Ersetzen
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
 
                     <!-- Weitere Karte hinzufügen (max 2) -->
-                    <?php if (count($userPaymentMethods) < 2): ?>
+                    <?php if (count($saferpayCards) < 2): ?>
                         <div class="d-grid gap-2 mt-3">
                             <a href="<?= site_url('finance/register-payment-method') ?>" class="btn btn-primary">
                                 <i class="bi bi-plus-circle me-1"></i>Weitere Karte hinzufügen
@@ -152,7 +197,7 @@
                         </small>
                     </div>
                 <?php else: ?>
-                    <!-- Noch keine Karte -->
+                    <!-- Noch keine Saferpay-Karte -->
                     <div class="alert alert-warning mb-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         <strong><?= esc(lang('Finance.noCardRegistered')) ?></strong>
@@ -242,7 +287,7 @@
                 <strong><i class="bi bi-gear me-2"></i><?= esc(lang('Finance.purchaseSettings')) ?></strong>
             </div>
             <div class="card-body">
-                <form action="<?= site_url('profile/update') ?>" method="post">
+                <form action="<?= site_url('finance/update-settings') ?>" method="post">
                     <?= csrf_field() ?>
 
                     <div class="form-check form-switch mb-3">
@@ -264,11 +309,19 @@
                             <i class="bi bi-calendar-check me-1"></i>
                             <small>
                                 <strong><?= esc(lang('Finance.activatedSince')) ?>:</strong>
-                                <?= date('d.m.Y H:i', strtotime($user->auto_purchase_activated_at)) ?> <?= esc(lang('Finance.clock')) ?>
+                                <?= date('d.m.Y H:i', strtotime($user->auto_purchase_activated_at)) ?> Uhr
                             </small>
                             <br>
                             <small class="text-muted">
-                                <?= esc(lang('Finance.queueInfo')) ?>
+                                <i class="bi bi-info-circle me-1"></i>
+                                Sie sind in der Warteschlange seit diesem Zeitpunkt. Frühere Aktivierungen haben Vorrang bei automatischen Käufen.
+                            </small>
+                        </div>
+                    <?php elseif (!empty($user->auto_purchase)): ?>
+                        <div class="alert alert-warning mb-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <small>
+                                <strong>Hinweis:</strong> Aktivierungsdatum fehlt. Bitte speichern Sie die Einstellungen erneut.
                             </small>
                         </div>
                     <?php endif; ?>
