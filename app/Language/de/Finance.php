@@ -92,14 +92,14 @@ return [
     'backToOffers' => 'Zurück zu Angeboten',
 
     // Zahlungsmittel
-    'savedCard' => 'Hinterlegte Karte',
+    'savedCard' => 'Hinterlegtes Zahlungsmittel',
     'savedCardRegistered' => 'hinterlegt',
     'creditCardRegistered' => 'Kreditkarte hinterlegt',
     'paymentMethodStoredSecurely' => 'Ihr Zahlungsmittel (%s) ist sicher bei <strong>Worldline (Saferpay)</strong> gespeichert.',
     'creditCardStoredSecurely' => 'Ihre Kreditkarte ist sicher bei <strong>Worldline (Saferpay)</strong> gespeichert.',
     'changePaymentMethod' => 'Zahlungsmittel ändern',
     'choosePaymentMethodInfo' => 'Wählen Sie zwischen <strong>Kreditkarte oder TWINT</strong>. Beim Ändern wird die alte Zahlungsmethode ersetzt. Es erfolgt keine Belastung.',
-    'noCardRegistered' => 'Noch keine Karte hinterlegt',
+    'noCardRegistered' => 'Noch kein Zahlungsmittel hinterlegt',
     'registerPaymentMethodInfo' => 'Hinterlegen Sie ein Zahlungsmittel, um den automatischen Kauf zu nutzen oder Guthaben aufzuladen.',
     'registerPaymentMethod' => 'Zahlungsmittel hinterlegen',
     'availablePaymentMethods' => '<strong>Verfügbar:</strong> Kreditkarte (Visa, Mastercard) oder TWINT. Sie können auch beim ersten Guthaben-Aufladen ein Zahlungsmittel hinterlegen.',
