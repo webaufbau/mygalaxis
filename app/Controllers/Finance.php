@@ -765,7 +765,7 @@ class Finance extends BaseController
 
         if (!$token) {
             log_message('error', 'Kein Token für Alias Assert gefunden - User #' . $user->id);
-            return redirect()->to('/finance')->with('error', 'Zahlungsmittel-Registrierung fehlgeschlagen: Kein Token gefunden');
+            return redirect()->to('/finance')->with('error', lang('Finance.errorPaymentMethodRegistrationNoToken'));
         }
 
         try {
@@ -826,13 +826,14 @@ class Finance extends BaseController
                 ->where('payment_method_code', 'saferpay')
                 ->findAll();
 
-            // DUPLIKAT-PRÜFUNG: Prüfe ob diese Karte (Last4 + ExpYear) bereits existiert
+            // DUPLIKAT-PRÜFUNG: Prüfe ob diese Karte (Brand + Last4 + ExpYear) bereits existiert
             foreach ($existingCards as $existingCard) {
                 $existingLast4 = $existingCard['card_last4'];
                 $existingExpiry = $existingCard['card_expiry'];
+                $existingBrand = $existingCard['card_brand'];
 
-                // Falls Last4 oder Expiry in provider_data gespeichert sind
-                if (empty($existingLast4) || empty($existingExpiry)) {
+                // Falls Daten in provider_data gespeichert sind
+                if (empty($existingLast4) || empty($existingExpiry) || empty($existingBrand)) {
                     $providerData = json_decode($existingCard['provider_data'], true);
                     if (empty($existingLast4) && !empty($providerData['card_masked'])) {
                         if (preg_match('/(\d{4})\s*$/', $providerData['card_masked'], $m)) {
@@ -842,11 +843,14 @@ class Finance extends BaseController
                     if (empty($existingExpiry) && isset($providerData['card_exp_year'])) {
                         $existingExpiry = sprintf('%02d/%04d', $providerData['card_exp_month'], $providerData['card_exp_year']);
                     }
+                    if (empty($existingBrand) && !empty($providerData['card_brand'])) {
+                        $existingBrand = $providerData['card_brand'];
+                    }
                 }
 
-                // Vergleiche Last4 und Expiry
-                if ($existingLast4 === $cardLast4 && $existingExpiry === $cardExpiry) {
-                    log_message('warning', 'Duplikat erkannt: Karte mit Last4=' . $cardLast4 . ' und Expiry=' . $cardExpiry . ' existiert bereits für User #' . $user->id);
+                // Vergleiche Brand, Last4 und Expiry (alle drei müssen übereinstimmen)
+                if ($existingBrand === $cardBrand && $existingLast4 === $cardLast4 && $existingExpiry === $cardExpiry) {
+                    log_message('warning', 'Duplikat erkannt: Karte ' . $cardBrand . ' ' . $cardLast4 . ' (' . $cardExpiry . ') existiert bereits für User #' . $user->id);
                     return redirect()->to('/finance')->with('error', lang('Finance.errorDuplicateCard'));
                 }
             }
@@ -938,11 +942,19 @@ class Finance extends BaseController
             // Token aus Session entfernen
             session()->remove('alias_insert_token');
 
-            return redirect()->to('/finance')->with('success', 'Zahlungsmittel erfolgreich hinterlegt!');
+            return redirect()->to('/finance')->with('success', lang('Finance.messagePaymentMethodRegistered'));
 
         } catch (\Exception $e) {
-            log_message('error', 'Alias Assert fehlgeschlagen für User #' . $user->id . ': ' . $e->getMessage());
-            return redirect()->to('/finance')->with('error', 'Zahlungsmittel-Registrierung fehlgeschlagen: ' . $e->getMessage());
+            $errorMessage = $e->getMessage();
+            log_message('error', 'Alias Assert fehlgeschlagen für User #' . $user->id . ': ' . $errorMessage);
+
+            // Prüfe auf spezifische Fehlertypen
+            if (str_contains($errorMessage, '3DS_AUTHENTICATION_FAILED') || str_contains($errorMessage, '3D-Secure authentication failed')) {
+                return redirect()->to('/finance')->with('error', lang('Finance.errorPaymentMethodAuthFailed'));
+            }
+
+            // Generische benutzerfreundliche Fehlermeldung
+            return redirect()->to('/finance')->with('error', lang('Finance.errorPaymentMethodRegistration'));
         }
     }
 

@@ -33,6 +33,7 @@ return [
     'messageTransactionNotFound' => 'Transaction not found.',
     'messagePaymentSuccess' => 'Payment successful.',
     'messagePaymentMethodSaved' => 'Payment method saved.',
+    'messagePaymentMethodRegistered' => 'Payment method successfully registered!',
     'messagePaymentMethodDeleted' => 'Payment method deleted.',
     'errorIncompleteAddress' => 'Your address is incomplete or invalid. Please correct it to top up your balance.',
     'errorPaymentFailed' => 'Payment failed.',
@@ -42,6 +43,9 @@ return [
     'errorPaymentPageNotCreated' => 'Payment page could not be created.',
     'errorNoTokenReceived' => 'No token received.',
     'errorNotFoundOrDenied' => 'Not found or access denied.',
+    'errorPaymentMethodRegistration' => 'Payment method registration could not be completed. Please try again or contact support.',
+    'errorPaymentMethodRegistrationNoToken' => 'Payment method registration failed: No token found.',
+    'errorPaymentMethodAuthFailed' => 'Card authentication failed. Please check your card details and try again.',
 
     // PDF
     'pdf_title'    => 'Transactions',

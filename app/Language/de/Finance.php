@@ -35,6 +35,7 @@ return [
     'messageTransactionNotFound' => 'Transaktion nicht gefunden.',
     'messagePaymentSuccess' => 'Zahlung erfolgreich.',
     'messagePaymentMethodSaved' => 'Zahlungsmethode gespeichert.',
+    'messagePaymentMethodRegistered' => 'Zahlungsmittel erfolgreich hinterlegt!',
     'messagePaymentMethodDeleted' => 'Zahlungsmethode gelöscht.',
     'errorIncompleteAddress' => 'Ihre Adresse ist unvollständig oder ungültig. Bitte korrigieren Sie diese, um Ihr Guthaben aufzuladen.',
     'errorPaymentFailed' => 'Zahlung fehlgeschlagen',
@@ -44,6 +45,9 @@ return [
     'errorPaymentPageNotCreated' => 'Zahlungsseite konnte nicht erstellt werden.',
     'errorNoTokenReceived' => 'Kein Token erhalten.',
     'errorNotFoundOrDenied' => 'Nicht gefunden oder Zugriff verweigert.',
+    'errorPaymentMethodRegistration' => 'Die Zahlungsmittel-Registrierung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.',
+    'errorPaymentMethodRegistrationNoToken' => 'Zahlungsmittel-Registrierung fehlgeschlagen: Kein Token gefunden.',
+    'errorPaymentMethodAuthFailed' => 'Die Authentifizierung Ihrer Karte ist fehlgeschlagen. Bitte überprüfen Sie Ihre Kartendaten und versuchen Sie es erneut.',
 
     // PDF
     'pdf_title'    => 'Buchungen',
