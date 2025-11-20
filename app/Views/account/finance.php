@@ -147,30 +147,30 @@
                             }
                         }
                         ?>
-                        <div class="alert <?= $isPrimary ? 'alert-success' : 'alert-secondary' ?> mb-2 d-flex justify-content-between align-items-center">
+                        <div class="alert <?= $isExpired ? 'alert-danger' : ($isPrimary ? 'alert-success' : 'alert-secondary') ?> mb-2 d-flex justify-content-between align-items-center">
                             <div class="flex-grow-1">
-                                <?php if ($isPrimary): ?>
+                                <?php if ($isPrimary && !$isExpired): ?>
                                     <span class="badge bg-warning text-dark me-2">⭐ Haupt</span>
                                 <?php endif; ?>
                                 <?php if ($isExpired): ?>
-                                    <span class="badge bg-danger me-2">Abgelaufen</span>
+                                    <span class="badge bg-danger me-2">⚠️ Abgelaufen</span>
                                 <?php endif; ?>
                                 <strong><?= esc($cardBrand) ?></strong>
                                 <?php if ($cardLast4): ?>
                                     •••• <?= esc($cardLast4) ?>
                                 <?php endif; ?>
                                 <?php if ($card['card_expiry']): ?>
-                                    <small class="text-muted ms-2">(<?= esc($card['card_expiry']) ?>)</small>
+                                    <small class="<?= $isExpired ? 'text-white' : 'text-muted' ?> ms-2">(<?= esc($card['card_expiry']) ?>)</small>
                                 <?php endif; ?>
                             </div>
                             <div class="btn-group btn-group-sm" role="group">
-                                <?php if (!$isPrimary && count($saferpayCards) > 1): ?>
+                                <?php if (!$isExpired && !$isPrimary && count($saferpayCards) > 1): ?>
                                     <a href="<?= site_url('finance/set-primary-card/' . $card['id']) ?>"
                                        class="btn btn-primary btn-sm">
                                         <i class="bi bi-star"></i> Hauptzahlungsmittel
                                     </a>
                                 <?php endif; ?>
-                                <?php if (count($saferpayCards) > 1 || !$isPrimary): ?>
+                                <?php if (count($saferpayCards) > 1 || !$isPrimary || $isExpired): ?>
                                     <a href="<?= site_url('finance/register-payment-method?replace=' . $card['id']) ?>"
                                        class="btn btn-warning btn-sm text-dark">
                                         <i class="bi bi-arrow-repeat"></i> Ersetzen
