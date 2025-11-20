@@ -164,6 +164,7 @@ return [
     'primaryCardSet' => 'Card was set as primary payment method',
     'primaryCardSetSuccess' => '%s has been set as primary payment method',
     'cardRemoved' => 'Card was successfully removed',
+    'errorDuplicateCard' => 'This card is already registered. You cannot use the same card as both primary and secondary.',
     'badgePrimary' => 'Primary',
     'buttonSetPrimary' => 'Set as Primary',
     'buttonReplace' => 'Replace',

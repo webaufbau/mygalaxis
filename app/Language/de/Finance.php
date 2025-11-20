@@ -167,6 +167,7 @@ return [
     'primaryCardSet' => 'Karte wurde als primäre Zahlungsmethode gesetzt',
     'primaryCardSetSuccess' => '%s wurde als Haupt-Zahlungsmittel gesetzt',
     'cardRemoved' => 'Karte wurde erfolgreich entfernt',
+    'errorDuplicateCard' => 'Diese Karte ist bereits hinterlegt. Sie können nicht dieselbe Karte als Primär und Sekundär verwenden.',
     'badgePrimary' => 'Haupt',
     'buttonSetPrimary' => 'Hauptzahlungsmittel',
     'buttonReplace' => 'Ersetzen',

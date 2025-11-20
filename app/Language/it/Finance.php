@@ -164,6 +164,7 @@ return [
     'primaryCardSet' => 'La carta è stata impostata come metodo di pagamento principale',
     'primaryCardSetSuccess' => '%s è stato impostato come metodo di pagamento principale',
     'cardRemoved' => 'La carta è stata rimossa con successo',
+    'errorDuplicateCard' => 'Questa carta è già registrata. Non puoi utilizzare la stessa carta come principale e secondaria.',
     'badgePrimary' => 'Principale',
     'buttonSetPrimary' => 'Imposta come Principale',
     'buttonReplace' => 'Sostituisci',

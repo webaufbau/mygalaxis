@@ -847,7 +847,7 @@ class Finance extends BaseController
                 // Vergleiche Last4 und Expiry
                 if ($existingLast4 === $cardLast4 && $existingExpiry === $cardExpiry) {
                     log_message('warning', 'Duplikat erkannt: Karte mit Last4=' . $cardLast4 . ' und Expiry=' . $cardExpiry . ' existiert bereits für User #' . $user->id);
-                    return redirect()->to('/finance')->with('error', 'Diese Karte ist bereits hinterlegt. Sie können nicht dieselbe Karte als Primär und Sekundär verwenden.');
+                    return redirect()->to('/finance')->with('error', lang('Finance.errorDuplicateCard'));
                 }
             }
 
