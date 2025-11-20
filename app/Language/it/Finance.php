@@ -26,13 +26,16 @@ return [
     'cardPayment'     => 'Pagamento con carta',
     'balanceChange'   => 'Variazione saldo',
     'invoice'         => 'Fattura',
+    'paidByCard'      => 'Pagato con carta di credito',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Importo non valido.',
     'messageCreditAdded' => 'Saldo ricaricato con successo.',
+    'messageTopupSuccess' => 'Saldo ricaricato con successo.',
     'messageTransactionNotFound' => 'Transazione non trovata.',
     'messagePaymentSuccess' => 'Pagamento riuscito.',
     'messagePaymentMethodSaved' => 'Metodo di pagamento salvato.',
+    'messagePaymentMethodRegistered' => 'Metodo di pagamento registrato con successo!',
     'messagePaymentMethodDeleted' => 'Metodo di pagamento eliminato.',
     'errorIncompleteAddress' => 'Il tuo indirizzo è incompleto o non valido. Per favore correggilo per ricaricare il saldo.',
     'errorPaymentFailed' => 'Pagamento fallito',
@@ -42,6 +45,11 @@ return [
     'errorPaymentPageNotCreated' => 'Impossibile creare la pagina di pagamento.',
     'errorNoTokenReceived' => 'Nessun token ricevuto.',
     'errorNotFoundOrDenied' => 'Non trovato o accesso negato.',
+    'errorPaymentMethodRegistration' => 'La registrazione del metodo di pagamento non è stata completata. Riprova o contatta il supporto.',
+    'errorPaymentMethodRegistrationNoToken' => 'Registrazione metodo di pagamento fallita: nessun token trovato.',
+    'errorPaymentMethodAuthFailed' => 'L\'autenticazione della tua carta è fallita. Controlla i dettagli della carta e riprova.',
+    'maximumTopupAmount' => 'Saldo totale massimo: 3\'000.00 CHF',
+    'errorMaximumBalanceExceeded' => 'Il tuo saldo totale non deve superare 3\'000.00 CHF. Puoi ricaricare al massimo %s CHF.',
 
     // PDF
     'pdf_title'    => 'Prenotazioni',
@@ -120,6 +128,8 @@ return [
     'activatedSince' => 'Attivato dal',
     'clock' => 'ore',
     'queueInfo' => 'Sei in coda per gli acquisti automatici. La priorità è determinata da questa data.',
+    'queueInfoShort' => 'Sei in coda da questo momento. Le attivazioni precedenti hanno la priorità per gli acquisti automatici.',
+    'activationDateMissing' => '<strong>Nota:</strong> Data di attivazione mancante. Si prega di salvare nuovamente le impostazioni.',
     'autoPurchaseInfo' => 'Quando attivato, le richieste corrispondenti vengono acquistate automaticamente per te. Il pagamento viene effettuato dal tuo saldo o direttamente dalla tua carta salvata.',
     'saveSettings' => 'Salva impostazioni',
 

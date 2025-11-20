@@ -26,13 +26,16 @@ return [
     'cardPayment'     => 'Paiement par carte',
     'balanceChange'   => 'Changement de solde',
     'invoice'         => 'Facture',
+    'paidByCard'      => 'Payé par carte de crédit',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Montant invalide.',
     'messageCreditAdded' => 'Crédit rechargé avec succès.',
+    'messageTopupSuccess' => 'Solde rechargé avec succès.',
     'messageTransactionNotFound' => 'Transaction non trouvée.',
     'messagePaymentSuccess' => 'Paiement réussi.',
     'messagePaymentMethodSaved' => 'Méthode de paiement enregistrée.',
+    'messagePaymentMethodRegistered' => 'Moyen de paiement enregistré avec succès!',
     'messagePaymentMethodDeleted' => 'Méthode de paiement supprimée.',
     'errorIncompleteAddress' => 'Votre adresse est incomplète ou invalide. Veuillez la corriger pour recharger votre solde.',
     'errorPaymentFailed' => 'Échec du paiement',
@@ -42,6 +45,11 @@ return [
     'errorPaymentPageNotCreated' => 'La page de paiement n\'a pas pu être créée.',
     'errorNoTokenReceived' => 'Aucun jeton reçu.',
     'errorNotFoundOrDenied' => 'Non trouvé ou accès refusé.',
+    'errorPaymentMethodRegistration' => 'L\'enregistrement du moyen de paiement n\'a pas pu être finalisé. Veuillez réessayer ou contacter le support.',
+    'errorPaymentMethodRegistrationNoToken' => 'L\'enregistrement du moyen de paiement a échoué : aucun jeton trouvé.',
+    'errorPaymentMethodAuthFailed' => 'L\'authentification de votre carte a échoué. Veuillez vérifier les détails de votre carte et réessayer.',
+    'maximumTopupAmount' => 'Solde total maximum : 3\'000.00 CHF',
+    'errorMaximumBalanceExceeded' => 'Votre solde total ne doit pas dépasser 3\'000.00 CHF. Vous pouvez recharger au maximum %s CHF.',
 
     // PDF
     'pdf_title'    => 'Transactions',
@@ -120,6 +128,8 @@ return [
     'activatedSince' => 'Activé depuis',
     'clock' => 'heures',
     'queueInfo' => 'Vous êtes dans la file d\'attente pour les achats automatiques. La priorité est déterminée par cette date.',
+    'queueInfoShort' => 'Vous êtes dans la file d\'attente depuis ce moment. Les activations antérieures ont la priorité pour les achats automatiques.',
+    'activationDateMissing' => '<strong>Remarque:</strong> La date d\'activation est manquante. Veuillez enregistrer à nouveau les paramètres.',
     'autoPurchaseInfo' => 'Lorsqu\'il est activé, les demandes correspondantes sont automatiquement achetées pour vous. Le paiement est effectué soit depuis votre solde, soit directement depuis votre carte enregistrée.',
     'saveSettings' => 'Enregistrer les paramètres',
 

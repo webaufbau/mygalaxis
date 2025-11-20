@@ -26,10 +26,12 @@ return [
     'cardPayment'     => 'Card Payment',
     'balanceChange'   => 'Balance Change',
     'invoice'         => 'Invoice',
+    'paidByCard'      => 'Paid by credit card',
 
     // Fehlermeldungen & Benachrichtigungen
     'messageInvalidAmount' => 'Invalid amount.',
     'messageCreditAdded' => 'Credit successfully added.',
+    'messageTopupSuccess' => 'Balance successfully topped up.',
     'messageTransactionNotFound' => 'Transaction not found.',
     'messagePaymentSuccess' => 'Payment successful.',
     'messagePaymentMethodSaved' => 'Payment method saved.',
@@ -46,6 +48,8 @@ return [
     'errorPaymentMethodRegistration' => 'Payment method registration could not be completed. Please try again or contact support.',
     'errorPaymentMethodRegistrationNoToken' => 'Payment method registration failed: No token found.',
     'errorPaymentMethodAuthFailed' => 'Card authentication failed. Please check your card details and try again.',
+    'maximumTopupAmount' => 'Maximum total balance: 3,000.00 CHF',
+    'errorMaximumBalanceExceeded' => 'Your total balance must not exceed 3,000.00 CHF. You can top up a maximum of %s CHF.',
 
     // PDF
     'pdf_title'    => 'Transactions',
@@ -124,6 +128,8 @@ return [
     'activatedSince' => 'Activated since',
     'clock' => 'o\'clock',
     'queueInfo' => 'You are in the queue for automatic purchases. Priority is determined by this date.',
+    'queueInfoShort' => 'You are in the queue since this time. Earlier activations have priority for automatic purchases.',
+    'activationDateMissing' => '<strong>Note:</strong> Activation date is missing. Please save the settings again.',
     'autoPurchaseInfo' => 'When activated, matching requests are automatically purchased for you. Payment is made either from your balance or directly from your saved card.',
     'saveSettings' => 'Save settings',
 
