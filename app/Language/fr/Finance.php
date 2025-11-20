@@ -162,6 +162,7 @@ return [
 
     // Système multi-carte
     'primaryCardSet' => 'La carte a été définie comme moyen de paiement principal',
+    'primaryCardSetSuccess' => '%s a été défini comme moyen de paiement principal',
     'cardRemoved' => 'La carte a été supprimée avec succès',
     'badgePrimary' => 'Principal',
     'buttonSetPrimary' => 'Définir comme Principal',

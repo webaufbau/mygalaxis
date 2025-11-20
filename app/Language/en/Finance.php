@@ -162,6 +162,7 @@ return [
 
     // Multi-Card System
     'primaryCardSet' => 'Card was set as primary payment method',
+    'primaryCardSetSuccess' => '%s has been set as primary payment method',
     'cardRemoved' => 'Card was successfully removed',
     'badgePrimary' => 'Primary',
     'buttonSetPrimary' => 'Set as Primary',

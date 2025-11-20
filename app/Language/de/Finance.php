@@ -165,6 +165,7 @@ return [
 
     // Multi-Card System
     'primaryCardSet' => 'Karte wurde als primäre Zahlungsmethode gesetzt',
+    'primaryCardSetSuccess' => '%s wurde als Haupt-Zahlungsmittel gesetzt',
     'cardRemoved' => 'Karte wurde erfolgreich entfernt',
     'badgePrimary' => 'Haupt',
     'buttonSetPrimary' => 'Hauptzahlungsmittel',

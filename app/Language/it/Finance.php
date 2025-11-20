@@ -162,6 +162,7 @@ return [
 
     // Sistema multi-carta
     'primaryCardSet' => 'La carta è stata impostata come metodo di pagamento principale',
+    'primaryCardSetSuccess' => '%s è stato impostato come metodo di pagamento principale',
     'cardRemoved' => 'La carta è stata rimossa con successo',
     'badgePrimary' => 'Principale',
     'buttonSetPrimary' => 'Imposta come Principale',
