@@ -1239,10 +1239,34 @@ class Finance extends BaseController
             return redirect()->to('/finance')->with('error', 'Ungültige Karte');
         }
 
+        // Extrahiere Kartenname für Erfolgsmeldung
+        $cardBrand = $card['card_brand'];
+        $cardLast4 = $card['card_last4'];
+
+        // Fallback zu provider_data falls Felder leer
+        if (empty($cardBrand) || empty($cardLast4)) {
+            $providerData = !empty($card['provider_data']) ? json_decode($card['provider_data'], true) : [];
+            if (empty($cardBrand)) {
+                $cardBrand = $providerData['card_brand'] ?? 'Karte';
+            }
+            if (empty($cardLast4) && !empty($providerData['card_masked'])) {
+                if (preg_match('/(\d{4})\s*$/', $providerData['card_masked'], $matches)) {
+                    $cardLast4 = $matches[1];
+                }
+            }
+        }
+
         // Setze als Primary
         $paymentMethodModel->setPrimary($user->id, $cardId);
 
-        return redirect()->to('/finance')->with('success', lang('Finance.primaryCardSet'));
+        // Erstelle personalisierte Erfolgsmeldung
+        $cardName = $cardBrand;
+        if ($cardLast4) {
+            $cardName .= ' •••• ' . $cardLast4;
+        }
+        $successMessage = $cardName . ' wurde als Primär gesetzt';
+
+        return redirect()->to('/finance')->with('success', $successMessage);
     }
 
     /**
