@@ -1264,7 +1264,7 @@ class Finance extends BaseController
         if ($cardLast4) {
             $cardName .= ' •••• ' . $cardLast4;
         }
-        $successMessage = $cardName . ' wurde als Primär gesetzt';
+        $successMessage = $cardName . ' wurde als Haupt-Zahlungsmittel gesetzt';
 
         return redirect()->to('/finance')->with('success', $successMessage);
     }

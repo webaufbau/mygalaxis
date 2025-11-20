@@ -150,7 +150,7 @@
                         <div class="alert <?= $isPrimary ? 'alert-success' : 'alert-secondary' ?> mb-2 d-flex justify-content-between align-items-center">
                             <div class="flex-grow-1">
                                 <?php if ($isPrimary): ?>
-                                    <span class="badge bg-warning text-dark me-2">⭐ Primär</span>
+                                    <span class="badge bg-warning text-dark me-2">⭐ Haupt</span>
                                 <?php endif; ?>
                                 <?php if ($isExpired): ?>
                                     <span class="badge bg-danger me-2">Abgelaufen</span>
@@ -167,7 +167,7 @@
                                 <?php if (!$isPrimary && count($saferpayCards) > 1): ?>
                                     <a href="<?= site_url('finance/set-primary-card/' . $card['id']) ?>"
                                        class="btn btn-primary btn-sm">
-                                        <i class="bi bi-star"></i> Als Primär setzen
+                                        <i class="bi bi-star"></i> Hauptzahlungsmittel
                                     </a>
                                 <?php endif; ?>
                                 <?php if (count($saferpayCards) > 1 || !$isPrimary): ?>
@@ -192,7 +192,7 @@
                     <div class="alert alert-light mt-3 mb-0">
                         <i class="bi bi-info-circle me-2"></i>
                         <small>
-                            <strong>Automatische Fallback-Logik:</strong> Bei Auto-Käufen wird zuerst die primäre Karte verwendet. Falls diese abgelaufen ist oder die Zahlung fehlschlägt, wird automatisch die sekundäre Karte versucht.
+                            <strong>Automatische Fallback-Logik:</strong> Bei Auto-Käufen wird zuerst das Haupt-Zahlungsmittel verwendet. Falls dieses abgelaufen ist oder die Zahlung fehlschlägt, wird automatisch das sekundäre Zahlungsmittel versucht.
                         </small>
                     </div>
                 <?php else: ?>
