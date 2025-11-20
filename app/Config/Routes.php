@@ -189,6 +189,10 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('finance/register-payment-method/success', 'Finance::registerPaymentMethodSuccess');
     $routes->get('finance/register-payment-method/fail', 'Finance::registerPaymentMethodFail');
 
+    // Multi-Card Management
+    $routes->get('finance/set-primary-card/(:num)', 'Finance::setPrimaryCard/$1', ['filter' => 'auth']);
+    $routes->get('finance/remove-card/(:num)', 'Finance::removeCard/$1', ['filter' => 'auth']);
+
     // Direktkauf via Saferpay (Rückleitungen außerhalb von auth-Filter)
     $routes->get('offers/buyDirectSuccess', 'Offers::buyDirectSuccess');
     $routes->get('offers/buyDirectFail', 'Offers::buyDirectFail');

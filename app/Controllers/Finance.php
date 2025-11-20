@@ -107,26 +107,17 @@ class Finance extends BaseController
             ->where('amount <', 0)
             ->first()['amount'] ?? 0;
 
-        // Lade gespeicherte Zahlungsmethoden des Users
-        $userPaymentMethods = $userPaymentMethodModel->where('user_id', $user->id)->findAll();
+        // Lade gespeicherte Zahlungsmethoden des Users (sortiert: Primary zuerst)
+        $userPaymentMethods = $userPaymentMethodModel->getUserCards($user->id);
         $hasSavedCard = !empty($userPaymentMethods);
 
-        // Extrahiere Zahlungsmittel-Details (card_brand) aus der neuesten Methode
-        $cardBrand = null;
-        $cardMasked = null;
-        if ($hasSavedCard) {
-            // Hole die neueste Zahlungsmethode
-            $latestMethod = $userPaymentMethodModel
-                ->where('user_id', $user->id)
-                ->orderBy('created_at', 'DESC')
-                ->first();
+        // Hole Primary und Secondary Karte
+        $primaryCard = $userPaymentMethodModel->getPrimaryCard($user->id);
+        $secondaryCard = $userPaymentMethodModel->getSecondaryCard($user->id);
 
-            if ($latestMethod && !empty($latestMethod['provider_data'])) {
-                $providerData = json_decode($latestMethod['provider_data'], true);
-                $cardBrand = $providerData['card_brand'] ?? null;
-                $cardMasked = $providerData['card_masked'] ?? null;
-            }
-        }
+        // Extrahiere Zahlungsmittel-Details für Anzeige (Legacy für alte Views)
+        $cardBrand = $primaryCard['card_brand'] ?? null;
+        $cardMasked = $primaryCard['card_last4'] ?? null;
 
         // Falls kein Filter gesetzt, Standardwerte verwenden
         $currentYear = $year ?: date('Y');
@@ -287,16 +278,12 @@ class Finance extends BaseController
         try {
             log_message('info', "[TOPUP AUTO] Versuche automatische Abbuchung für User #{$user->id}, Betrag: CHF {$amount}");
 
-            // Hole gespeicherte Zahlungsmethode
+            // Hole beste verfügbare Zahlungsmethode (Primary mit Fallback auf Secondary)
             $paymentMethodModel = new UserPaymentMethodModel();
-            $paymentMethod = $paymentMethodModel
-                ->where('user_id', $user->id)
-                ->where('payment_method_code', 'saferpay')
-                ->orderBy('created_at', 'DESC')
-                ->first();
+            $paymentMethod = $paymentMethodModel->getBestAvailableCard($user->id);
 
             if (!$paymentMethod) {
-                log_message('warning', "[TOPUP AUTO] Keine gespeicherte Zahlungsmethode für User #{$user->id} - Weiterleitung zu Saferpay");
+                log_message('warning', "[TOPUP AUTO] Keine gültige gespeicherte Zahlungsmethode für User #{$user->id} - Weiterleitung zu Saferpay");
                 return false;
             }
 
@@ -304,9 +291,12 @@ class Finance extends BaseController
             $providerData = json_decode($paymentMethod['provider_data'], true);
             $aliasId = $providerData['alias_id'] ?? null;
             $cardMasked = $providerData['card_masked'] ?? 'unbekannt';
+            $cardBrand = $paymentMethod['card_brand'] ?? 'Kreditkarte';
+            $cardLast4 = $paymentMethod['card_last4'] ?? '';
+            $isPrimary = $paymentMethod['is_primary'] == 1;
             $platform = $paymentMethod['platform'] ?? 'unbekannt';
 
-            log_message('info', "[TOPUP AUTO] Gefundene Zahlungsmethode für User #{$user->id}: Alias {$aliasId}, Karte: {$cardMasked}, Platform: {$platform}");
+            log_message('info', "[TOPUP AUTO] Gefundene Zahlungsmethode für User #{$user->id}: " . ($isPrimary ? 'PRIMARY' : 'SECONDARY') . " Karte - {$cardBrand} ••{$cardLast4}, Alias {$aliasId}, Platform: {$platform}");
 
             if (!$aliasId) {
                 log_message('error', "[TOPUP AUTO] Alias-ID fehlt in provider_data für User #{$user->id} - Weiterleitung zu Saferpay");
@@ -470,17 +460,43 @@ class Finance extends BaseController
                                 }
                             }
 
-                            $paymentMethodModel->save([
+                            // Extrahiere Kartendetails
+                            $cardBrand = $paymentMeans['Brand']['Name'] ?? null;
+                            $cardExpMonth = $card['ExpMonth'] ?? null;
+                            $cardExpYear = $card['ExpYear'] ?? null;
+                            $cardMasked = $paymentMeans['DisplayText'] ?? null;
+
+                            // Last 4 Ziffern extrahieren aus DisplayText (z.B. "9000 xxxx xxxx 0006" -> "0006")
+                            $cardLast4 = null;
+                            if ($cardMasked && preg_match('/(\d{4})\s*$/', $cardMasked, $matches)) {
+                                $cardLast4 = $matches[1];
+                            }
+
+                            // Expiry formatieren als MM/YYYY
+                            $cardExpiry = null;
+                            if ($cardExpMonth && $cardExpYear) {
+                                $cardExpiry = sprintf('%02d/%04d', $cardExpMonth, $cardExpYear);
+                            }
+
+                            // Prüfe ob dies die erste Karte des Users ist -> dann als Primary setzen
+                            $existingCards = $paymentMethodModel->where('user_id', $user->id)->findAll();
+                            $isPrimary = count($existingCards) === 0 ? 1 : 0;
+
+                            $paymentMethodModel->saveCard([
                                 'user_id' => $user->id,
                                 'payment_method_code' => 'saferpay',
+                                'is_primary' => $isPrimary,
+                                'card_last4' => $cardLast4,
+                                'card_brand' => $cardBrand,
+                                'card_expiry' => $cardExpiry,
                                 'platform' => $platform,
                                 'provider_data' => json_encode([
                                     'alias_id' => $aliasId,
                                     'alias_lifetime' => $aliasLifetime,
-                                    'card_masked' => $paymentMeans['DisplayText'] ?? null,
-                                    'card_brand' => $paymentMeans['Brand']['Name'] ?? null,
-                                    'card_exp_month' => $card['ExpMonth'] ?? null,
-                                    'card_exp_year' => $card['ExpYear'] ?? null,
+                                    'card_masked' => $cardMasked,
+                                    'card_brand' => $cardBrand,
+                                    'card_exp_month' => $cardExpMonth,
+                                    'card_exp_year' => $cardExpYear,
                                 ]),
                                 'created_at' => date('Y-m-d H:i:s'),
                                 'updated_at' => date('Y-m-d H:i:s'),
@@ -1038,6 +1054,60 @@ class Finance extends BaseController
             ->setBody($mpdf->Output($invoice['invoice_number'] . ".pdf", 'S'));
     }
 
+    /**
+     * Setzt eine Karte als Primary
+     */
+    public function setPrimaryCard($cardId)
+    {
+        $user = auth()->user();
+        $paymentMethodModel = new UserPaymentMethodModel();
+
+        // Prüfe ob Karte dem User gehört
+        $card = $paymentMethodModel->find($cardId);
+        if (!$card || $card['user_id'] != $user->id) {
+            return redirect()->to('/finance')->with('error', 'Ungültige Karte');
+        }
+
+        // Setze als Primary
+        $paymentMethodModel->setPrimary($user->id, $cardId);
+
+        return redirect()->to('/finance')->with('success', lang('Finance.primaryCardSet'));
+    }
+
+    /**
+     * Entfernt eine Karte
+     */
+    public function removeCard($cardId)
+    {
+        $user = auth()->user();
+        $paymentMethodModel = new UserPaymentMethodModel();
+
+        // Prüfe ob Karte dem User gehört
+        $card = $paymentMethodModel->find($cardId);
+        if (!$card || $card['user_id'] != $user->id) {
+            return redirect()->to('/finance')->with('error', 'Ungültige Karte');
+        }
+
+        // Prüfe ob User mindestens 2 Karten hat, wenn dies Primary ist
+        if ($card['is_primary']) {
+            $allCards = $paymentMethodModel->getUserCards($user->id);
+            if (count($allCards) > 1) {
+                // Setze die nächste Karte als Primary
+                foreach ($allCards as $c) {
+                    if ($c['id'] != $cardId) {
+                        $paymentMethodModel->setPrimary($user->id, $c['id']);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Lösche Karte
+        $paymentMethodModel->delete($cardId);
+
+        return redirect()->to('/finance')->with('success', lang('Finance.cardRemoved'));
+    }
 
 }
+
 

@@ -162,4 +162,8 @@ return [
     'statusPending' => 'Ausstehend',
     'statusCredited' => 'Gutgeschrieben',
     'statusRejected' => 'Abgelehnt',
+
+    // Multi-Card System
+    'primaryCardSet' => 'Karte wurde als primäre Zahlungsmethode gesetzt',
+    'cardRemoved' => 'Karte wurde erfolgreich entfernt',
 ];

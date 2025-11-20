@@ -80,43 +80,75 @@
             </div>
         </div>
 
-        <!-- Hinterlegte Karte -->
+        <!-- Hinterlegte Karten (Multi-Card System) -->
         <div class="card shadow-sm mt-4">
             <div class="card-header bg-warning text-dark">
                 <strong><i class="bi bi-credit-card-2-front me-2"></i><?= esc(lang('Finance.savedCard')) ?></strong>
             </div>
             <div class="card-body">
                 <?php if ($hasSavedCard): ?>
-                    <!-- Gespeicherte Karte anzeigen -->
-                    <?php $savedCard = $userPaymentMethods[0]; ?>
-                    <div class="alert alert-success mb-3">
-                        <i class="bi bi-check-circle me-2"></i>
-                        <strong>
-                            <?php if (!empty($cardBrand)): ?>
-                                <?= esc($cardBrand) ?> <?= esc(lang('Finance.savedCardRegistered')) ?>
-                            <?php else: ?>
-                                <?= esc(lang('Finance.creditCardRegistered')) ?>
-                            <?php endif; ?>
-                        </strong>
-                    </div>
-                    <p class="mb-3">
-                        <i class="bi bi-shield-check text-success me-2"></i>
-                        <?php if (!empty($cardBrand)): ?>
-                            <?= sprintf(lang('Finance.paymentMethodStoredSecurely'), esc($cardBrand)) ?>
-                        <?php else: ?>
-                            <?= lang('Finance.creditCardStoredSecurely') ?>
-                        <?php endif; ?>
-                    </p>
-                    <div class="d-grid gap-2">
-                        <a href="<?= site_url('finance/register-payment-method') ?>" class="btn btn-outline-primary">
-                            <i class="bi bi-pencil me-1"></i><?= esc(lang('Finance.changePaymentMethod')) ?>
-                        </a>
-                    </div>
+                    <!-- Liste aller Karten -->
+                    <?php foreach ($userPaymentMethods as $card): ?>
+                        <?php
+                        $isPrimary = $card['is_primary'] == 1;
+                        $isExpired = false;
+                        if ($card['card_expiry']) {
+                            $parts = explode('/', $card['card_expiry']);
+                            if (count($parts) == 2) {
+                                $expMonth = (int)$parts[0];
+                                $expYear = (int)$parts[1];
+                                $expDate = new DateTime("$expYear-$expMonth-01");
+                                $expDate->modify('last day of this month');
+                                $isExpired = $expDate < new DateTime();
+                            }
+                        }
+                        ?>
+                        <div class="alert <?= $isPrimary ? 'alert-success' : 'alert-secondary' ?> mb-2 d-flex justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                <?php if ($isPrimary): ?>
+                                    <span class="badge bg-warning text-dark me-2">⭐ Primär</span>
+                                <?php endif; ?>
+                                <?php if ($isExpired): ?>
+                                    <span class="badge bg-danger me-2">Abgelaufen</span>
+                                <?php endif; ?>
+                                <strong><?= esc($card['card_brand'] ?? 'Kreditkarte') ?></strong>
+                                <?php if ($card['card_last4']): ?>
+                                    •••• <?= esc($card['card_last4']) ?>
+                                <?php endif; ?>
+                                <?php if ($card['card_expiry']): ?>
+                                    <small class="text-muted ms-2">(<?= esc($card['card_expiry']) ?>)</small>
+                                <?php endif; ?>
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <?php if (!$isPrimary): ?>
+                                    <a href="<?= site_url('finance/set-primary-card/' . $card['id']) ?>"
+                                       class="btn btn-outline-primary btn-sm"
+                                       onclick="return confirm('Als primäre Karte setzen?')">
+                                        <i class="bi bi-star"></i> Als Primär setzen
+                                    </a>
+                                <?php endif; ?>
+                                <a href="<?= site_url('finance/remove-card/' . $card['id']) ?>"
+                                   class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Karte wirklich entfernen?')">
+                                    <i class="bi bi-trash"></i> Entfernen
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <!-- Weitere Karte hinzufügen (max 2) -->
+                    <?php if (count($userPaymentMethods) < 2): ?>
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="<?= site_url('finance/register-payment-method') ?>" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Weitere Karte hinzufügen
+                            </a>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="alert alert-light mt-3 mb-0">
                         <i class="bi bi-info-circle me-2"></i>
                         <small>
-                            <?= lang('Finance.choosePaymentMethodInfo') ?>
+                            <strong>Automatische Fallback-Logik:</strong> Bei Auto-Käufen wird zuerst die primäre Karte verwendet. Falls diese abgelaufen ist oder die Zahlung fehlschlägt, wird automatisch die sekundäre Karte versucht.
                         </small>
                     </div>
                 <?php else: ?>

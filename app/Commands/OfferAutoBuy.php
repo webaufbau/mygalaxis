@@ -152,14 +152,11 @@ class OfferAutoBuy extends BaseCommand
             return true;
         }
 
-        // Prüfe gespeicherte Karte
+        // Prüfe gespeicherte Karte (nutzt getBestAvailableCard für Primary/Secondary Fallback)
         $paymentMethodModel = new \App\Models\UserPaymentMethodModel();
-        $hasSavedCard = $paymentMethodModel
-            ->where('user_id', $userId)
-            ->where('payment_method_code', 'saferpay')
-            ->countAllResults() > 0;
+        $bestCard = $paymentMethodModel->getBestAvailableCard($userId);
 
-        return $hasSavedCard;
+        return $bestCard !== null;
     }
 
     protected function getFilteredOffersForUser($user): array
