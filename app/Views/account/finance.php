@@ -150,7 +150,7 @@
                         <div class="alert <?= $isExpired ? 'alert-danger' : ($isPrimary ? 'alert-success' : 'alert-secondary') ?> mb-2 d-flex justify-content-between align-items-center">
                             <div class="flex-grow-1">
                                 <?php if ($isPrimary && !$isExpired): ?>
-                                    <span class="badge bg-warning text-dark me-2">⭐ Haupt</span>
+                                    <span class="badge bg-warning text-dark me-2">⭐ <?= esc(lang('Finance.badgePrimary')) ?></span>
                                 <?php endif; ?>
                                 <?php if ($isExpired): ?>
                                     <span class="badge bg-danger me-2">⚠️ Abgelaufen</span>
@@ -167,13 +167,13 @@
                                 <?php if (!$isExpired && !$isPrimary && count($saferpayCards) > 1): ?>
                                     <a href="<?= site_url('finance/set-primary-card/' . $card['id']) ?>"
                                        class="btn btn-primary btn-sm">
-                                        <i class="bi bi-star"></i> Hauptzahlungsmittel
+                                        <i class="bi bi-star"></i> <?= esc(lang('Finance.buttonSetPrimary')) ?>
                                     </a>
                                 <?php endif; ?>
                                 <?php if (count($saferpayCards) > 1 || !$isPrimary || $isExpired): ?>
                                     <a href="<?= site_url('finance/register-payment-method?replace=' . $card['id']) ?>"
                                        class="btn btn-warning btn-sm text-dark">
-                                        <i class="bi bi-arrow-repeat"></i> Ersetzen
+                                        <i class="bi bi-arrow-repeat"></i> <?= esc(lang('Finance.buttonReplace')) ?>
                                     </a>
                                 <?php endif; ?>
                             </div>
@@ -192,7 +192,7 @@
                     <div class="alert alert-light mt-3 mb-0">
                         <i class="bi bi-info-circle me-2"></i>
                         <small>
-                            <strong>Automatische Fallback-Logik:</strong> Bei Auto-Käufen wird zuerst das Haupt-Zahlungsmittel verwendet. Falls dieses abgelaufen ist oder die Zahlung fehlschlägt, wird automatisch das sekundäre Zahlungsmittel versucht.
+                            <?= lang('Finance.fallbackLogicInfo') ?>
                         </small>
                     </div>
                 <?php else: ?>

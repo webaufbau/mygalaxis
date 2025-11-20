@@ -89,14 +89,14 @@ return [
     'backToOffers' => 'Torna alle offerte',
 
     // Metodi di pagamento
-    'savedCard' => 'Carta salvata',
+    'savedCard' => 'Metodo di pagamento salvato',
     'savedCardRegistered' => 'registrato',
     'creditCardRegistered' => 'Carta di credito registrata',
     'paymentMethodStoredSecurely' => 'Il tuo metodo di pagamento (%s) è archiviato in modo sicuro presso <strong>Worldline (Saferpay)</strong>.',
     'creditCardStoredSecurely' => 'La tua carta di credito è archiviata in modo sicuro presso <strong>Worldline (Saferpay)</strong>.',
     'changePaymentMethod' => 'Cambia metodo di pagamento',
     'choosePaymentMethodInfo' => 'Scegli tra <strong>carta di credito o TWINT</strong>. La modifica sostituirà il vecchio metodo di pagamento. Non verrà effettuato alcun addebito.',
-    'noCardRegistered' => 'Nessuna carta registrata',
+    'noCardRegistered' => 'Nessun metodo di pagamento registrato',
     'registerPaymentMethodInfo' => 'Registra un metodo di pagamento per utilizzare l\'acquisto automatico o ricaricare il saldo.',
     'registerPaymentMethod' => 'Registra metodo di pagamento',
     'availablePaymentMethods' => '<strong>Disponibile:</strong> Carta di credito (Visa, Mastercard) o TWINT. Puoi anche registrare un metodo di pagamento alla prima ricarica del saldo.',
@@ -159,4 +159,12 @@ return [
     'statusPending' => 'In attesa',
     'statusCredited' => 'Accreditato',
     'statusRejected' => 'Rifiutato',
+
+    // Sistema multi-carta
+    'primaryCardSet' => 'La carta è stata impostata come metodo di pagamento principale',
+    'cardRemoved' => 'La carta è stata rimossa con successo',
+    'badgePrimary' => 'Principale',
+    'buttonSetPrimary' => 'Imposta come Principale',
+    'buttonReplace' => 'Sostituisci',
+    'fallbackLogicInfo' => '<strong>Logica di fallback automatica:</strong> Per gli acquisti automatici, viene utilizzato prima il metodo di pagamento principale. Se è scaduto o il pagamento fallisce, viene automaticamente tentato il metodo di pagamento secondario.',
 ];

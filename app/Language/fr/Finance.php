@@ -89,14 +89,14 @@ return [
     'backToOffers' => 'Retour aux offres',
 
     // Moyens de paiement
-    'savedCard' => 'Carte enregistrée',
+    'savedCard' => 'Moyen de paiement enregistré',
     'savedCardRegistered' => 'enregistré',
     'creditCardRegistered' => 'Carte de crédit enregistrée',
     'paymentMethodStoredSecurely' => 'Votre moyen de paiement (%s) est stocké en toute sécurité chez <strong>Worldline (Saferpay)</strong>.',
     'creditCardStoredSecurely' => 'Votre carte de crédit est stockée en toute sécurité chez <strong>Worldline (Saferpay)</strong>.',
     'changePaymentMethod' => 'Changer le moyen de paiement',
     'choosePaymentMethodInfo' => 'Choisissez entre <strong>carte de crédit ou TWINT</strong>. Le changement remplacera l\'ancien moyen de paiement. Aucun débit ne sera effectué.',
-    'noCardRegistered' => 'Aucune carte enregistrée',
+    'noCardRegistered' => 'Aucun moyen de paiement enregistré',
     'registerPaymentMethodInfo' => 'Enregistrez un moyen de paiement pour utiliser l\'achat automatique ou recharger votre solde.',
     'registerPaymentMethod' => 'Enregistrer un moyen de paiement',
     'availablePaymentMethods' => '<strong>Disponible:</strong> Carte de crédit (Visa, Mastercard) ou TWINT. Vous pouvez également enregistrer un moyen de paiement lors de la première recharge de votre solde.',
@@ -159,4 +159,12 @@ return [
     'statusPending' => 'En attente',
     'statusCredited' => 'Crédité',
     'statusRejected' => 'Rejeté',
+
+    // Système multi-carte
+    'primaryCardSet' => 'La carte a été définie comme moyen de paiement principal',
+    'cardRemoved' => 'La carte a été supprimée avec succès',
+    'badgePrimary' => 'Principal',
+    'buttonSetPrimary' => 'Définir comme Principal',
+    'buttonReplace' => 'Remplacer',
+    'fallbackLogicInfo' => '<strong>Logique de secours automatique:</strong> Pour les achats automatiques, le moyen de paiement principal est utilisé en premier. S\'il a expiré ou si le paiement échoue, le moyen de paiement secondaire est automatiquement essayé.',
 ];

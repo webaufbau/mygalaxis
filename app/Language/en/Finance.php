@@ -163,4 +163,8 @@ return [
     // Multi-Card System
     'primaryCardSet' => 'Card was set as primary payment method',
     'cardRemoved' => 'Card was successfully removed',
+    'badgePrimary' => 'Primary',
+    'buttonSetPrimary' => 'Set as Primary',
+    'buttonReplace' => 'Replace',
+    'fallbackLogicInfo' => '<strong>Automatic Fallback Logic:</strong> For auto-purchases, the primary payment method is used first. If it has expired or the payment fails, the secondary payment method is automatically tried.',
 ];

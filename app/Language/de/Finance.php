@@ -166,4 +166,8 @@ return [
     // Multi-Card System
     'primaryCardSet' => 'Karte wurde als primäre Zahlungsmethode gesetzt',
     'cardRemoved' => 'Karte wurde erfolgreich entfernt',
+    'badgePrimary' => 'Haupt',
+    'buttonSetPrimary' => 'Hauptzahlungsmittel',
+    'buttonReplace' => 'Ersetzen',
+    'fallbackLogicInfo' => '<strong>Automatische Fallback-Logik:</strong> Bei Auto-Käufen wird zuerst das Haupt-Zahlungsmittel verwendet. Falls dieses abgelaufen ist oder die Zahlung fehlschlägt, wird automatisch das sekundäre Zahlungsmittel versucht.',
 ];
