@@ -166,8 +166,7 @@
                             <div class="btn-group btn-group-sm" role="group">
                                 <?php if (!$isPrimary && count($saferpayCards) > 1): ?>
                                     <a href="<?= site_url('finance/set-primary-card/' . $card['id']) ?>"
-                                       class="btn btn-outline-primary btn-sm"
-                                       onclick="return confirm('Als primäre Karte setzen?')">
+                                       class="btn btn-primary btn-sm">
                                         <i class="bi bi-star"></i> Als Primär setzen
                                     </a>
                                 <?php endif; ?>
