@@ -229,6 +229,18 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
 
         log_message('info', "Bestätigungsmail mit Template ID {$template['id']} versendet für Angebot ID {$offer['id']} (UUID: {$offer['uuid']})");
 
+        // Logge Bestätigungs-E-Mail in Email-Log
+        $emailLogModel = new \App\Models\OfferEmailLogModel();
+        $emailLogModel->logEmail(
+            offerId: $offer['id'],
+            emailType: 'confirmation',
+            recipientEmail: $userEmail,
+            recipientType: 'customer',
+            companyId: null,
+            subject: $parsedSubject,
+            status: 'sent'
+        );
+
         // Benachrichtige passende Firmen über die neue Offerte
         $notifier = new \App\Libraries\OfferNotificationSender();
         $sentCount = $notifier->notifyMatchingUsers($offer);

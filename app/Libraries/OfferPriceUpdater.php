@@ -194,7 +194,21 @@ class OfferPriceUpdater
 
         $to = $siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail();
 
-        $this->sendEmail($to, $subject, $message, $siteConfig);
+        $emailSent = $this->sendEmail($to, $subject, $message, $siteConfig);
+
+        // Logge Rabatt-E-Mail in Email-Log
+        if ($emailSent) {
+            $emailLogModel = new \App\Models\OfferEmailLogModel();
+            $emailLogModel->logEmail(
+                offerId: $offer['id'],
+                emailType: 'discount',
+                recipientEmail: $to,
+                recipientType: 'company',
+                companyId: $user->id,
+                subject: $subject,
+                status: 'sent'
+            );
+        }
     }
 
 

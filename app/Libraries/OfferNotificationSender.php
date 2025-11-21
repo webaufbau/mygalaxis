@@ -61,6 +61,34 @@ class OfferNotificationSender
 
         log_message('info', "Firmen-Benachrichtigung für Offer ID {$offer['id']}: {$sentCount} E-Mails versendet");
 
+        // Logge Firmen-Benachrichtigung in Email-Log (gruppiert)
+        if ($sentCount > 0) {
+            $emailLogModel = new \App\Models\OfferEmailLogModel();
+            $priceFormatted = number_format($offer['discounted_price'] ?? $offer['price'], 0, '.', '\'');
+            $typeMapping = [
+                'move' => 'Umzug',
+                'cleaning' => 'Reinigung',
+                'move_cleaning' => 'Umzug + Reinigung',
+                'painting' => 'Maler/Gipser',
+                'plumbing' => 'Sanitär',
+                'electrician' => 'Elektriker',
+                'heating' => 'Heizung',
+                'gardening' => 'Garten',
+            ];
+            $typeName = $typeMapping[$offer['type']] ?? ucfirst($offer['type']);
+            $subject = "Neue Anfrage Preis Fr. {$priceFormatted}.– für {$typeName} ID {$offer['id']} - {$offer['zip']} {$offer['city']}";
+
+            $emailLogModel->logEmail(
+                offerId: $offer['id'],
+                emailType: 'company_notification',
+                recipientEmail: "{$sentCount} Firmen",
+                recipientType: 'company',
+                companyId: null,
+                subject: $subject,
+                status: 'sent'
+            );
+        }
+
         return $sentCount;
     }
 

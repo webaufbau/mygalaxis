@@ -135,6 +135,18 @@ class SendReviewReminder extends BaseCommand
 
                     $this->bookingModel->update($booking['id'], ['review_reminder_sent_at' => date('Y-m-d H:i:s')]);
                     $sentFirstCount++;
+
+                    // Logge Review-Erinnerungs-E-Mail in Email-Log
+                    $emailLogModel = new \App\Models\OfferEmailLogModel();
+                    $emailLogModel->logEmail(
+                        offerId: $offer['id'],
+                        emailType: 'review_reminder',
+                        recipientEmail: $creatorEmail,
+                        recipientType: 'customer',
+                        companyId: null,
+                        subject: $subject,
+                        status: 'sent'
+                    );
                 } else {
                     CLI::write(lang('Reviews.emailSendFailed', [$creatorEmail, $booking['id']]), 'red');
                 }
@@ -215,6 +227,18 @@ class SendReviewReminder extends BaseCommand
                             ->where('id', $booking['id'])
                             ->update(['review_second_reminder_sent_at' => date('Y-m-d H:i:s')]);
                         $sentReminderCount++;
+
+                        // Logge Review-Erinnerungs-E-Mail (2. Erinnerung) in Email-Log
+                        $emailLogModel = new \App\Models\OfferEmailLogModel();
+                        $emailLogModel->logEmail(
+                            offerId: $offer['id'],
+                            emailType: 'review_reminder_2',
+                            recipientEmail: $creatorEmail,
+                            recipientType: 'customer',
+                            companyId: null,
+                            subject: $subject,
+                            status: 'sent'
+                        );
                     }
                 }
             }

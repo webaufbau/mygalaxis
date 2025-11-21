@@ -428,7 +428,21 @@ class OfferPurchaseService
         $subject = sprintf(lang('Email.offerPurchasedCompanySubject'), $offer['title']);
         $message = view('emails/offer_purchase_to_company', $data);
 
-        $this->sendEmail($company->email, $subject, $message, $siteConfig);
+        $emailSent = $this->sendEmail($company->email, $subject, $message, $siteConfig);
+
+        // Logge E-Mail an Firma in Email-Log
+        if ($emailSent) {
+            $emailLogModel = new \App\Models\OfferEmailLogModel();
+            $emailLogModel->logEmail(
+                offerId: $offer['id'],
+                emailType: 'purchase_company',
+                recipientEmail: $company->email,
+                recipientType: 'company',
+                companyId: $company->id,
+                subject: $subject,
+                status: 'sent'
+            );
+        }
     }
 
     /**
@@ -474,7 +488,21 @@ class OfferPurchaseService
             $emailTo = $originalEmail;
         }
 
-        $this->sendEmail($emailTo, $subject, $message, $siteConfig);
+        $emailSent = $this->sendEmail($emailTo, $subject, $message, $siteConfig);
+
+        // Logge E-Mail an Kunde in Email-Log
+        if ($emailSent) {
+            $emailLogModel = new \App\Models\OfferEmailLogModel();
+            $emailLogModel->logEmail(
+                offerId: $offer['id'],
+                emailType: 'purchase_customer',
+                recipientEmail: $originalEmail,
+                recipientType: 'customer',
+                companyId: $company->id ?? null,
+                subject: $subject,
+                status: 'sent'
+            );
+        }
     }
 
     /**
