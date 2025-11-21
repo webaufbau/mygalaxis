@@ -160,10 +160,58 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                 </thead>
                 <tbody>
                     <?php
+                    // Status-Übersetzungen (Infobip & Twilio)
+                    $statusTranslations = [
+                        // Infobip Pending Stati
+                        'PENDING_ACCEPTED' => 'Angenommen',
+                        'PENDING_ENROUTE' => 'Wird gesendet',
+                        'PENDING_WAITING_DELIVERY' => 'Warte auf Zustellung',
+
+                        // Infobip Delivered Stati
+                        'DELIVERED_TO_HANDSET' => 'Zugestellt',
+                        'DELIVERED' => 'Zugestellt',
+
+                        // Infobip Undeliverable Stati
+                        'UNDELIVERABLE_NOT_DELIVERED' => 'Nicht zugestellt',
+                        'UNDELIVERABLE_ABSENT_SUBSCRIBER' => 'Empfänger nicht erreichbar',
+                        'UNDELIVERABLE_REJECTED' => 'Abgelehnt',
+
+                        // Infobip Expired Stati
+                        'EXPIRED_EXPIRED' => 'Abgelaufen',
+
+                        // Infobip Rejected Stati
+                        'REJECTED_NETWORK' => 'Vom Netzwerk abgelehnt',
+                        'REJECTED_DESTINATION' => 'Ungültige Nummer',
+                        'REJECTED_BLOCKED' => 'Blockiert',
+                        'REJECTED_PREPAID_INSUFFICIENT_FUNDS' => 'Ungenügend Guthaben',
+
+                        // Twilio Stati
+                        'CALL_INITIATED' => 'Anruf gestartet',
+                        'CALL_FAILED' => 'Anruf fehlgeschlagen',
+
+                        // Error Stati
+                        'INVALID_DESTINATION_ADDRESS' => 'Ungültige Telefonnummer',
+                        'NO_ERROR' => 'Kein Fehler',
+                    ];
+
                     $previousPhone = null;
                     foreach ($smsHistory as $history):
                         $phoneChanged = ($previousPhone !== null && $previousPhone !== $history['phone']);
                         $previousPhone = $history['phone'];
+
+                        // Status übersetzen
+                        $statusKey = $history['status'];
+                        $statusLabel = $statusTranslations[$statusKey] ?? $statusKey;
+
+                        // Status-Farbe bestimmen
+                        $statusClass = 'text-muted';
+                        if (strpos($statusKey, 'DELIVERED') !== false) {
+                            $statusClass = 'text-success';
+                        } elseif (strpos($statusKey, 'PENDING') !== false) {
+                            $statusClass = 'text-warning';
+                        } elseif (strpos($statusKey, 'REJECTED') !== false || strpos($statusKey, 'UNDELIVERABLE') !== false || strpos($statusKey, 'EXPIRED') !== false) {
+                            $statusClass = 'text-danger';
+                        }
                     ?>
                     <tr class="<?= $history['verified'] ? 'table-success' : '' ?>">
                         <td><?= \CodeIgniter\I18n\Time::parse($history['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i:s') ?></td>
@@ -182,7 +230,7 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                             <?php endif; ?>
                         </td>
                         <td>
-                            <small class="text-muted"><?= esc($history['status']) ?></small>
+                            <small class="<?= $statusClass ?>"><?= esc($statusLabel) ?></small>
                         </td>
                         <td>
                             <?php if ($history['verified']): ?>
