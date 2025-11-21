@@ -176,9 +176,18 @@
 
     foreach ($offers as $o):
         if(isset($o['verified']) && $o['verified']=='1') {
-            $verified = 'Verifiziert';
             if(isset($o['verify_type'])) {
-                $verified .= ' ' . $o['verify_type'];
+                if ($o['verify_type'] === 'manual') {
+                    $verified = '✓ Admin';
+                } elseif ($o['verify_type'] === 'sms') {
+                    $verified = '✓ SMS';
+                } elseif ($o['verify_type'] === 'call') {
+                    $verified = '✓ Anruf';
+                } else {
+                    $verified = '✓';
+                }
+            } else {
+                $verified = '✓';
             }
             $verified = '<div class="badge bg-success" style="font-size: 0.7rem; white-space: nowrap;">' . $verified . '</div>';
         } else {

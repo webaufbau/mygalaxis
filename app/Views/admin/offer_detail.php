@@ -32,7 +32,7 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
     <?php elseif ($offer['companies_notified_at']): ?>
         <span class="badge bg-success fs-6">
             <i class="bi bi-check-circle-fill"></i>
-            <?= $offer['verified'] ? 'Verifiziert & weitergeleitet' : 'Manuell freigegeben & weitergeleitet' ?>
+            Versendet
             <br>
             <small><?= \CodeIgniter\I18n\Time::parse($offer['companies_notified_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?> Uhr</small>
         </span>
@@ -179,7 +179,20 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
             <?php if ($offer['verified'] && $offer['verify_type']): ?>
             <tr>
                 <td><strong>Verifizierungsmethode:</strong></td>
-                <td><?= esc($offer['verify_type']) === 'sms' ? 'SMS' : 'Anruf' ?></td>
+                <td>
+                    <?php
+                    $verifyType = esc($offer['verify_type']);
+                    if ($verifyType === 'sms') {
+                        echo 'SMS';
+                    } elseif ($verifyType === 'call') {
+                        echo 'Anruf';
+                    } elseif ($verifyType === 'manual') {
+                        echo 'Admin';
+                    } else {
+                        echo ucfirst($verifyType);
+                    }
+                    ?>
+                </td>
             </tr>
             <?php endif; ?>
             <tr>

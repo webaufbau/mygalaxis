@@ -416,13 +416,14 @@ class OfferNotificationSender
         // Versuche field_display_template aus Datenbank zu laden
         $customFieldDisplay = $this->getFieldDisplayFromDatabase($fullOffer, $user, $alreadyPurchased);
 
-        // Extrahiere Domain aus Platform (z.B. my_offertenheld_ch -> offertenheld.ch)
+        // Extrahiere Domain aus User-Platform (NICHT Offer-Platform!)
+        // So sieht die E-Mail aus als käme die Anfrage von der Plattform der Firma
         $domain = '';
-        if (!empty($fullOffer['platform'])) {
-            $domain = str_replace('my_', '', $fullOffer['platform']);
+        if (!empty($user->platform)) {
+            $domain = str_replace('my_', '', $user->platform);
             $domain = str_replace('_', '.', $domain);
         } else {
-            // Fallback: extrahiere aus frontendUrl
+            // Fallback: extrahiere aus frontendUrl der User-SiteConfig
             $url = $siteConfig->frontendUrl ?? base_url();
             $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
             $parts = explode('.', $domain);
