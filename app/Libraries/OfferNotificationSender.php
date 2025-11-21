@@ -78,12 +78,8 @@ class OfferNotificationSender
 
     protected function doesOfferMatchUser(array $offer, User $user): bool
     {
-        // Prüfe erst ob User und Offer auf gleicher Platform sind
-        if (!empty($offer['platform']) && !empty($user->platform)) {
-            if ($offer['platform'] !== $user->platform) {
-                return false; // Unterschiedliche Platforms → kein Match
-            }
-        }
+        // PLATFORM-CHECK ENTFERNT: Firmen erhalten Anfragen von allen Plattformen
+        // (vorher: nur Anfragen von gleicher Platform wie Firma)
 
         $cantons = is_string($user->filter_cantons) ? explode(',', $user->filter_cantons) : [];
         $regions = is_string($user->filter_regions) ? explode(',', $user->filter_regions) : [];
