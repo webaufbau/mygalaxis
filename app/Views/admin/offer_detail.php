@@ -108,6 +108,104 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
     </div>
 </div>
 
+<!-- SMS-Verifizierungs-Status und Historie (nur für Admin) -->
+<div class="card mb-4">
+    <div class="card-header <?= $offer['verified'] ? 'bg-success' : 'bg-warning' ?> text-white">
+        <h5 class="mb-0">
+            <?php if ($offer['verified']): ?>
+                ✓ Verifiziert
+            <?php else: ?>
+                ⚠ Nicht verifiziert
+            <?php endif; ?>
+        </h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-sm mb-0">
+            <tr>
+                <td style="width: 250px;"><strong>Status:</strong></td>
+                <td>
+                    <?php if ($offer['verified']): ?>
+                        <span class="badge bg-success">Verifiziert</span>
+                    <?php else: ?>
+                        <span class="badge bg-warning">Nicht verifiziert</span>
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <?php if ($offer['verified'] && $offer['verify_type']): ?>
+            <tr>
+                <td><strong>Verifizierungsmethode:</strong></td>
+                <td><?= esc($offer['verify_type']) === 'sms' ? 'SMS' : 'Anruf' ?></td>
+            </tr>
+            <?php endif; ?>
+            <tr>
+                <td><strong>Telefonnummer:</strong></td>
+                <td><?= esc($offer['phone']) ?></td>
+            </tr>
+        </table>
+
+        <?php if (!empty($smsHistory)): ?>
+        <hr>
+        <h6 class="mb-3">SMS/Anruf-Verlauf:</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Datum/Zeit</th>
+                        <th>Telefonnummer</th>
+                        <th>Code</th>
+                        <th>Methode</th>
+                        <th>Status</th>
+                        <th>Verifiziert</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $previousPhone = null;
+                    foreach ($smsHistory as $history):
+                        $phoneChanged = ($previousPhone !== null && $previousPhone !== $history['phone']);
+                        $previousPhone = $history['phone'];
+                    ?>
+                    <tr class="<?= $history['verified'] ? 'table-success' : '' ?>">
+                        <td><?= \CodeIgniter\I18n\Time::parse($history['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i:s') ?></td>
+                        <td>
+                            <?= esc($history['phone']) ?>
+                            <?php if ($phoneChanged): ?>
+                                <br><span class="badge bg-warning text-dark">📱 Nummer geändert</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><code><?= esc($history['verification_code']) ?></code></td>
+                        <td>
+                            <?php if ($history['method'] === 'sms'): ?>
+                                <span class="badge bg-primary">📧 SMS</span>
+                            <?php else: ?>
+                                <span class="badge bg-info">📞 Anruf</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <small class="text-muted"><?= esc($history['status']) ?></small>
+                        </td>
+                        <td>
+                            <?php if ($history['verified']): ?>
+                                <span class="badge bg-success">✓ Ja</span>
+                                <?php if ($history['verified_at']): ?>
+                                    <br><small class="text-muted"><?= \CodeIgniter\I18n\Time::parse($history['verified_at'])->setTimezone(app_timezone())->format('d.m.Y H:i:s') ?></small>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="badge bg-secondary">Nein</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php else: ?>
+        <hr>
+        <p class="text-muted mb-0"><em>Keine SMS/Anruf-Historie vorhanden.</em></p>
+        <?php endif; ?>
+    </div>
+</div>
+
 <!-- Preisinformationen Card -->
 <div class="card mb-4">
     <div class="card-header bg-success text-white">

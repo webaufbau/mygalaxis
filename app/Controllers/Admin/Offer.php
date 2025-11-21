@@ -75,6 +75,10 @@ class Offer extends BaseController
         // Berechnungsdetails sammeln
         $calculationDetails = $this->getCalculationDetails($offer, $formFields, $formFieldsCombo, $calculatedPrice);
 
+        // SMS-Verifizierungs-Historie laden
+        $smsHistoryModel = new \App\Models\SmsVerificationHistoryModel();
+        $smsHistory = $smsHistoryModel->getHistoryByOfferId($offer['id']);
+
         $data['offer'] = $offer;
         $data['calculatedPrice'] = $calculatedPrice;
         $data['discountedPrice'] = $discountedPrice;
@@ -88,6 +92,7 @@ class Offer extends BaseController
         $data['priceDebugInfo'] = $priceDebugInfo;
         $data['priceComponents'] = $priceComponents;
         $data['maxPriceCapInfo'] = $maxPriceCapInfo;
+        $data['smsHistory'] = $smsHistory;
 
         return view('admin/offer_detail', $data);
     }

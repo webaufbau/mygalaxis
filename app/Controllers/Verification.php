@@ -177,6 +177,20 @@ class Verification extends BaseController {
 
         $twilio = new TwilioService();
 
+        // UUID und Offer holen für Historie
+        $uuid = session()->get('uuid');
+        $offerId = null;
+        $platform = null;
+
+        if ($uuid) {
+            $db = \Config\Database::connect();
+            $offer = $db->table('offers')->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
+            if ($offer) {
+                $offerId = $offer->id;
+                $platform = $offer->platform;
+            }
+        }
+
         // Hilfsfunktion für korrekte locale-URL
         $locale = getCurrentLocale();
         $prefix = ($locale === 'de') ? '' : '/' . $locale;
@@ -192,6 +206,24 @@ class Verification extends BaseController {
 
             session()->set('sms_sent_status', $infobipResponseArray['status']);
             session()->set('sms_message_id', $infobipResponseArray['messageId']);
+
+            // Historie speichern
+            if ($offerId) {
+                $historyModel = new \App\Models\SmsVerificationHistoryModel();
+                $historyId = $historyModel->insert([
+                    'offer_id' => $offerId,
+                    'uuid' => $uuid,
+                    'phone' => $phone,
+                    'verification_code' => $verificationCode,
+                    'method' => 'sms',
+                    'status' => $infobipResponseArray['status'] ?? null,
+                    'message_id' => $infobipResponseArray['messageId'] ?? null,
+                    'platform' => $platform,
+                    'verified' => 0,
+                ]);
+                session()->set('verification_history_id', $historyId);
+                log_message('info', "SMS-Verifizierungs-Historie gespeichert (ID: $historyId)");
+            }
 
             if ($infobipResponseArray['success']) {
                 log_message('info', "SMS-Code an $phone über Infobip gesendet.");
@@ -210,6 +242,23 @@ class Verification extends BaseController {
                 'sitename' => $this->siteConfig->name,
             ]);
             $success = $twilio->sendCallCode($phone, $message, $verificationCode);
+
+            // Historie speichern
+            if ($offerId) {
+                $historyModel = new \App\Models\SmsVerificationHistoryModel();
+                $historyId = $historyModel->insert([
+                    'offer_id' => $offerId,
+                    'uuid' => $uuid,
+                    'phone' => $phone,
+                    'verification_code' => $verificationCode,
+                    'method' => 'call',
+                    'status' => $success ? 'CALL_INITIATED' : 'CALL_FAILED',
+                    'platform' => $platform,
+                    'verified' => 0,
+                ]);
+                session()->set('verification_history_id', $historyId);
+                log_message('info', "Anruf-Verifizierungs-Historie gespeichert (ID: $historyId)");
+            }
 
             if ($success) {
                 log_message('info', "Anruf-Code an $phone gestartet.");
@@ -314,6 +363,18 @@ class Verification extends BaseController {
             $twilio = new TwilioService();
             $success = false;
 
+            // Offer ID und Platform für Historie holen
+            $offerId = null;
+            $platform = null;
+            if ($uuid) {
+                $db = \Config\Database::connect();
+                $offer = $db->table('offers')->where('uuid', $uuid)->orderBy('created_at', 'DESC')->get()->getRow();
+                if ($offer) {
+                    $offerId = $offer->id;
+                    $platform = $offer->platform;
+                }
+            }
+
             if ($method === 'sms') {
                 // Twilio deaktiviert, direkt Fallback
                 $infobip = new \App\Libraries\InfobipService();
@@ -326,6 +387,24 @@ class Verification extends BaseController {
                 log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet: " . print_r($infobipResponseArray, true));
                 session()->set('sms_sent_status', $infobipResponseArray['status']);
                 session()->set('sms_message_id', $infobipResponseArray['messageId']);
+
+                // Historie speichern (Telefonnummer geändert)
+                if ($offerId) {
+                    $historyModel = new \App\Models\SmsVerificationHistoryModel();
+                    $historyId = $historyModel->insert([
+                        'offer_id' => $offerId,
+                        'uuid' => $uuid,
+                        'phone' => $normalizedPhone,
+                        'verification_code' => $verificationCode,
+                        'method' => 'sms',
+                        'status' => $infobipResponseArray['status'] ?? null,
+                        'message_id' => $infobipResponseArray['messageId'] ?? null,
+                        'platform' => $platform,
+                        'verified' => 0,
+                    ]);
+                    session()->set('verification_history_id', $historyId);
+                    log_message('info', "SMS-Verifizierungs-Historie gespeichert nach Telefonnummer-Änderung (ID: $historyId)");
+                }
 
                 if ($infobipResponseArray['success']) {
                     log_message('info', "SMS-Code an $normalizedPhone über Infobip gesendet (Fallback).");
@@ -345,6 +424,24 @@ class Verification extends BaseController {
                     'sitename' => $this->siteConfig->name,
                 ]);
                 $success = $twilio->sendCallCode($normalizedPhone, $message, $verificationCode);
+
+                // Historie speichern (Telefonnummer geändert)
+                if ($offerId) {
+                    $historyModel = new \App\Models\SmsVerificationHistoryModel();
+                    $historyId = $historyModel->insert([
+                        'offer_id' => $offerId,
+                        'uuid' => $uuid,
+                        'phone' => $normalizedPhone,
+                        'verification_code' => $verificationCode,
+                        'method' => 'call',
+                        'status' => $success ? 'CALL_INITIATED' : 'CALL_FAILED',
+                        'platform' => $platform,
+                        'verified' => 0,
+                    ]);
+                    session()->set('verification_history_id', $historyId);
+                    log_message('info', "Anruf-Verifizierungs-Historie gespeichert nach Telefonnummer-Änderung (ID: $historyId)");
+                }
+
                 if ($success) {
                     $redirectUrl = $prefix . '/verification/confirm';
                     log_message('info', '[VERIFICATION REDIRECT] Telefon geändert: Anruf erfolgreich → Weiterleitung zu: ' . $redirectUrl);
@@ -366,6 +463,14 @@ class Verification extends BaseController {
                     'verified' => 1,
                     'verify_type' => session()->get('verify_method')
                 ]);
+
+                // Historie als verifiziert markieren
+                $verificationHistoryId = session()->get('verification_history_id');
+                if ($verificationHistoryId) {
+                    $historyModel = new \App\Models\SmsVerificationHistoryModel();
+                    $historyModel->markAsVerified($verificationHistoryId);
+                    log_message('info', "Verifizierungs-Historie ID $verificationHistoryId als verifiziert markiert");
+                }
 
                 session()->remove('verification_code');
 
