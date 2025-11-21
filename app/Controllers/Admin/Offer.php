@@ -75,9 +75,16 @@ class Offer extends BaseController
         // Berechnungsdetails sammeln
         $calculationDetails = $this->getCalculationDetails($offer, $formFields, $formFieldsCombo, $calculatedPrice);
 
-        // SMS-Verifizierungs-Historie laden
+        // SMS-Verifizierungs-Historie laden (mit Admin-User Info)
         $smsHistoryModel = new \App\Models\SmsVerificationHistoryModel();
-        $smsHistory = $smsHistoryModel->getHistoryByOfferId($offer['id']);
+        $db = \Config\Database::connect();
+        $smsHistory = $db->table('sms_verification_history')
+            ->select('sms_verification_history.*, users.username as admin_username')
+            ->join('users', 'users.id = sms_verification_history.admin_user_id', 'left')
+            ->where('sms_verification_history.offer_id', $offer['id'])
+            ->orderBy('sms_verification_history.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
 
         $data['offer'] = $offer;
         $data['calculatedPrice'] = $calculatedPrice;
@@ -152,12 +159,33 @@ class Offer extends BaseController
                 'verify_type' => 'manual'
             ]);
 
+            // Speichere in SMS-Verifizierungs-Historie
+            $adminUser = auth()->user();
+            $historyModel = new \App\Models\SmsVerificationHistoryModel();
+            $historyId = $historyModel->insert([
+                'offer_id' => $offer['id'],
+                'uuid' => $offer['uuid'],
+                'phone' => $offer['phone'],
+                'verification_code' => 'MANUAL',
+                'method' => 'sms',
+                'status' => 'MANUAL_ADMIN_APPROVAL',
+                'platform' => $offer['platform'],
+                'admin_user_id' => $adminUser->id ?? null,
+                'verified' => 1,
+                'verified_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            log_message('info', "Manuelle Freigabe in SMS-Historie gespeichert (ID: $historyId) durch Admin User ID: " . ($adminUser->id ?? 'unknown'));
+
             // Sende E-Mails an Firmen
-            $this->sendToCompanies($offer);
+            $sentCount = $this->sendToCompanies($offer);
 
-            log_message('info', "Anfrage ID $id wurde manuell vom Admin freigegeben");
+            // Sende Bestätigungs-E-Mail an Kunden
+            $this->sendConfirmationToCustomer($offer);
 
-            return redirect()->back()->with('success', 'Anfrage wurde erfolgreich freigegeben und an Firmen weitergeleitet!');
+            log_message('info', "Anfrage ID $id wurde manuell vom Admin freigegeben - {$sentCount} Firmen benachrichtigt, Kunde informiert");
+
+            return redirect()->back()->with('success', "Anfrage wurde erfolgreich freigegeben! {$sentCount} Firmen wurden benachrichtigt und der Kunde hat eine Bestätigung erhalten.");
 
         } catch (\Exception $e) {
             log_message('error', "Fehler bei manueller Freigabe von Anfrage ID $id: " . $e->getMessage());
@@ -176,6 +204,52 @@ class Offer extends BaseController
         log_message('info', "Manuell freigegebene Anfrage ID {$offer['id']}: {$sentCount} E-Mails an Firmen versendet");
 
         return $sentCount;
+    }
+
+    /**
+     * Sendet Bestätigungs-E-Mail an den Kunden
+     */
+    private function sendConfirmationToCustomer($offer)
+    {
+        try {
+            // Hole form_fields für E-Mail-Adresse
+            $formFields = json_decode($offer['form_fields'], true);
+            $customerEmail = $formFields['email'] ?? null;
+
+            if (!$customerEmail) {
+                log_message('warning', "Keine E-Mail-Adresse für Kunde bei Anfrage ID {$offer['id']} gefunden");
+                return false;
+            }
+
+            // Sende Bestätigungs-E-Mail mit Template
+            $emailService = service('email');
+            $emailService->setTo($customerEmail);
+            $emailService->setSubject('Ihre Anfrage wurde erfolgreich übermittelt');
+
+            // Verwende Template-Parser falls vorhanden
+            $siteConfigLoader = new \App\Libraries\SiteConfigLoader();
+            $siteConfig = $siteConfigLoader->loadForPlatform($offer['platform'] ?? null);
+
+            $message = view('emails/offer_confirmation', [
+                'offer' => $offer,
+                'formFields' => $formFields,
+                'siteConfig' => $siteConfig,
+            ]);
+
+            $emailService->setMessage($message);
+
+            if ($emailService->send()) {
+                log_message('info', "Bestätigungs-E-Mail an Kunde {$customerEmail} gesendet (Anfrage ID {$offer['id']})");
+                return true;
+            } else {
+                log_message('error', "Fehler beim Senden der Bestätigungs-E-Mail an {$customerEmail}: " . $emailService->printDebugger());
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', "Exception beim Senden der Kunden-E-Mail für Anfrage ID {$offer['id']}: " . $e->getMessage());
+            return false;
+        }
     }
 
 }

@@ -21,6 +21,7 @@ class SmsVerificationHistoryModel extends Model
         'status',
         'message_id',
         'platform',
+        'admin_user_id',
         'verified',
         'verified_at',
         'created_at',

@@ -234,6 +234,9 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                         'CALL_INITIATED' => 'Anruf gestartet',
                         'CALL_FAILED' => 'Anruf fehlgeschlagen',
 
+                        // Manual Admin Approval
+                        'MANUAL_ADMIN_APPROVAL' => 'Manuell vom Admin freigegeben',
+
                         // Error Stati
                         'INVALID_DESTINATION_ADDRESS' => 'Ungültige Telefonnummer',
                         'NO_ERROR' => 'Kein Fehler',
@@ -276,6 +279,9 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                         </td>
                         <td>
                             <span class="badge <?= $statusBadgeClass ?>"><?= esc($statusLabel) ?></span>
+                            <?php if (!empty($history['admin_username'])): ?>
+                                <br><small class="text-info">👤 <?= esc($history['admin_username']) ?></small>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($history['verified']): ?>
