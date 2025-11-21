@@ -86,6 +86,10 @@ class Offer extends BaseController
             ->get()
             ->getResultArray();
 
+        // E-Mail-Log laden (mit Firmen-Info)
+        $emailLogModel = new \App\Models\OfferEmailLogModel();
+        $emailLog = $emailLogModel->getEmailsWithCompanyInfo($offer['id']);
+
         $data['offer'] = $offer;
         $data['calculatedPrice'] = $calculatedPrice;
         $data['discountedPrice'] = $discountedPrice;
@@ -100,6 +104,7 @@ class Offer extends BaseController
         $data['priceComponents'] = $priceComponents;
         $data['maxPriceCapInfo'] = $maxPriceCapInfo;
         $data['smsHistory'] = $smsHistory;
+        $data['emailLog'] = $emailLog;
 
         return view('admin/offer_detail', $data);
     }
@@ -159,6 +164,11 @@ class Offer extends BaseController
                 'verify_type' => 'manual'
             ]);
 
+            // Lade Offer neu damit verified=1 gesetzt ist
+            $offer = $offerModel->find($id);
+
+            log_message('info', "Offer nach Update neu geladen - verified={$offer['verified']}, verify_type={$offer['verify_type']}");
+
             // Speichere in SMS-Verifizierungs-Historie
             $adminUser = auth()->user();
             $historyModel = new \App\Models\SmsVerificationHistoryModel();
@@ -177,7 +187,7 @@ class Offer extends BaseController
 
             log_message('info', "Manuelle Freigabe in SMS-Historie gespeichert (ID: $historyId) durch Admin User ID: " . ($adminUser->id ?? 'unknown'));
 
-            // Sende E-Mails an Firmen
+            // Sende E-Mails an Firmen (mit aktualisiertem Offer)
             $sentCount = $this->sendToCompanies($offer);
 
             // Sende Bestätigungs-E-Mail an Kunden
@@ -203,6 +213,30 @@ class Offer extends BaseController
 
         log_message('info', "Manuell freigegebene Anfrage ID {$offer['id']}: {$sentCount} E-Mails an Firmen versendet");
 
+        // Logge Firmen-Benachrichtigung in Email-Log (gruppiert)
+        if ($sentCount > 0) {
+            $emailLogModel = new \App\Models\OfferEmailLogModel();
+            $priceFormatted = number_format($offer['discounted_price'] ?? $offer['price'], 0, '.', '\'');
+            $typeMapping = [
+                'move' => 'Umzug',
+                'cleaning' => 'Reinigung',
+                'move_cleaning' => 'Umzug + Reinigung',
+                'painting' => 'Maler/Gipser',
+            ];
+            $typeName = $typeMapping[$offer['type']] ?? $offer['type'];
+            $subject = "Neue Anfrage Preis Fr. {$priceFormatted}.– für {$typeName} ID {$offer['id']} - {$offer['zip']} {$offer['city']}";
+
+            $emailLogModel->logEmail(
+                offerId: $offer['id'],
+                emailType: 'company_notification',
+                recipientEmail: "{$sentCount} Firmen",
+                recipientType: 'company',
+                companyId: null,
+                subject: $subject . " - an {$sentCount} Firmen versendet",
+                status: 'sent'
+            );
+        }
+
         return $sentCount;
     }
 
@@ -212,6 +246,8 @@ class Offer extends BaseController
     private function sendConfirmationToCustomer($offer)
     {
         try {
+            helper('email_template');
+
             // Hole form_fields für E-Mail-Adresse
             $formFields = json_decode($offer['form_fields'], true);
             $customerEmail = $formFields['email'] ?? null;
@@ -221,33 +257,100 @@ class Offer extends BaseController
                 return false;
             }
 
-            // Sende Bestätigungs-E-Mail mit Template
-            $emailService = service('email');
-            $emailService->setTo($customerEmail);
-            $emailService->setSubject('Ihre Anfrage wurde erfolgreich übermittelt');
+            // Verwende das gleiche Template-System wie bei normaler Verifizierung
+            $success = sendOfferNotificationWithTemplate($offer, $formFields, $offer['type']);
 
-            // Verwende Template-Parser falls vorhanden
-            $siteConfigLoader = new \App\Libraries\SiteConfigLoader();
-            $siteConfig = $siteConfigLoader->loadForPlatform($offer['platform'] ?? null);
-
-            $message = view('emails/offer_confirmation', [
-                'offer' => $offer,
-                'formFields' => $formFields,
-                'siteConfig' => $siteConfig,
-            ]);
-
-            $emailService->setMessage($message);
-
-            if ($emailService->send()) {
+            if ($success) {
                 log_message('info', "Bestätigungs-E-Mail an Kunde {$customerEmail} gesendet (Anfrage ID {$offer['id']})");
+
+                // Logge Bestätigungs-E-Mail in Email-Log
+                $emailLogModel = new \App\Models\OfferEmailLogModel();
+                $emailLogModel->logEmail(
+                    offerId: $offer['id'],
+                    emailType: 'confirmation',
+                    recipientEmail: $customerEmail,
+                    recipientType: 'customer',
+                    companyId: null,
+                    subject: lang('Email.offer_added_email_subject'),
+                    status: 'sent'
+                );
+
                 return true;
             } else {
-                log_message('error', "Fehler beim Senden der Bestätigungs-E-Mail an {$customerEmail}: " . $emailService->printDebugger());
-                return false;
+                log_message('warning', "Template-basierte E-Mail konnte nicht gesendet werden, verwende Fallback");
+                // Fallback: Verwende direkten E-Mail-Versand
+                return $this->sendConfirmationEmailFallback($offer, $formFields, $customerEmail);
             }
 
         } catch (\Exception $e) {
             log_message('error', "Exception beim Senden der Kunden-E-Mail für Anfrage ID {$offer['id']}: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Fallback für Bestätigungs-E-Mail wenn Template nicht funktioniert
+     */
+    private function sendConfirmationEmailFallback($offer, $formFields, $customerEmail)
+    {
+        try {
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($offer['platform'] ?? null);
+
+            $emailService = service('email');
+            $emailService->setFrom($siteConfig->email, $siteConfig->name);
+            $emailService->setTo($customerEmail);
+            $emailService->setSubject(lang('Email.offer_added_email_subject'));
+
+            $message = view('emails/offer_notification', [
+                'formName' => $offer['type'],
+                'uuid' => $offer['uuid'],
+                'verifyType' => $offer['verify_type'],
+                'filteredFields' => $formFields,
+                'data' => $formFields,
+            ]);
+
+            $view = \Config\Services::renderer();
+            $fullEmail = $view->setData([
+                'title' => 'Ihre Anfrage',
+                'content' => $message,
+                'siteConfig' => $siteConfig,
+            ])->render('emails/layout');
+
+            $emailService->setMessage($fullEmail);
+            $emailService->setMailType('html');
+
+            date_default_timezone_set('Europe/Zurich');
+            $emailService->setHeader('Date', date('r'));
+
+            if ($emailService->send()) {
+                log_message('info', "Fallback-E-Mail an Kunde {$customerEmail} gesendet (Anfrage ID {$offer['id']})");
+
+                // Setze confirmation_sent_at
+                $db = \Config\Database::connect();
+                $db->table('offers')->where('id', $offer['id'])->update([
+                    'confirmation_sent_at' => date('Y-m-d H:i:s')
+                ]);
+
+                // Logge Bestätigungs-E-Mail in Email-Log
+                $emailLogModel = new \App\Models\OfferEmailLogModel();
+                $emailLogModel->logEmail(
+                    offerId: $offer['id'],
+                    emailType: 'confirmation',
+                    recipientEmail: $customerEmail,
+                    recipientType: 'customer',
+                    companyId: null,
+                    subject: lang('Email.offer_added_email_subject'),
+                    status: 'sent'
+                );
+
+                return true;
+            } else {
+                log_message('error', "Fehler beim Senden der Fallback-E-Mail an {$customerEmail}: " . $emailService->printDebugger());
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', "Exception in Fallback-E-Mail: " . $e->getMessage());
             return false;
         }
     }

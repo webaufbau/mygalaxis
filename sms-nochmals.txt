@@ -1,0 +1,4 @@
+an: "+41797221849" mit text: "Ihr Verifizierungscode für Offertenheld lautet: 5733"
+an: "+41797221849" mit text: "Ihr Verifizierungscode für Offertenheld lautet: 7611"
+an: "+41788708462" mit text: "Ihr Verifizierungscode für Offertenheld lautet: 1234"
+an: "+41797802265" mit text: "Ihr Verifizierungscode für Offertenheld lautet: 1863"

@@ -235,7 +235,7 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                         'CALL_FAILED' => 'Anruf fehlgeschlagen',
 
                         // Manual Admin Approval
-                        'MANUAL_ADMIN_APPROVAL' => 'Manuell vom Admin freigegeben',
+                        'MANUAL_ADMIN_APPROVAL' => 'Manuell freigegeben',
 
                         // Error Stati
                         'INVALID_DESTINATION_ADDRESS' => 'Ungültige Telefonnummer',
@@ -301,6 +301,89 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
         <?php else: ?>
         <hr>
         <p class="text-muted mb-0"><em>Keine SMS/Anruf-Historie vorhanden.</em></p>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- E-Mail-Log Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">📧 E-Mail-Verlauf</h5>
+    </div>
+    <div class="card-body">
+        <?php if (!empty($emailLog)): ?>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Datum/Zeit</th>
+                        <th>E-Mail-Typ</th>
+                        <th>Empfänger</th>
+                        <th>Firma</th>
+                        <th>Betreff</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $emailTypeTranslations = [
+                        'confirmation' => 'Bestätigung an Kunde',
+                        'company_notification' => 'Firmen-Benachrichtigung',
+                        'discount' => 'Rabatt-E-Mail',
+                        'reminder' => 'Erinnerung',
+                    ];
+
+                    foreach ($emailLog as $email):
+                        $emailTypeLabel = $emailTypeTranslations[$email['email_type']] ?? $email['email_type'];
+
+                        // Status-Badge Klasse bestimmen
+                        $statusBadgeClass = 'bg-success';
+                        if ($email['status'] === 'failed') {
+                            $statusBadgeClass = 'bg-danger';
+                        } elseif ($email['status'] === 'bounced') {
+                            $statusBadgeClass = 'bg-warning text-dark';
+                        }
+                    ?>
+                    <tr>
+                        <td><?= \CodeIgniter\I18n\Time::parse($email['sent_at'])->setTimezone(app_timezone())->format('d.m.Y H:i:s') ?></td>
+                        <td>
+                            <?php if ($email['recipient_type'] === 'customer'): ?>
+                                <span class="badge bg-info">👤 <?= esc($emailTypeLabel) ?></span>
+                            <?php else: ?>
+                                <span class="badge bg-primary">🏢 <?= esc($emailTypeLabel) ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td><small><?= esc($email['recipient_email']) ?></small></td>
+                        <td>
+                            <?php if (!empty($email['company_name'])): ?>
+                                <small><?= esc($email['company_name']) ?></small>
+                                <?php if (!empty($email['contact_person'])): ?>
+                                    <br><small class="text-muted"><?= esc($email['contact_person']) ?></small>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-muted">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><small><?= esc($email['subject'] ?? '-') ?></small></td>
+                        <td>
+                            <?php if ($email['status'] === 'sent'): ?>
+                                <span class="badge <?= $statusBadgeClass ?>">✓ Gesendet</span>
+                            <?php elseif ($email['status'] === 'failed'): ?>
+                                <span class="badge <?= $statusBadgeClass ?>">✗ Fehlgeschlagen</span>
+                                <?php if (!empty($email['error_message'])): ?>
+                                    <br><small class="text-danger"><?= esc($email['error_message']) ?></small>
+                                <?php endif; ?>
+                            <?php elseif ($email['status'] === 'bounced'): ?>
+                                <span class="badge <?= $statusBadgeClass ?>">↩ Zurückgewiesen</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php else: ?>
+        <p class="text-muted mb-0"><em>Noch keine E-Mails versendet.</em></p>
         <?php endif; ?>
     </div>
 </div>
