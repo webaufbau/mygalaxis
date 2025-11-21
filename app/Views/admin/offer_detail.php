@@ -48,15 +48,64 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Wichtig:</strong> Diese Anfrage wurde nicht automatisch verifiziert.</p>
-                <p>Durch die manuelle Freigabe wird die Anfrage an alle Firmen weitergeleitet, als wäre sie verifiziert worden.</p>
-                <p class="text-danger"><strong>Bitte prüfen Sie:</strong></p>
-                <ul>
-                    <li>Telefonnummer korrekt?</li>
-                    <li>E-Mail-Adresse korrekt?</li>
-                    <li>Anfrage sieht legitim aus?</li>
-                </ul>
-                <p>Möchten Sie diese Anfrage wirklich freigeben?</p>
+                <div class="alert alert-warning">
+                    <strong>Wichtig:</strong> Diese Anfrage wurde nicht automatisch verifiziert.
+                    Durch die manuelle Freigabe wird die Anfrage an alle Firmen weitergeleitet, als wäre sie verifiziert worden.
+                </div>
+
+                <h6 class="text-danger mb-3">Bitte prüfen Sie die folgenden Daten:</h6>
+
+                <table class="table table-sm table-bordered">
+                    <tr>
+                        <td style="width: 40%;"><strong>Name:</strong></td>
+                        <td><?= esc($offer['firstname'] . ' ' . $offer['lastname']) ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Telefonnummer:</strong></td>
+                        <td><code><?= esc($offer['phone']) ?></code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>E-Mail-Adresse:</strong></td>
+                        <td><code><?= esc($formFields['email'] ?? '-') ?></code></td>
+                    </tr>
+                    <?php
+                    // Adresse kann in verschiedenen Feldern sein je nach Formular-Typ
+                    $address = null;
+                    if (!empty($formFields['address']) && is_array($formFields['address'])) {
+                        $address = $formFields['address'];
+                    } elseif (!empty($formFields['auszug_adresse']) && is_array($formFields['auszug_adresse'])) {
+                        $address = $formFields['auszug_adresse'];
+                    }
+
+                    if ($address && (!empty($address['address_line_1']) || !empty($address['address_line_2']))):
+                    ?>
+                    <tr>
+                        <td><strong>Adresse:</strong></td>
+                        <td>
+                            <?php if (!empty($address['address_line_1'])): ?>
+                                <?= esc($address['address_line_1']) ?>
+                                <?php if (!empty($address['address_line_2'])): ?>
+                                    <?= esc($address['address_line_2']) ?>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
+                    <tr>
+                        <td><strong>Ort:</strong></td>
+                        <td><?= esc($offer['zip']) ?> <?= esc($offer['city']) ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Anfrage-Typ:</strong></td>
+                        <td><?= esc(lang('Offers.type.' . $offer['type'])) ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Erstellt am:</strong></td>
+                        <td><?= \CodeIgniter\I18n\Time::parse($offer['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?> Uhr</td>
+                    </tr>
+                </table>
+
+                <p class="mt-3 mb-0"><strong>Möchten Sie diese Anfrage wirklich freigeben?</strong></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
