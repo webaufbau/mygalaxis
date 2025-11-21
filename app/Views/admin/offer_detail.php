@@ -22,7 +22,52 @@ $typeMapping = [
 ];
 $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer['type']));
 ?>
-<h2 class="mb-4"><?= esc($typeName) ?> <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?> ID <?= esc($offer['id']) ?> Anfrage</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><?= esc($typeName) ?> <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?> ID <?= esc($offer['id']) ?> Anfrage</h2>
+
+    <?php if (!$offer['verified'] && !$offer['companies_notified_at']): ?>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#manualVerifyModal">
+            <i class="bi bi-check-circle"></i> Manuell freigeben
+        </button>
+    <?php elseif ($offer['companies_notified_at']): ?>
+        <span class="badge bg-success fs-6">
+            <i class="bi bi-check-circle-fill"></i>
+            <?= $offer['verified'] ? 'Verifiziert & weitergeleitet' : 'Manuell freigegeben & weitergeleitet' ?>
+            <br>
+            <small><?= \CodeIgniter\I18n\Time::parse($offer['companies_notified_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?> Uhr</small>
+        </span>
+    <?php endif; ?>
+</div>
+
+<!-- Modal für manuelle Freigabe -->
+<div class="modal fade" id="manualVerifyModal" tabindex="-1" aria-labelledby="manualVerifyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="manualVerifyModalLabel">⚠️ Anfrage manuell freigeben</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Wichtig:</strong> Diese Anfrage wurde nicht automatisch verifiziert.</p>
+                <p>Durch die manuelle Freigabe wird die Anfrage an alle Firmen weitergeleitet, als wäre sie verifiziert worden.</p>
+                <p class="text-danger"><strong>Bitte prüfen Sie:</strong></p>
+                <ul>
+                    <li>Telefonnummer korrekt?</li>
+                    <li>E-Mail-Adresse korrekt?</li>
+                    <li>Anfrage sieht legitim aus?</li>
+                </ul>
+                <p>Möchten Sie diese Anfrage wirklich freigeben?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <form method="POST" action="<?= site_url('admin/offer/' . $offer['id'] . '/manual-verify') ?>" style="display: inline;">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-success">Ja, freigeben & weiterleiten</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Angebotsinformationen -->
 <div class="row mb-4">

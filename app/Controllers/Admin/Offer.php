@@ -128,4 +128,54 @@ class Offer extends BaseController
         return $details;
     }
 
+    /**
+     * Manuell eine Anfrage freigeben und an Firmen weiterleiten
+     */
+    public function manualVerify($id)
+    {
+        $offerModel = new \App\Models\OfferModel();
+        $offer = $offerModel->find($id);
+
+        if (!$offer) {
+            return redirect()->back()->with('error', 'Angebot nicht gefunden.');
+        }
+
+        // Prüfe ob bereits weitergeleitet
+        if ($offer['companies_notified_at']) {
+            return redirect()->back()->with('info', 'Diese Anfrage wurde bereits an Firmen weitergeleitet.');
+        }
+
+        try {
+            // Markiere als verifiziert (manuell)
+            $offerModel->update($id, [
+                'verified' => 1,
+                'verify_type' => 'manual'
+            ]);
+
+            // Sende E-Mails an Firmen
+            $this->sendToCompanies($offer);
+
+            log_message('info', "Anfrage ID $id wurde manuell vom Admin freigegeben");
+
+            return redirect()->back()->with('success', 'Anfrage wurde erfolgreich freigegeben und an Firmen weitergeleitet!');
+
+        } catch (\Exception $e) {
+            log_message('error', "Fehler bei manueller Freigabe von Anfrage ID $id: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Fehler bei der Freigabe: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sendet die Anfrage an alle passenden Firmen
+     */
+    private function sendToCompanies($offer)
+    {
+        $notificationSender = new \App\Libraries\OfferNotificationSender();
+        $sentCount = $notificationSender->notifyMatchingUsers($offer);
+
+        log_message('info', "Manuell freigegebene Anfrage ID {$offer['id']}: {$sentCount} E-Mails an Firmen versendet");
+
+        return $sentCount;
+    }
+
 }

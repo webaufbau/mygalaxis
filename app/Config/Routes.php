@@ -239,6 +239,7 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('dashboard', 'Dashboard::index');
 
     $routes->get('offer/(:num)', 'Admin\Offer::detail/$1');
+    $routes->post('offer/(:num)/manual-verify', 'Admin\Offer::manualVerify/$1');
 
     // Admin: Credits verwalten
     $routes->group('credits', function ($routes) {
