@@ -5,12 +5,58 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>E-Mail Templates</h1>
     <div>
+        <a href="/admin/email-templates/export" class="btn btn-success me-2">
+            <i class="bi bi-download"></i> Export
+        </a>
+        <button type="button" class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="bi bi-upload"></i> Import
+        </button>
         <a href="/admin/email-field-translations" class="btn btn-warning me-2">
             <i class="bi bi-translate"></i> Feldwerte-Übersetzungen
         </a>
         <a href="/admin/email-templates/create" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Neues Template
         </a>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/admin/email-templates/import" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Templates importieren</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="import_file" class="form-label">JSON-Datei auswählen</label>
+                        <input type="file" class="form-control" id="import_file" name="import_file" accept=".json" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Import-Modus</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="import_mode" id="mode_insert" value="insert" checked>
+                            <label class="form-check-label" for="mode_insert">
+                                <strong>Insert:</strong> Nur neue Templates einfügen (vorhandene werden übersprungen)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="import_mode" id="mode_update" value="update">
+                            <label class="form-check-label" for="mode_update">
+                                <strong>Update:</strong> Vorhandene Templates überschreiben und neue einfügen
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Importieren</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

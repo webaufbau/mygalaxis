@@ -322,6 +322,8 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('email-templates/delete/(:num)', 'Admin\EmailTemplates::delete/$1');
     $routes->get('email-templates/preview/(:num)', 'Admin\EmailTemplates::preview/$1');
     $routes->get('email-templates/shortcode-help', 'Admin\EmailTemplates::shortcodeHelp');
+    $routes->get('email-templates/export', 'Admin\EmailTemplates::export');
+    $routes->post('email-templates/import', 'Admin\EmailTemplates::import');
 
     // Email Field Translations (Global)
     $routes->match(['GET', 'POST'], 'email-field-translations', 'Admin\EmailFieldTranslations::index');

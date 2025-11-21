@@ -371,4 +371,103 @@ class EmailTemplates extends AdminBase
             ],
         ]);
     }
+
+    /**
+     * Export all templates as JSON
+     */
+    public function export()
+    {
+        if (!auth()->user()->inGroup('superadmin', 'admin')) {
+            return redirect()->to('/')->with('error', 'Keine Berechtigung');
+        }
+
+        $templates = $this->templateModel->findAll();
+
+        // Remove id and timestamps for clean import
+        $exportData = array_map(function($template) {
+            unset($template['id']);
+            unset($template['created_at']);
+            unset($template['updated_at']);
+            return $template;
+        }, $templates);
+
+        $json = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/json')
+            ->setHeader('Content-Disposition', 'attachment; filename="email_templates_' . date('Y-m-d_His') . '.json"')
+            ->setBody($json);
+    }
+
+    /**
+     * Import templates from JSON file
+     */
+    public function import()
+    {
+        if (!auth()->user()->inGroup('superadmin', 'admin')) {
+            return redirect()->to('/')->with('error', 'Keine Berechtigung');
+        }
+
+        $file = $this->request->getFile('import_file');
+        $mode = $this->request->getPost('import_mode');
+
+        if (!$file || !$file->isValid()) {
+            return redirect()->back()->with('error', 'Bitte eine gültige Datei auswählen');
+        }
+
+        $json = file_get_contents($file->getTempName());
+        $templates = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return redirect()->back()->with('error', 'Ungültige JSON-Datei: ' . json_last_error_msg());
+        }
+
+        if (!is_array($templates)) {
+            return redirect()->back()->with('error', 'Ungültiges Format der JSON-Datei');
+        }
+
+        $inserted = 0;
+        $updated = 0;
+        $skipped = 0;
+
+        foreach ($templates as $template) {
+            // Prüfe ob Template bereits existiert (gleicher offer_type, subtype und language)
+            $existing = $this->templateModel
+                ->where('offer_type', $template['offer_type'])
+                ->where('language', $template['language']);
+
+            if (isset($template['subtype']) && $template['subtype'] !== null) {
+                $existing->where('subtype', $template['subtype']);
+            } else {
+                $existing->where('subtype', null);
+            }
+
+            $existingTemplate = $existing->first();
+
+            if ($existingTemplate) {
+                if ($mode === 'update') {
+                    // Überschreibe vorhandenes Template
+                    $this->templateModel->update($existingTemplate['id'], $template);
+                    $updated++;
+                } else {
+                    // Überspringe vorhandenes Template
+                    $skipped++;
+                }
+            } else {
+                // Füge neues Template ein
+                $this->templateModel->insert($template);
+                $inserted++;
+            }
+        }
+
+        $message = "Import abgeschlossen: {$inserted} neu eingefügt";
+        if ($updated > 0) {
+            $message .= ", {$updated} aktualisiert";
+        }
+        if ($skipped > 0) {
+            $message .= ", {$skipped} übersprungen";
+        }
+
+        return redirect()->to('/admin/email-templates')->with('success', $message);
+    }
 }
