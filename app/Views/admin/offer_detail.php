@@ -203,14 +203,14 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                         $statusKey = $history['status'];
                         $statusLabel = $statusTranslations[$statusKey] ?? $statusKey;
 
-                        // Status-Farbe bestimmen
-                        $statusClass = 'text-muted';
+                        // Status-Badge Klasse bestimmen
+                        $statusBadgeClass = 'bg-secondary';
                         if (strpos($statusKey, 'DELIVERED') !== false) {
-                            $statusClass = 'text-success';
+                            $statusBadgeClass = 'bg-success';
                         } elseif (strpos($statusKey, 'PENDING') !== false) {
-                            $statusClass = 'text-warning';
+                            $statusBadgeClass = 'bg-warning text-dark';
                         } elseif (strpos($statusKey, 'REJECTED') !== false || strpos($statusKey, 'UNDELIVERABLE') !== false || strpos($statusKey, 'EXPIRED') !== false) {
-                            $statusClass = 'text-danger';
+                            $statusBadgeClass = 'bg-danger';
                         }
                     ?>
                     <tr class="<?= $history['verified'] ? 'table-success' : '' ?>">
@@ -230,7 +230,7 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                             <?php endif; ?>
                         </td>
                         <td>
-                            <small class="<?= $statusClass ?>"><?= esc($statusLabel) ?></small>
+                            <span class="badge <?= $statusBadgeClass ?>"><?= esc($statusLabel) ?></span>
                         </td>
                         <td>
                             <?php if ($history['verified']): ?>
