@@ -52,10 +52,44 @@ class TestInfobip extends BaseCommand
             CLI::write('=== Ergebnis ===', 'yellow');
             CLI::write('Success: ' . ($result['success'] ? 'JA' : 'NEIN'), $result['success'] ? 'green' : 'red');
             CLI::write('Status: ' . ($result['status'] ?? 'N/A'));
+            CLI::write('Group: ' . ($result['group'] ?? 'N/A'));
             CLI::write('Message ID: ' . ($result['messageId'] ?? 'N/A'));
 
             if (isset($result['error'])) {
                 CLI::error('Fehler: ' . $result['error']);
+            }
+
+            // Wenn wir eine Message ID haben, prüfe den Delivery Status
+            if (!empty($result['messageId'])) {
+                CLI::newLine();
+                CLI::write('Warte 3 Sekunden und prüfe dann den Zustellstatus...', 'yellow');
+                sleep(3);
+
+                CLI::newLine();
+                CLI::write('=== Delivery Status Check ===', 'yellow');
+                $deliveryStatus = $infobip->checkDeliveryStatus($result['messageId']);
+
+                CLI::write('Delivery Success: ' . ($deliveryStatus['success'] ? 'JA' : 'NEIN'),
+                          $deliveryStatus['success'] ? 'green' : 'red');
+                CLI::write('Status: ' . ($deliveryStatus['status'] ?? 'N/A'));
+                CLI::write('Group: ' . ($deliveryStatus['group'] ?? 'N/A'));
+                CLI::write('Description: ' . ($deliveryStatus['description'] ?? 'N/A'));
+
+                if ($deliveryStatus['status'] === 'PENDING_ENROUTE') {
+                    CLI::newLine();
+                    CLI::write('⚠️  SMS steckt bei PENDING_ENROUTE fest!', 'red');
+                    CLI::write('Mögliche Ursachen:', 'yellow');
+                    CLI::write('  1. Sender-ID "' . $config->sender . '" ist nicht für Schweiz registriert');
+                    CLI::write('  2. Keine SMS-Route für Swisscom/Salt/Sunrise konfiguriert');
+                    CLI::write('  3. Account-Guthaben aufgebraucht');
+                    CLI::write('  4. Rate Limit erreicht');
+                    CLI::write('  5. Sender-ID wurde gesperrt/deaktiviert');
+                    CLI::newLine();
+                    CLI::write('→ Bitte prüfen Sie Ihr Infobip Dashboard:', 'yellow');
+                    CLI::write('  - Account Balance (Guthaben)');
+                    CLI::write('  - Sender ID Status');
+                    CLI::write('  - SMS Delivery Reports');
+                }
             }
 
             CLI::newLine();

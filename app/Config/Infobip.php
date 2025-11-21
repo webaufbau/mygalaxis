@@ -40,6 +40,6 @@ class Infobip extends BaseConfig
         // Unterstütze sowohl INFOBIP_API_HOST als auch infobip.api_host
         $this->api_host = getenv('INFOBIP_API_HOST') ?: getenv('infobip.api_host') ?: 'https://api.infobip.com';
         $this->api_key = getenv('INFOBIP_API_KEY') ?: getenv('infobip.api_key') ?: '';
-        $this->sender = getenv('INFOBIP_SENDER') ?: getenv('infobip.sender') ?: 'InfoSMS';
+        $this->sender = getenv('INFOBIP_SENDER') ?: getenv('infobip.sender') ?: '';
     }
 }
