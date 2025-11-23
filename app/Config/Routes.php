@@ -15,7 +15,7 @@ $routes->get('/', function () {
         $user = auth()->user();
         // Admins zu admin panel, Firmen zu Anfragen
         if ($user->inGroup('admin')) {
-            return redirect()->to('/admin/user');
+            return redirect()->to('/admin/dashboard');
         }
         return redirect()->to('/offers');
     }

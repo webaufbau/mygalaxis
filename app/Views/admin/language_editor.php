@@ -1,6 +1,3 @@
-<?= $this->extend('layout/main') ?>
-<?= $this->section('content') ?>
-
 <?php
 function renderInputs($translations, $namePrefix) {
     $output = '';
@@ -98,5 +95,3 @@ function renderInputs($translations, $namePrefix) {
         }
     }
 </script>
-
-<?= $this->endSection() ?>

@@ -443,9 +443,9 @@ class Auth extends ShieldAuth
         if (auth()->loggedIn()) {
             $user = auth()->user();
 
-            // Admin users go to admin user list
+            // Admin users go to admin dashboard
             if ($user->inGroup('admin')) {
-                return '/admin/user';
+                return '/admin/dashboard';
             }
 
             // Regular users (companies) go directly to offers page
