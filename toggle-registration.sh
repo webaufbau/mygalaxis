@@ -46,7 +46,7 @@ case $CHOICE in
         echo ""
         for server_config in "${SERVERS[@]}"; do
             IFS='|' read -r server_name ssh_target path port git_pull <<< "$server_config"
-            CURRENT=$(ssh -p "$port" "$ssh_target" "cd $path && grep '^auth.allowRegistration=' .env 2>/dev/null || echo 'NOT_FOUND'" 2>/dev/null)
+            CURRENT=$(ssh -p "$port" "$ssh_target" "cd $path && grep '^auth.allowRegistration' .env 2>/dev/null || echo 'NOT_FOUND'" 2>/dev/null)
             if [[ "$CURRENT" == *"true"* ]]; then
                 echo "  ✓ $server_name: AKTIVIERT"
             elif [[ "$CURRENT" == *"false"* ]]; then
@@ -85,14 +85,14 @@ for server_config in "${SERVERS[@]}"; do
     echo ""
     echo "→ $server_name"
 
-    # Prüfe ob auth.allowRegistration existiert
-    CURRENT_VALUE=$(ssh -p "$port" "$ssh_target" "cd $path && grep '^auth.allowRegistration=' .env || echo 'NOT_FOUND'" 2>/dev/null)
+    # Prüfe ob auth.allowRegistration existiert (mit oder ohne Leerzeichen)
+    CURRENT_VALUE=$(ssh -p "$port" "$ssh_target" "cd $path && grep '^auth.allowRegistration' .env || echo 'NOT_FOUND'" 2>/dev/null)
 
     if [[ "$CURRENT_VALUE" == "NOT_FOUND" ]]; then
         # Füge Zeile hinzu wenn sie nicht existiert
         echo "  Füge auth.allowRegistration hinzu..."
-        if ssh -p "$port" "$ssh_target" "cd $path && echo 'auth.allowRegistration=$NEW_VALUE' >> .env"; then
-            echo "  ✓ Hinzugefügt: auth.allowRegistration=$NEW_VALUE"
+        if ssh -p "$port" "$ssh_target" "cd $path && echo 'auth.allowRegistration = $NEW_VALUE' >> .env"; then
+            echo "  ✓ Hinzugefügt: auth.allowRegistration = $NEW_VALUE"
             SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         else
             echo "  ✗ Fehlgeschlagen"
@@ -100,9 +100,9 @@ for server_config in "${SERVERS[@]}"; do
             FAILED_SERVERS+=("$server_name")
         fi
     else
-        # Update bestehende Zeile
-        if ssh -p "$port" "$ssh_target" "cd $path && sed -i 's/^auth.allowRegistration=.*/auth.allowRegistration=$NEW_VALUE/' .env"; then
-            echo "  ✓ auth.allowRegistration=$NEW_VALUE"
+        # Update bestehende Zeile (erkennt mit und ohne Leerzeichen)
+        if ssh -p "$port" "$ssh_target" "cd $path && sed -i 's/^auth.allowRegistration.*/auth.allowRegistration = $NEW_VALUE/' .env"; then
+            echo "  ✓ auth.allowRegistration = $NEW_VALUE"
             SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         else
             echo "  ✗ Fehlgeschlagen"
