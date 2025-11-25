@@ -28,8 +28,6 @@ class SiteConfig extends BaseConfig
     public string $bankName = '';
     public int $phoneVerificationValidityHours = 24;
     public bool $enableMoveCleaningCombo = false; // Umzug + Reinigung Kombi-Offerten aktivieren
-    public bool $allowRegistration = true; // Registrierung erlauben
-
     /**
      * Gruppen-Definition für die Settings-Tabs
      */
@@ -52,7 +50,7 @@ class SiteConfig extends BaseConfig
         'registration' => [
             'label' => 'Registrierung',
             'icon' => 'bi-person-plus',
-            'fields' => ['allowRegistration', 'siteCountry', 'companyUidCheck', 'phoneCheck'],
+            'fields' => ['siteCountry', 'companyUidCheck', 'phoneCheck'],
         ],
         'finance' => [
             'label' => 'Finanzen',
@@ -135,12 +133,6 @@ class SiteConfig extends BaseConfig
         ],
 
         // Registrierung
-        'allowRegistration' => [
-            'type' => 'checkbox',
-            'label' => 'Registrierung erlauben',
-            'help' => 'Betrifft alle .ch Sites (Offertenschweiz, Offertenheld, Renovo24). Wenn deaktiviert, können sich keine neuen Firmen registrieren.',
-            'default' => true,
-        ],
         'siteCountry' => [
             'type' => 'dropdown',
             'label' => 'Welches Land bei Registrierungen setzen?',
