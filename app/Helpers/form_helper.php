@@ -88,7 +88,7 @@ function form_build_one_field($field_key, $field_configuration, $form_data=null,
         $return_html .= ']</code>';*/
 
         if(isset($field_configuration['info'])) {
-            $return_html .= '<span class="bi bi-info-circle mx-1 text-primary" title="'.$field_configuration['info'].'"></span>';
+            $return_html .= '<span class="bi bi-info-circle mx-1 text-primary" data-bs-toggle="tooltip" title="'.$field_configuration['info'].'"></span>';
         }
 
         $return_html .= '</label>';
