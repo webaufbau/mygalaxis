@@ -407,7 +407,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                             '0' => 'Nein',
                             '1' => 'Ja - Firma blockiert',
                         ],
-                        'info' => 'Kein Login möglich, keine Anfragen',
+                        'info' => 'Blockierte Firmen können sich nicht einloggen und erhalten keine Anfragen',
                     ],
                     'email' => [
                         'type' => 'email',
