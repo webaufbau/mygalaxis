@@ -22,6 +22,13 @@ class AuthFilter implements FilterInterface
 
             return redirect()->to('/login');
         }
+
+        // Prüfe ob Benutzer blockiert ist
+        $user = auth()->user();
+        if ($user && $user->is_blocked) {
+            auth()->logout();
+            return redirect()->to('/login')->with('error', 'Ihr Konto wurde gesperrt. Bitte kontaktieren Sie den Support.');
+        }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
