@@ -140,8 +140,9 @@
                                 <th>Firmenname</th>
                                 <th>Plattform</th>
                                 <th>Periode</th>
-                                <th>Anzahl Käufe</th>
-                                <th class="text-end">Brutto Betrag</th>
+                                <th>Käufe</th>
+                                <th>Stornierungen</th>
+                                <th class="text-end">Netto Betrag</th>
                                 <th>Ausgestellt am</th>
                                 <th>Aktionen</th>
                             </tr>
@@ -188,10 +189,20 @@
                                         ?>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-secondary"><?= $invoice['purchase_count'] ?></span>
+                                        <span class="badge bg-success"><?= $invoice['purchase_count'] ?? 0 ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <?php if (($invoice['refund_count'] ?? 0) > 0): ?>
+                                            <span class="badge bg-danger"><?= $invoice['refund_count'] ?></span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">0</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-end">
-                                        <strong><?= number_format($invoice['amount'], 2, ".", "'") ?> <?= esc($invoice['currency']) ?></strong>
+                                        <?php
+                                        $amountClass = $invoice['amount'] >= 0 ? 'text-success' : 'text-danger';
+                                        ?>
+                                        <strong class="<?= $amountClass ?>"><?= number_format($invoice['amount'], 2, ".", "'") ?> <?= esc($invoice['currency']) ?></strong>
                                     </td>
                                     <td><?= date('d.m.Y', strtotime($invoice['created_at'])) ?></td>
                                     <td>
@@ -225,7 +236,7 @@ $(document).ready(function() {
             url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'
         },
         columnDefs: [
-            { orderable: false, targets: [7] } // Aktionen-Spalte nicht sortierbar
+            { orderable: false, targets: [8] } // Aktionen-Spalte nicht sortierbar
         ]
     });
     <?php endif; ?>

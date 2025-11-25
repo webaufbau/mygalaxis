@@ -110,22 +110,31 @@ class Invoices extends BaseController
                     break;
                 }
 
-                // Hole Käufe für diesen Monat
+                // Hole Käufe und Stornierungen für diesen Monat
                 $startDate = $period . '-01 00:00:00';
                 $endDate = date('Y-m-t 23:59:59', strtotime($startDate));
 
                 $purchases = $db->table('bookings')
-                    ->select('id, created_at, paid_amount, amount')
+                    ->select('id, created_at, paid_amount, amount, type')
                     ->where('user_id', $company['user_id'])
-                    ->where('type', 'offer_purchase')
+                    ->whereIn('type', ['offer_purchase', 'refund_purchase'])
                     ->where('created_at >=', $startDate)
                     ->where('created_at <=', $endDate)
                     ->get()
                     ->getResultArray();
 
                 $totalAmount = 0;
+                $purchaseCount = 0;
+                $refundCount = 0;
                 foreach ($purchases as $purchase) {
-                    $totalAmount += abs($purchase['paid_amount'] ?? $purchase['amount']);
+                    if ($purchase['type'] === 'offer_purchase') {
+                        $totalAmount += abs($purchase['paid_amount'] ?? $purchase['amount']);
+                        $purchaseCount++;
+                    } else {
+                        // Stornierung: Betrag abziehen
+                        $totalAmount -= abs($purchase['amount']);
+                        $refundCount++;
+                    }
                 }
 
                 // Rechnungsnummer generieren
@@ -151,7 +160,8 @@ class Invoices extends BaseController
                     'email' => $company['email'],
                     'platform' => $company['platform'],
                     'period' => $period, // Zeigt Vormonat (z.B. "2025-10" für Oktober-Käufe)
-                    'purchase_count' => count($purchases),
+                    'purchase_count' => $purchaseCount,
+                    'refund_count' => $refundCount,
                     'amount' => $totalAmount,
                     'currency' => $currency,
                     'created_at' => $invoiceDate, // Ausgestellt am 1. des Folgemonats
@@ -255,16 +265,25 @@ class Invoices extends BaseController
 
         $bookings = $bookingModel
             ->where('user_id', $userId)
-            ->where('type', 'offer_purchase')
+            ->whereIn('type', ['offer_purchase', 'refund_purchase'])
             ->where('created_at >=', $startDate)
             ->where('created_at <=', $endDate)
             ->orderBy('created_at', 'ASC')
             ->findAll();
 
-        // Berechne Gesamtbetrag
+        // Berechne Gesamtbetrag (Käufe abzüglich Stornierungen)
         $totalAmount = 0;
+        $purchaseCount = 0;
+        $refundCount = 0;
         foreach ($bookings as $booking) {
-            $totalAmount += abs($booking['paid_amount'] ?? $booking['amount']);
+            if ($booking['type'] === 'offer_purchase') {
+                $totalAmount += abs($booking['paid_amount'] ?? $booking['amount']);
+                $purchaseCount++;
+            } else {
+                // Stornierung: Betrag abziehen
+                $totalAmount -= abs($booking['amount']);
+                $refundCount++;
+            }
         }
 
         // Land aus User-Platform extrahieren (z.B. my_offertenschweiz_ch -> CH)
@@ -282,7 +301,8 @@ class Invoices extends BaseController
             'invoice_number' => $invoiceNumber,
             'period' => $period,
             'amount' => $totalAmount,
-            'purchase_count' => count($bookings),
+            'purchase_count' => $purchaseCount,
+            'refund_count' => $refundCount,
             'created_at' => date('Y-m-01', strtotime($period . '-01 +1 month')),
         ];
 

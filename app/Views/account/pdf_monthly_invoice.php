@@ -51,6 +51,12 @@
             font-size: 12px;
             color: #777;
         }
+        .refund-row {
+            background-color: #fff3cd;
+        }
+        .refund-amount {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -100,11 +106,20 @@
     </thead>
     <tbody>
     <?php foreach ($bookings as $booking): ?>
-    <tr>
-        <td><?= date('d.m.Y', strtotime($booking['created_at'])) ?></td>
+    <?php
+    $isRefund = ($booking['type'] ?? '') === 'refund_purchase';
+    $amount = abs($booking['paid_amount'] ?? $booking['amount']);
+    ?>
+    <tr<?= $isRefund ? ' class="refund-row"' : '' ?>>
+        <td><?= date('d.m.Y H:i', strtotime($booking['created_at'])) ?></td>
         <td><?= esc($booking['id']) ?></td>
-        <td><?= esc($booking['description']) ?></td>
-        <td><?= number_format(abs($booking['paid_amount'] ?? $booking['amount']), 2, ".", "'") ?></td>
+        <td>
+            <?php if ($isRefund): ?>
+                <strong><?= lang('Finance.creditNote') ?>:</strong>
+            <?php endif; ?>
+            <?= esc($booking['description']) ?>
+        </td>
+        <td<?= $isRefund ? ' class="refund-amount"' : '' ?>><?= $isRefund ? '-' : '' ?><?= number_format($amount, 2, ".", "'") ?></td>
     </tr>
     <?php endforeach; ?>
     </tbody>
