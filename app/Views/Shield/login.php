@@ -272,6 +272,41 @@ $secondaryColor = darkenColor($primaryColor, 20);
             background: white;
         }
     </style>
+
+    <?php if (env('CI_ENVIRONMENT') === 'production'): ?>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-NYR3ZB836N"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            // Basis-Konfiguration
+            gtag('config', 'G-NYR3ZB836N', {
+                'anonymize_ip': true // IP-Anonymisierung
+            });
+        </script>
+
+        <!-- Meta Pixel Code -->
+        <script>
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src='https://connect.facebook.net/en_US/fbevents.js';
+                s=b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t,s)}(window, document,'script');
+
+            fbq('init', '696909980088468'); // Deine Pixel-ID
+            fbq('track', 'PageView');
+        </script>
+        <noscript>
+            <img height="1" width="1" style="display:none"
+                 src="https://www.facebook.com/tr?id=696909980088468&ev=PageView&noscript=1"/>
+        </noscript>
+        <!-- End Meta Pixel Code -->
+    <?php endif; ?>
 </head>
 <body>
 

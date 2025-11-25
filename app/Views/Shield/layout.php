@@ -6,7 +6,7 @@
 
     <title><?= $this->renderSection('title') ?> - <?= esc($title ?? siteconfig()->name) ?></title>
 
-    <?php if (ENVIRONMENT === 'production'): ?>
+    <?php if (env('CI_ENVIRONMENT') === 'production'): ?>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-NYR3ZB836N"></script>
     <script>
