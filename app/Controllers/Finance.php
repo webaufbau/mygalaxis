@@ -95,13 +95,13 @@ class Finance extends BaseController
             ->first()['amount'] ?? 0;
 
         // Guthaben-Aufschlüsselung berechnen
-        // Einzahlungen (topup type)
+        // Einzahlungen = alle positiven Beträge (topup, refund_purchase, admin_credit, etc.)
         $topups = $bookingModel->selectSum('amount')
             ->where('user_id', $user->id)
-            ->where('type', 'topup')
+            ->where('amount >', 0)
             ->first()['amount'] ?? 0;
 
-        // Ausgaben (negative amounts - offer_purchase etc.)
+        // Ausgaben = alle negativen Beträge (offer_purchase, refund, etc.)
         $expenses = $bookingModel->selectSum('amount')
             ->where('user_id', $user->id)
             ->where('amount <', 0)
