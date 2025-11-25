@@ -73,7 +73,7 @@ foreach ($bookings as $entry) {
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="3" style="text-align: right;"><?= esc(lang('Finance.totalAmount')) ?>:</td>
+        <td colspan="3" style="text-align: right;"><?= esc(lang('Finance.balance')) ?>:</td>
         <td style="text-align: right;" class="<?= $total >= 0 ? 'amount-positive' : 'amount-negative' ?>">
             <?= $total >= 0 ? '+' : '' ?><?= number_format($total, 2, ".", "'") ?> <?= currency() ?>
         </td>
