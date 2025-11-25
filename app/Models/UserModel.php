@@ -397,7 +397,8 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                         'options' => [
                             '1' => 'Ja',
                             '0' => 'Nein',
-                        ]
+                        ],
+                        'info' => 'E-Mail-Adresse verifiziert (Login möglich)',
                     ],
                     'is_blocked' => [
                         'type' => 'dropdown',
@@ -405,7 +406,8 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                         'options' => [
                             '0' => 'Nein',
                             '1' => 'Ja - Firma blockiert',
-                        ]
+                        ],
+                        'info' => 'Blockierte Firmen können sich nicht einloggen und erhalten keine Anfragen',
                     ],
                     'email' => [
                         'type' => 'email',
