@@ -117,20 +117,31 @@ class Offers extends BaseController
 
         $filter = $this->request->getGet('filter');
 
-        // Hole alle gekauften Offer-IDs für diesen User
+        // Hole alle gekauften Offer-IDs für diesen User (nur aktive, nicht stornierte)
         $purchasedOfferIds = [];
         $bookingsByOfferId = [];
         if ($userId) {
+            // Hole aktive Käufe aus offer_purchases (nicht stornierte)
+            $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+            $activePurchases = $offerPurchaseModel
+                ->where('user_id', $userId)
+                ->where('status !=', 'refunded')
+                ->findAll();
+            $activeOfferIds = array_column($activePurchases, 'offer_id');
+
+            // Hole Buchungen nur für aktive Käufe
             $bookingModel = new \App\Models\BookingModel();
             $bookings = $bookingModel
                 ->where('user_id', $userId)
                 ->where('type', 'offer_purchase')
                 ->findAll();
-            $purchasedOfferIds = array_column($bookings, 'reference_id');
 
-            // Buchungen nach offer_id indexieren für spätere Verwendung
+            // Filtere auf aktive Käufe
             foreach ($bookings as $booking) {
-                $bookingsByOfferId[$booking['reference_id']] = $booking;
+                if (in_array($booking['reference_id'], $activeOfferIds)) {
+                    $purchasedOfferIds[] = $booking['reference_id'];
+                    $bookingsByOfferId[$booking['reference_id']] = $booking;
+                }
             }
         }
 
@@ -413,7 +424,14 @@ class Offers extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        // Prüfen ob User das Angebot gekauft hat
+        // Prüfen ob User das Angebot gekauft hat (und nicht storniert)
+        $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+        $activePurchase = $offerPurchaseModel
+            ->where('user_id', $user->id)
+            ->where('offer_id', $id)
+            ->where('status !=', 'refunded')
+            ->first();
+
         $bookingModel = new \App\Models\BookingModel();
         $booking = $bookingModel
             ->where('user_id', $user->id)
@@ -421,7 +439,8 @@ class Offers extends BaseController
             ->where('reference_id', $id)
             ->first();
 
-        $isPurchased = !empty($booking);
+        // Nur als gekauft markieren wenn aktiver (nicht stornierter) Kauf existiert
+        $isPurchased = !empty($activePurchase) && !empty($booking);
 
         if ($isPurchased && $booking) {
             $offer['purchased_price'] = $booking['paid_amount']; // Verwende paid_amount statt amount

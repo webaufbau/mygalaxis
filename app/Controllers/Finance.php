@@ -30,9 +30,9 @@ class Finance extends BaseController
         $year = $this->request->getGet('year');
         $month = $this->request->getGet('month');
 
-        // 1) Gekaufte Anfragen (nur offer_purchase)
+        // 1) Gekaufte Anfragen (offer_purchase und refund_purchase für Stornierungen)
         $purchasesBuilder = $bookingModel->where('user_id', $user->id)
-            ->where('type', 'offer_purchase');
+            ->whereIn('type', ['offer_purchase', 'refund_purchase']);
 
         if ($year) {
             $purchasesBuilder->where('YEAR(created_at)', $year);
@@ -43,9 +43,9 @@ class Finance extends BaseController
 
         $purchases = $purchasesBuilder->orderBy('created_at', 'DESC')->findAll();
 
-        // 2) Gutschriften (topup)
+        // 2) Gutschriften (topup, refund für Rückerstattungen, admin_credit)
         $creditsBuilder = $bookingModel->where('user_id', $user->id)
-            ->where('type', 'topup');
+            ->whereIn('type', ['topup', 'refund', 'admin_credit']);
 
         if ($year) {
             $creditsBuilder->where('YEAR(created_at)', $year);

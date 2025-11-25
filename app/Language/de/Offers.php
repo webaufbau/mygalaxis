@@ -77,8 +77,12 @@ return [
     'credit_type' => [
         'credit' => 'Kreditkarte',
         'subscription' => 'Abo',
-        'topup' => 'Guthaben',
+        'topup' => 'Guthaben aufgeladen',
         'offer_purchase' => 'Angebot gekauft',
+        'refund_purchase' => 'Kauf storniert',
+        'refund' => 'Rückerstattung',
+        'admin_credit' => 'Gutschrift',
+        'adjustment' => 'Anpassung',
     ],
 
     'status' => [

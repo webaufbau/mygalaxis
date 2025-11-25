@@ -78,6 +78,10 @@ return [
         'subscription' => 'Abbonamento',
         'topup' => 'Ricarica',
         'offer_purchase' => 'Offerta acquistata',
+        'refund_purchase' => 'Acquisto annullato',
+        'refund' => 'Rimborso',
+        'admin_credit' => 'Credito',
+        'adjustment' => 'Adeguamento',
     ],
 
     'status' => [

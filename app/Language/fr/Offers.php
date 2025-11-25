@@ -76,8 +76,12 @@ return [
     'credit_type' => [
         'credit' => 'Carte de crédit',
         'subscription' => 'Abonnement',
-        'topup' => 'Crédit',
+        'topup' => 'Crédit rechargé',
         'offer_purchase' => 'Offre achetée',
+        'refund_purchase' => 'Achat annulé',
+        'refund' => 'Remboursement',
+        'admin_credit' => 'Crédit',
+        'adjustment' => 'Ajustement',
     ],
 
     'status' => [

@@ -79,6 +79,10 @@ return [
         'subscription' => 'Subscription',
         'topup' => 'Top-up',
         'offer_purchase' => 'Offer purchased',
+        'refund_purchase' => 'Purchase refunded',
+        'refund' => 'Refund',
+        'admin_credit' => 'Credit',
+        'adjustment' => 'Adjustment',
     ],
 
     'status' => [
