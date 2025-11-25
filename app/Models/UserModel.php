@@ -55,6 +55,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'platform',
             'email_notifications_enabled',
             'stats_always_open',
+            'is_blocked',
         ];
     }
 

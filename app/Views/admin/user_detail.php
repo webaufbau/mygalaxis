@@ -48,8 +48,24 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><?= esc($user->company_name ?? 'Benutzer') ?> - Details</h2>
     <div>
+        <h2 class="mb-0">
+            <?= esc($user->company_name ?? 'Benutzer') ?> - Details
+            <?php if ($user->is_blocked): ?>
+                <span class="badge bg-danger ms-2"><i class="bi bi-ban"></i> BLOCKIERT</span>
+            <?php endif; ?>
+        </h2>
+    </div>
+    <div>
+        <?php if ($user->is_blocked): ?>
+            <a href="<?= site_url('admin/user/toggle-block/' . $user->id) ?>" class="btn btn-success" onclick="return confirm('Firma wirklich deblockieren?');">
+                <i class="bi bi-unlock"></i> Deblockieren
+            </a>
+        <?php else: ?>
+            <a href="<?= site_url('admin/user/toggle-block/' . $user->id) ?>" class="btn btn-danger" onclick="return confirm('Firma wirklich blockieren? Die Firma kann sich nicht mehr einloggen und erhält keine Anfragen mehr.');">
+                <i class="bi bi-ban"></i> Blockieren
+            </a>
+        <?php endif; ?>
         <a href="<?= site_url('admin/user/form/' . $user->id . '?model=user') ?>" class="btn btn-primary" target="_blank">
             <i class="bi bi-pencil"></i> Bearbeiten
         </a>
@@ -181,6 +197,16 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                                 <span class="badge bg-success">Ja</span>
                             <?php else: ?>
                                 <span class="badge bg-danger">Nein</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Blockiert:</strong></td>
+                        <td>
+                            <?php if ($user->is_blocked): ?>
+                                <span class="badge bg-danger"><i class="bi bi-ban"></i> Ja - Blockiert</span>
+                            <?php else: ?>
+                                <span class="badge bg-success">Nein</span>
                             <?php endif; ?>
                         </td>
                     </tr>

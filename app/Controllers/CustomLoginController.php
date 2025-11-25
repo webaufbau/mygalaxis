@@ -17,14 +17,29 @@ class CustomLoginController extends LoginController
         // Prüfe ob Login erfolgreich war (kein Error in Session)
         $session = session();
 
-        // Wenn Login erfolgreich und redirect_url in Session vorhanden
-        if (auth()->loggedIn() && $session->has('redirect_url')) {
-            $redirectUrl = $session->get('redirect_url');
-            $session->remove('redirect_url'); // Entferne aus Session
+        // Wenn Login erfolgreich, prüfe ob Benutzer blockiert ist
+        if (auth()->loggedIn()) {
+            $user = auth()->user();
 
-            log_message('info', 'CustomLoginController: Leite nach Login weiter zu: ' . $redirectUrl);
+            // Prüfe ob Benutzer blockiert ist
+            if ($user->is_blocked) {
+                // Benutzer ausloggen
+                auth()->logout();
 
-            return redirect()->to($redirectUrl);
+                log_message('info', 'Blockierter Benutzer versuchte sich einzuloggen: ' . $user->id . ' - ' . $user->company_name);
+
+                return redirect()->to('/login')->with('error', 'Ihr Konto wurde gesperrt. Bitte kontaktieren Sie den Support.');
+            }
+
+            // Wenn redirect_url in Session vorhanden
+            if ($session->has('redirect_url')) {
+                $redirectUrl = $session->get('redirect_url');
+                $session->remove('redirect_url'); // Entferne aus Session
+
+                log_message('info', 'CustomLoginController: Leite nach Login weiter zu: ' . $redirectUrl);
+
+                return redirect()->to($redirectUrl);
+            }
         }
 
         // Ansonsten normale Shield-Weiterleitung

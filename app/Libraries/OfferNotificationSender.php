@@ -36,6 +36,11 @@ class OfferNotificationSender
         foreach ($users as $user) {
             if (!$user->inGroup('user')) continue;
 
+            // Prüfe ob User vom Admin blockiert wurde
+            if ($user->is_blocked) {
+                continue;
+            }
+
             // Check if user has disabled email notifications
             if (isset($user->email_notifications_enabled) && !$user->email_notifications_enabled) {
                 continue;

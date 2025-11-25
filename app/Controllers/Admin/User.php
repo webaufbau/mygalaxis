@@ -1001,6 +1001,47 @@ class User extends Crud {
         return redirect()->to('/admin/user/' . $userId . '#finance');
     }
 
+    /**
+     * Firma blockieren / deblockieren
+     */
+    public function toggleBlock($userId)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $userModel = new \App\Models\UserModel();
+        $targetUser = $userModel->find($userId);
+
+        if (!$targetUser) {
+            session()->setFlashdata('error', 'Benutzer nicht gefunden.');
+            return redirect()->to('/admin/user');
+        }
+
+        // Toggle is_blocked
+        $newBlockedStatus = $targetUser->is_blocked ? 0 : 1;
+        $userModel->update($userId, ['is_blocked' => $newBlockedStatus]);
+
+        if ($newBlockedStatus) {
+            session()->setFlashdata('success', 'Firma wurde blockiert. Die Firma kann sich nicht mehr einloggen und erhält keine neuen Anfragen.');
+            log_message('info', 'Firma blockiert', [
+                'user_id' => $userId,
+                'company_name' => $targetUser->company_name,
+                'admin_user' => $user->id,
+            ]);
+        } else {
+            session()->setFlashdata('success', 'Firma wurde deblockiert und kann sich wieder einloggen.');
+            log_message('info', 'Firma deblockiert', [
+                'user_id' => $userId,
+                'company_name' => $targetUser->company_name,
+                'admin_user' => $user->id,
+            ]);
+        }
+
+        return redirect()->to('/admin/user/' . $userId);
+    }
+
     public function delete($entity_id=0) {
         if (!auth()->user()->can('my.'.$this->permission_prefix.'_delete')) {
             return redirect()->to('/');

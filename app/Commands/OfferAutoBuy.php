@@ -20,9 +20,11 @@ class OfferAutoBuy extends BaseCommand
         $blockedTable = $db->table('blocked_days');
 
         // Hole ALLE Nutzer mit aktiviertem Auto-Kauf, sortiert nach Aktivierungsdatum (Priorität!)
+        // Blockierte Firmen werden ausgeschlossen
         $users = $userTable
             ->select('id, email_text, filter_cantons, filter_regions, filter_categories, filter_languages, filter_absences, filter_custom_zip, auto_purchase_activated_at')
             ->where('auto_purchase', 1)
+            ->where('is_blocked', 0) // Keine blockierten Firmen
             ->orderBy('auto_purchase_activated_at', 'ASC') // Früher aktiviert = höhere Priorität
             ->get()
             ->getResult();

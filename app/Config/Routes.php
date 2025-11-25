@@ -256,6 +256,7 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->post('user/add-credit/(:num)', 'Admin\User::addCredit/$1');
     $routes->post('user/refund-purchase/(:num)', 'Admin\User::refundPurchase/$1');
     $routes->post('user/refund-topup/(:num)', 'Admin\User::refundTopup/$1');
+    $routes->get('user/toggle-block/(:num)', 'Admin\User::toggleBlock/$1');
     $routes->match(['GET', 'POST'], 'user/form', 'Admin\User::form');
     $routes->match(['GET', 'POST'], 'user/form/(:num)', 'Admin\User::form/$1');
     $routes->match(['GET', 'POST'], 'user/copy/(:num)', 'Admin\User::copy/$1');
