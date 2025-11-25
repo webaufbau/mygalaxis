@@ -26,6 +26,8 @@ return [
     'cardPayment'     => 'Kartenzahlung',
     'balanceChange'   => 'Guthaben-Änderung',
     'invoice'         => 'Rechnung',
+    'creditNote'      => 'Gutschrift',
+    'creditNoteInfo'  => 'Dieser Betrag wurde Ihrem Guthaben-Konto gutgeschrieben.',
     'paidByCard'      => 'Per Kreditkarte bezahlt',
 
     // Fehlermeldungen & Benachrichtigungen

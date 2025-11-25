@@ -26,6 +26,8 @@ return [
     'cardPayment'     => 'Pagamento con carta',
     'balanceChange'   => 'Variazione saldo',
     'invoice'         => 'Fattura',
+    'creditNote'      => 'Nota di credito',
+    'creditNoteInfo'  => 'Questo importo è stato accreditato sul tuo conto.',
     'paidByCard'      => 'Pagato con carta di credito',
 
     // Fehlermeldungen & Benachrichtigungen

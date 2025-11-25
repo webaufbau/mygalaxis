@@ -82,7 +82,11 @@
 
 </div>
 
-<h1><?= lang('Finance.invoice') ?> <?= esc($invoice_name) ?></h1>
+<?php
+$isRefund = ($booking['type'] ?? '') === 'refund_purchase';
+$documentTitle = $isRefund ? lang('Finance.creditNote') : lang('Finance.invoice');
+?>
+<h1><?= $documentTitle ?> <?= esc($invoice_name) ?></h1>
 
 <div class="details">
     <p><strong><?= lang('Finance.invoiceDate') ?>:</strong> <?= date('d.m.Y', strtotime($booking['created_at'])) ?></p>
@@ -139,7 +143,11 @@ if (!empty($siteConfig->bankIban) || !empty($siteConfig->bankName)): ?>
 <?php endif; ?>
 
 <div class="footer" style="margin-top: 40px; font-size: 12px; color: #555; line-height: 1.5;">
+    <?php if ($isRefund): ?>
+    <p><strong><?= lang('Finance.creditNote') ?>:</strong> <?= lang('Finance.creditNoteInfo') ?></p>
+    <?php else: ?>
     <p><strong><?= lang('Finance.invoice') ?>:</strong> <?= lang('Finance.paymentNote') ?></p>
+    <?php endif; ?>
     <p><?= lang('Finance.thankYou') ?></p>
 
     <?php if (!empty($siteConfig->email) || !empty($user->company_website)): ?>

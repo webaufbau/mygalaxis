@@ -996,7 +996,7 @@ class Finance extends BaseController
             $builder->where('MONTH(created_at)', $month);
         }
 
-        $bookings = $builder->orderBy('created_at', 'DESC')->findAll();
+        $bookings = $builder->orderBy('created_at', 'ASC')->findAll(); // Neueste unten
 
         // HTML für PDF generieren
         $html = view('account/pdf_finance', [
@@ -1032,7 +1032,7 @@ class Finance extends BaseController
         $booking = $bookingModel
             ->where('id', $id)
             ->where('user_id', $user->id)
-            ->where('type', 'offer_purchase')
+            ->whereIn('type', ['offer_purchase', 'refund_purchase'])
             ->first();
 
         if (!$booking) {

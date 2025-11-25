@@ -26,6 +26,8 @@ return [
     'cardPayment'     => 'Paiement par carte',
     'balanceChange'   => 'Changement de solde',
     'invoice'         => 'Facture',
+    'creditNote'      => 'Avoir',
+    'creditNoteInfo'  => 'Ce montant a été crédité sur votre compte.',
     'paidByCard'      => 'Payé par carte de crédit',
 
     // Fehlermeldungen & Benachrichtigungen

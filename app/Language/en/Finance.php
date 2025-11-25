@@ -26,6 +26,8 @@ return [
     'cardPayment'     => 'Card Payment',
     'balanceChange'   => 'Balance Change',
     'invoice'         => 'Invoice',
+    'creditNote'      => 'Credit Note',
+    'creditNoteInfo'  => 'This amount has been credited to your account balance.',
     'paidByCard'      => 'Paid by credit card',
 
     // Fehlermeldungen & Benachrichtigungen
