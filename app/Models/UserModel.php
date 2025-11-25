@@ -399,6 +399,14 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                             '0' => 'Nein',
                         ]
                     ],
+                    'is_blocked' => [
+                        'type' => 'dropdown',
+                        'label' => 'Blockiert',
+                        'options' => [
+                            '0' => 'Nein',
+                            '1' => 'Ja - Firma blockiert',
+                        ]
+                    ],
                     'email' => [
                         'type' => 'email',
                         'label' => 'E-Mail-Adresse (Login)',
@@ -471,7 +479,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                         ['company_email', 'company_phone'],
                         ['company_website'],
                         ['auto_purchase'],
-                        ['active'],
+                        ['active', 'is_blocked'],
                         ['email'],
                         ['user_group'],
                         //['user_permissions'],
