@@ -481,7 +481,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                         ['company_email', 'company_phone'],
                         ['company_website'],
                         ['auto_purchase'],
-                        ['active', 'is_blocked'],
+                        ['is_blocked'],
                         ['email'],
                         ['user_group'],
                         //['user_permissions'],
