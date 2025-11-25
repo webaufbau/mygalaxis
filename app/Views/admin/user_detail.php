@@ -449,10 +449,13 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
     <!-- Tab 5: Finanzen (Transaktionen) -->
     <div class="tab-pane fade" id="finance" role="tabpanel" aria-labelledby="finance-tab">
 
-        <!-- Kontostand -->
+        <!-- Kontostand & Aktionen -->
         <div class="card mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-wallet2"></i> Aktueller Kontostand</h5>
+                <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addCreditModal">
+                    <i class="bi bi-plus-circle"></i> Guthaben gutschreiben
+                </button>
             </div>
             <div class="card-body">
                 <h3 class="mb-0">
@@ -462,6 +465,39 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                         <span class="text-danger"><?= number_format($balance, 2) ?> CHF</span>
                     <?php endif; ?>
                 </h3>
+            </div>
+        </div>
+
+        <!-- Modal: Guthaben gutschreiben -->
+        <div class="modal fade" id="addCreditModal" tabindex="-1" aria-labelledby="addCreditModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="<?= site_url('admin/user/add-credit/' . $user->id) ?>" method="post">
+                        <?= csrf_field() ?>
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title" id="addCreditModalLabel">
+                                <i class="bi bi-plus-circle"></i> Guthaben gutschreiben
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schliessen"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="credit_amount" class="form-label"><strong>Betrag (CHF)</strong></label>
+                                <input type="number" class="form-control" id="credit_amount" name="amount" step="0.01" min="0.01" required placeholder="z.B. 50.00">
+                            </div>
+                            <div class="mb-3">
+                                <label for="credit_description" class="form-label"><strong>Beschreibung / Grund</strong></label>
+                                <textarea class="form-control" id="credit_description" name="description" rows="2" required placeholder="z.B. Kulanz wegen Reklamation"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-lg"></i> Gutschreiben
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -481,15 +517,19 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                         <th>Beschreibung</th>
                         <th class="text-end">Betrag</th>
                         <th class="text-end">Saldo</th>
+                        <th class="text-center">Aktionen</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
                     $runningBalance = 0;
+                    $modalsHtml = ''; // Modals sammeln für Ausgabe nach der Tabelle
                     // Transaktionen in umgekehrter Reihenfolge für korrekte Saldo-Berechnung
                     $transactionsReversed = array_reverse($transactions);
                     foreach ($transactionsReversed as $transaction):
                         $runningBalance += $transaction['amount'];
+                        $isRefundable = in_array($transaction['type'], ['offer_purchase', 'topup']) && $transaction['amount'] != 0;
+                        $isAlreadyRefunded = $transaction['type'] === 'refund' || $transaction['type'] === 'refund_purchase';
                     ?>
                         <tr>
                             <td><?= \CodeIgniter\I18n\Time::parse($transaction['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?></td>
@@ -499,11 +539,19 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                                     'offer_purchase' => 'Angebotskauf',
                                     'topup' => 'Aufladung',
                                     'refund' => 'Rückerstattung',
+                                    'refund_purchase' => 'Kauf storniert',
                                     'adjustment' => 'Anpassung',
+                                    'admin_credit' => 'Admin Gutschrift',
                                 ];
                                 $typeLabel = $typeLabels[$transaction['type']] ?? esc($transaction['type']);
+                                $badgeClass = $transaction['amount'] >= 0 ? 'success' : 'danger';
+                                if ($transaction['type'] === 'refund' || $transaction['type'] === 'refund_purchase') {
+                                    $badgeClass = 'warning';
+                                } elseif ($transaction['type'] === 'admin_credit') {
+                                    $badgeClass = 'info';
+                                }
                                 ?>
-                                <span class="badge bg-<?= $transaction['amount'] >= 0 ? 'success' : 'danger' ?>">
+                                <span class="badge bg-<?= $badgeClass ?>">
                                     <?= $typeLabel ?>
                                 </span>
                             </td>
@@ -521,13 +569,215 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                             <td class="text-end">
                                 <strong><?= number_format($runningBalance, 2) ?> CHF</strong>
                             </td>
+                            <td class="text-center">
+                                <?php
+                                // Prüfe ob dieser Kauf bereits storniert wurde (über die Offer-ID / reference_id)
+                                $isAlreadyRefunded = isset($refundedOfferIds[$transaction['reference_id']]);
+                                // Prüfe ob diese Aufladung bereits rückerstattet wurde (über die Booking-ID)
+                                $isTopupRefunded = isset($refundedTopupIds[$transaction['id']]);
+                                ?>
+                                <?php if ($transaction['type'] === 'offer_purchase' && $transaction['amount'] < 0 && !$isAlreadyRefunded): ?>
+                                    <!-- Kauf stornieren / rückerstatten -->
+                                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#refundModal<?= $transaction['id'] ?>" title="Kauf stornieren">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                <?php elseif ($transaction['type'] === 'offer_purchase' && $isAlreadyRefunded): ?>
+                                    <!-- Bereits storniert -->
+                                    <span class="badge bg-secondary" title="Bereits storniert"><i class="bi bi-check-lg"></i></span>
+                                <?php elseif ($transaction['type'] === 'topup' && $transaction['amount'] > 0 && !$isTopupRefunded): ?>
+                                    <!-- Aufladung rückerstatten (Saferpay) -->
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundTopupModal<?= $transaction['id'] ?>" title="Aufladung rückerstatten">
+                                        <i class="bi bi-credit-card"></i>
+                                    </button>
+                                <?php elseif ($transaction['type'] === 'topup' && $isTopupRefunded): ?>
+                                    <!-- Bereits rückerstattet -->
+                                    <span class="badge bg-secondary" title="Bereits rückerstattet"><i class="bi bi-check-lg"></i></span>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
+
+                        <?php if ($transaction['type'] === 'offer_purchase' && $transaction['amount'] < 0): ?>
+                        <?php ob_start(); ?>
+                        <!-- Modal: Kauf stornieren -->
+                        <div class="modal fade" id="refundModal<?= $transaction['id'] ?>" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="<?= site_url('admin/user/refund-purchase/' . $user->id) ?>" method="post">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="booking_id" value="<?= $transaction['id'] ?>">
+                                        <div class="modal-header bg-warning text-dark">
+                                            <h5 class="modal-title">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Kauf stornieren / rückerstatten
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <?php
+                                            // Mit Kreditkarte bezahlt wenn: amount = 0 UND paid_amount > 0
+                                            // (Bei Guthaben-Kauf ist amount negativ)
+                                            $paidWithCard = (floatval($transaction['amount']) == 0 && ($transaction['paid_amount'] ?? 0) > 0);
+                                            ?>
+                                            <?php if ($paidWithCard): ?>
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                                <strong>Achtung:</strong> Dieser Kauf wurde mit <strong>Kreditkarte</strong> bezahlt.
+                                                Die Rückerstattung auf die Karte muss im
+                                                <a href="https://test.saferpay.com/BO/Login" target="_blank">Saferpay Backend</a>
+                                                manuell durchgeführt werden!
+                                            </div>
+                                            <?php endif; ?>
+                                            <div class="alert alert-info">
+                                                <strong>Transaktion:</strong> <?= esc($transaction['description']) ?><br>
+                                                <strong>Betrag:</strong> <?= number_format(abs($transaction['amount']), 2) ?> CHF<br>
+                                                <strong>Bezahlt mit:</strong> <?= $paidWithCard ? '<span class="badge bg-primary">Kreditkarte</span>' : '<span class="badge bg-success">Guthaben</span>' ?>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>Rückerstattungsbetrag (CHF)</strong></label>
+                                                <input type="number" class="form-control" name="refund_amount" step="0.01" min="0.01" max="<?= abs($transaction['amount']) ?>" value="<?= abs($transaction['amount']) ?>" required>
+                                                <small class="text-muted">Max: <?= number_format(abs($transaction['amount']), 2) ?> CHF</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>Grund für Stornierung</strong></label>
+                                                <textarea class="form-control" name="refund_reason" rows="2" required placeholder="z.B. Anfrage war fehlerhaft"></textarea>
+                                            </div>
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="invalidate_purchase" id="invalidate<?= $transaction['id'] ?>" value="1" role="switch" checked>
+                                                <label class="form-check-label" for="invalidate<?= $transaction['id'] ?>">
+                                                    Kauf als ungültig markieren (Firma kann Anfrage nicht mehr sehen)
+                                                </label>
+                                            </div>
+                                            <?php if ($paidWithCard): ?>
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="saferpay_refunded" id="saferpayRefundPurchase<?= $transaction['id'] ?>" value="1" role="switch">
+                                                <label class="form-check-label" for="saferpayRefundPurchase<?= $transaction['id'] ?>">
+                                                    <strong>Bereits im Saferpay Backend rückerstattet</strong>
+                                                </label>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="bi bi-check-lg"></i> Stornieren & Gutschreiben
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <?php $modalsHtml .= ob_get_clean(); ?>
+                        <?php endif; ?>
+
+                        <?php if ($transaction['type'] === 'topup' && $transaction['amount'] > 0): ?>
+                        <?php ob_start(); ?>
+                        <?php
+                        // Versuche die zugehörige Saferpay-Transaktion zu finden
+                        $transactionDate = date('Y-m-d', strtotime($transaction['created_at']));
+                        $saferpayKey = $user->id . '_' . $transaction['amount'] . '_' . $transactionDate;
+                        $saferpayTx = $saferpayMap[$saferpayKey] ?? null;
+                        $hasCaptureId = $saferpayTx && !empty($saferpayTx['capture_id']);
+                        ?>
+                        <!-- Modal: Aufladung rückerstatten -->
+                        <div class="modal fade" id="refundTopupModal<?= $transaction['id'] ?>" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="<?= site_url('admin/user/refund-topup/' . $user->id) ?>" method="post">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="booking_id" value="<?= $transaction['id'] ?>">
+                                        <?php if ($hasCaptureId): ?>
+                                        <input type="hidden" name="saferpay_transaction_id" value="<?= esc($saferpayTx['id']) ?>">
+                                        <input type="hidden" name="capture_id" value="<?= esc($saferpayTx['capture_id']) ?>">
+                                        <input type="hidden" name="currency" value="<?= esc($saferpayTx['currency'] ?? 'CHF') ?>">
+                                        <?php endif; ?>
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">
+                                                <i class="bi bi-credit-card"></i> Aufladung rückerstatten
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <?php if ($hasCaptureId): ?>
+                                            <!-- Capture-ID vorhanden: Automatische Rückerstattung möglich -->
+                                            <div class="alert alert-success">
+                                                <i class="bi bi-check-circle"></i>
+                                                <strong>Automatische Rückerstattung möglich!</strong><br>
+                                                Capture-ID gefunden: <code><?= esc($saferpayTx['capture_id']) ?></code>
+                                            </div>
+                                            <?php else: ?>
+                                            <!-- Keine Capture-ID: Manuelle Rückerstattung erforderlich -->
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                                <strong>Achtung:</strong> Bei dieser Zahlung ist keine automatische Rückerstattung möglich.<br>
+                                                Die Rückerstattung auf die Kreditkarte muss im
+                                                <a href="https://test.saferpay.com/BO/Login" target="_blank">Saferpay Backend</a>
+                                                manuell durchgeführt werden.
+                                            </div>
+                                            <?php endif; ?>
+                                            <div class="alert alert-info">
+                                                <strong>Transaktion:</strong> <?= esc($transaction['description']) ?><br>
+                                                <strong>Betrag:</strong> <?= number_format($transaction['amount'], 2) ?> CHF
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>Rückerstattungsbetrag (CHF)</strong></label>
+                                                <input type="number" class="form-control" name="refund_amount" step="0.01" min="0.01" max="<?= $transaction['amount'] ?>" value="<?= $transaction['amount'] ?>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>Grund</strong></label>
+                                                <textarea class="form-control" name="refund_reason" rows="2" required placeholder="z.B. Kunde möchte Guthaben zurück"></textarea>
+                                            </div>
+
+                                            <?php if ($hasCaptureId): ?>
+                                            <!-- Option: Automatisch oder bereits manuell rückerstattet -->
+                                            <div class="mb-3">
+                                                <label class="form-label"><strong>Rückerstattungsmethode</strong></label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="refund_method" id="refundAuto<?= $transaction['id'] ?>" value="auto" checked>
+                                                    <label class="form-check-label" for="refundAuto<?= $transaction['id'] ?>">
+                                                        <i class="bi bi-lightning text-warning"></i> <strong>Jetzt automatisch via Saferpay rückerstatten</strong>
+                                                        <br><small class="text-muted">Der Betrag wird direkt auf die Kreditkarte des Kunden zurückerstattet.</small>
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="radio" name="refund_method" id="refundManual<?= $transaction['id'] ?>" value="manual">
+                                                    <label class="form-check-label" for="refundManual<?= $transaction['id'] ?>">
+                                                        <i class="bi bi-check-square text-success"></i> <strong>Bereits im Saferpay Backend rückerstattet</strong>
+                                                        <br><small class="text-muted">Die Rückerstattung wurde bereits manuell durchgeführt.</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <?php else: ?>
+                                            <!-- Keine Capture-ID: Nur manuelle Bestätigung -->
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" name="saferpay_refunded" id="saferpayRefund<?= $transaction['id'] ?>" value="1" role="switch">
+                                                <label class="form-check-label" for="saferpayRefund<?= $transaction['id'] ?>">
+                                                    <strong>Bereits im Saferpay Backend rückerstattet</strong>
+                                                </label>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-check-lg"></i> Rückerstattung verbuchen
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <?php $modalsHtml .= ob_get_clean(); ?>
+                        <?php endif; ?>
+
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+<!-- Modals ausserhalb der Tabelle ausgeben -->
+<?= $modalsHtml ?>
         <?php else: ?>
         <div class="alert alert-info">
             <i class="bi bi-info-circle"></i> Keine Transaktionen vorhanden.
@@ -876,5 +1126,31 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
 
 </div>
 <!-- Ende Tab Content -->
+
+<script>
+// Tab aus URL-Hash aktivieren
+document.addEventListener('DOMContentLoaded', function() {
+    var hash = window.location.hash;
+    if (hash) {
+        // Finde den Tab-Button für diesen Hash
+        var tabButton = document.querySelector('button[data-bs-target="' + hash + '"]');
+        if (tabButton) {
+            var tab = new bootstrap.Tab(tabButton);
+            tab.show();
+        }
+    }
+
+    // Hash aktualisieren wenn Tab gewechselt wird
+    var tabButtons = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabButtons.forEach(function(button) {
+        button.addEventListener('shown.bs.tab', function(e) {
+            var target = e.target.getAttribute('data-bs-target');
+            if (target) {
+                history.replaceState(null, null, target);
+            }
+        });
+    });
+});
+</script>
 
 <?= $this->endSection() ?>

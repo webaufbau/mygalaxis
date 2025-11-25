@@ -43,7 +43,7 @@ function defineAppRoutes($routes) {
     $routes->post('admin/login', 'Auth::adminLoginAttempt', ['as' => 'admin-login-attempt']);
 
     // Register
-    $routes->get('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerView');
+    $routes->get('register', 'RegisterController::registerView');
     //$routes->post('register', '\CodeIgniter\Shield\Controllers\RegisterController::registerAction');
 
 
@@ -253,6 +253,9 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('user/(:num)', 'Admin\User::detail/$1');
     $routes->post('user/add-note/(:num)', 'Admin\User::addNote/$1');
     $routes->get('user/delete-note/(:num)/(:num)', 'Admin\User::deleteNote/$1/$2');
+    $routes->post('user/add-credit/(:num)', 'Admin\User::addCredit/$1');
+    $routes->post('user/refund-purchase/(:num)', 'Admin\User::refundPurchase/$1');
+    $routes->post('user/refund-topup/(:num)', 'Admin\User::refundTopup/$1');
     $routes->match(['GET', 'POST'], 'user/form', 'Admin\User::form');
     $routes->match(['GET', 'POST'], 'user/form/(:num)', 'Admin\User::form/$1');
     $routes->match(['GET', 'POST'], 'user/copy/(:num)', 'Admin\User::copy/$1');

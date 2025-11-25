@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\Account\Crud;
 use App\Libraries\SiteConfigLoader;
+use App\Models\AuditLogModel;
 use CodeIgniter\Files\File;
 
 class Settings extends AdminBase {
@@ -16,6 +17,12 @@ class Settings extends AdminBase {
 
         if ($this->request->getMethod() === 'POST') {
             $postData = $this->request->getPost();
+
+            // Alte Werte für Audit-Log speichern
+            $oldValues = [];
+            foreach ($loader->getFields() as $fieldName => $meta) {
+                $oldValues[$fieldName] = $loader->$fieldName;
+            }
 
             // Dynamisch alle file-Felder aus SiteConfig prüfen und hochladen
             foreach ($loader->getFields() as $fieldName => $meta) {
@@ -41,6 +48,15 @@ class Settings extends AdminBase {
             $success = $loader->save($postData);
 
             if ($success) {
+                // Audit-Log: Änderungen protokollieren
+                AuditLogModel::logChanges(
+                    'settings_update',
+                    'settings',
+                    null,
+                    $oldValues,
+                    $postData
+                );
+
                 session()->setFlashdata('success', 'Einstellungen gespeichert.');
             } else {
                 session()->setFlashdata('error', 'Fehler beim Speichern.');
@@ -53,6 +69,7 @@ class Settings extends AdminBase {
         $data = [
             'config' => $loader,
             'fields' => $loader->getFields(),
+            'fieldGroups' => $loader->getFieldGroups(),
             'values' => $loader, // $loader hat magic getter, also $values[$key] funktioniert als $loader->$key
             'errors' => session()->getFlashdata('errors'),
             'success' => session()->getFlashdata('success'),

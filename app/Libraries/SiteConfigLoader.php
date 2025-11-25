@@ -48,6 +48,11 @@ class SiteConfigLoader
         return $this->baseConfig->fields;
     }
 
+    public function getFieldGroups(): array
+    {
+        return $this->baseConfig->fieldGroups ?? [];
+    }
+
     public function get(string $key, ?string $locale = null)
     {
         $locale = $locale ?? service('request')->getLocale();

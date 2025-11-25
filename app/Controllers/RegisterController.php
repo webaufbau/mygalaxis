@@ -62,6 +62,12 @@ class RegisterController extends ShieldRegister {
      */
     public function registerView()
     {
+        // Check if registration is allowed
+        if (! siteconfig()->allowRegistration) {
+            session()->setFlashdata('error', lang('Auth.registerDisabled'));
+            return redirect()->to('/login');
+        }
+
         // Check for referral code in URL
         $refCode = $this->request->getGet('ref');
 
@@ -103,9 +109,8 @@ class RegisterController extends ShieldRegister {
      */
     public function myregisterAction() {
 
-        // Check if registration is allowed
-        if (! setting('Auth.allowRegistration')) {
-            // Fehler ausgeben
+        // Check if registration is allowed (SiteConfig hat Vorrang vor Auth.allowRegistration)
+        if (! siteconfig()->allowRegistration) {
             session()->setFlashdata('error', lang('Auth.registerDisabled'));
             return view('auth/register');
         }

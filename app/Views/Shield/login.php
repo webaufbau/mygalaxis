@@ -412,7 +412,7 @@ $currentUri = service('uri')->getPath();
             </div>
 
             <div class="text-center">
-                <?php if (setting('Auth.allowRegistration')) : ?>
+                <?php if (siteconfig()->allowRegistration) : ?>
                     <p class="mb-0"><?= lang('Auth.noAccount') ?> <a href="<?= lang_url('register') ?>" class="text-decoration-none fw-semibold"><?= lang('Auth.registerNow') ?></a></p>
                 <?php endif ?>
             </div>

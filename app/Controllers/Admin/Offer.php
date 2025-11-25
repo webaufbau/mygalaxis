@@ -2,20 +2,9 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\CompanyModel;
-use App\Models\CreditModel;
 
 class Offer extends BaseController
 {
-    protected $creditModel;
-    protected $companyModel;
-
-    public function __construct()
-    {
-        $this->creditModel = new CreditModel();
-        $this->companyModel = new CompanyModel();
-    }
-
     public function detail($id)
     {
         $offerModel = new \App\Models\OfferModel();
@@ -58,17 +47,25 @@ class Offer extends BaseController
             $discountPercent = round((($calculatedPrice - $discountedPrice) / $calculatedPrice) * 100);
         }
 
-        // Anzahl Verkäufe ermitteln
+        // Anzahl Verkäufe ermitteln (nur aktive, nicht stornierte)
         $purchaseModel = new \App\Models\OfferPurchaseModel();
-        $purchaseCount = $purchaseModel->where('offer_id', $offer['id'])->countAllResults();
+        $purchaseCount = $purchaseModel
+            ->where('offer_id', $offer['id'])
+            ->where('status !=', 'refunded')
+            ->countAllResults();
 
-        // Käufer-Informationen holen
+        // Käufer-Informationen holen (nur aktive, nicht stornierte)
         $bookingModel = new \App\Models\BookingModel();
         $purchases = $bookingModel
-            ->select('bookings.*, users.username, users.contact_person, users.company_name')
+            ->select('bookings.*, users.username, users.contact_person, users.company_name, offer_purchases.status as purchase_status')
             ->join('users', 'users.id = bookings.user_id')
+            ->join('offer_purchases', 'offer_purchases.user_id = bookings.user_id AND offer_purchases.offer_id = bookings.reference_id', 'left')
             ->where('bookings.type', 'offer_purchase')
             ->where('bookings.reference_id', $offer['id'])
+            ->groupStart()
+                ->where('offer_purchases.status IS NULL')
+                ->orWhere('offer_purchases.status !=', 'refunded')
+            ->groupEnd()
             ->orderBy('bookings.created_at', 'DESC')
             ->findAll();
 

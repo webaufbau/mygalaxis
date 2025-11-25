@@ -226,9 +226,10 @@
                             $categories = is_string($user['categories'] ?? '') ? json_decode($user['categories'], true) : ($user['categories'] ?? []);
                             if (!empty($categories)):
                                 foreach (array_slice($categories, 0, 2) as $cat):
-                                    // Übersetzen falls es ein Language-Key ist (z.B. "Filter.flooring")
-                                    // Wenn es mit "Filter." beginnt, ersetze durch "Offers.type."
-                                    $translationKey = str_replace('Filter.', 'Offers.type.', $cat);
+                                    // Übersetzen: Versuche Offers.type.{key} (z.B. "flooring" -> "Offers.type.flooring")
+                                    // Falls es mit "Filter." beginnt, entferne das Prefix zuerst
+                                    $catKey = str_replace('Filter.', '', $cat);
+                                    $translationKey = 'Offers.type.' . $catKey;
                                     $displayCat = lang($translationKey) !== $translationKey ? lang($translationKey) : esc($cat);
                             ?>
                                 <span class="badge bg-info badge-status me-1"><?= $displayCat ?></span>

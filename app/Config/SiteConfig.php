@@ -28,11 +28,44 @@ class SiteConfig extends BaseConfig
     public string $bankName = '';
     public int $phoneVerificationValidityHours = 24;
     public bool $enableMoveCleaningCombo = false; // Umzug + Reinigung Kombi-Offerten aktivieren
+    public bool $allowRegistration = true; // Registrierung erlauben
+
+    /**
+     * Gruppen-Definition für die Settings-Tabs
+     */
+    public array $fieldGroups = [
+        'general' => [
+            'label' => 'Allgemein',
+            'icon' => 'bi-gear',
+            'fields' => ['name', 'email', 'domain_extension', 'address', 'frontendUrl', 'backendUrl', 'thankYouUrl'],
+        ],
+        'appearance' => [
+            'label' => 'Erscheinungsbild',
+            'icon' => 'bi-palette',
+            'fields' => ['logoUrl', 'logoHeightPixel', 'faviconUrl', 'headerBackgroundColor'],
+        ],
+        'email' => [
+            'label' => 'E-Mail',
+            'icon' => 'bi-envelope',
+            'fields' => ['emailSignature', 'testMode', 'testEmail'],
+        ],
+        'registration' => [
+            'label' => 'Registrierung',
+            'icon' => 'bi-person-plus',
+            'fields' => ['allowRegistration', 'siteCountry', 'companyUidCheck', 'phoneCheck'],
+        ],
+        'finance' => [
+            'label' => 'Finanzen',
+            'icon' => 'bi-cash-coin',
+            'fields' => ['vatEnabled', 'vatRate', 'vatExemptionText', 'bankIban', 'bankName'],
+        ],
+    ];
 
     /**
      * Meta-Definition für die Felder
      */
     public array $fields = [
+        // Allgemein
         'name' => [
             'type' => 'text',
             'label' => 'Seitenname',
@@ -53,16 +86,6 @@ class SiteConfig extends BaseConfig
             'label' => 'Adressdaten Website',
             'placeholder' => 'Für Rechnungskopf',
         ],
-        'emailSignature' => [
-            'type' => 'textarea',
-            'label' => 'E-Mail-Signatur Text',
-            'placeholder' => '',
-        ],
-        'thankYouUrl' => [
-            'type' => 'url',
-            'label' => 'Fallback Danke-Seite URL',
-            'multilang' => true,
-        ],
         'frontendUrl' => [
             'type' => 'url',
             'label' => 'Frontend URL',
@@ -71,13 +94,16 @@ class SiteConfig extends BaseConfig
             'type' => 'url',
             'label' => 'Backend URL',
         ],
+        'thankYouUrl' => [
+            'type' => 'url',
+            'label' => 'Fallback Danke-Seite URL',
+            'multilang' => true,
+        ],
+
+        // Erscheinungsbild
         'logoUrl' => [
             'type' => 'file',
             'label' => 'Verfikationsprozess Logo',
-        ],
-        'headerBackgroundColor' => [
-            'type' => 'color',
-            'label' => 'Primärfarbe Website (Login, Register, Magic-Link, Verifikation)',
         ],
         'logoHeightPixel' => [
             'type' => 'text',
@@ -87,15 +113,44 @@ class SiteConfig extends BaseConfig
             'type' => 'file',
             'label' => 'Favicon URL',
         ],
+        'headerBackgroundColor' => [
+            'type' => 'color',
+            'label' => 'Primärfarbe Website (Login, Register, Magic-Link, Verifikation)',
+        ],
+
+        // E-Mail
+        'emailSignature' => [
+            'type' => 'textarea',
+            'label' => 'E-Mail-Signatur Text',
+            'placeholder' => '',
+        ],
         'testMode' => [
             'type' => 'checkbox',
             'label' => 'Testmodus aktivieren',
+            'help' => 'Wenn aktiviert, werden alle E-Mails an die Testmodus E-Mail gesendet.',
         ],
         'testEmail' => [
             'type' => 'email',
             'label' => 'Testmodus E-Mail',
         ],
-        // Firmenprüfung
+
+        // Registrierung
+        'allowRegistration' => [
+            'type' => 'checkbox',
+            'label' => 'Registrierung erlauben',
+            'help' => 'Betrifft alle .ch Sites (Offertenschweiz, Offertenheld, Renovo24). Wenn deaktiviert, können sich keine neuen Firmen registrieren.',
+            'default' => true,
+        ],
+        'siteCountry' => [
+            'type' => 'dropdown',
+            'label' => 'Welches Land bei Registrierungen setzen?',
+            'options' => [
+                'ch'  => 'Schweiz',
+                'de'  => 'Deutschland',
+                'at'  => 'Österreich',
+            ],
+            'default' => 'ch'
+        ],
         'companyUidCheck' => [
             'type' => 'dropdown',
             'label' => 'Welche Prüfung für Firmen?',
@@ -107,8 +162,6 @@ class SiteConfig extends BaseConfig
             ],
             'default' => ''
         ],
-
-        // Telefonnummerprüfung
         'phoneCheck' => [
             'type' => 'dropdown',
             'label' => 'Welche Prüfung für Telefonnummer?',
@@ -121,19 +174,7 @@ class SiteConfig extends BaseConfig
             'default' => ''
         ],
 
-        // Land
-        'siteCountry' => [
-            'type' => 'dropdown',
-            'label' => 'Welches Land bei Registrierungen setzen?',
-            'options' => [
-                'ch'  => 'Schweiz',
-                'de'  => 'Deutschland',
-                'at'  => 'Österreich',
-            ],
-            'default' => 'ch'
-        ],
-
-        // MWST
+        // Finanzen
         'vatEnabled' => [
             'type' => 'checkbox',
             'label' => 'Mehrwertsteuer aktivieren',
@@ -148,8 +189,6 @@ class SiteConfig extends BaseConfig
             'label' => 'MWST-Befreiungstext (wenn nicht MWST-pflichtig)',
             'placeholder' => 'Von der Mehrwertsteuer befreit (Kleinunternehmer gemäss Art. 10 Abs. 2 MWSTG).',
         ],
-
-        // Bankdaten
         'bankIban' => [
             'type' => 'text',
             'label' => 'IBAN',
@@ -161,19 +200,19 @@ class SiteConfig extends BaseConfig
             'placeholder' => 'PostFinance AG',
         ],
 
-        // Telefon-Verifizierung
-        'phoneVerificationValidityHours' => [
-            'type' => 'text',
-            'label' => 'Gültigkeitsdauer Telefon-Verifizierung (Stunden)',
-            'placeholder' => '24',
-            'help' => 'Nach wie vielen Stunden muss eine Telefonnummer erneut verifiziert werden? (Standard: 24 Stunden)',
-        ],
+        // Telefon-Verifizierung (vorerst deaktiviert)
+        // 'phoneVerificationValidityHours' => [
+        //     'type' => 'text',
+        //     'label' => 'Gültigkeitsdauer Telefon-Verifizierung (Stunden)',
+        //     'placeholder' => '24',
+        //     'help' => 'Nach wie vielen Stunden muss eine Telefonnummer erneut verifiziert werden? (Standard: 24 Stunden)',
+        // ],
 
-        // Kombi-Offerten
-        'enableMoveCleaningCombo' => [
-            'type' => 'checkbox',
-            'label' => 'Umzug + Reinigung Kombi-Offerten aktivieren',
-            'help' => 'Wenn aktiviert, werden Umzug und Reinigung Anfragen der gleichen Person zu einer Kombi-Offerte zusammengefasst.',
-        ],
+        // Kombi-Offerten (vorerst deaktiviert)
+        // 'enableMoveCleaningCombo' => [
+        //     'type' => 'checkbox',
+        //     'label' => 'Umzug + Reinigung Kombi-Offerten aktivieren',
+        //     'help' => 'Wenn aktiviert, werden Umzug und Reinigung Anfragen der gleichen Person zu einer Kombi-Offerte zusammengefasst.',
+        // ],
     ];
 }

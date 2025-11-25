@@ -225,6 +225,35 @@ class SaferpayService
     }
 
     /**
+     * Holt die Saferpay Transaktion anhand der User ID und des Betrags
+     * Nützlich um die CaptureId für Refunds zu finden
+     */
+    public function getTransactionByUserAndAmount(int $userId, int $amountInCents): ?object
+    {
+        $db = \Config\Database::connect();
+        return $db->table('saferpay_transactions')
+            ->where('user_id', $userId)
+            ->where('amount', $amountInCents)
+            ->where('status', 'CAPTURED')
+            ->whereNotNull('capture_id')
+            ->orderBy('created_at', 'DESC')
+            ->get()
+            ->getRow();
+    }
+
+    /**
+     * Holt eine Saferpay Transaktion anhand der ID
+     */
+    public function getTransactionById(int $id): ?object
+    {
+        $db = \Config\Database::connect();
+        return $db->table('saferpay_transactions')
+            ->where('id', $id)
+            ->get()
+            ->getRow();
+    }
+
+    /**
      * Transaktion verbuchen (Capture)
      * Muss nach erfolgter Autorisierung aufgerufen werden
      *

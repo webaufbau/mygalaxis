@@ -462,9 +462,17 @@ if ($currentLocale !== 'de') {
         }
     });
 
+    // Tooltips für data-bs-toggle="tooltip"
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
         new bootstrap.Tooltip(el, {
             placement: 'bottom'
+        });
+    });
+
+    // Tooltips für alle Elemente mit title Attribut (ausser die bereits tooltip haben)
+    document.querySelectorAll('[title]:not([data-bs-toggle="tooltip"])').forEach(function (el) {
+        new bootstrap.Tooltip(el, {
+            placement: 'top'
         });
     });
 

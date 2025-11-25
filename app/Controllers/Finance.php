@@ -409,12 +409,15 @@ class Finance extends BaseController
 
                 // 2.1 WICHTIG: Transaktion verbuchen (Capture)
                 // Dies zieht das Geld tatsächlich von der Karte ab
+                $captureId = null;
                 try {
                     $captureResponse = $saferpay->captureTransaction($transactionId);
                     log_message('info', 'Saferpay Capture erfolgreich: ' . json_encode($captureResponse));
 
                     // Status auf CAPTURED aktualisieren
                     $captureStatus = $captureResponse['Status'] ?? 'CAPTURED';
+                    // CaptureId für spätere Refunds speichern
+                    $captureId = $captureResponse['CaptureId'] ?? null;
                 } catch (\Exception $captureError) {
                     log_message('error', 'Saferpay Capture fehlgeschlagen: ' . $captureError->getMessage());
                     // Weiter mit AUTHORIZED Status, aber loggen
@@ -540,6 +543,7 @@ class Finance extends BaseController
 
                     $transaction_data = [
                         'transaction_id' => $transaction['Id'] ?? 0,
+                        'capture_id'     => $captureId, // Für spätere Refunds
                         'status'         => $captureStatus, // CAPTURED statt AUTHORIZED
                         'amount'         => $transaction['Amount']['Value'] ?? '',
                         'currency'       => $transaction['Amount']['CurrencyCode'] ?? '',

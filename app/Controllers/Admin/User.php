@@ -43,33 +43,79 @@ class User extends Crud {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Benutzer nicht gefunden.");
         }
 
-        // Hole alle Käufe (Bookings) des Benutzers
+        // Hole alle Käufe (Bookings) des Benutzers - nur aktive (nicht stornierte)
         $bookingModel = new \App\Models\BookingModel();
-        $purchases = $bookingModel
+        $allPurchases = $bookingModel
             ->where('user_id', $id)
             ->where('type', 'offer_purchase')
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        // Hole Angebots-Details für jeden Kauf
+        // Hole Angebots-Details und Status für jeden Kauf
         $offerModel = new \App\Models\OfferModel();
-        foreach ($purchases as &$purchase) {
+        $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+        $purchases = [];
+        foreach ($allPurchases as $purchase) {
             $offer = $offerModel->find($purchase['reference_id']);
             $purchase['offer'] = $offer;
+
+            // Hole Status aus offer_purchases
+            $offerPurchase = $offerPurchaseModel
+                ->where('user_id', $id)
+                ->where('offer_id', $purchase['reference_id'])
+                ->first();
+            $purchase['purchase_status'] = $offerPurchase['status'] ?? 'active';
+
+            // Nur aktive Käufe anzeigen (nicht stornierte)
+            if ($purchase['purchase_status'] !== 'refunded') {
+                $purchases[] = $purchase;
+            }
         }
 
-        // Hole alle Transaktionen (Credits)
-        $creditModel = new \App\Models\CreditModel();
-        $transactions = $creditModel
+        // Hole alle Transaktionen (Bookings)
+        $bookingModel = new \App\Models\BookingModel();
+        $transactions = $bookingModel
             ->where('user_id', $id)
             ->orderBy('created_at', 'DESC')
             ->findAll();
 
-        // Berechne Kontostand
-        $balance = 0;
-        foreach ($transactions as $transaction) {
-            $balance += $transaction['amount'];
+        // Hole Saferpay-Transaktionen für Refund-Funktionalität
+        $db = \Config\Database::connect();
+        $saferpayTransactions = $db->table('saferpay_transactions')
+            ->where('user_id', $id)
+            ->where('status', 'CAPTURED')
+            ->get()
+            ->getResultArray();
+
+        // Erstelle ein Mapping von Betrag+Zeitraum zu capture_id für einfache Zuordnung
+        $saferpayMap = [];
+        foreach ($saferpayTransactions as $st) {
+            // Key aus User-ID, Betrag (in CHF, von Rappen konvertiert) und ungefährem Datum
+            $amountChf = ($st['amount'] ?? 0) / 100;
+            $date = date('Y-m-d', strtotime($st['created_at']));
+            $key = $id . '_' . $amountChf . '_' . $date;
+            $saferpayMap[$key] = $st;
         }
+
+        // Ermittle bereits stornierte Käufe (reference_id zeigt auf die Offer-ID)
+        // Wir sammeln die Offer-IDs, die bereits storniert wurden
+        $refundedOfferIds = [];
+        foreach ($transactions as $t) {
+            if ($t['type'] === 'refund_purchase' && !empty($t['reference_id'])) {
+                $refundedOfferIds[$t['reference_id']] = true;
+            }
+        }
+
+        // Ermittle bereits rückerstattete Topups (reference_id zeigt auf die Booking-ID)
+        $refundedTopupIds = [];
+        foreach ($transactions as $t) {
+            if ($t['type'] === 'refund' && !empty($t['reference_id'])) {
+                $refundedTopupIds[$t['reference_id']] = true;
+            }
+        }
+
+        // Berechne Kontostand
+        $balance = $bookingModel->getUserBalance($id);
 
         // Hole Bewertungen des Benutzers
         $reviewModel = new \App\Models\ReviewModel();
@@ -129,6 +175,9 @@ class User extends Crud {
             'user' => $targetUser,
             'purchases' => $purchases,
             'transactions' => $transactions,
+            'saferpayMap' => $saferpayMap,
+            'refundedOfferIds' => $refundedOfferIds,
+            'refundedTopupIds' => $refundedTopupIds,
             'balance' => $balance,
             'reviews' => $reviews,
             'blockedDays' => $blockedDays,
@@ -712,6 +761,245 @@ class User extends Crud {
         exit;
     }
 
+
+    /**
+     * Guthaben manuell gutschreiben (Admin)
+     */
+    public function addCredit($userId)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $userModel = new \App\Models\UserModel();
+        $targetUser = $userModel->find($userId);
+
+        if (!$targetUser) {
+            session()->setFlashdata('error', 'Benutzer nicht gefunden.');
+            return redirect()->to('/admin/user');
+        }
+
+        $amount = floatval($this->request->getPost('amount'));
+        $description = trim($this->request->getPost('description'));
+
+        if ($amount <= 0) {
+            session()->setFlashdata('error', 'Ungültiger Betrag.');
+            return redirect()->to('/admin/user/' . $userId . '#finance');
+        }
+
+        $bookingModel = new \App\Models\BookingModel();
+        $bookingModel->insert([
+            'user_id' => $userId,
+            'type' => 'admin_credit',
+            'amount' => $amount,
+            'paid_amount' => 0,
+            'description' => 'Admin Gutschrift: ' . $description,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        log_message('info', 'Admin Gutschrift erstellt', [
+            'user_id' => $userId,
+            'amount' => $amount,
+            'description' => $description,
+            'admin_user' => $user->id,
+        ]);
+
+        session()->setFlashdata('success', 'Guthaben von ' . number_format($amount, 2) . ' CHF erfolgreich gutgeschrieben.');
+        return redirect()->to('/admin/user/' . $userId . '#finance');
+    }
+
+    /**
+     * Kauf stornieren / rückerstatten
+     */
+    public function refundPurchase($userId)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $bookingId = $this->request->getPost('booking_id');
+        $refundAmount = floatval($this->request->getPost('refund_amount'));
+        $refundReason = trim($this->request->getPost('refund_reason'));
+        $invalidatePurchase = $this->request->getPost('invalidate_purchase') == '1';
+
+        $bookingModel = new \App\Models\BookingModel();
+        $originalBooking = $bookingModel->find($bookingId);
+
+        if (!$originalBooking || $originalBooking['user_id'] != $userId) {
+            session()->setFlashdata('error', 'Transaktion nicht gefunden.');
+            return redirect()->to('/admin/user/' . $userId . '#finance');
+        }
+
+        if ($originalBooking['type'] !== 'offer_purchase') {
+            session()->setFlashdata('error', 'Nur Angebotskäufe können storniert werden.');
+            return redirect()->to('/admin/user/' . $userId . '#finance');
+        }
+
+        // Rückerstattungs-Buchung erstellen (positiver Betrag)
+        $bookingModel->insert([
+            'user_id' => $userId,
+            'type' => 'refund_purchase',
+            'amount' => $refundAmount,
+            'paid_amount' => 0,
+            'description' => 'Stornierung: ' . $refundReason . ' (Original: ' . $originalBooking['description'] . ')',
+            'reference_id' => $originalBooking['reference_id'],
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        // Kauf als storniert markieren, wenn gewünscht
+        if ($invalidatePurchase && !empty($originalBooking['reference_id'])) {
+            $offerPurchaseModel = new \App\Models\OfferPurchaseModel();
+            $offerPurchaseModel->where('offer_id', $originalBooking['reference_id'])
+                               ->where('user_id', $userId)
+                               ->set(['status' => 'refunded'])
+                               ->update();
+        }
+
+        log_message('info', 'Kauf storniert/rückerstattet', [
+            'user_id' => $userId,
+            'booking_id' => $bookingId,
+            'refund_amount' => $refundAmount,
+            'reason' => $refundReason,
+            'invalidated' => $invalidatePurchase,
+            'admin_user' => $user->id,
+        ]);
+
+        session()->setFlashdata('success', 'Kauf erfolgreich storniert. ' . number_format($refundAmount, 2) . ' CHF wurden gutgeschrieben.');
+        return redirect()->to('/admin/user/' . $userId . '#finance');
+    }
+
+    /**
+     * Aufladung rückerstatten (bei Saferpay-Zahlung)
+     */
+    public function refundTopup($userId)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $bookingId = $this->request->getPost('booking_id');
+        $refundAmount = floatval($this->request->getPost('refund_amount'));
+        $refundReason = trim($this->request->getPost('refund_reason'));
+
+        // Neue Parameter für automatische Rückerstattung
+        $refundMethod = $this->request->getPost('refund_method'); // 'auto' oder 'manual'
+        $captureId = $this->request->getPost('capture_id');
+        $currency = $this->request->getPost('currency') ?? 'CHF';
+
+        // Legacy: Falls kein refund_method gesetzt, prüfe alte Checkbox
+        $saferpayRefunded = $this->request->getPost('saferpay_refunded') == '1';
+        if ($refundMethod === 'manual') {
+            $saferpayRefunded = true;
+        }
+
+        $bookingModel = new \App\Models\BookingModel();
+        $originalBooking = $bookingModel->find($bookingId);
+
+        if (!$originalBooking || $originalBooking['user_id'] != $userId) {
+            session()->setFlashdata('error', 'Transaktion nicht gefunden.');
+            return redirect()->to('/admin/user/' . $userId . '#finance');
+        }
+
+        if ($originalBooking['type'] !== 'topup') {
+            session()->setFlashdata('error', 'Nur Aufladungen können so rückerstattet werden.');
+            return redirect()->to('/admin/user/' . $userId . '#finance');
+        }
+
+        // Automatische Saferpay-Rückerstattung versuchen
+        $saferpayRefundSuccess = false;
+        $saferpayRefundError = null;
+
+        if ($refundMethod === 'auto' && !empty($captureId)) {
+            try {
+                $saferpayService = new \App\Services\SaferpayService();
+                $amountInCents = (int) ($refundAmount * 100);
+
+                log_message('info', 'Admin Saferpay Refund gestartet', [
+                    'user_id' => $userId,
+                    'capture_id' => $captureId,
+                    'amount_cents' => $amountInCents,
+                    'currency' => $currency,
+                    'admin_user' => $user->id,
+                ]);
+
+                $refundResponse = $saferpayService->refundTransaction($captureId, $amountInCents, $currency);
+
+                // Prüfe ob Refund erfolgreich war
+                if (isset($refundResponse['Transaction'])) {
+                    $saferpayRefundSuccess = true;
+                    $saferpayRefunded = true;
+
+                    log_message('info', 'Admin Saferpay Refund erfolgreich', [
+                        'user_id' => $userId,
+                        'refund_transaction_id' => $refundResponse['Transaction']['Id'] ?? 'unknown',
+                        'admin_user' => $user->id,
+                    ]);
+                } else {
+                    $saferpayRefundError = 'Unerwartete Antwort von Saferpay: ' . json_encode($refundResponse);
+                    log_message('error', 'Admin Saferpay Refund fehlgeschlagen', [
+                        'user_id' => $userId,
+                        'response' => $refundResponse,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                $saferpayRefundError = $e->getMessage();
+                log_message('error', 'Admin Saferpay Refund Exception: ' . $e->getMessage(), [
+                    'user_id' => $userId,
+                    'capture_id' => $captureId,
+                ]);
+            }
+        }
+
+        // Bei Fehler bei automatischer Rückerstattung: Abbruch mit Fehlermeldung
+        if ($refundMethod === 'auto' && !$saferpayRefundSuccess) {
+            session()->setFlashdata('error', 'Saferpay Rückerstattung fehlgeschlagen: ' . ($saferpayRefundError ?? 'Unbekannter Fehler') . ' - Bitte manuell im Saferpay Backend durchführen.');
+            return redirect()->to('/admin/user/' . $userId . '#finance');
+        }
+
+        // Rückerstattungs-Buchung erstellen (negativer Betrag - zieht vom Guthaben ab)
+        $description = 'Rückerstattung Aufladung: ' . $refundReason;
+        if ($saferpayRefundSuccess) {
+            $description .= ' (Saferpay automatisch rückerstattet)';
+        } elseif ($saferpayRefunded) {
+            $description .= ' (Saferpay manuell rückerstattet)';
+        } else {
+            $description .= ' (Saferpay-Rückerstattung ausstehend!)';
+        }
+
+        $bookingModel->insert([
+            'user_id' => $userId,
+            'type' => 'refund',
+            'amount' => -$refundAmount, // Negativ, weil vom Guthaben abgezogen
+            'paid_amount' => $saferpayRefunded ? $refundAmount : 0,
+            'description' => $description,
+            'reference_id' => $bookingId,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        log_message('info', 'Aufladung rückerstattet', [
+            'user_id' => $userId,
+            'booking_id' => $bookingId,
+            'refund_amount' => $refundAmount,
+            'reason' => $refundReason,
+            'saferpay_refunded' => $saferpayRefunded,
+            'saferpay_auto' => $saferpayRefundSuccess,
+            'admin_user' => $user->id,
+        ]);
+
+        if ($saferpayRefundSuccess) {
+            $message = 'Rückerstattung von ' . number_format($refundAmount, 2) . ' CHF erfolgreich via Saferpay durchgeführt und verbucht.';
+        } elseif ($saferpayRefunded) {
+            $message = 'Rückerstattung von ' . number_format($refundAmount, 2) . ' CHF verbucht (manuell bestätigt).';
+        } else {
+            $message = 'Rückerstattung von ' . number_format($refundAmount, 2) . ' CHF verbucht. ACHTUNG: Bitte im Saferpay Backend die Rückerstattung auf die Kreditkarte manuell durchführen!';
+        }
+
+        session()->setFlashdata('success', $message);
+        return redirect()->to('/admin/user/' . $userId . '#finance');
+    }
 
     public function delete($entity_id=0) {
         if (!auth()->user()->can('my.'.$this->permission_prefix.'_delete')) {
