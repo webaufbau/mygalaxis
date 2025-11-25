@@ -426,7 +426,7 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
                     <tbody>
                     <?php foreach ($purchases as $entry): ?>
                         <tr>
-                            <td><?= date('d.m.Y', strtotime($entry['created_at'])) ?></td>
+                            <td data-order="<?= strtotime($entry['created_at']) ?>"><?= date('d.m.Y H:i', strtotime($entry['created_at'])) ?></td>
                             <td><?= esc(lang('Offers.credit_type.'.$entry['type'])) ?></td>
                             <td><?= esc($entry['description']) ?></td>
                             <td class="text-end">
@@ -597,7 +597,7 @@ $(document).ready(function() {
     // Gekaufte Anfragen Tabelle
     <?php if (!empty($purchases)): ?>
     $('#purchases-table').DataTable({
-        order: [[0, 'desc']], // Nach Datum absteigend sortieren
+        order: [[0, 'asc']], // Nach Datum aufsteigend sortieren (neuestes unten)
         pageLength: 25,
         language: {
             url: dtLanguageUrl
@@ -611,7 +611,7 @@ $(document).ready(function() {
     // Gutschriftenübersicht Tabelle
     <?php if (!empty($credits)): ?>
     $('#credits-table').DataTable({
-        order: [[1, 'desc']], // Nach Datum absteigend sortieren
+        order: [[1, 'asc']], // Nach Datum aufsteigend sortieren (neuestes unten)
         pageLength: 25,
         language: {
             url: dtLanguageUrl
