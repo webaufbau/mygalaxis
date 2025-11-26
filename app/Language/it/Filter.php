@@ -14,6 +14,10 @@ return [
     'painting' => 'Imbianchino',
     'gardening' => 'Giardinaggio',
     'plumbing' => 'Idraulica',
+    'electrician' => 'Elettricista',
+    'flooring' => 'Pavimenti',
+    'heating' => 'Riscaldamento',
+    'tiling' => 'Piastrelle',
 
     'packing' => 'Imballaggio degli oggetti di casa',
     'unpacking' => 'Disimballaggio degli oggetti di casa',

@@ -14,6 +14,10 @@ return [
     'painting' => 'Painter',
     'gardening' => 'Gardening',
     'plumbing' => 'Plumber',
+    'electrician' => 'Electrician',
+    'flooring' => 'Flooring',
+    'heating' => 'Heating',
+    'tiling' => 'Tiling',
 
     'packing' => 'Packing household items',
     'unpacking' => 'Unpacking household items',
