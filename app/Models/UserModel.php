@@ -210,7 +210,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
 
         return [
             $entity->id,
-            $entity->is_blocked ? '<i class="bi bi-x text-danger"></i>' : '<i class="bi bi-check text-success"></i>',
+            $entity->is_blocked ? '<i class="bi bi-check text-danger"></i>' : '-',
             $groups,
             esc(($entity->contact_person ?? '-')),
             esc($entity->company_name ?? '-'),
