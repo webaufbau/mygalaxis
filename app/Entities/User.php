@@ -134,6 +134,9 @@ class User extends \CodeIgniter\Shield\Entities\User
     }
 
     public function getRowClass() {
+        if ($this->is_blocked) {
+            return 'table-danger';
+        }
         return '';
     }
 

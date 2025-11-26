@@ -33,6 +33,12 @@
     .table-actions .btn {
         margin: 0 2px;
     }
+    .row-blocked {
+        background-color: #f8d7da !important;
+    }
+    .row-blocked:hover {
+        background-color: #f1c0c4 !important;
+    }
 </style>
 
 <!-- Header mit Statistiken -->
@@ -186,7 +192,7 @@
                         <th>Kontakt</th>
                         <th>Kategorien</th>
                         <th>Regionen</th>
-                        <th>Status</th>
+                        <th>Blockiert</th>
                         <th>Abo</th>
                         <th>Registriert</th>
                         <th class="text-end">Aktionen</th>
@@ -194,7 +200,7 @@
                 </thead>
                 <tbody>
                     <?php foreach ($users as $user): ?>
-                    <tr>
+                    <tr class="<?= ($user['is_blocked'] ?? 0) == 1 ? 'row-blocked' : '' ?>">
                         <td><span class="badge bg-secondary">#<?= esc($user['id']) ?></span></td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -265,13 +271,13 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if (($user['active'] ?? 0) == 1): ?>
-                                <span class="badge bg-success badge-status">
-                                    <i class="bi bi-check-circle me-1"></i>Aktiv
+                            <?php if (($user['is_blocked'] ?? 0) == 1): ?>
+                                <span class="badge bg-danger badge-status">
+                                    <i class="bi bi-x-circle me-1"></i>Blockiert
                                 </span>
                             <?php else: ?>
-                                <span class="badge bg-danger badge-status">
-                                    <i class="bi bi-x-circle me-1"></i>Inaktiv
+                                <span class="badge bg-success badge-status">
+                                    <i class="bi bi-check-circle me-1"></i>OK
                                 </span>
                             <?php endif; ?>
                         </td>
