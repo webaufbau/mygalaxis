@@ -373,7 +373,7 @@ class EmailTemplates extends AdminBase
     }
 
     /**
-     * Export all templates as JSON
+     * Export all templates and field translations as JSON
      */
     public function export()
     {
@@ -384,12 +384,28 @@ class EmailTemplates extends AdminBase
         $templates = $this->templateModel->findAll();
 
         // Remove id and timestamps for clean import
-        $exportData = array_map(function($template) {
+        $templatesData = array_map(function($template) {
             unset($template['id']);
             unset($template['created_at']);
             unset($template['updated_at']);
             return $template;
         }, $templates);
+
+        // Load field translations
+        $translationsPath = WRITEPATH . 'data/email_field_translations.json';
+        $fieldTranslations = [];
+        if (file_exists($translationsPath)) {
+            $loaded = json_decode(file_get_contents($translationsPath), true);
+            if ($loaded) {
+                $fieldTranslations = $loaded;
+            }
+        }
+
+        // Combined export data
+        $exportData = [
+            'templates' => $templatesData,
+            'field_translations' => $fieldTranslations,
+        ];
 
         $json = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
@@ -400,7 +416,7 @@ class EmailTemplates extends AdminBase
     }
 
     /**
-     * Import templates from JSON file
+     * Import templates and field translations from JSON file
      */
     public function import()
     {
@@ -416,14 +432,25 @@ class EmailTemplates extends AdminBase
         }
 
         $json = file_get_contents($file->getTempName());
-        $templates = json_decode($json, true);
+        $data = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             return redirect()->back()->with('error', 'Ungültige JSON-Datei: ' . json_last_error_msg());
         }
 
-        if (!is_array($templates)) {
+        if (!is_array($data)) {
             return redirect()->back()->with('error', 'Ungültiges Format der JSON-Datei');
+        }
+
+        // Support both new format (with templates/field_translations keys) and old format (array of templates)
+        if (isset($data['templates'])) {
+            // New format
+            $templates = $data['templates'];
+            $fieldTranslations = $data['field_translations'] ?? null;
+        } else {
+            // Old format (backwards compatibility)
+            $templates = $data;
+            $fieldTranslations = null;
         }
 
         $inserted = 0;
@@ -460,12 +487,37 @@ class EmailTemplates extends AdminBase
             }
         }
 
-        $message = "Import abgeschlossen: {$inserted} neu eingefügt";
+        // Import field translations if present
+        $translationsImported = false;
+        if ($fieldTranslations !== null && !empty($fieldTranslations)) {
+            $translationsPath = WRITEPATH . 'data/email_field_translations.json';
+            $dir = dirname($translationsPath);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
+            if ($mode === 'update') {
+                // Überschreibe Feldwerte-Übersetzungen
+                file_put_contents($translationsPath, json_encode($fieldTranslations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                $translationsImported = true;
+            } else {
+                // Insert mode: nur wenn noch keine existieren
+                if (!file_exists($translationsPath)) {
+                    file_put_contents($translationsPath, json_encode($fieldTranslations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                    $translationsImported = true;
+                }
+            }
+        }
+
+        $message = "Import abgeschlossen: {$inserted} Templates neu eingefügt";
         if ($updated > 0) {
             $message .= ", {$updated} aktualisiert";
         }
         if ($skipped > 0) {
             $message .= ", {$skipped} übersprungen";
+        }
+        if ($translationsImported) {
+            $message .= ". Feldwerte-Übersetzungen importiert.";
         }
 
         return redirect()->to('/admin/email-templates')->with('success', $message);

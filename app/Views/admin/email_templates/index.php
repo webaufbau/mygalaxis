@@ -31,6 +31,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Hinweis:</strong> Export/Import beinhaltet sowohl Templates als auch Feldwerte-Übersetzungen.
+                    </div>
                     <div class="mb-3">
                         <label for="import_file" class="form-label">JSON-Datei auswählen</label>
                         <input type="file" class="form-control" id="import_file" name="import_file" accept=".json" required>
@@ -40,13 +44,13 @@
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="import_mode" id="mode_insert" value="insert" checked>
                             <label class="form-check-label" for="mode_insert">
-                                <strong>Insert:</strong> Nur neue Templates einfügen (vorhandene werden übersprungen)
+                                <strong>Insert:</strong> Nur neue einfügen (vorhandene werden übersprungen)
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="import_mode" id="mode_update" value="update">
                             <label class="form-check-label" for="mode_update">
-                                <strong>Update:</strong> Vorhandene Templates überschreiben und neue einfügen
+                                <strong>Update:</strong> Vorhandene überschreiben und neue einfügen
                             </label>
                         </div>
                     </div>
