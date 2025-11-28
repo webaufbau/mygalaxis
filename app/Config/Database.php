@@ -66,6 +66,32 @@ class Database extends Config
         'DBCollat' => 'utf8_general_ci',
     ];
 
+    /**
+     * Test database connection (uses same DB as default in ddev)
+     *
+     * @var array<string, mixed>
+     */
+    public array $tests = [
+        'DSN'          => '',
+        'hostname'     => 'db',
+        'username'     => 'db',
+        'password'     => 'db',
+        'database'     => 'db',
+        'DBDriver'     => 'MySQLi',
+        'DBPrefix'     => 'test_',
+        'pConnect'     => false,
+        'DBDebug'      => true,
+        'charset'      => 'utf8mb4',
+        'DBCollat'     => 'utf8mb4_general_ci',
+        'swapPre'      => '',
+        'encrypt'      => false,
+        'compress'     => false,
+        'strictOn'     => false,
+        'failover'     => [],
+        'port'         => 3306,
+        'foreignKeys'  => true,
+    ];
+
     public function __construct()
     {
         parent::__construct();
