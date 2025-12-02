@@ -19,9 +19,10 @@ class OfferNotificationSender
 
     /**
      * E-Mail an alle passenden Firmen senden
+     * @param bool $skipManualReviewCheck Wenn true, wird die manualOfferReviewEnabled-Prüfung übersprungen (für Admin-Freigabe)
      * @return int Anzahl versendeter E-Mails
      */
-    public function notifyMatchingUsers(array $offer): int
+    public function notifyMatchingUsers(array $offer, bool $skipManualReviewCheck = false): int
     {
         // KRITISCHER SECURITY-CHECK: Nur verifizierte Offerten dürfen E-Mails auslösen
         if (empty($offer['verified']) || $offer['verified'] != 1) {
@@ -29,15 +30,42 @@ class OfferNotificationSender
             return 0;
         }
 
+        // MANUAL REVIEW CHECK: Wenn manualOfferReviewEnabled aktiv ist, keine automatischen Firmen-Benachrichtigungen
+        // (außer wenn explizit durch Admin freigegeben via $skipManualReviewCheck)
+        if (!$skipManualReviewCheck) {
+            $platform = $offer['platform'] ?? null;
+            $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+            if (!empty($siteConfig->manualOfferReviewEnabled)) {
+                log_message('info', "Offerte #{$offer['id']} - manuelle Prüfung aktiviert, keine automatische Firmen-Benachrichtigung");
+                return 0;
+            }
+        }
+
         $users = $this->userModel->findAll();
         $today = date('Y-m-d');
         $sentCount = 0;
+
+        // Prüfe ob es eine Testanfrage ist
+        $isTestOffer = !empty($offer['is_test']);
 
         foreach ($users as $user) {
             if (!$user->inGroup('user')) continue;
 
             // Prüfe ob User vom Admin blockiert wurde
             if ($user->is_blocked) {
+                continue;
+            }
+
+            // TESTANFRAGE-LOGIK:
+            // - Testanfragen gehen NUR an Testfirmen
+            // - Normale Anfragen gehen NICHT an Testfirmen
+            $isTestCompany = !empty($user->is_test);
+            if ($isTestOffer && !$isTestCompany) {
+                // Testanfrage aber keine Testfirma -> überspringen
+                continue;
+            }
+            if (!$isTestOffer && $isTestCompany) {
+                // Normale Anfrage aber Testfirma -> überspringen
                 continue;
             }
 
@@ -93,6 +121,88 @@ class OfferNotificationSender
                 status: 'sent'
             );
         }
+
+        return $sentCount;
+    }
+
+    /**
+     * E-Mail an spezifische Firmen senden (für manuelle Auswahl durch Admin)
+     * @param array $offer Die Offerte
+     * @param array $userIds Array von User-IDs der auszuwählenden Firmen
+     * @param bool $skipManualReviewCheck Wenn true, wird die manualOfferReviewEnabled-Prüfung übersprungen
+     * @return int Anzahl versendeter E-Mails
+     */
+    public function notifySpecificUsers(array $offer, array $userIds, bool $skipManualReviewCheck = false): int
+    {
+        // KRITISCHER SECURITY-CHECK: Nur verifizierte Offerten dürfen E-Mails auslösen
+        if (empty($offer['verified']) || $offer['verified'] != 1) {
+            log_message('warning', "Offerte #{$offer['id']} ist nicht verifiziert - keine Firmen-Benachrichtigungen gesendet");
+            return 0;
+        }
+
+        if (empty($userIds)) {
+            log_message('info', "Keine Firmen-IDs für Offerte #{$offer['id']} übergeben");
+            return 0;
+        }
+
+        $today = date('Y-m-d');
+        $sentCount = 0;
+
+        // Prüfe ob es eine Testanfrage ist
+        $isTestOffer = !empty($offer['is_test']);
+
+        foreach ($userIds as $userId) {
+            $user = $this->userModel->find($userId);
+
+            if (!$user) {
+                log_message('warning', "Firma ID {$userId} nicht gefunden");
+                continue;
+            }
+
+            if (!$user->inGroup('user')) {
+                log_message('warning', "User ID {$userId} ist keine Firma");
+                continue;
+            }
+
+            // Prüfe ob User vom Admin blockiert wurde
+            if ($user->is_blocked) {
+                log_message('info', "Firma ID {$userId} ist blockiert - übersprungen");
+                continue;
+            }
+
+            // TESTANFRAGE-LOGIK (nur bei manueller Auswahl als Warnung loggen, nicht blockieren)
+            $isTestCompany = !empty($user->is_test);
+            if ($isTestOffer && !$isTestCompany) {
+                log_message('warning', "Testanfrage #{$offer['id']} wird an Nicht-Testfirma {$userId} gesendet (manuelle Auswahl)");
+            }
+            if (!$isTestOffer && $isTestCompany) {
+                log_message('warning', "Normale Anfrage #{$offer['id']} wird an Testfirma {$userId} gesendet (manuelle Auswahl)");
+            }
+
+            // Check if user has disabled email notifications
+            if (isset($user->email_notifications_enabled) && !$user->email_notifications_enabled) {
+                log_message('info', "Firma ID {$userId} hat E-Mail-Benachrichtigungen deaktiviert");
+                continue;
+            }
+
+            // Prüfe ob User heute blockiert ist (Agenda/Abwesenheit)
+            if ($this->isUserBlockedToday($user->id, $today)) {
+                log_message('info', "Firma ID {$userId} ist heute blockiert (Agenda)");
+                continue;
+            }
+
+            // Bei manueller Auswahl: Sende ohne Matching-Prüfung
+            $this->sendOfferEmail($user, $offer);
+            $sentCount++;
+        }
+
+        // Setze companies_notified_at
+        $db = \Config\Database::connect();
+        $db->table('offers')->where('id', $offer['id'])->update([
+            'companies_notified_at' => date('Y-m-d H:i:s')
+        ]);
+
+        log_message('info', "Firmen-Benachrichtigung für Offer ID {$offer['id']} an spezifische Firmen: {$sentCount} von " . count($userIds) . " E-Mails versendet");
 
         return $sentCount;
     }

@@ -1,23 +1,14 @@
-<?php
-$siteConfig = siteconfig();
-$currentPath = service('uri')->getPath();
-$isAdminArea = auth()->loggedIn() && auth()->user()->inGroup('admin') &&
-               (strpos($currentPath, 'admin/') !== false || strpos($currentPath, 'admin') === 0);
-
-// Im Admin-Bereich: Sidebar-Layout verwenden
-if ($isAdminArea):
-?>
 <!doctype html>
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <title><?= esc($title ?? 'Admin - ' . $siteConfig->name) ?></title>
+    <title><?= esc($title ?? 'Admin - ' . siteconfig()->name) ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- jQuery -->
+    <!-- jQuery & Bootstrap Bundle JS -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -44,11 +35,13 @@ if ($isAdminArea):
             overflow: hidden;
         }
 
+        /* Admin Layout Container */
         .admin-wrapper {
             display: flex;
             height: 100vh;
         }
 
+        /* Sidebar */
         .admin-sidebar {
             width: var(--sidebar-width);
             background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
@@ -106,6 +99,7 @@ if ($isAdminArea):
             margin: 0 auto;
         }
 
+        /* Navigation */
         .sidebar-nav {
             flex: 1;
             overflow-y: auto;
@@ -164,6 +158,7 @@ if ($isAdminArea):
             padding: 0.75rem;
         }
 
+        /* Sidebar Footer */
         .sidebar-footer {
             border-top: 1px solid rgba(255,255,255,0.1);
             padding: 0.5rem;
@@ -173,6 +168,7 @@ if ($isAdminArea):
             color: #e74c3c !important;
         }
 
+        /* Main Content Area */
         .admin-main {
             flex: 1;
             display: flex;
@@ -181,6 +177,7 @@ if ($isAdminArea):
             background: #f8f9fa;
         }
 
+        /* Top Bar */
         .admin-topbar {
             background: #fff;
             border-bottom: 1px solid #dee2e6;
@@ -203,12 +200,14 @@ if ($isAdminArea):
             gap: 1rem;
         }
 
+        /* Content Area */
         .admin-content {
             flex: 1;
             overflow-y: auto;
             padding: 1.5rem;
         }
 
+        /* Mobile Responsive */
         @media (max-width: 991px) {
             .admin-sidebar {
                 position: fixed;
@@ -266,24 +265,29 @@ if ($isAdminArea):
             }
         }
 
+        /* Cards ohne linken Border im Admin */
         .admin-content .card {
             border-left: none;
         }
     </style>
 
-    <?php if($siteConfig->faviconUrl !== ''):
+    <?php
+    $siteConfig = siteconfig();
+    if($siteConfig->faviconUrl !== '') {
         $mimeType = pathinfo($siteConfig->faviconUrl, PATHINFO_EXTENSION) === 'jpg' ? 'image/jpeg' : 'image/png';
-    ?>
+        ?>
         <link rel="shortcut icon" type="<?= $mimeType ?>" href="<?= $siteConfig->faviconUrl ?>">
         <link rel="apple-touch-icon" href="<?= $siteConfig->faviconUrl ?>">
-    <?php endif; ?>
+    <?php } ?>
 </head>
 <body>
 
 <?php
 $segment2 = service('uri')->getSegment(2);
+$segment3 = service('uri')->getSegment(3);
 $isFirm = auth()->user()->inGroup('user');
 
+// Pending offers count
 $pendingCount = (new \App\Models\OfferModel())
     ->where('verified', 1)
     ->where('companies_notified_at IS NULL')
@@ -292,8 +296,10 @@ $pendingCount = (new \App\Models\OfferModel())
 ?>
 
 <div class="admin-wrapper">
+    <!-- Sidebar Backdrop (Mobile) -->
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
+    <!-- Sidebar -->
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-header">
             <a href="/admin/dashboard" class="sidebar-brand"><?= esc($siteConfig->name) ?></a>
@@ -306,6 +312,7 @@ $pendingCount = (new \App\Models\OfferModel())
         </div>
 
         <nav class="sidebar-nav">
+            <!-- Haupt -->
             <div class="nav-section">
                 <div class="nav-label">Übersicht</div>
                 <a class="nav-link <?= $segment2 === 'dashboard' ? 'active' : '' ?>" href="/admin/dashboard">
@@ -327,6 +334,7 @@ $pendingCount = (new \App\Models\OfferModel())
                 </a>
             </div>
 
+            <!-- Inhalte -->
             <div class="nav-section">
                 <div class="nav-label">Inhalte</div>
                 <a class="nav-link <?= $segment2 === 'regions' ? 'active' : '' ?>" href="/admin/regions">
@@ -347,6 +355,7 @@ $pendingCount = (new \App\Models\OfferModel())
                 </a>
             </div>
 
+            <!-- System -->
             <div class="nav-section">
                 <div class="nav-label">System</div>
                 <a class="nav-link <?= $segment2 === 'settings' ? 'active' : '' ?>" href="/admin/settings">
@@ -374,7 +383,7 @@ $pendingCount = (new \App\Models\OfferModel())
 
         <div class="sidebar-footer">
             <?php if ($isFirm): ?>
-                <a class="nav-link" href="/offers" style="color: #3498db !important;">
+                <a class="nav-link" href="/offers">
                     <i class="bi bi-building"></i>
                     <span class="nav-text">Firmen-Ansicht</span>
                 </a>
@@ -386,7 +395,9 @@ $pendingCount = (new \App\Models\OfferModel())
         </div>
     </aside>
 
+    <!-- Main Content -->
     <div class="admin-main">
+        <!-- Top Bar -->
         <header class="admin-topbar">
             <div class="topbar-left">
                 <button class="btn btn-sm btn-outline-secondary mobile-toggle" id="mobileToggle">
@@ -403,6 +414,7 @@ $pendingCount = (new \App\Models\OfferModel())
             </div>
         </header>
 
+        <!-- Content -->
         <main class="admin-content">
             <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -432,223 +444,3 @@ $pendingCount = (new \App\Models\OfferModel())
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
-
-<?php else: ?>
-<!-- Firmen-Bereich: Standard-Layout -->
-<!doctype html>
-<html lang="de">
-<head>
-    <meta charset="utf-8">
-    <title><?= esc($title ?? $siteConfig->name) ?></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- jQuery & Bootstrap Bundle JS -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-    <!-- Eigene Styles -->
-    <link rel="stylesheet" href="/css/app.css?v=<?=filemtime(FCPATH . 'css/app.css')?>">
-
-    <style>
-        html, body {
-            height: 100%;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        main {
-            flex: 1 0 auto;
-        }
-        footer {
-            flex-shrink: 0;
-        }
-    </style>
-
-    <?php if($siteConfig->faviconUrl !== ''):
-        $mimeType = pathinfo($siteConfig->faviconUrl, PATHINFO_EXTENSION) === 'jpg' ? 'image/jpeg' : 'image/png';
-    ?>
-        <link rel="shortcut icon" type="<?= $mimeType ?>" href="<?= $siteConfig->faviconUrl ?>">
-        <link rel="apple-touch-icon" href="<?= $siteConfig->faviconUrl ?>">
-    <?php endif; ?>
-
-    <?php if (env('CI_ENVIRONMENT') === 'production'): ?>
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-NYR3ZB836N"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-NYR3ZB836N', { 'anonymize_ip': true });
-        </script>
-
-        <!-- Meta Pixel Code -->
-        <script>
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src='https://connect.facebook.net/en_US/fbevents.js';
-            s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script');
-            fbq('init', '696909980088468');
-            fbq('track', 'PageView');
-        </script>
-        <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=696909980088468&ev=PageView&noscript=1"/></noscript>
-    <?php endif; ?>
-</head>
-<body>
-
-<?php if (auth()->loggedIn()): ?>
-    <?php
-    $isAdmin = auth()->user()->inGroup('admin');
-    $isFirm = auth()->user()->inGroup('user');
-    ?>
-
-    <?php if ($isAdmin): ?>
-        <div class="role-indicator-banner">
-            <div class="container">
-                <div class="d-flex justify-content-between align-items-center py-2">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-person-badge me-2"></i>
-                        <span class="fw-semibold">Angemeldet als:</span>
-                        <span class="ms-2 badge bg-primary">🏢 Firma</span>
-                    </div>
-                    <div class="role-switch">
-                        <a href="/admin/user" class="btn btn-sm btn-light">
-                            <i class="bi bi-shield-lock me-1"></i>Zur Admin-Ansicht wechseln
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <style>
-        .role-indicator-banner {
-            background: linear-gradient(135deg, #4A90E2 0%, #667eea 100%);
-            color: white;
-            border-bottom: 3px solid rgba(255,255,255,0.2);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .role-indicator-banner .badge {
-            font-size: 0.9rem;
-            padding: 0.5em 1em;
-            font-weight: 600;
-        }
-        .role-switch .btn {
-            font-size: 0.85rem;
-            border: 2px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-weight: 600;
-        }
-        .role-switch .btn:hover {
-            background: white;
-            color: #667eea;
-        }
-        body .navbar {
-            background: linear-gradient(to right, #fff 0%, #f0f7ff 100%) !important;
-            border-bottom: 3px solid #4A90E2 !important;
-        }
-        body .navbar-brand {
-            color: #4A90E2 !important;
-        }
-        body .nav-link.active {
-            color: #4A90E2 !important;
-            border-bottom: 2px solid #4A90E2;
-        }
-        body .card {
-            border-left: 4px solid #4A90E2;
-        }
-    </style>
-<?php endif; ?>
-
-<!-- Header -->
-<nav class="navbar navbar-expand-lg navbar-light shadow-sm">
-    <div class="container-xxl d-flex justify-content-between align-items-center">
-        <a class="navbar-brand fw-bold text-primary" href="<?= auth()->loggedIn() ? site_url('offers') : '/' ?>">
-            <?= $siteConfig->name ?>
-        </a>
-
-        <?php if (auth()->loggedIn()): ?>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                    aria-controls="mainNav" aria-expanded="false" aria-label="Navigation umschalten">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse justify-content-between" id="mainNav">
-                <?php
-                $segment1 = service('uri')->getSegment(1);
-                if(auth()->user()->inGroup('user')):
-                ?>
-                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link <?= ($segment1 === '' || $segment1 === 'offers') ? 'active' : '' ?>" href="/offers">Anfragen</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 === 'filter' ? 'active' : '' ?>" href="/filter">Filter</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 === 'finance' ? 'active' : '' ?>" href="/finance">Finanzen</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 === 'agenda' ? 'active' : '' ?>" href="/agenda">Agenda</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 === 'profile' ? 'active' : '' ?>" href="/profile">Mein Konto</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 === 'reviews' ? 'active' : '' ?>" href="/reviews">Bewertungen</a>
-                        </li>
-                    </ul>
-                <?php endif; ?>
-
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="/logout">
-                            <i class="bi bi-box-arrow-right me-1"></i> Abmelden
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        <?php endif; ?>
-    </div>
-</nav>
-
-<main class="container mb-5">
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= esc(session()->getFlashdata('success')) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= esc(session()->getFlashdata('error')) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-    <?php if (session()->getFlashdata('errors')): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <ul class="mb-0">
-                <?php foreach (session()->getFlashdata('errors') as $error): ?>
-                    <li><?= esc($error) ?></li>
-                <?php endforeach; ?>
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-    <?php if (session()->getFlashdata('warning')): ?>
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <?= esc(session()->getFlashdata('warning')) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-<?php endif; ?>

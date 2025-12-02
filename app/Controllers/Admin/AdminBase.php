@@ -14,8 +14,8 @@ class AdminBase extends AccountBase {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        $this->template->setHeader('templates/header_account');
-        $this->template->setFooter('templates/footer_account');
+        $this->template->setHeader('templates/header_admin');
+        $this->template->setFooter('templates/footer_admin');
 
     }
 

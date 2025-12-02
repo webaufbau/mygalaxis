@@ -75,6 +75,14 @@ if (!function_exists('sendOfferNotificationWithTemplate')) {
             return false;
         }
 
+        // CHECK: Wenn manuelle Prüfung aktiviert ist, sende stattdessen die "Pending Review" E-Mail
+        $platform = $offer['platform'] ?? null;
+        $siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+        if (!empty($siteConfig->manualOfferReviewEnabled)) {
+            log_message('info', "Manuelle Prüfung aktiviert - sende Pending Review E-Mail statt normale Bestätigung für Angebot ID {$offer['id']}");
+            return sendOfferPendingReviewEmail($offer, $data, $formName);
+        }
+
         // Get language and offer type
         $language = $data['lang'] ?? $offer['language'] ?? 'de';
         $offerType = $offer['type'] ?? 'default';
@@ -398,6 +406,256 @@ if (!function_exists('sendGroupedOfferNotificationWithTemplate')) {
             log_message('info', "Firmen-Benachrichtigung für gruppierte Offerte ID {$offer['id']}: {$sentCount} Firma(n) benachrichtigt");
         }
         log_message('info', "Gesamt Firmen-Benachrichtigungen für gruppierte Offerten: {$totalSent} Firma(n)");
+
+        return true;
+    }
+}
+
+if (!function_exists('sendOfferPendingReviewEmail')) {
+    /**
+     * Send "pending review" email to customer (when manual review is enabled)
+     * This email confirms receipt but does NOT notify companies yet
+     *
+     * @param array $offer Full offer data from database
+     * @param array $data Form field data
+     * @param string|null $formName Form name
+     * @return bool Success status
+     */
+    function sendOfferPendingReviewEmail(array $offer, array $data, ?string $formName = null): bool
+    {
+        helper('text');
+
+        // Check if this specific email type was already sent
+        if (!empty($offer['pending_review_sent_at'])) {
+            log_message('info', "Pending Review E-Mail wurde bereits versendet für Angebot ID {$offer['id']}");
+            return false;
+        }
+
+        // Get language
+        $language = $data['lang'] ?? $offer['language'] ?? 'de';
+
+        // Set locale
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+        $request = service('request');
+        if (!($request instanceof \CodeIgniter\HTTP\CLIRequest)) {
+            $request->setLocale($language);
+        }
+
+        // Load platform-specific config
+        $platform = $offer['platform'] ?? null;
+        if (empty($platform)) {
+            log_message('error', "Pending Review E-Mail kann nicht gesendet werden: Platform fehlt für Angebot ID {$offer['id']}");
+            return false;
+        }
+
+        $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        // Prepare excluded fields
+        $excludedFields = [
+            'terms_n_condition', 'terms_and_conditions', 'terms',
+            'type', 'lang', 'language', 'csrf_test_name', 'submit', 'form_token',
+            '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+            'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
+            'skip_kontakt', 'skip_reinigung_umzug',
+        ];
+
+        // Filter fields
+        $filteredFields = array_filter($data, function ($key) use ($excludedFields) {
+            $normalizedKey = strtolower(trim($key));
+            foreach ($excludedFields as $excludedField) {
+                if (strtolower($excludedField) === $normalizedKey) return false;
+            }
+            if (preg_match('/fluentform.*nonce/i', $key)) return false;
+            if ($normalizedKey === 'names') return false;
+            return true;
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Render email content
+        $message = view('emails/offer_pending_review', [
+            'formName' => $formName ?? $offer['type'],
+            'formular_page' => null,
+            'filteredFields' => $filteredFields,
+            'data' => $data,
+        ]);
+
+        // Wrap in email layout
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title'      => lang('Email.offer_pending_review_subject'),
+            'content'    => $message,
+            'siteConfig' => $platformSiteConfig,
+        ])->render('emails/layout');
+
+        // Get recipient email
+        $userEmail = $data['email'] ?? null;
+        if (!$userEmail) {
+            log_message('error', "Keine E-Mail-Adresse für Pending Review E-Mail, Angebot ID {$offer['id']}");
+            return false;
+        }
+
+        // BCC for admins
+        $adminEmails = [$platformSiteConfig->email];
+        $bccString = implode(',', $adminEmails);
+
+        // Send email
+        $email = \Config\Services::email();
+        $email->setFrom($platformSiteConfig->email, getEmailFromName($platformSiteConfig));
+        $email->setTo($userEmail);
+        $email->setBCC($bccString);
+        $email->setSubject(lang('Email.offer_pending_review_subject'));
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', 'Pending Review Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+            return false;
+        }
+
+        // Mark as sent (use confirmation_sent_at for now, or add a new field later)
+        $db = \Config\Database::connect();
+        $builder = $db->table('offers');
+        $builder->where('id', $offer['id'])->update([
+            'confirmation_sent_at' => date('Y-m-d H:i:s')
+        ]);
+
+        log_message('info', "Pending Review E-Mail versendet für Angebot ID {$offer['id']} an {$userEmail}");
+
+        // Log email
+        $emailLogModel = new \App\Models\OfferEmailLogModel();
+        $emailLogModel->logEmail(
+            offerId: $offer['id'],
+            emailType: 'pending_review',
+            recipientEmail: $userEmail,
+            recipientType: 'customer',
+            companyId: null,
+            subject: lang('Email.offer_pending_review_subject'),
+            status: 'sent'
+        );
+
+        // IMPORTANT: Do NOT notify companies here - that happens on manual approval
+        return true;
+    }
+}
+
+if (!function_exists('sendOfferApprovedEmail')) {
+    /**
+     * Send "approved" email to customer (when admin approves the offer)
+     * This confirms that the offer has been sent to companies
+     *
+     * @param array $offer Full offer data from database
+     * @param array $data Form field data
+     * @param string|null $formName Form name
+     * @return bool Success status
+     */
+    function sendOfferApprovedEmail(array $offer, array $data, ?string $formName = null): bool
+    {
+        helper('text');
+
+        // Get language
+        $language = $data['lang'] ?? $offer['language'] ?? 'de';
+
+        // Set locale
+        $languageService = service('language');
+        $languageService->setLocale($language);
+
+        $request = service('request');
+        if (!($request instanceof \CodeIgniter\HTTP\CLIRequest)) {
+            $request->setLocale($language);
+        }
+
+        // Load platform-specific config
+        $platform = $offer['platform'] ?? null;
+        if (empty($platform)) {
+            log_message('error', "Approved E-Mail kann nicht gesendet werden: Platform fehlt für Angebot ID {$offer['id']}");
+            return false;
+        }
+
+        $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        // Prepare excluded fields
+        $excludedFields = [
+            'terms_n_condition', 'terms_and_conditions', 'terms',
+            'type', 'lang', 'language', 'csrf_test_name', 'submit', 'form_token',
+            '__submission', '__fluent_form_embded_post_id', '_wp_http_referer',
+            'form_name', 'uuid', 'service_url', 'uuid_value', 'verified_method',
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'referrer',
+            'skip_kontakt', 'skip_reinigung_umzug',
+        ];
+
+        // Filter fields
+        $filteredFields = array_filter($data, function ($key) use ($excludedFields) {
+            $normalizedKey = strtolower(trim($key));
+            foreach ($excludedFields as $excludedField) {
+                if (strtolower($excludedField) === $normalizedKey) return false;
+            }
+            if (preg_match('/fluentform.*nonce/i', $key)) return false;
+            if ($normalizedKey === 'names') return false;
+            return true;
+        }, ARRAY_FILTER_USE_KEY);
+
+        // Render email content
+        $message = view('emails/offer_approved', [
+            'formName' => $formName ?? $offer['type'],
+            'formular_page' => null,
+            'filteredFields' => $filteredFields,
+            'data' => $data,
+        ]);
+
+        // Wrap in email layout
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title'      => lang('Email.offer_approved_subject'),
+            'content'    => $message,
+            'siteConfig' => $platformSiteConfig,
+        ])->render('emails/layout');
+
+        // Get recipient email
+        $userEmail = $data['email'] ?? null;
+        if (!$userEmail) {
+            log_message('error', "Keine E-Mail-Adresse für Approved E-Mail, Angebot ID {$offer['id']}");
+            return false;
+        }
+
+        // BCC for admins
+        $adminEmails = [$platformSiteConfig->email];
+        $bccString = implode(',', $adminEmails);
+
+        // Send email
+        $email = \Config\Services::email();
+        $email->setFrom($platformSiteConfig->email, getEmailFromName($platformSiteConfig));
+        $email->setTo($userEmail);
+        $email->setBCC($bccString);
+        $email->setSubject(lang('Email.offer_approved_subject'));
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', 'Approved Mail senden fehlgeschlagen: ' . print_r($email->printDebugger(['headers']), true));
+            return false;
+        }
+
+        log_message('info', "Approved E-Mail versendet für Angebot ID {$offer['id']} an {$userEmail}");
+
+        // Log email
+        $emailLogModel = new \App\Models\OfferEmailLogModel();
+        $emailLogModel->logEmail(
+            offerId: $offer['id'],
+            emailType: 'approved',
+            recipientEmail: $userEmail,
+            recipientType: 'customer',
+            companyId: null,
+            subject: lang('Email.offer_approved_subject'),
+            status: 'sent'
+        );
 
         return true;
     }

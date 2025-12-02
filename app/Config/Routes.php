@@ -241,6 +241,13 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('offer/(:num)', 'Admin\Offer::detail/$1');
     $routes->post('offer/(:num)/manual-verify', 'Admin\Offer::manualVerify/$1');
 
+    // Pending Review Queue (manuelle Prüfung)
+    $routes->get('offers/pending', 'Admin\Offer::pendingReview');
+    $routes->get('offers/edit/(:num)', 'Admin\Offer::editOffer/$1');
+    $routes->post('offers/approve/(:num)', 'Admin\Offer::approveOffer/$1');
+    $routes->post('offers/update/(:num)', 'Admin\Offer::updateOffer/$1');
+    $routes->get('offers/search-companies', 'Admin\Offer::searchCompanies');
+
     // Admin: Credits verwalten
     $routes->group('credits', function ($routes) {
         $routes->get('/', 'Admin\Credit::index');

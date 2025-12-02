@@ -117,5 +117,17 @@ return [
     'address' => 'Adresse',
     'and_more_details' => 'und weitere Details',
 
+    // Manuelle Prüfung - Erste E-Mail (nach Verifizierung)
+    'offer_pending_review_subject' => '✅ Ihre Anfrage wurde erfolgreich übermittelt',
+    'offer_pending_review_thank_you' => 'Herzlichen Dank für Ihre Anfrage für <strong>{service}</strong>.',
+    'offer_pending_review_info' => 'Wir haben Ihre Anfrage erhalten und werden diese intern prüfen.',
+    'offer_pending_review_next_steps' => 'Nach der Prüfung erhalten Sie eine weitere E-Mail mit der Bestätigung, dass Ihre Anfrage an passende Fachbetriebe weitergeleitet wurde.',
+    'offer_pending_review_note' => 'Dieser Prozess dauert in der Regel 1-2 Werktage.',
+
+    // Manuelle Prüfung - Zweite E-Mail (nach Admin-Freigabe)
+    'offer_approved_subject' => '🚀 Ihre Anfrage wurde an Fachbetriebe weitergeleitet',
+    'offer_approved_thank_you' => 'Gute Neuigkeiten! Ihre Anfrage für <strong>{service}</strong> wurde erfolgreich geprüft und an passende Fachbetriebe weitergeleitet.',
+    'offer_approved_info_1' => 'In Kürze werden Sie <strong>bis zu 3 unverbindliche Offerten</strong> von passenden Anbietern aus Ihrer Region erhalten.',
+    'offer_approved_info_2' => 'Je nach Saison kann es vorkommen, dass die Firmen für den gewünschten Zeitraum schon ausgebucht sind und daher keine Angebote unterbreiten.',
 
 ];

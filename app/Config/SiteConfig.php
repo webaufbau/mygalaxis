@@ -28,6 +28,7 @@ class SiteConfig extends BaseConfig
     public string $bankName = '';
     public int $phoneVerificationValidityHours = 24;
     public bool $enableMoveCleaningCombo = false; // Umzug + Reinigung Kombi-Offerten aktivieren
+    public bool $manualOfferReviewEnabled = false; // Manuelle Prüfung von Anfragen vor Firmen-Benachrichtigung
     /**
      * Gruppen-Definition für die Settings-Tabs
      */
@@ -56,6 +57,11 @@ class SiteConfig extends BaseConfig
             'label' => 'Finanzen',
             'icon' => 'bi-cash-coin',
             'fields' => ['vatEnabled', 'vatRate', 'vatExemptionText', 'bankIban', 'bankName'],
+        ],
+        'offers' => [
+            'label' => 'Anfragen',
+            'icon' => 'bi-inbox',
+            'fields' => ['manualOfferReviewEnabled'],
         ],
     ];
 
@@ -206,5 +212,12 @@ class SiteConfig extends BaseConfig
         //     'label' => 'Umzug + Reinigung Kombi-Offerten aktivieren',
         //     'help' => 'Wenn aktiviert, werden Umzug und Reinigung Anfragen der gleichen Person zu einer Kombi-Offerte zusammengefasst.',
         // ],
+
+        // Anfragen
+        'manualOfferReviewEnabled' => [
+            'type' => 'checkbox',
+            'label' => 'Manuelle Prüfung aktivieren',
+            'help' => 'Wenn aktiviert, werden neue Anfragen NICHT automatisch an Firmen gesendet. Sie müssen manuell im Admin freigegeben werden.',
+        ],
     ];
 }
