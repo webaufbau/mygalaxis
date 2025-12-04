@@ -271,6 +271,11 @@
                             <?php endif; ?>
                         </td>
                         <td>
+                            <?php if (($user['is_test'] ?? 0) == 1): ?>
+                                <span class="badge bg-warning text-dark badge-status mb-1">
+                                    <i class="bi bi-flask me-1"></i>Test
+                                </span><br>
+                            <?php endif; ?>
                             <?php if (($user['is_blocked'] ?? 0) == 1): ?>
                                 <span class="badge bg-danger badge-status">
                                     <i class="bi bi-x-circle me-1"></i>Blockiert

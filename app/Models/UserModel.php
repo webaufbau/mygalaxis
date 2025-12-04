@@ -56,6 +56,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'email_notifications_enabled',
             'stats_always_open',
             'is_blocked',
+            'is_test',
         ];
     }
 
@@ -409,6 +410,15 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                         ],
                         'info' => 'Blockierte Firmen können sich nicht einloggen und erhalten keine Anfragen',
                     ],
+                    'is_test' => [
+                        'type' => 'dropdown',
+                        'label' => 'Testfirma',
+                        'options' => [
+                            '0' => 'Nein - Normale Firma',
+                            '1' => 'Ja - Testfirma',
+                        ],
+                        'info' => 'Testfirmen erhalten NUR Testanfragen, normale Firmen erhalten KEINE Testanfragen',
+                    ],
                     'email' => [
                         'type' => 'email',
                         'label' => 'E-Mail-Adresse (Login)',
@@ -481,7 +491,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                         ['company_email', 'company_phone'],
                         ['company_website'],
                         ['auto_purchase'],
-                        ['is_blocked'],
+                        ['is_blocked', 'is_test'],
                         ['email'],
                         ['user_group'],
                         //['user_permissions'],
