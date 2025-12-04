@@ -120,7 +120,7 @@
         }
 
         .sidebar-nav .nav-link {
-            color: #bdc3c7;
+            color: #f1f1f1;
             padding: 0.6rem 1rem;
             display: flex;
             align-items: center;

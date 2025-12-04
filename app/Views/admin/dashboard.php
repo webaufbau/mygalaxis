@@ -161,6 +161,7 @@
         <th>ID</th>
         <th>Datum</th>
         <th>Typ</th>
+        <th>Preis</th>
         <th>PLZ</th>
         <th>Ort</th>
         <th>Name</th>
@@ -232,6 +233,21 @@
             <?= $date->format('d.m.Y H:i') ?>
         </td>
         <td><?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?></td>
+        <td>
+            <?php
+            // Aktueller Preis: discounted_price > custom_price > price
+            $currentPrice = $o['price'] ?? 0;
+            if (!empty($o['discounted_price']) && $o['discounted_price'] > 0) {
+                $currentPrice = $o['discounted_price'];
+                echo '<span class="text-success">' . number_format($currentPrice, 2, '.', "'") . '</span>';
+            } elseif (!empty($o['custom_price']) && $o['custom_price'] > 0) {
+                $currentPrice = $o['custom_price'];
+                echo '<span class="text-info">' . number_format($currentPrice, 2, '.', "'") . '</span>';
+            } else {
+                echo number_format($currentPrice, 2, '.', "'");
+            }
+            ?>
+        </td>
         <td><?= esc($o['zip']) ?></td>
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
