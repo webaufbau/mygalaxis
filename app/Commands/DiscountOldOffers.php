@@ -89,8 +89,27 @@ class DiscountOldOffers extends BaseCommand
                 $today = date('Y-m-d');
                 $notifiedCount = 0;
                 $notifiedCompanyIds = [];
+                // Prüfe ob es eine Testanfrage ist
+                $isTestOffer = !empty($offer['is_test']);
+
                 foreach ($users as $user) {
                     if (!$user->inGroup('user')) {
+                        continue;
+                    }
+
+                    // Prüfe ob User vom Admin blockiert wurde
+                    if ($user->is_blocked) {
+                        continue;
+                    }
+
+                    // TESTANFRAGE-LOGIK:
+                    // - Testanfragen gehen NUR an Testfirmen
+                    // - Normale Anfragen gehen NICHT an Testfirmen
+                    $isTestCompany = !empty($user->is_test);
+                    if ($isTestOffer && !$isTestCompany) {
+                        continue;
+                    }
+                    if (!$isTestOffer && $isTestCompany) {
                         continue;
                     }
 
