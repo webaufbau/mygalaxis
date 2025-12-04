@@ -131,7 +131,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
     {
         return [
             'ID',
-            'Blockiert',
+            'Status',
             'Gruppen',
             'Ansprechsperson',
             'Firma',
@@ -209,9 +209,19 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
 
         $platformBadge = $entity->platform ? '<span class="badge" ' . $badgeStyle . '>' . esc($platformName) . '</span>' : '-';
 
+        // Status-Badges für Blockiert und Testfirma
+        $statusBadges = [];
+        if ($entity->is_test) {
+            $statusBadges[] = '<span class="badge bg-warning text-dark"><i class="bi bi-flask"></i> Test</span>';
+        }
+        if ($entity->is_blocked) {
+            $statusBadges[] = '<span class="badge bg-danger"><i class="bi bi-ban"></i> Blockiert</span>';
+        }
+        $statusDisplay = !empty($statusBadges) ? implode('<br>', $statusBadges) : '-';
+
         return [
             $entity->id,
-            $entity->is_blocked ? '<i class="bi bi-check text-danger"></i>' : '-',
+            $statusDisplay,
             $groups,
             esc(($entity->contact_person ?? '-')),
             esc($entity->company_name ?? '-'),
