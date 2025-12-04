@@ -54,9 +54,21 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
             <?php if ($user->is_blocked): ?>
                 <span class="badge bg-danger ms-2"><i class="bi bi-ban"></i> BLOCKIERT</span>
             <?php endif; ?>
+            <?php if ($user->is_test): ?>
+                <span class="badge bg-warning text-dark ms-2"><i class="bi bi-flask"></i> TESTFIRMA</span>
+            <?php endif; ?>
         </h2>
     </div>
     <div>
+        <?php if ($user->is_test): ?>
+            <a href="<?= site_url('admin/user/toggle-test/' . $user->id) ?>" class="btn btn-outline-warning" onclick="return confirm('Testfirma-Status entfernen?');">
+                <i class="bi bi-flask"></i> Test-Status entfernen
+            </a>
+        <?php else: ?>
+            <a href="<?= site_url('admin/user/toggle-test/' . $user->id) ?>" class="btn btn-warning" onclick="return confirm('Als Testfirma markieren? Die Firma erhält dann NUR Testanfragen.');">
+                <i class="bi bi-flask"></i> Als Testfirma
+            </a>
+        <?php endif; ?>
         <?php if ($user->is_blocked): ?>
             <a href="<?= site_url('admin/user/toggle-block/' . $user->id) ?>" class="btn btn-success" onclick="return confirm('Firma wirklich deblockieren?');">
                 <i class="bi bi-unlock"></i> Deblockieren
@@ -205,6 +217,17 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                         <td>
                             <?php if ($user->is_blocked): ?>
                                 <span class="badge bg-danger"><i class="bi bi-ban"></i> Ja - Blockiert</span>
+                            <?php else: ?>
+                                <span class="badge bg-success">Nein</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Testfirma:</strong></td>
+                        <td>
+                            <?php if ($user->is_test): ?>
+                                <span class="badge bg-warning text-dark"><i class="bi bi-flask"></i> Ja - Testfirma</span>
+                                <br><small class="text-muted">Erhält nur Testanfragen</small>
                             <?php else: ?>
                                 <span class="badge bg-success">Nein</span>
                             <?php endif; ?>

@@ -1042,6 +1042,47 @@ class User extends Crud {
         return redirect()->to('/admin/user/' . $userId);
     }
 
+    /**
+     * Testfirma-Status umschalten
+     */
+    public function toggleTest($userId)
+    {
+        $user = auth()->user();
+        if (!$user || !$user->inGroup('admin')) {
+            return redirect()->to('/');
+        }
+
+        $userModel = new \App\Models\UserModel();
+        $targetUser = $userModel->find($userId);
+
+        if (!$targetUser) {
+            session()->setFlashdata('error', 'Benutzer nicht gefunden.');
+            return redirect()->to('/admin/user');
+        }
+
+        // Toggle is_test
+        $newTestStatus = $targetUser->is_test ? 0 : 1;
+        $userModel->update($userId, ['is_test' => $newTestStatus]);
+
+        if ($newTestStatus) {
+            session()->setFlashdata('success', 'Firma wurde als Testfirma markiert. Sie erhält ab jetzt NUR Testanfragen.');
+            log_message('info', 'Firma als Testfirma markiert', [
+                'user_id' => $userId,
+                'company_name' => $targetUser->company_name,
+                'admin_user' => $user->id,
+            ]);
+        } else {
+            session()->setFlashdata('success', 'Testfirma-Status wurde entfernt. Die Firma erhält jetzt normale Anfragen.');
+            log_message('info', 'Testfirma-Status entfernt', [
+                'user_id' => $userId,
+                'company_name' => $targetUser->company_name,
+                'admin_user' => $user->id,
+            ]);
+        }
+
+        return redirect()->to('/admin/user/' . $userId);
+    }
+
     public function delete($entity_id=0) {
         if (!auth()->user()->can('my.'.$this->permission_prefix.'_delete')) {
             return redirect()->to('/');
