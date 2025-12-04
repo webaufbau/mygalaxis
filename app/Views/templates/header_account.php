@@ -306,27 +306,20 @@ $pendingCount = (new \App\Models\OfferModel())
         </div>
 
         <nav class="sidebar-nav">
+            <!-- Haupt -->
             <div class="nav-section">
                 <div class="nav-label">Übersicht</div>
                 <a class="nav-link <?= $segment2 === 'dashboard' ? 'active' : '' ?>" href="/admin/dashboard">
-                    <i class="bi bi-speedometer2"></i>
-                    <span class="nav-text">Dashboard</span>
-                </a>
-                <?php /* Temporär deaktiviert - wird später aktiviert
-                <a class="nav-link <?= $segment2 === 'offers' ? 'active' : '' ?>" href="/admin/offers/pending">
                     <i class="bi bi-inbox"></i>
                     <span class="nav-text">Anfragen</span>
-                    <?php if ($pendingCount > 0): ?>
-                        <span class="badge bg-warning text-dark"><?= $pendingCount ?></span>
-                    <?php endif; ?>
                 </a>
-                */ ?>
                 <a class="nav-link <?= $segment2 === 'user' ? 'active' : '' ?>" href="/admin/user">
                     <i class="bi bi-buildings"></i>
                     <span class="nav-text">Firmen</span>
                 </a>
             </div>
 
+            <!-- Inhalte -->
             <div class="nav-section">
                 <div class="nav-label">Inhalte</div>
                 <a class="nav-link <?= $segment2 === 'regions' ? 'active' : '' ?>" href="/admin/regions">
@@ -347,6 +340,7 @@ $pendingCount = (new \App\Models\OfferModel())
                 </a>
             </div>
 
+            <!-- System -->
             <div class="nav-section">
                 <div class="nav-label">System</div>
                 <a class="nav-link <?= $segment2 === 'settings' ? 'active' : '' ?>" href="/admin/settings">
@@ -360,6 +354,10 @@ $pendingCount = (new \App\Models\OfferModel())
                 <a class="nav-link <?= $segment2 === 'email-templates' ? 'active' : '' ?>" href="/admin/email-templates">
                     <i class="bi bi-envelope"></i>
                     <span class="nav-text">E-Mail Templates</span>
+                </a>
+                <a class="nav-link <?= $segment2 === 'email-log' ? 'active' : '' ?>" href="/admin/email-log">
+                    <i class="bi bi-envelope-paper"></i>
+                    <span class="nav-text">E-Mail Verlauf</span>
                 </a>
                 <a class="nav-link <?= $segment2 === 'invoices' ? 'active' : '' ?>" href="/admin/invoices">
                     <i class="bi bi-file-earmark-text"></i>

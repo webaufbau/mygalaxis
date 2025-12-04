@@ -168,6 +168,7 @@
         <th>Plattform</th>
         <th>Kampagne</th>
         <th>Verifiziert</th>
+        <th>Test</th>
         <th></th>
     </tr>
     </thead>
@@ -271,9 +272,19 @@
         </td>
         <td><?= $utmStatus ?></td>
         <td><?=$verified;?></td>
+        <td>
+            <?php if (!empty($o['is_test'])): ?>
+                <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">Test</span>
+            <?php else: ?>
+                <span class="text-muted">-</span>
+            <?php endif; ?>
+        </td>
         <td style="white-space: nowrap;">
             <a href="<?= site_url('admin/offer/' . $o['id']) ?>" class="btn btn-primary btn-sm py-0 px-2" style="font-size: 0.75rem;" target="_blank">
                 Details
+            </a>
+            <a href="<?= site_url('admin/offers/edit/' . $o['id']) ?>" class="btn btn-secondary btn-sm py-0 px-2" style="font-size: 0.75rem;">
+                Bearbeiten
             </a>
             <form method="post" action="<?= site_url('dashboard/delete/' . $o['id']) ?>" style="display: inline;" onsubmit="return confirm('<?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?> <?= esc($o['firstname'] . ' ' . $o['lastname']) ?> <?= esc($o['city']) ?> - Wirklich löschen?');">
                 <?= csrf_field() ?>
@@ -295,7 +306,6 @@
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/1.10.22/i18n/German.json'
             },
-            // Optional: Standard-Sortierung, Seitenlänge etc. kannst du hier anpassen
             pageLength: 10,
             stateSave: true,
             order: [[1, 'desc']] // Nach Datum (zweite Spalte) absteigend sortieren

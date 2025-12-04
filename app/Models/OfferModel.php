@@ -57,6 +57,12 @@ class OfferModel extends Model
         'form_name',
         'group_id',
         'access_hash',
+        'is_test',
+        'custom_price',
+        'admin_notes',
+        'customer_hint',
+        'edited_at',
+        'edited_by',
     ];
 
     protected $useTimestamps = true;

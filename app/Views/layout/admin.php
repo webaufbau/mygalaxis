@@ -316,8 +316,8 @@ $pendingCount = (new \App\Models\OfferModel())
             <div class="nav-section">
                 <div class="nav-label">Übersicht</div>
                 <a class="nav-link <?= $segment2 === 'dashboard' ? 'active' : '' ?>" href="/admin/dashboard">
-                    <i class="bi bi-speedometer2"></i>
-                    <span class="nav-text">Dashboard</span>
+                    <i class="bi bi-inbox"></i>
+                    <span class="nav-text">Anfragen</span>
                 </a>
                 <?php /* Temporär deaktiviert - wird später aktiviert
                 <a class="nav-link <?= $segment2 === 'offers' ? 'active' : '' ?>" href="/admin/offers/pending">
@@ -369,6 +369,10 @@ $pendingCount = (new \App\Models\OfferModel())
                 <a class="nav-link <?= $segment2 === 'email-templates' ? 'active' : '' ?>" href="/admin/email-templates">
                     <i class="bi bi-envelope"></i>
                     <span class="nav-text">E-Mail Templates</span>
+                </a>
+                <a class="nav-link <?= $segment2 === 'email-log' ? 'active' : '' ?>" href="/admin/email-log">
+                    <i class="bi bi-envelope-paper"></i>
+                    <span class="nav-text">E-Mail Verlauf</span>
                 </a>
                 <a class="nav-link <?= $segment2 === 'invoices' ? 'active' : '' ?>" href="/admin/invoices">
                     <i class="bi bi-file-earmark-text"></i>

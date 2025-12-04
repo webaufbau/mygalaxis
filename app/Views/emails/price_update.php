@@ -7,6 +7,12 @@
     <p><strong><?= lang('Offers.labels.city') ?>:</strong> <?= esc($offer['zip']) ?> <?= esc($offer['city'] ?? '') ?></p>
 </div>
 
+<?php if (!empty($offer['customer_hint'])): ?>
+<div style="background-color: #cfe2ff; border-left: 4px solid #0d6efd; padding: 15px; margin: 20px 0;">
+    <p style="margin: 0;"><strong><i>ℹ️ Hinweis:</i></strong> <?= esc($offer['customer_hint']) ?></p>
+</div>
+<?php endif; ?>
+
 <h3><?= lang('Email.offer_details') ?></h3>
 
 <?php if (isset($alreadyPurchased) && $alreadyPurchased): ?>

@@ -88,6 +88,7 @@ class DiscountOldOffers extends BaseCommand
                 $users = $userModel->findAll();
                 $today = date('Y-m-d');
                 $notifiedCount = 0;
+                $notifiedCompanyIds = [];
                 foreach ($users as $user) {
                     if (!$user->inGroup('user')) {
                         continue;
@@ -106,8 +107,29 @@ class DiscountOldOffers extends BaseCommand
                     if ($this->doesOfferMatchUser($offer, $user)) {
                         // Immer Original-Preis als oldPrice verwenden, nicht den vorherigen reduzierten Preis
                         $this->sendPriceUpdateEmail($user, $offer, $basePrice, $newDiscountedPrice);
+                        $notifiedCompanyIds[] = $user->id;
                         $notifiedCount++;
                     }
+                }
+
+                // Logge Rabatt-Benachrichtigung in Email-Log
+                if ($notifiedCount > 0) {
+                    $emailLogModel = new \App\Models\OfferEmailLogModel();
+                    $type = $this->getOfferTypeForSubject($offer['type']);
+                    $newPriceFormatted = number_format($newDiscountedPrice, 0, '.', '\'');
+                    $subject = "{$discount}% Rabatt / Neuer Preis Fr. {$newPriceFormatted}.– für {$type} {$offer['zip']} {$offer['city']} ID {$offer['id']} Anfrage";
+
+                    $emailLogModel->logEmail(
+                        offerId: $offer['id'],
+                        emailType: 'discount_notification',
+                        recipientEmail: "{$notifiedCount} Firmen",
+                        recipientType: 'company',
+                        companyId: null,
+                        subject: $subject,
+                        status: 'sent',
+                        errorMessage: null,
+                        notifiedCompanyIds: $notifiedCompanyIds
+                    );
                 }
 
                 CLI::write("  → {$notifiedCount} Firma(n) benachrichtigt", 'cyan');

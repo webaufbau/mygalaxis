@@ -68,17 +68,12 @@ $selectedCompanies = json_decode($offer['selected_companies'] ?? '[]', true);
 <!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <a href="/admin/offers/pending" class="btn btn-sm btn-outline-secondary mb-2">
+        <a href="<?= site_url('admin/dashboard') ?>" class="btn btn-sm btn-outline-secondary mb-2">
             <i class="bi bi-arrow-left"></i> Zurück zur Liste
         </a>
         <h2 class="mb-0">
-            <span class="badge bg-primary"><?= esc($typeName) ?></span>
-            Anfrage #<?= $offer['id'] ?>
+            <?= esc($typeName) ?> <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?> ID <?= $offer['id'] ?> Anfrage
         </h2>
-        <small class="text-muted">
-            <?= esc($offer['zip']) ?> <?= esc($offer['city']) ?> &bull;
-            Erstellt: <?= \CodeIgniter\I18n\Time::parse($offer['created_at'])->setTimezone(app_timezone())->format('d.m.Y H:i') ?>
-        </small>
     </div>
     <div>
         <?php if ($isAlreadySent): ?>
@@ -98,27 +93,13 @@ $selectedCompanies = json_decode($offer['selected_companies'] ?? '[]', true);
     </div>
 <?php endif; ?>
 
-<?php if (session()->getFlashdata('success')): ?>
-    <div class="alert alert-success alert-dismissible fade show">
-        <i class="bi bi-check-circle-fill"></i> <?= session()->getFlashdata('success') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-
-<?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger alert-dismissible fade show">
-        <i class="bi bi-exclamation-triangle-fill"></i> <?= session()->getFlashdata('error') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-
 <form action="/admin/offers/update/<?= $offer['id'] ?>" method="post" id="offerForm">
     <?= csrf_field() ?>
     <input type="hidden" name="selected_companies" id="selectedCompaniesInput" value="<?= esc(json_encode($selectedCompanies)) ?>">
 
     <div class="row">
-        <!-- Linke Spalte: Offerten-Details -->
-        <div class="col-lg-6">
+        <!-- Offerten-Details -->
+        <div class="col-12">
             <!-- Kunde -->
             <div class="form-section">
                 <h5><i class="bi bi-person"></i> Kundendaten</h5>
@@ -158,7 +139,7 @@ $selectedCompanies = json_decode($offer['selected_companies'] ?? '[]', true);
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="field-label">Hauptkategorie</label>
-                        <select name="type" class="form-select" <?= $isAlreadySent ? 'disabled' : '' ?>>
+                        <select name="type" class="form-select">
                             <?php foreach ($typeMapping as $key => $label): ?>
                                 <option value="<?= $key ?>" <?= $offer['type'] === $key ? 'selected' : '' ?>>
                                     <?= esc($label) ?>
@@ -168,7 +149,7 @@ $selectedCompanies = json_decode($offer['selected_companies'] ?? '[]', true);
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="field-label">Untertyp</label>
-                        <select name="original_type" class="form-select" <?= $isAlreadySent ? 'disabled' : '' ?>>
+                        <select name="original_type" class="form-select">
                             <optgroup label="Umzug">
                                 <option value="umzug_privat" <?= ($offer['original_type'] ?? '') === 'umzug_privat' ? 'selected' : '' ?>>Privat-Umzug</option>
                                 <option value="umzug_firma" <?= ($offer['original_type'] ?? '') === 'umzug_firma' ? 'selected' : '' ?>>Firmen-Umzug</option>
@@ -221,13 +202,13 @@ $selectedCompanies = json_decode($offer['selected_companies'] ?? '[]', true);
                         <input type="number" name="custom_price" class="form-control"
                                value="<?= esc($offer['custom_price'] ?? '') ?>"
                                placeholder="<?= number_format($offer['price'], 0) ?>"
-                               <?= $isAlreadySent ? 'readonly' : '' ?>>
+                               >
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="field-label">&nbsp;</label>
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input" type="checkbox" role="switch" name="is_test" id="isTest"
-                                   <?= $offer['is_test'] ? 'checked' : '' ?> <?= $isAlreadySent ? 'disabled' : '' ?>>
+                                   <?= $offer['is_test'] ? 'checked' : '' ?>>
                             <label class="form-check-label" for="isTest">
                                 <i class="bi bi-flask text-warning"></i> Testanfrage
                                 <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -328,99 +309,28 @@ $selectedCompanies = json_decode($offer['selected_companies'] ?? '[]', true);
                 </div>
             </div>
             <?php endif; ?>
-        </div>
-
-        <!-- Rechte Spalte: Firmen-Auswahl -->
-        <div class="col-lg-6">
-            <div class="form-section">
-                <h5><i class="bi bi-buildings"></i> Firmen für diese Offerte</h5>
-
-                <!-- Filter -->
-                <div class="filter-section">
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <label class="field-label small">PLZ / Umkreis</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" id="filterZip" value="<?= esc($offer['zip']) ?>" placeholder="PLZ">
-                                <select class="form-select" id="filterRadius" style="max-width: 100px;">
-                                    <option value="10">10 km</option>
-                                    <option value="20" selected>20 km</option>
-                                    <option value="50">50 km</option>
-                                    <option value="100">100 km</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="field-label small">Branche</label>
-                            <select class="form-select form-select-sm" id="filterCategory">
-                                <option value="">Alle Branchen</option>
-                                <?php foreach ($typeMapping as $key => $label): ?>
-                                    <option value="<?= $key ?>" <?= $offer['type'] === $key ? 'selected' : '' ?>><?= esc($label) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="field-label small">Status</label>
-                            <select class="form-select form-select-sm" id="filterBlocked">
-                                <option value="">Alle</option>
-                                <option value="active" selected>Nur aktive</option>
-                                <option value="blocked">Nur blockierte</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="field-label small">&nbsp;</label>
-                            <button type="button" class="btn btn-primary btn-sm w-100" id="searchCompanies">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Firmen-Liste -->
-                <div class="mb-2 d-flex justify-content-between align-items-center">
-                    <span class="text-muted small" id="companyCount">Klicke "Suchen" um Firmen zu laden</span>
-                    <div>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="selectAll">Alle</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="selectNone">Keine</button>
-                    </div>
-                </div>
-
-                <div class="company-list" id="companyList">
-                    <div class="text-center text-muted py-4">
-                        <i class="bi bi-building fs-1 opacity-50"></i>
-                        <p class="mt-2 mb-0">Nutze die Filter oben um passende Firmen zu finden</p>
-                    </div>
-                </div>
-
-                <!-- Zusammenfassung -->
-                <div class="mt-3 p-3 bg-light rounded">
-                    <div class="d-flex justify-content-between">
-                        <span><strong id="selectedCount">0</strong> Firmen ausgewählt</span>
-                        <?php if ($offer['is_test']): ?>
-                            <span class="badge bg-warning text-dark">Nur Test-Firmen</span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
 
             <!-- Aktions-Buttons -->
             <div class="form-section">
                 <div class="d-flex gap-2 justify-content-end">
-                    <a href="/admin/offers/pending" class="btn btn-outline-secondary">
+                    <a href="/admin/dashboard" class="btn btn-outline-secondary">
                         <i class="bi bi-x"></i> Abbrechen
                     </a>
                     <button type="submit" name="action" value="save" class="btn btn-primary">
                         <i class="bi bi-save"></i> Speichern
                     </button>
+                    <?php /* Temporarily disabled
                     <?php if (!$isAlreadySent): ?>
                         <button type="submit" name="action" value="save_and_send" class="btn btn-success"
-                                onclick="return confirm('Offerte wirklich an die ausgewählten Firmen senden?');">
+                                onclick="return confirm('Offerte wirklich an die passenden Firmen senden?');">
                             <i class="bi bi-send"></i> Speichern & Senden
                         </button>
                     <?php endif; ?>
+                    */ ?>
                 </div>
             </div>
         </div>
+
     </div>
 </form>
 

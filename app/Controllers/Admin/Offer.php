@@ -519,7 +519,7 @@ class Offer extends BaseController
         if (!empty($offer['edited_by'])) {
             $userModel = new \App\Models\UserModel();
             $editor = $userModel->find($offer['edited_by']);
-            $editedByUser = $editor['username'] ?? $editor['contact_person'] ?? 'Admin';
+            $editedByUser = $editor->username ?? $editor->contact_person ?? 'Admin';
         }
 
         // Audit-Log für diese Offerte laden
@@ -531,7 +531,7 @@ class Offer extends BaseController
         foreach ($auditLogs as &$log) {
             if (!empty($log['user_id'])) {
                 $logUser = $userModel->find($log['user_id']);
-                $log['user_name'] = $logUser['username'] ?? $logUser['contact_person'] ?? 'Admin';
+                $log['user_name'] = $logUser->username ?? $logUser->contact_person ?? 'Admin';
             } else {
                 $log['user_name'] = 'System';
             }
@@ -657,12 +657,14 @@ class Offer extends BaseController
             }
         }
 
-        // Edit-Tracking: Bearbeitungszeitpunkt und -user setzen
+        // Nur updaten wenn es tatsächliche Änderungen gibt
         $adminUser = auth()->user();
-        $updateData['edited_at'] = date('Y-m-d H:i:s');
-        $updateData['edited_by'] = $adminUser->id ?? null;
 
         if (!empty($updateData)) {
+            // Edit-Tracking: Bearbeitungszeitpunkt und -user setzen
+            $updateData['edited_at'] = date('Y-m-d H:i:s');
+            $updateData['edited_by'] = $adminUser->id ?? null;
+
             // Audit-Log: Änderungen protokollieren (ohne technische Felder)
             $auditOldValues = [];
             $auditNewValues = [];
@@ -882,6 +884,48 @@ class Offer extends BaseController
             'total_zipcodes' => count($nearbyZipcodes),
             'companies' => $filteredCompanies,
         ]);
+    }
+
+    /**
+     * Toggled das is_test Flag einer Anfrage (AJAX)
+     */
+    public function toggleTest($id)
+    {
+        try {
+            $offerModel = new \App\Models\OfferModel();
+            $offer = $offerModel->find($id);
+
+            if (!$offer) {
+                return $this->response->setJSON(['success' => false, 'error' => 'Anfrage nicht gefunden.']);
+            }
+
+            $newValue = $offer['is_test'] ? 0 : 1;
+            $result = $offerModel->update($id, ['is_test' => $newValue]);
+
+            if (!$result) {
+                return $this->response->setJSON(['success' => false, 'error' => 'Update fehlgeschlagen.']);
+            }
+
+            // Audit-Log
+            \App\Models\AuditLogModel::log(
+                'offer_test_toggled',
+                'offer',
+                (int)$id,
+                ['is_test' => $offer['is_test']],
+                ['is_test' => $newValue]
+            );
+
+            log_message('info', "Anfrage ID $id: is_test auf {$newValue} gesetzt");
+
+            return $this->response->setJSON([
+                'success' => true,
+                'is_test' => $newValue,
+                'message' => $newValue ? 'Als Testanfrage markiert' : 'Test-Markierung entfernt'
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'toggleTest error: ' . $e->getMessage());
+            return $this->response->setJSON(['success' => false, 'error' => $e->getMessage()]);
+        }
     }
 
     /**

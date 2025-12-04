@@ -44,6 +44,7 @@ class OfferNotificationSender
         $users = $this->userModel->findAll();
         $today = date('Y-m-d');
         $sentCount = 0;
+        $notifiedCompanyIds = []; // Sammle IDs der benachrichtigten Firmen
 
         // Prüfe ob es eine Testanfrage ist
         $isTestOffer = !empty($offer['is_test']);
@@ -81,6 +82,7 @@ class OfferNotificationSender
 
             if ($this->doesOfferMatchUser($offer, $user)) {
                 $this->sendOfferEmail($user, $offer);
+                $notifiedCompanyIds[] = $user->id;
                 $sentCount++;
             }
         }
@@ -118,7 +120,9 @@ class OfferNotificationSender
                 recipientType: 'company',
                 companyId: null,
                 subject: $subject,
-                status: 'sent'
+                status: 'sent',
+                errorMessage: null,
+                notifiedCompanyIds: $notifiedCompanyIds
             );
         }
 

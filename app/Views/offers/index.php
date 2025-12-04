@@ -437,6 +437,12 @@
                             <?php endif; ?>
                         <?php endif; ?>
 
+                        <?php if (!empty($offer['customer_hint'])): ?>
+                            <div style="background-color: #cfe2ff; border-left: 4px solid #0d6efd; padding: 15px; margin-bottom: 15px; border-radius: 4px;">
+                                <p style="margin: 0;"><strong><i class="bi bi-info-circle"></i> <?= lang('General.note') ?>:</strong> <?= esc($offer['customer_hint']) ?></p>
+                            </div>
+                        <?php endif; ?>
+
                         <?= view('partials/offer_form_fields_firm', ['offer' => $offer, 'full' => $isPurchased, 'wrapInCard' => false]) ?>
                     </div>
                 </div>

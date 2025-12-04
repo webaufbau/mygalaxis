@@ -217,6 +217,13 @@ if ($isPurchased) {
     </div>
 <?php endif; ?>
 
+<?php if (!empty($offer['customer_hint'])): ?>
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Hinweis:</strong> <?= esc($offer['customer_hint']) ?>
+</div>
+<?php endif; ?>
+
 <div class="card">
     <div class="card-header">
         <h4 class="mb-0"><?= $detailsLabel ?></h4>

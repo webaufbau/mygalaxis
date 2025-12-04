@@ -18,6 +18,7 @@ class OfferEmailLogModel extends Model
         'recipient_email',
         'recipient_type',
         'company_id',
+        'notified_company_ids',
         'subject',
         'status',
         'error_message',
@@ -41,7 +42,8 @@ class OfferEmailLogModel extends Model
         ?int $companyId = null,
         ?string $subject = null,
         string $status = 'sent',
-        ?string $errorMessage = null
+        ?string $errorMessage = null,
+        ?array $notifiedCompanyIds = null
     ): int {
         return $this->insert([
             'offer_id' => $offerId,
@@ -49,6 +51,7 @@ class OfferEmailLogModel extends Model
             'recipient_email' => $recipientEmail,
             'recipient_type' => $recipientType,
             'company_id' => $companyId,
+            'notified_company_ids' => $notifiedCompanyIds ? json_encode($notifiedCompanyIds) : null,
             'subject' => $subject,
             'status' => $status,
             'error_message' => $errorMessage,

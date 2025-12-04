@@ -246,6 +246,7 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('offers/edit/(:num)', 'Admin\Offer::editOffer/$1');
     $routes->post('offers/approve/(:num)', 'Admin\Offer::approveOffer/$1');
     $routes->post('offers/update/(:num)', 'Admin\Offer::updateOffer/$1');
+    $routes->post('offers/toggle-test/(:num)', 'Admin\Offer::toggleTest/$1');
     $routes->get('offers/search-companies', 'Admin\Offer::searchCompanies');
 
     // Admin: Credits verwalten
@@ -369,5 +370,10 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->post('referrals/give-credit/(:num)', 'Admin\Referrals::giveCredit/$1');
     $routes->post('referrals/reject/(:num)', 'Admin\Referrals::reject/$1');
     $routes->match(['GET', 'POST'], 'referrals/manual-credit', 'Admin\Referrals::manualCredit');
+
+    // Email Log (E-Mail Verlauf)
+    $routes->get('email-log', 'Admin\EmailLog::index');
+    $routes->get('email-log/offer/(:num)', 'Admin\EmailLog::byOffer/$1');
+    $routes->get('email-log/company/(:num)', 'Admin\EmailLog::byCompany/$1');
 
 });
