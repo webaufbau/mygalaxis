@@ -61,11 +61,11 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
     </div>
     <div>
         <?php if ($user->is_test): ?>
-            <a href="<?= site_url('admin/user/toggle-test/' . $user->id) ?>" class="btn btn-outline-warning" onclick="return confirm('Testfirma-Status entfernen?');">
+            <a href="<?= site_url('admin/user/toggle-test/' . $user->id) ?>" class="btn btn-outline-warning" onclick="return confirm('Testfirma-Status entfernen? Die Firma erhält dann keine Testanfragen mehr.');">
                 <i class="bi bi-flask"></i> Test-Status entfernen
             </a>
         <?php else: ?>
-            <a href="<?= site_url('admin/user/toggle-test/' . $user->id) ?>" class="btn btn-warning" onclick="return confirm('Als Testfirma markieren? Die Firma erhält dann NUR Testanfragen.');">
+            <a href="<?= site_url('admin/user/toggle-test/' . $user->id) ?>" class="btn btn-warning" onclick="return confirm('Als Testfirma markieren? Die Firma erhält dann ALLE Anfragen (Test + Normal).');">
                 <i class="bi bi-flask"></i> Als Testfirma
             </a>
         <?php endif; ?>
@@ -227,7 +227,7 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                         <td>
                             <?php if ($user->is_test): ?>
                                 <span class="badge bg-warning text-dark"><i class="bi bi-flask"></i> Ja - Testfirma</span>
-                                <br><small class="text-muted">Erhält nur Testanfragen</small>
+                                <br><small class="text-muted">Erhält alle Anfragen (Test + Normal)</small>
                             <?php else: ?>
                                 <span class="badge bg-success">Nein</span>
                             <?php endif; ?>

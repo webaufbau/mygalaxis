@@ -1065,14 +1065,14 @@ class User extends Crud {
         $userModel->update($userId, ['is_test' => $newTestStatus]);
 
         if ($newTestStatus) {
-            session()->setFlashdata('success', 'Firma wurde als Testfirma markiert. Sie erhält ab jetzt NUR Testanfragen.');
+            session()->setFlashdata('success', 'Firma wurde als Testfirma markiert. Sie erhält ab jetzt ALLE Anfragen (Test + Normal).');
             log_message('info', 'Firma als Testfirma markiert', [
                 'user_id' => $userId,
                 'company_name' => $targetUser->company_name,
                 'admin_user' => $user->id,
             ]);
         } else {
-            session()->setFlashdata('success', 'Testfirma-Status wurde entfernt. Die Firma erhält jetzt normale Anfragen.');
+            session()->setFlashdata('success', 'Testfirma-Status wurde entfernt. Die Firma erhält jetzt keine Testanfragen mehr.');
             log_message('info', 'Testfirma-Status entfernt', [
                 'user_id' => $userId,
                 'company_name' => $targetUser->company_name,

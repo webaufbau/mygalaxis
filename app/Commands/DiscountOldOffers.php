@@ -103,13 +103,11 @@ class DiscountOldOffers extends BaseCommand
                     }
 
                     // TESTANFRAGE-LOGIK:
-                    // - Testanfragen gehen NUR an Testfirmen
-                    // - Normale Anfragen gehen NICHT an Testfirmen
+                    // - Testfirmen erhalten ALLE Anfragen (Test + Normal)
+                    // - Normale Firmen erhalten NUR normale Anfragen (keine Testanfragen)
                     $isTestCompany = !empty($user->is_test);
                     if ($isTestOffer && !$isTestCompany) {
-                        continue;
-                    }
-                    if (!$isTestOffer && $isTestCompany) {
+                        // Testanfrage aber keine Testfirma -> überspringen
                         continue;
                     }
 

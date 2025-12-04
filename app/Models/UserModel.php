@@ -417,7 +417,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
                             '0' => 'Nein - Normale Firma',
                             '1' => 'Ja - Testfirma',
                         ],
-                        'info' => 'Testfirmen erhalten NUR Testanfragen, normale Firmen erhalten KEINE Testanfragen',
+                        'info' => 'Testfirmen erhalten ALLE Anfragen (Test + Normal). Normale Firmen erhalten keine Testanfragen.',
                     ],
                     'email' => [
                         'type' => 'email',
