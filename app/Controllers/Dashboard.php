@@ -197,6 +197,75 @@ class Dashboard extends Controller
 
         $offers = $builder->orderBy('offers.created_at', 'desc')->get()->getResultArray();
 
+        // Aggregiere offer_purchases Daten pro Offer
+        $offerPurchaseModel = new OfferPurchaseModel();
+        $db = \Config\Database::connect();
+
+        // Hole alle relevanten offer_purchases aggregiert nach offer_id und discount_type
+        $purchaseStats = $db->query("
+            SELECT
+                offer_id,
+                discount_type,
+                COUNT(*) as sales_count,
+                SUM(price_paid) as revenue
+            FROM offer_purchases
+            WHERE status = 'paid'
+            GROUP BY offer_id, discount_type
+        ")->getResultArray();
+
+        // Erstelle ein Lookup-Array für schnellen Zugriff
+        $purchaseLookup = [];
+        foreach ($purchaseStats as $stat) {
+            $offerId = $stat['offer_id'];
+            if (!isset($purchaseLookup[$offerId])) {
+                $purchaseLookup[$offerId] = [
+                    'total_revenue' => 0,
+                    'sales_normal' => 0,
+                    'revenue_normal' => 0,
+                    'sales_discount_1' => 0,
+                    'revenue_discount_1' => 0,
+                    'sales_discount_2' => 0,
+                    'revenue_discount_2' => 0,
+                ];
+            }
+
+            $purchaseLookup[$offerId]['total_revenue'] += (float)$stat['revenue'];
+
+            switch ($stat['discount_type']) {
+                case 'normal':
+                    $purchaseLookup[$offerId]['sales_normal'] = (int)$stat['sales_count'];
+                    $purchaseLookup[$offerId]['revenue_normal'] = (float)$stat['revenue'];
+                    break;
+                case 'discount_1':
+                    $purchaseLookup[$offerId]['sales_discount_1'] = (int)$stat['sales_count'];
+                    $purchaseLookup[$offerId]['revenue_discount_1'] = (float)$stat['revenue'];
+                    break;
+                case 'discount_2':
+                    $purchaseLookup[$offerId]['sales_discount_2'] = (int)$stat['sales_count'];
+                    $purchaseLookup[$offerId]['revenue_discount_2'] = (float)$stat['revenue'];
+                    break;
+            }
+        }
+
+        // Füge die aggregierten Daten zu jedem Offer hinzu
+        foreach ($offers as &$offer) {
+            $offerId = $offer['id'];
+            if (isset($purchaseLookup[$offerId])) {
+                $offer['purchase_stats'] = $purchaseLookup[$offerId];
+            } else {
+                $offer['purchase_stats'] = [
+                    'total_revenue' => 0,
+                    'sales_normal' => 0,
+                    'revenue_normal' => 0,
+                    'sales_discount_1' => 0,
+                    'revenue_discount_1' => 0,
+                    'sales_discount_2' => 0,
+                    'revenue_discount_2' => 0,
+                ];
+            }
+        }
+        unset($offer); // Reference freigeben
+
         $categoryOptions = new \Config\CategoryOptions();
         $appConfig = new \Config\App();
 

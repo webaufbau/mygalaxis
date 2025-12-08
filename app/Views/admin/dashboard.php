@@ -33,15 +33,27 @@
     }
     /* Spaltenbreiten optimieren */
     /* Verifiziert-Spalte schmaler */
-    #offersTable th:nth-child(10),
-    #offersTable td:nth-child(10) {
+    #offersTable th:nth-child(14),
+    #offersTable td:nth-child(14) {
         max-width: 100px;
         width: 100px;
     }
     /* Name-Spalte breiter */
-    #offersTable th:nth-child(6),
-    #offersTable td:nth-child(6) {
+    #offersTable th:nth-child(7),
+    #offersTable td:nth-child(7) {
         min-width: 150px;
+    }
+    /* Umsatz/Rabatt-Spalten kompakt */
+    #offersTable th:nth-child(9),
+    #offersTable td:nth-child(9),
+    #offersTable th:nth-child(10),
+    #offersTable td:nth-child(10),
+    #offersTable th:nth-child(11),
+    #offersTable td:nth-child(11),
+    #offersTable th:nth-child(12),
+    #offersTable td:nth-child(12) {
+        text-align: right;
+        white-space: nowrap;
     }
 </style>
 
@@ -166,6 +178,10 @@
         <th>Ort</th>
         <th>Name</th>
         <th>Käufe</th>
+        <th>Umsatz</th>
+        <th>N.P.</th>
+        <th>1.R.</th>
+        <th>2.R.</th>
         <th>Plattform</th>
         <th>Kampagne</th>
         <th>Verifiziert</th>
@@ -252,6 +268,10 @@
         <td><?= esc($o['city']) ?></td>
         <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td><?= esc($o['buyers']) ?></td>
+        <td><?= number_format($o['purchase_stats']['total_revenue'] ?? 0, 2, '.', "'") ?></td>
+        <td><?= ($o['purchase_stats']['revenue_normal'] ?? 0) > 0 ? number_format($o['purchase_stats']['revenue_normal'], 2, '.', "'") : '-' ?></td>
+        <td><?= ($o['purchase_stats']['revenue_discount_1'] ?? 0) > 0 ? number_format($o['purchase_stats']['revenue_discount_1'], 2, '.', "'") : '-' ?></td>
+        <td><?= ($o['purchase_stats']['revenue_discount_2'] ?? 0) > 0 ? number_format($o['purchase_stats']['revenue_discount_2'], 2, '.', "'") : '-' ?></td>
         <td>
             <?php
             if (!empty($o['platform'])) {
