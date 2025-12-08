@@ -173,10 +173,10 @@
         <th>ID</th>
         <th>Datum</th>
         <th>Typ</th>
-        <th>Preis</th>
         <th>PLZ</th>
         <th>Ort</th>
         <th>Name</th>
+        <th>Preis</th>
         <th>Käufe</th>
         <th>Umsatz</th>
         <th>N.P.</th>
@@ -249,6 +249,9 @@
             <?= $date->format('d.m.Y H:i') ?>
         </td>
         <td><?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?></td>
+        <td><?= esc($o['zip']) ?></td>
+        <td><?= esc($o['city']) ?></td>
+        <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td>
             <?php
             // Aktueller Preis: discounted_price > custom_price > price
@@ -264,9 +267,6 @@
             }
             ?>
         </td>
-        <td><?= esc($o['zip']) ?></td>
-        <td><?= esc($o['city']) ?></td>
-        <td><?= esc($o['firstname'] . ' ' . $o['lastname']) ?></td>
         <td><?= esc($o['buyers']) ?></td>
         <td><?= number_format($o['purchase_stats']['total_revenue'] ?? 0, 2, '.', "'") ?></td>
         <td><?= ($o['purchase_stats']['revenue_normal'] ?? 0) > 0 ? number_format($o['purchase_stats']['revenue_normal'], 2, '.', "'") : '-' ?></td>
