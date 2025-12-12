@@ -152,9 +152,9 @@ class OfferTrashModel extends Model
      * Get the original table name for a given offer type
      *
      * @param string $type
-     * @return string|null
+     * @return string
      */
-    protected function getOriginalTableName(string $type): ?string
+    protected function getOriginalTableName(string $type): string
     {
         $typeToTable = [
             'plumbing' => 'offers_plumbing',
@@ -169,7 +169,8 @@ class OfferTrashModel extends Model
             'move_cleaning' => 'offers_move_cleaning',
         ];
 
-        return $typeToTable[$type] ?? null;
+        // Fallback to 'offers' for unknown types (e.g., company registrations that ended up here)
+        return $typeToTable[$type] ?? 'offers';
     }
 
     /**

@@ -72,6 +72,7 @@ return [
         'tiling'            => 'Platten',
         'furniture_assembly'=> 'Möbelaufbau',
         'other'             => 'Sonstiges',
+        'unknown'           => 'Unbekannt',
     ],
 
     'credit_type' => [
