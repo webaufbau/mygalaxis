@@ -156,8 +156,24 @@ function makeOptionKey(string $label, array $existingKeys): string
     document.addEventListener("DOMContentLoaded", function() {
         let table = document.getElementById("discount-rules-table").getElementsByTagName("tbody")[0];
         let addBtn = document.getElementById("add-discount-rule");
+        const MAX_DISCOUNT_RULES = 3;
+
+        function updateAddButtonState() {
+            if (table.rows.length >= MAX_DISCOUNT_RULES) {
+                addBtn.disabled = true;
+                addBtn.title = 'Maximal ' + MAX_DISCOUNT_RULES + ' Rabattregeln erlaubt';
+            } else {
+                addBtn.disabled = false;
+                addBtn.title = '';
+            }
+        }
 
         addBtn.addEventListener("click", function() {
+            if (table.rows.length >= MAX_DISCOUNT_RULES) {
+                alert('Maximal ' + MAX_DISCOUNT_RULES + ' Rabattregeln sind erlaubt.');
+                return;
+            }
+
             let index = table.rows.length;
             let row = table.insertRow();
 
@@ -166,13 +182,18 @@ function makeOptionKey(string $label, array $existingKeys): string
             <td><input type="number" name="discountRules[${index}][discount]" class="form-control" min="0" max="100"></td>
             <td><button type="button" class="btn btn-danger btn-sm remove-row">✕</button></td>
         `;
+            updateAddButtonState();
         });
 
         table.addEventListener("click", function(e) {
             if (e.target && e.target.classList.contains("remove-row")) {
                 e.target.closest("tr").remove();
+                updateAddButtonState();
             }
         });
+
+        // Initial state check
+        updateAddButtonState();
     });
 </script>
 

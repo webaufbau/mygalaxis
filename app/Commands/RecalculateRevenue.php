@@ -50,6 +50,8 @@ class RecalculateRevenue extends BaseCommand
                 'revenue_discount_1' => 0,
                 'sales_discount_2' => 0,
                 'revenue_discount_2' => 0,
+                'sales_discount_3' => 0,
+                'revenue_discount_3' => 0,
                 'total_revenue' => 0,
                 'avg_sale_price' => 0,
             ];
@@ -75,6 +77,9 @@ class RecalculateRevenue extends BaseCommand
                 } elseif ($type === 'discount_2') {
                     $payload['sales_discount_2'] = $count;
                     $payload['revenue_discount_2'] = $revenue;
+                } elseif ($type === 'discount_3') {
+                    $payload['sales_discount_3'] = $count;
+                    $payload['revenue_discount_3'] = $revenue;
                 }
             }
 

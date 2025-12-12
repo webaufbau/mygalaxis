@@ -226,6 +226,8 @@ class Dashboard extends Controller
                     'revenue_discount_1' => 0,
                     'sales_discount_2' => 0,
                     'revenue_discount_2' => 0,
+                    'sales_discount_3' => 0,
+                    'revenue_discount_3' => 0,
                 ];
             }
 
@@ -244,6 +246,10 @@ class Dashboard extends Controller
                     $purchaseLookup[$offerId]['sales_discount_2'] = (int)$stat['sales_count'];
                     $purchaseLookup[$offerId]['revenue_discount_2'] = (float)$stat['revenue'];
                     break;
+                case 'discount_3':
+                    $purchaseLookup[$offerId]['sales_discount_3'] = (int)$stat['sales_count'];
+                    $purchaseLookup[$offerId]['revenue_discount_3'] = (float)$stat['revenue'];
+                    break;
             }
         }
 
@@ -261,6 +267,8 @@ class Dashboard extends Controller
                     'revenue_discount_1' => 0,
                     'sales_discount_2' => 0,
                     'revenue_discount_2' => 0,
+                    'sales_discount_3' => 0,
+                    'revenue_discount_3' => 0,
                 ];
             }
         }

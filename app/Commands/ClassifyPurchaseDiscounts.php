@@ -34,8 +34,10 @@ class ClassifyPurchaseDiscounts extends BaseCommand
                 // Berechne Rabatt-Prozentsatz
                 $discountPercent = (($price - $pricePaid) / $price) * 100;
 
-                if ($discountPercent > 20) {
-                    $discountType = 'discount_2'; // > 20%
+                if ($discountPercent > 35) {
+                    $discountType = 'discount_3'; // > 35%
+                } elseif ($discountPercent > 20) {
+                    $discountType = 'discount_2'; // 21-35%
                 } else {
                     $discountType = 'discount_1'; // <= 20%
                 }
