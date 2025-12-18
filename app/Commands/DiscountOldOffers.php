@@ -293,6 +293,14 @@ class DiscountOldOffers extends BaseCommand
             $customFieldDisplay = $parser->parse($emailTemplate['field_display_template'], $fullOffer['data'], $excludedFields);
         }
 
+        // Extrahiere Plattform-Domain aus der Offerte
+        $offerPlatformDomain = '';
+        if (!empty($fullOffer['platform'])) {
+            $offerPlatformDomain = str_replace('my_', '', $fullOffer['platform']);
+            $offerPlatformDomain = str_replace('_', '.', $offerPlatformDomain);
+            $offerPlatformDomain = ucfirst($offerPlatformDomain);
+        }
+
         // Verwende price_update View (für Firmen-Rabatte, nicht für Kunden)
         $message = view('emails/price_update', [
             'firma' => $user,
@@ -302,7 +310,8 @@ class DiscountOldOffers extends BaseCommand
             'discount' => $discount,
             'siteConfig' => $siteConfig,
             'alreadyPurchased' => $alreadyPurchased,
-            'customFieldDisplay' => $customFieldDisplay, // Übergebe custom field display
+            'customFieldDisplay' => $customFieldDisplay,
+            'offerPlatformDomain' => $offerPlatformDomain,
         ]);
 
         $to = $siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail();

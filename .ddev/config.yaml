@@ -16,6 +16,10 @@ web:
     php_ini: ".ddev/php/php.ini"
 corepack_enable: false
 
+hooks:
+  post-start:
+    - exec: chmod -R 777 /var/www/html/writable
+
 # Key features of DDEV's config.yaml:
 
 # name: <projectname> # Name of the project, automatically provides

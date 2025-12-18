@@ -68,17 +68,8 @@ class Finance extends BaseController
         // Danach wieder absteigend sortieren für die Anzeige
         $credits = array_reverse($creditsWithBalance);
 
-        // 3) Monatsrechnungen
-        $monthlyInvoicesBuilder = $monthlyInvoiceModel->where('user_id', $user->id);
-
-        if ($year) {
-            $monthlyInvoicesBuilder->where('YEAR(STR_TO_DATE(CONCAT(period, \'-01\'), \'%Y-%m-%d\'))', $year);
-        }
-        if ($month) {
-            $monthlyInvoicesBuilder->where('MONTH(STR_TO_DATE(CONCAT(period, \'-01\'), \'%Y-%m-%d\'))', $month);
-        }
-
-        $monthlyInvoices = $monthlyInvoicesBuilder->orderBy('period', 'DESC')->findAll();
+        // 3) Monatsrechnungen dynamisch berechnen (statt aus monthly_invoices Tabelle)
+        $monthlyInvoices = $this->generateMonthlyInvoicesForUser($user, $year, $month);
 
         // Alte $bookings Variable für Kompatibilität (wird nicht mehr verwendet)
         $bookings = [];
@@ -1131,6 +1122,105 @@ class Finance extends BaseController
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
             ->setBody($mpdf->Output($invoice_name . ".pdf", 'S'));
+    }
+
+    /**
+     * Generiere Monatsrechnungen dynamisch für einen Benutzer
+     */
+    protected function generateMonthlyInvoicesForUser($user, $filterYear = null, $filterMonth = null): array
+    {
+        $db = \Config\Database::connect();
+
+        // Hole erste Transaktion des Benutzers
+        $firstTransaction = $db->table('bookings')
+            ->select('MIN(created_at) as first_transaction')
+            ->where('user_id', $user->id)
+            ->get()
+            ->getRow();
+
+        if (!$firstTransaction || empty($firstTransaction->first_transaction)) {
+            return [];
+        }
+
+        $invoices = [];
+        $firstTransactionDate = new \DateTime($firstTransaction->first_transaction);
+        $startPeriod = $firstTransactionDate->format('Y-m');
+        $lastMonth = date('Y-m', strtotime('-1 month'));
+
+        $period = $startPeriod;
+        while ($period <= $lastMonth) {
+            // Filter nach Jahr/Monat wenn angegeben
+            $periodYear = substr($period, 0, 4);
+            $periodMonth = substr($period, 5, 2);
+
+            if ($filterYear && $periodYear != $filterYear) {
+                $period = date('Y-m', strtotime($period . '-01 +1 month'));
+                continue;
+            }
+            if ($filterMonth && $periodMonth != str_pad($filterMonth, 2, '0', STR_PAD_LEFT)) {
+                $period = date('Y-m', strtotime($period . '-01 +1 month'));
+                continue;
+            }
+
+            $startDate = $period . '-01 00:00:00';
+            $endDate = date('Y-m-t 23:59:59', strtotime($startDate));
+
+            $purchases = $db->table('bookings')
+                ->select('id, created_at, paid_amount, amount, type')
+                ->where('user_id', $user->id)
+                ->whereIn('type', ['offer_purchase', 'refund_purchase'])
+                ->where('created_at >=', $startDate)
+                ->where('created_at <=', $endDate)
+                ->get()
+                ->getResultArray();
+
+            $totalAmount = 0;
+            $purchaseCount = 0;
+            $refundCount = 0;
+            foreach ($purchases as $purchase) {
+                if ($purchase['type'] === 'offer_purchase') {
+                    $totalAmount += abs($purchase['paid_amount'] ?? $purchase['amount']);
+                    $purchaseCount++;
+                } else {
+                    $totalAmount -= abs($purchase['amount']);
+                    $refundCount++;
+                }
+            }
+
+            // Nur Monate mit Aktivität hinzufügen
+            if ($purchaseCount > 0 || $refundCount > 0) {
+                $year = substr($period, 0, 4);
+                $month = substr($period, 5, 2);
+
+                $platformParts = explode('_', $user->platform ?? '');
+                $countryCode = end($platformParts);
+                $country = strtoupper($countryCode === 'ch' ? 'CH' :
+                          ($countryCode === 'de' ? 'DE' :
+                          ($countryCode === 'at' ? 'AT' : 'CH')));
+
+                $currency = ($country === 'CH') ? 'CHF' : 'EUR';
+                $invoiceDate = date('Y-m-01', strtotime($period . '-01 +1 month'));
+
+                $invoices[] = [
+                    'id' => null, // Dynamisch generiert
+                    'user_id' => $user->id,
+                    'period' => $period,
+                    'purchase_count' => $purchaseCount,
+                    'refund_count' => $refundCount,
+                    'amount' => $totalAmount,
+                    'currency' => $currency,
+                    'created_at' => $invoiceDate,
+                    'invoice_number' => "M{$country}-{$year}{$month}-{$user->id}",
+                ];
+            }
+
+            $period = date('Y-m', strtotime($period . '-01 +1 month'));
+        }
+
+        // Sortiere nach Periode absteigend (neueste zuerst)
+        usort($invoices, fn($a, $b) => strcmp($b['period'], $a['period']));
+
+        return $invoices;
     }
 
     /**

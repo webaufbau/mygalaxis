@@ -5,15 +5,19 @@
 // Deutsche Übersetzungen für E-Mail-Typen
 $emailTypeLabels = [
     'new_offer' => 'Neue Anfrage',
-    'discount_notification' => 'Rabatt-Info',
-    'offer_purchased' => 'Kauf-Bestätigung',
+    'discount_notification' => 'Rabatt',
+    'offer_purchased' => 'Kauf',
     'offer_expired' => 'Abgelaufen',
-    'company_notification' => 'Firmen-Benachrichtigung',
+    'company_notification' => 'Firmen-Info',
     'confirmation' => 'Bestätigung',
     'customer_notification' => 'Kunden-Info',
+    'customer_confirmation' => 'Bestätigung',
+    'purchase_company' => 'Kauf (Firma)',
+    'purchase_customer' => 'Kauf (Kunde)',
     'reminder' => 'Erinnerung',
+    'review_reminder' => 'Bewertung',
     'welcome' => 'Willkommen',
-    'password_reset' => 'Passwort zurücksetzen',
+    'password_reset' => 'Passwort',
 ];
 ?>
 
@@ -95,22 +99,23 @@ $emailTypeLabels = [
                                     <td class="text-nowrap">
                                         <small><?= date('d.m.Y H:i', strtotime($log['sent_at'])) ?></small>
                                     </td>
-                                    <td>
+                                    <td class="text-nowrap">
                                         <?php
                                         $badgeClass = match($log['email_type']) {
                                             'new_offer' => 'bg-primary',
                                             'discount_notification' => 'bg-warning text-dark',
-                                            'offer_purchased' => 'bg-success',
+                                            'offer_purchased', 'purchase_company', 'purchase_customer' => 'bg-success',
                                             'offer_expired' => 'bg-secondary',
                                             'company_notification' => 'bg-info',
-                                            'confirmation' => 'bg-success',
+                                            'confirmation', 'customer_confirmation' => 'bg-success',
+                                            'review_reminder' => 'bg-info text-dark',
                                             default => 'bg-secondary'
                                         };
                                         $typeLabel = $emailTypeLabels[$log['email_type']] ?? ucfirst(str_replace('_', ' ', $log['email_type']));
+                                        $recipientIcon = $log['recipient_type'] === 'company' ? 'bi-building' : 'bi-person';
                                         ?>
                                         <span class="badge <?= $badgeClass ?>"><?= esc($typeLabel) ?></span>
-                                        <br>
-                                        <small class="text-muted"><?= $log['recipient_type'] === 'company' ? 'Firma' : 'Kunde' ?></small>
+                                        <i class="bi <?= $recipientIcon ?> ms-1 text-muted" title="<?= $log['recipient_type'] === 'company' ? 'Firma' : 'Kunde' ?>"></i>
                                     </td>
                                     <td>
                                         <small><?= esc($log['recipient_email']) ?></small>
@@ -118,15 +123,10 @@ $emailTypeLabels = [
                                     <td>
                                         <small><?= esc($log['subject'] ?? '-') ?></small>
                                     </td>
-                                    <td>
+                                    <td class="text-nowrap">
                                         <?php if ($log['offer_id']): ?>
-                                            #<?= esc($log['offer_id']) ?>
-                                            <?php if (!empty($log['offer_title'])): ?>
-                                                <br><small class="text-muted"><?= esc(mb_substr($log['offer_title'], 0, 30)) ?><?= mb_strlen($log['offer_title']) > 30 ? '...' : '' ?></small>
-                                            <?php endif; ?>
-                                            <br>
-                                            <a href="/admin/offer/<?= esc($log['offer_id']) ?>" class="btn btn-sm btn-outline-secondary mt-1" title="Angebot öffnen">
-                                                <i class="bi bi-eye"></i>
+                                            <a href="/admin/offer/<?= esc($log['offer_id']) ?>" class="text-decoration-none" title="<?= esc($log['offer_title'] ?? '') ?>">
+                                                #<?= esc($log['offer_id']) ?>
                                             </a>
                                         <?php else: ?>
                                             -

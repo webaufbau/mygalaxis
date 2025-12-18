@@ -417,12 +417,21 @@ class OfferPurchaseService
 
         $company_backend_offer_link = rtrim($siteConfig->backendUrl, '/') . '/offers/mine#detailsview-' . $offer['id'];
 
+        // Extrahiere Plattform-Domain aus der Offerte
+        $offerPlatformDomain = '';
+        if (!empty($offer['platform'])) {
+            $offerPlatformDomain = str_replace('my_', '', $offer['platform']);
+            $offerPlatformDomain = str_replace('_', '.', $offerPlatformDomain);
+            $offerPlatformDomain = ucfirst($offerPlatformDomain);
+        }
+
         $data = [
             'siteConfig' => $siteConfig,
             'kunde'      => $customerData,
             'firma'      => $company,
             'offer'      => $offer,
             'company_backend_offer_link' => $company_backend_offer_link,
+            'offerPlatformDomain' => $offerPlatformDomain,
         ];
 
         $subject = sprintf(lang('Email.offerPurchasedCompanySubject'), $offer['title']);

@@ -2,6 +2,15 @@
 
 <p><?= lang('Email.priceUpdateIntro') ?></p>
 
+<?php if (!empty($offerPlatformDomain)): ?>
+<div style="background-color: #e7f3ff; border: 1px solid #b8daff; border-radius: 5px; padding: 12px 15px; margin: 15px 0;">
+    <p style="margin: 0; font-size: 14px; color: #004085;">
+        <strong>Hinweis:</strong> Diese Anfrage stammt von <strong><?= esc($offerPlatformDomain) ?></strong>.
+        Bei der Kommunikation mit dem Kunden erwähnen Sie bitte die Plattform "<?= esc($offerPlatformDomain) ?>".
+    </p>
+</div>
+<?php endif; ?>
+
 <div class="highlight" style="background-color: #f8f9fa; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0;">
     <h3 style="margin-top: 0; color: #ff9800;"><?= esc($offer['title'] ?? lang('Offers.type.' . $offer['type'])) ?></h3>
     <p><strong><?= lang('Offers.labels.city') ?>:</strong> <?= esc($offer['zip']) ?> <?= esc($offer['city'] ?? '') ?></p>

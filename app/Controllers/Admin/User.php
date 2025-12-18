@@ -171,6 +171,9 @@ class User extends Crud {
         $notes = $userNoteModel->getNotesForUser($id, $noteType, $dateFrom, $dateTo);
         $noteCounts = $userNoteModel->countByType($id);
 
+        // Hole Monatsrechnungen für diesen Benutzer
+        $invoices = $this->getInvoicesForUser($id, $targetUser);
+
         $data = [
             'user' => $targetUser,
             'purchases' => $purchases,
@@ -190,9 +193,95 @@ class User extends Crud {
             'noteType' => $noteType,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
+            'invoices' => $invoices,
         ];
 
         return view('admin/user_detail', $data);
+    }
+
+    /**
+     * Generiere Monatsrechnungen für einen bestimmten Benutzer
+     */
+    protected function getInvoicesForUser(int $userId, $user): array
+    {
+        $db = \Config\Database::connect();
+
+        // Hole erste Transaktion des Benutzers
+        $firstTransaction = $db->table('bookings')
+            ->select('MIN(created_at) as first_transaction')
+            ->where('user_id', $userId)
+            ->get()
+            ->getRow();
+
+        if (!$firstTransaction || empty($firstTransaction->first_transaction)) {
+            return [];
+        }
+
+        $invoices = [];
+        $firstTransactionDate = new \DateTime($firstTransaction->first_transaction);
+        $startPeriod = $firstTransactionDate->format('Y-m');
+        $lastMonth = date('Y-m', strtotime('-1 month'));
+
+        $period = $startPeriod;
+        while ($period <= $lastMonth) {
+            $startDate = $period . '-01 00:00:00';
+            $endDate = date('Y-m-t 23:59:59', strtotime($startDate));
+
+            $purchases = $db->table('bookings')
+                ->select('id, created_at, paid_amount, amount, type')
+                ->where('user_id', $userId)
+                ->whereIn('type', ['offer_purchase', 'refund_purchase'])
+                ->where('created_at >=', $startDate)
+                ->where('created_at <=', $endDate)
+                ->get()
+                ->getResultArray();
+
+            $totalAmount = 0;
+            $purchaseCount = 0;
+            $refundCount = 0;
+            foreach ($purchases as $purchase) {
+                if ($purchase['type'] === 'offer_purchase') {
+                    $totalAmount += abs($purchase['paid_amount'] ?? $purchase['amount']);
+                    $purchaseCount++;
+                } else {
+                    $totalAmount -= abs($purchase['amount']);
+                    $refundCount++;
+                }
+            }
+
+            // Nur Monate mit Aktivität hinzufügen
+            if ($purchaseCount > 0 || $refundCount > 0) {
+                $year = substr($period, 0, 4);
+                $month = substr($period, 5, 2);
+
+                $platformParts = explode('_', $user->platform ?? '');
+                $countryCode = end($platformParts);
+                $country = strtoupper($countryCode === 'ch' ? 'CH' :
+                          ($countryCode === 'de' ? 'DE' :
+                          ($countryCode === 'at' ? 'AT' : 'CH')));
+
+                $currency = ($country === 'CH') ? 'CHF' : 'EUR';
+                $invoiceDate = date('Y-m-01', strtotime($period . '-01 +1 month'));
+
+                $invoices[] = [
+                    'user_id' => $userId,
+                    'period' => $period,
+                    'purchase_count' => $purchaseCount,
+                    'refund_count' => $refundCount,
+                    'amount' => $totalAmount,
+                    'currency' => $currency,
+                    'created_at' => $invoiceDate,
+                    'invoice_number' => "M{$country}-{$year}{$month}-{$userId}",
+                ];
+            }
+
+            $period = date('Y-m', strtotime($period . '-01 +1 month'));
+        }
+
+        // Sortiere nach Periode absteigend (neueste zuerst)
+        usort($invoices, fn($a, $b) => strcmp($b['period'], $a['period']));
+
+        return $invoices;
     }
 
     public function addNote($id)

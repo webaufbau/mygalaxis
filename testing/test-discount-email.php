@@ -2,81 +2,155 @@
 
 /**
  * Test Script für Rabatt-E-Mails
- * Simuliert Rabatt-Benachrichtigungen an Firmen
+ * Sendet direkt eine Test-Rabatt-E-Mail
  */
 
-echo "=== Test Rabatt-E-Mails ===\n\n";
+// Define constants
+define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR);
 
-// Parameter
-$offerId = 451; // Umzug Offerte
-$companyUserId = 82; // Blumer Rapid Umzug
+// Load the paths config file
+$pathsConfig = FCPATH . '../app/Config/Paths.php';
+$paths = require realpath($pathsConfig) ?: $pathsConfig;
 
-echo "Verwende:\n";
-echo "  Offerte ID: {$offerId}\n";
-echo "  Firma User ID: {$companyUserId}\n\n";
+// Location of the framework bootstrap file
+require rtrim($paths->systemDirectory, '\\/ ') . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
-// Verbinde mit Datenbank
-$mysqli = new mysqli('db', 'db', 'db', 'db');
-if ($mysqli->connect_error) {
-    die("Verbindung fehlgeschlagen: " . $mysqli->connect_error . "\n");
+// Load environment-specific settings
+$app = \Config\Services::codeigniter();
+$app->initialize();
+
+echo "=== Test Rabatt-E-Mail ===\n\n";
+
+// Finde eine verifizierte Offerte mit Platform
+$db = \Config\Database::connect();
+$offer = $db->table('offers')
+    ->where('verified', 1)
+    ->where('price >', 10)
+    ->where('platform IS NOT NULL')
+    ->orderBy('id', 'DESC')
+    ->get(1)
+    ->getRowArray();
+
+if (!$offer) {
+    die("ERROR: Keine passende Offerte gefunden!\n");
 }
-
-// Prüfe ob Offerte existiert
-$result = $mysqli->query("SELECT id, type, zip, city, price, discounted_price FROM offers WHERE id = {$offerId}");
-if (!$result || $result->num_rows === 0) {
-    die("ERROR: Offerte #{$offerId} nicht gefunden!\n");
-}
-$offer = $result->fetch_assoc();
 
 echo "✓ Offerte #{$offer['id']} gefunden: {$offer['type']}, {$offer['zip']} {$offer['city']}\n";
-echo "  Preis: {$offer['price']} CHF\n";
-echo "  Rabattpreis: " . ($offer['discounted_price'] ?? 'NULL') . " CHF\n\n";
+echo "  Platform: {$offer['platform']}\n";
+echo "  Preis: {$offer['price']} CHF\n\n";
 
-// Prüfe ob Firma existiert
-$result = $mysqli->query("SELECT id, email_text, contact_person, company_name FROM users WHERE id = {$companyUserId}");
-if (!$result || $result->num_rows === 0) {
-    die("ERROR: Firma User ID {$companyUserId} nicht gefunden!\n");
-}
-$company = $result->fetch_assoc();
-echo "✓ Firma gefunden: {$company['company_name']} - {$company['contact_person']} ({$company['email_text']})\n\n";
-
-// Setze Rabattpreis falls nicht vorhanden
-if (empty($offer['discounted_price']) || $offer['discounted_price'] >= $offer['price']) {
-    $newPrice = round($offer['price'] * 0.3, 2); // 70% Rabatt
-    $mysqli->query("UPDATE offers SET discounted_price = {$newPrice}, last_price_update_sent = NULL WHERE id = {$offerId}");
-    echo "Rabattpreis gesetzt: {$newPrice} CHF (ca. 70% Rabatt)\n\n";
-    $offer['discounted_price'] = $newPrice;
+// Finde eine Firma
+$userModel = new \App\Models\UserModel();
+$companies = $userModel->findAll();
+$company = null;
+foreach ($companies as $u) {
+    if ($u->inGroup('user')) {
+        $company = $u;
+        break;
+    }
 }
 
-$discount = round(($offer['price'] - $offer['discounted_price']) / $offer['price'] * 100);
-echo "Erwarteter Betreff: \"{$discount}% Rabatt auf Anfrage für Umzug #{$offerId} {$offer['zip']} {$offer['city']}\"\n";
-echo "Inhalt sollte NICHT enthalten: \"Vielen Dank für Ihre Anfrage!\"\n\n";
+if (!$company) {
+    die("ERROR: Keine Firma gefunden!\n");
+}
 
-$mysqli->close();
+echo "✓ Firma gefunden: {$company->company_name} ({$company->email})\n\n";
 
-echo "Führe Rabatt-Command aus...\n";
+// Simuliere Rabatt
+$oldPrice = (float)$offer['price'];
+$newPrice = round($oldPrice * 0.3, 2); // 70% Rabatt
+$discount = round(($oldPrice - $newPrice) / $oldPrice * 100);
+
+echo "Simulierter Rabatt: {$discount}%\n";
+echo "  Alter Preis: {$oldPrice} CHF\n";
+echo "  Neuer Preis: {$newPrice} CHF\n\n";
+
+// Lade SiteConfig
+$siteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($company->platform);
+
+// Dekodiere form_fields als data-Feld
+if (isset($offer['form_fields']) && is_string($offer['form_fields'])) {
+    $offer['data'] = json_decode($offer['form_fields'], true) ?? [];
+} elseif (isset($offer['data']) && is_string($offer['data'])) {
+    $offer['data'] = json_decode($offer['data'], true) ?? [];
+} else {
+    $offer['data'] = [];
+}
+
+// Extrahiere Plattform-Domain
+$offerPlatformDomain = '';
+if (!empty($offer['platform'])) {
+    $offerPlatformDomain = str_replace('my_', '', $offer['platform']);
+    $offerPlatformDomain = str_replace('_', '.', $offerPlatformDomain);
+    $offerPlatformDomain = ucfirst($offerPlatformDomain);
+}
+
+echo "Plattform-Domain: {$offerPlatformDomain}\n\n";
+
+// Typ-Mapping
+$typeMapping = [
+    'move' => 'Umzug',
+    'cleaning' => 'Reinigung',
+    'move_cleaning' => 'Umzug + Reinigung',
+    'painting' => 'Maler/Gipser',
+    'gardening' => 'Garten Arbeiten',
+    'electrician' => 'Elektriker Arbeiten',
+    'plumbing' => 'Sanitär Arbeiten',
+    'heating' => 'Heizung Arbeiten',
+];
+$type = $typeMapping[$offer['type']] ?? ucfirst($offer['type']);
+
+// Betreff
+$newPriceFormatted = number_format($newPrice, 0, '.', '\'');
+$subject = "{$discount}% Rabatt / Neuer Preis Fr. {$newPriceFormatted}.– für {$type} {$offer['zip']} {$offer['city']} ID {$offer['id']} Anfrage";
+
+echo "Betreff: {$subject}\n\n";
+
+// Rendere E-Mail
+$message = view('emails/price_update', [
+    'firma' => $company,
+    'offer' => $offer,
+    'oldPrice' => $oldPrice,
+    'newPrice' => $newPrice,
+    'discount' => $discount,
+    'siteConfig' => $siteConfig,
+    'alreadyPurchased' => false,
+    'customFieldDisplay' => null,
+    'offerPlatformDomain' => $offerPlatformDomain,
+]);
+
+$view = \Config\Services::renderer();
+$fullEmail = $view->setData([
+    'title' => 'Rabatt-Benachrichtigung',
+    'content' => $message,
+    'siteConfig' => $siteConfig,
+])->render('emails/layout');
+
+// Sende E-Mail
+helper('email_template');
+$email = \Config\Services::email();
+$to = $siteConfig->testMode ? $siteConfig->testEmail : $company->email;
+$email->setTo($to);
+$email->setFrom($siteConfig->email, getEmailFromName($siteConfig));
+$email->setSubject($subject);
+$email->setMessage($fullEmail);
+$email->setMailType('html');
+
+date_default_timezone_set('Europe/Zurich');
+$email->setHeader('Date', date('r'));
+
+echo "Sende E-Mail an: {$to}\n";
 echo str_repeat("-", 60) . "\n\n";
 
-// Führe den Command aus
-$output = [];
-$returnCode = 0;
-exec("cd /var/www/html && php spark offers:discount-old 2>&1", $output, $returnCode);
-
-// Zeige Output
-foreach ($output as $line) {
-    echo $line . "\n";
-}
-
-echo "\n" . str_repeat("-", 60) . "\n";
-
-if ($returnCode === 0) {
-    echo "✅ Command erfolgreich ausgeführt!\n\n";
-    echo "Prüfe die E-Mails in MailPit:\n";
-    echo "  → https://mygalaxis.ddev.site:8026\n";
-    echo "  → oder http://localhost:8025\n\n";
-    echo "Es sollte eine Rabatt-E-Mail an {$company['email_text']} vorhanden sein.\n";
+if ($email->send()) {
+    echo "✅ E-Mail erfolgreich gesendet!\n\n";
+    echo "Prüfe in MailPit:\n";
+    echo "  → https://mygalaxis.ddev.site:8026\n\n";
+    echo "Der Plattform-Hinweis sollte erscheinen:\n";
+    echo "  \"Diese Anfrage stammt von {$offerPlatformDomain}\"\n";
 } else {
-    echo "❌ Fehler beim Ausführen des Commands (Exit Code: {$returnCode})\n";
+    echo "❌ Fehler beim Senden:\n";
+    echo $email->printDebugger();
 }
 
 echo "\n=== Test abgeschlossen ===\n";

@@ -129,6 +129,11 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
             <i class="bi bi-sticky"></i> Notizen
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices" type="button" role="tab" aria-controls="invoices" aria-selected="false">
+            <i class="bi bi-receipt"></i> Monatsrechnungen <?php if (!empty($invoices)): ?>(<?= count($invoices) ?>)<?php endif; ?>
+        </button>
+    </li>
 </ul>
 
 <!-- Tab Content -->
@@ -985,7 +990,7 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
                                         <td>
                                             <strong><?= $date->format('d.m.Y') ?></strong>
                                         </td>
-                                        <td><?= $date->format('l') ?></td>
+                                        <td><?= $date->toLocalizedString('EEEE') ?></td>
                                         <td>
                                             <?php if ($isToday): ?>
                                                 <span class="badge bg-warning">Heute</span>
@@ -1172,6 +1177,86 @@ if (strpos($platformLower, 'offertenschweiz') !== false ||
         </div>
     </div>
     <!-- Ende Tab 8: Notizen -->
+
+    <!-- Tab 9: Monatsrechnungen -->
+    <div class="tab-pane fade" id="invoices" role="tabpanel" aria-labelledby="invoices-tab">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-receipt"></i> Monatsrechnungen</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($invoices)): ?>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover" id="invoicesTable">
+                            <thead>
+                                <tr>
+                                    <th>Rechnung-Nr.</th>
+                                    <th>Periode</th>
+                                    <th class="text-center">Käufe</th>
+                                    <th class="text-center">Stornos</th>
+                                    <th class="text-end">Betrag</th>
+                                    <th>Ausgestellt</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($invoices as $invoice): ?>
+                                    <tr>
+                                        <td><strong><?= esc($invoice['invoice_number']) ?></strong></td>
+                                        <td>
+                                            <?php
+                                            $periodDate = DateTime::createFromFormat('Y-m', $invoice['period']);
+                                            echo $periodDate ? $periodDate->format('m/Y') : $invoice['period'];
+                                            ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success"><?= $invoice['purchase_count'] ?></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if ($invoice['refund_count'] > 0): ?>
+                                                <span class="badge bg-danger"><?= $invoice['refund_count'] ?></span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary">0</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-end">
+                                            <?php $amountClass = $invoice['amount'] >= 0 ? 'text-success' : 'text-danger'; ?>
+                                            <strong class="<?= $amountClass ?>">
+                                                <?= number_format($invoice['amount'], 2, ".", "'") ?> <?= esc($invoice['currency']) ?>
+                                            </strong>
+                                        </td>
+                                        <td><?= date('d.m.Y', strtotime($invoice['created_at'])) ?></td>
+                                        <td>
+                                            <a href="<?= site_url('admin/invoices/download-pdf/' . $invoice['period'] . '/' . $invoice['user_id']) ?>"
+                                               class="btn btn-sm btn-warning" target="_blank" title="PDF herunterladen">
+                                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <script>
+                    $(document).ready(function() {
+                        $('#invoicesTable').DataTable({
+                            "order": [[1, "desc"]],
+                            "pageLength": 25,
+                            "language": {
+                                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json"
+                            }
+                        });
+                    });
+                    </script>
+                <?php else: ?>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Keine Monatsrechnungen vorhanden.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <!-- Ende Tab 9: Monatsrechnungen -->
 
 </div>
 <!-- Ende Tab Content -->

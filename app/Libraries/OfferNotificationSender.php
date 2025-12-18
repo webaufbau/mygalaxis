@@ -478,6 +478,15 @@ class OfferNotificationSender
         // URL zum Kauf der Offerte
         $data['offer_buy_url'] = rtrim($siteConfig->backendUrl, '/') . '/offers/buy/' . $fullOffer['id'];
 
+        // Plattform-Domain aus der Offerte extrahieren (für Hinweis in E-Mails an Firmen)
+        $offerPlatformDomain = '';
+        if (!empty($fullOffer['platform'])) {
+            $offerPlatformDomain = str_replace('my_', '', $fullOffer['platform']);
+            $offerPlatformDomain = str_replace('_', '.', $offerPlatformDomain);
+            $offerPlatformDomain = ucfirst($offerPlatformDomain);
+        }
+        $data['offer_platform_domain'] = $offerPlatformDomain;
+
         $excludedFields = [
             'terms_n_condition', 'terms_and_conditions', 'terms',
             'type', 'lang', 'language', 'csrf_test_name', 'submit', 'form_token',
@@ -514,6 +523,23 @@ class OfferNotificationSender
 
         // Parse the complete body with all shortcodes
         $parsedBody = $parser->parse($bodyTemplate, $data, $excludedFields);
+
+        // Füge Plattform-Hinweis am Anfang ein (nach Greeting, falls vorhanden)
+        if (!empty($offerPlatformDomain)) {
+            $platformNotice = '<div style="background-color: #e7f3ff; border: 1px solid #b8daff; border-radius: 5px; padding: 12px 15px; margin: 15px 0;">'
+                . '<p style="margin: 0; font-size: 14px; color: #004085;">'
+                . '<strong>Hinweis:</strong> Diese Anfrage stammt von <strong>' . esc($offerPlatformDomain) . '</strong>. '
+                . 'Bei der Kommunikation mit dem Kunden erwähnen Sie bitte die Plattform "' . esc($offerPlatformDomain) . '".'
+                . '</p></div>';
+
+            // Versuche nach dem ersten </p> oder <h2> einzufügen, sonst am Anfang
+            if (preg_match('/(<\/p>|<\/h2>)/i', $parsedBody, $matches, PREG_OFFSET_MATCH)) {
+                $insertPos = $matches[0][1] + strlen($matches[0][0]);
+                $parsedBody = substr($parsedBody, 0, $insertPos) . $platformNotice . substr($parsedBody, $insertPos);
+            } else {
+                $parsedBody = $platformNotice . $parsedBody;
+            }
+        }
 
         // Translate field values if template language is not German
         helper('email_translation');
@@ -585,13 +611,23 @@ class OfferNotificationSender
         $priceFormatted = number_format($price, 0, '.', '\'');
 
         $subject = "Neue Anfrage Preis Fr. {$priceFormatted}.– für {$type} ID {$fullOffer['id']} - {$fullOffer['zip']} {$fullOffer['city']}";
+
+        // Extrahiere Plattform-Domain aus der Offerte (NICHT User-Platform)
+        $offerPlatformDomain = '';
+        if (!empty($fullOffer['platform'])) {
+            $offerPlatformDomain = str_replace('my_', '', $fullOffer['platform']);
+            $offerPlatformDomain = str_replace('_', '.', $offerPlatformDomain);
+            $offerPlatformDomain = ucfirst($offerPlatformDomain);
+        }
+
         $message = view('emails/offer_new_detailed', [
             'firma' => $user,
             'offer' => $fullOffer,
             'siteConfig' => $siteConfig,
             'alreadyPurchased' => $alreadyPurchased,
             'fields' => $extractedFields,
-            'customFieldDisplay' => $customFieldDisplay, // Neu: übergebe custom field display
+            'customFieldDisplay' => $customFieldDisplay,
+            'offerPlatformDomain' => $offerPlatformDomain, // Plattform-Domain der Offerte
         ]);
 
         $view = \Config\Services::renderer();

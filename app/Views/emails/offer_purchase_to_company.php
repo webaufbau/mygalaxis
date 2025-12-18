@@ -2,6 +2,15 @@
 
 <p><?= lang('Email.SuccessMessage') ?></p>
 
+<?php if (!empty($offerPlatformDomain)): ?>
+<div style="background-color: #e7f3ff; border: 1px solid #b8daff; border-radius: 5px; padding: 12px 15px; margin: 15px 0;">
+    <p style="margin: 0; font-size: 14px; color: #004085;">
+        <strong>Hinweis:</strong> Diese Anfrage stammt von <strong><?= esc($offerPlatformDomain) ?></strong>.
+        Bei der Kommunikation mit dem Kunden erwähnen Sie bitte die Plattform "<?= esc($offerPlatformDomain) ?>".
+    </p>
+</div>
+<?php endif; ?>
+
 <ul>
     <li><strong><?= lang('Email.Title') ?>:</strong> <?= esc($offer['title'] ?? '') ?></li>
     <li><strong><?= lang('Email.Type') ?>:</strong> <?= esc(lang('Offers.type.' . $offer['type']) ?? '') ?></li>

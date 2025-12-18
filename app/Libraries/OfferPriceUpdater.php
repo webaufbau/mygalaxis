@@ -182,6 +182,14 @@ class OfferPriceUpdater
         // Format: "20% Rabatt auf Angebot #32 Heizung 3000 Bern"
         $subject = "{$discount}% Rabatt auf Angebot #{$offer['id']} {$type} {$offer['zip']} {$offer['city']}";
 
+        // Extrahiere Plattform-Domain aus der Offerte
+        $offerPlatformDomain = '';
+        if (!empty($fullOffer['platform'])) {
+            $offerPlatformDomain = str_replace('my_', '', $fullOffer['platform']);
+            $offerPlatformDomain = str_replace('_', '.', $offerPlatformDomain);
+            $offerPlatformDomain = ucfirst($offerPlatformDomain);
+        }
+
         $message = view('emails/price_update', [
             'firma' => $user,
             'offer' => $fullOffer,
@@ -190,6 +198,7 @@ class OfferPriceUpdater
             'discount' => $discount,
             'siteConfig' => $siteConfig,
             'alreadyPurchased' => $alreadyPurchased,
+            'offerPlatformDomain' => $offerPlatformDomain,
         ]);
 
         $to = $siteConfig->testMode ? $siteConfig->testEmail : $user->getEmail();

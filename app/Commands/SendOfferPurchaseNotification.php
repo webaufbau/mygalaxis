@@ -101,30 +101,22 @@ class SendOfferPurchaseNotification extends BaseCommand
 
         $company_backend_offer_link = rtrim($siteConfig->backendUrl, '/') . '/offers/mine#detailsview-' . $offer['id'];
 
+        // Extrahiere Domain aus Platform (z.B. my_offertenheld_ch -> offertenheld.ch)
+        $offerPlatformDomain = '';
+        if (!empty($offer['platform'])) {
+            $offerPlatformDomain = str_replace('my_', '', $offer['platform']);
+            $offerPlatformDomain = str_replace('_', '.', $offerPlatformDomain);
+            $offerPlatformDomain = ucfirst($offerPlatformDomain);
+        }
+
         $data = [
             'siteConfig'        => $siteConfig,
             'kunde'             => $customer,
             'firma'             => $company,
             'offer'             => $offer,
             'company_backend_offer_link' => $company_backend_offer_link,
+            'offerPlatformDomain' => $offerPlatformDomain,
         ];
-
-        // Extrahiere Domain aus Platform (z.B. my_offertenheld_ch -> offertenheld.ch)
-        $domain = '';
-        if ($offer['platform']) {
-            $domain = str_replace('my_', '', $offer['platform']);
-            $domain = str_replace('_', '.', $domain);
-        } else {
-            // Fallback: extrahiere aus frontendUrl
-            $url = $siteConfig->frontendUrl ?? base_url();
-            $domain = preg_replace('#^https?://([^/]+).*$#', '$1', $url);
-            $parts = explode('.', $domain);
-            if (count($parts) >= 2) {
-                $domain = $parts[count($parts) - 2] . '.' . $parts[count($parts) - 1];
-            }
-        }
-        // Capitalize first letter
-        $domain = ucfirst($domain);
 
         // Typ mit Großbuchstaben
         $type = lang('Offers.type.' . $offer['type']);
