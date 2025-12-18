@@ -91,8 +91,11 @@ elseif($siteConfig->phoneCheck == 'de') {
             <p class="mb-2"><strong><?= esc(lang('Profile.street')) ?>:</strong><br><?= esc($user->company_street) ?></p>
             <p class="mb-2"><strong><?= esc(lang('Profile.zip')) ?> / <?= esc(lang('Profile.city')) ?>:</strong><br><?= esc($user->company_zip) ?> <?= esc($user->company_city) ?></p>
             <?php if(!empty($user->company_website)): ?>
-            <p class="mb-0"><strong><?= esc(lang('Profile.website')) ?>:</strong><br><?= esc($user->company_website) ?></p>
+            <p class="mb-2"><strong><?= esc(lang('Profile.website')) ?>:</strong><br><?= esc($user->company_website) ?></p>
             <?php endif; ?>
+            <p class="mb-0"><strong><?= esc(lang('Profile.memberSince')) ?>:</strong><br>
+                <?= \CodeIgniter\I18n\Time::parse($authUser->created_at)->setTimezone(app_timezone())->format('d.m.Y') ?>
+            </p>
         </div>
     </div>
     <hr class="my-3">

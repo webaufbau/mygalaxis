@@ -22,7 +22,6 @@ class Invoices extends BaseController
         $periodFrom = $this->request->getGet('period_from') ?? '';
         $periodTo = $this->request->getGet('period_to') ?? '';
         $platform = $this->request->getGet('platform') ?? '';
-        $regions = $this->request->getGet('regions') ?? [];
         $categories = $this->request->getGet('categories') ?? [];
         $companyName = $this->request->getGet('company_name') ?? '';
 
@@ -45,18 +44,7 @@ class Invoices extends BaseController
             $companiesBuilder->groupEnd();
         }
 
-        // WICHTIG: Region/Category Filter - nur Firmen die diese Filter haben
-        if (!empty($regions)) {
-            $companiesBuilder->where('users.filter_regions IS NOT NULL');
-            $companiesBuilder->where('users.filter_regions !=', '');
-
-            $companiesBuilder->groupStart();
-            foreach ($regions as $region) {
-                $companiesBuilder->orWhere("FIND_IN_SET('{$db->escapeString($region)}', users.filter_regions) >", 0);
-            }
-            $companiesBuilder->groupEnd();
-        }
-
+        // Branchen-Filter - nur Firmen die diese Branchen haben
         if (!empty($categories)) {
             $companiesBuilder->where('users.filter_categories IS NOT NULL');
             $companiesBuilder->where('users.filter_categories !=', '');
@@ -78,7 +66,6 @@ class Invoices extends BaseController
 
         // Debug: Log filter info
         log_message('debug', 'Invoice Filters - Platform: ' . ($platform ?: 'none') .
-                    ', Regions: ' . json_encode($regions) .
                     ', Categories: ' . json_encode($categories) .
                     ', Company Name: ' . ($companyName ?: 'none'));
         log_message('debug', 'Filtered companies count: ' . count($companies));
@@ -208,21 +195,6 @@ class Invoices extends BaseController
 
         $platforms = $allPlatforms[$siteCountry] ?? $allPlatforms['CH'];
 
-        // Regionen für Multi-Select (aus zipcodes Tabelle holen)
-        $db = \Config\Database::connect();
-
-        $query = $db->table('zipcodes')
-            ->select('province')
-            ->where('country_code', $siteCountry)
-            ->groupBy('province')
-            ->orderBy('province', 'ASC')
-            ->get();
-
-        $allRegions = [];
-        foreach ($query->getResult() as $row) {
-            $allRegions[] = ['name' => $row->province];
-        }
-
         // Kategorien für Multi-Select (aus Settings-Dateien)
         $categoryManager = new \App\Libraries\CategoryManager();
         $categoriesData = $categoryManager->getAll();
@@ -231,13 +203,11 @@ class Invoices extends BaseController
         return view('admin/invoices/index', [
             'invoices' => $invoices,
             'platforms' => $platforms,
-            'allRegions' => $allRegions,
             'allCategories' => $allCategories,
             'filters' => [
                 'period_from' => $periodFrom,
                 'period_to' => $periodTo,
                 'platform' => $platform,
-                'regions' => $regions,
                 'categories' => $categories,
                 'company_name' => $companyName,
             ]

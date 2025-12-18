@@ -12,6 +12,7 @@ return [
     'city'               => 'Ort',
     'mapPreview'         => 'Vorschau Standort (Google Maps)',
     'website'            => 'Website',
+    'memberSince'        => 'Mitglied seit',
     'companyEmail'       => 'E-Mail (Firma)',
     'companyEmailHelp'   => 'Diese E-Mail wird Kunden angezeigt (z.B. bei Angebotsverkauf, auf Rechnungen). Sie können hier eine andere E-Mail eintragen, falls Kunden eine andere E-Mail sehen sollen. Ihre Login-E-Mail bleibt privat.',
     'phone'              => 'Telefon',

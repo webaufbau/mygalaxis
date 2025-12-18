@@ -48,33 +48,10 @@
                 </div>
 
                 <div class="row g-3 mt-2">
-                    <!-- Regionen Multi-Select -->
-                    <div class="col-md-6">
-                        <label class="form-label">Regionen:</label>
-                        <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
-                            <?php if (!empty($allRegions)): ?>
-                                <?php foreach ($allRegions as $index => $region): ?>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="regions[]"
-                                               value="<?= esc($region['name']) ?>"
-                                               id="region_<?= $index ?>"
-                                               role="switch"
-                                               <?= in_array($region['name'], $filters['regions']) ? 'checked' : '' ?>>
-                                        <label class="form-check-label" for="region_<?= $index ?>">
-                                            <?= esc($region['name']) ?>
-                                        </label>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <small class="text-muted">Keine Regionen verfügbar</small>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
                     <!-- Branchen Multi-Select -->
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <label class="form-label">Branchen:</label>
-                        <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                        <div class="border rounded p-3 d-flex flex-wrap gap-3" style="max-height: 200px; overflow-y: auto;">
                             <?php if (!empty($allCategories)): ?>
                                 <?php foreach ($allCategories as $catKey => $category): ?>
                                     <div class="form-check form-switch">
