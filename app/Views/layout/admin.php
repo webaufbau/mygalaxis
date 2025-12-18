@@ -269,6 +269,115 @@
         .admin-content .card {
             border-left: none;
         }
+
+        /* ========== PRINT STYLES ========== */
+        @media print {
+            /* Sidebar und Topbar ausblenden */
+            .admin-sidebar,
+            .sidebar-backdrop,
+            .admin-topbar,
+            .mobile-toggle {
+                display: none !important;
+            }
+
+            /* Body/HTML Overflow zurücksetzen */
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            /* Wrapper als Block statt Flex */
+            .admin-wrapper {
+                display: block !important;
+                height: auto !important;
+            }
+
+            /* Main Content volle Breite */
+            .admin-main {
+                width: 100% !important;
+                overflow: visible !important;
+            }
+
+            /* Content Area ohne Scroll */
+            .admin-content {
+                overflow: visible !important;
+                padding: 0 !important;
+                height: auto !important;
+            }
+
+            /* DataTables: Pagination, Search, Info ausblenden */
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter,
+            .dataTables_wrapper .dataTables_info,
+            .dataTables_wrapper .dataTables_paginate,
+            .dt-buttons,
+            .dataTables_processing {
+                display: none !important;
+            }
+
+            /* Tabelle über mehrere Seiten umbrechen */
+            table {
+                page-break-inside: auto !important;
+            }
+
+            tr {
+                page-break-inside: avoid !important;
+                page-break-after: auto !important;
+            }
+
+            thead {
+                display: table-header-group !important;
+            }
+
+            tfoot {
+                display: table-footer-group !important;
+            }
+
+            /* Tabelle volle Breite */
+            .table-responsive {
+                overflow: visible !important;
+            }
+
+            table.dataTable {
+                width: 100% !important;
+                font-size: 9pt !important;
+            }
+
+            /* Buttons ausblenden */
+            .btn,
+            form[onsubmit*="confirm"] {
+                display: none !important;
+            }
+
+            /* Filter-Formular ausblenden */
+            form.row.g-3.mb-4 {
+                display: none !important;
+            }
+
+            /* Alerts ausblenden */
+            .alert {
+                display: none !important;
+            }
+
+            /* Kleinere Schrift und kompaktere Zellen */
+            #offersTable td,
+            #offersTable th {
+                padding: 2px 4px !important;
+                font-size: 8pt !important;
+            }
+
+            /* Badges kompakter */
+            .badge {
+                padding: 1px 4px !important;
+                font-size: 7pt !important;
+            }
+
+            /* Seitenränder */
+            @page {
+                margin: 1cm;
+                size: landscape;
+            }
+        }
     </style>
 
     <?php
