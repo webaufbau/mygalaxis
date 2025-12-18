@@ -342,13 +342,20 @@
 
 <script>
     $(document).ready(function() {
-        $('#offersTable').DataTable({
+        var table = $('#offersTable').DataTable({
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/1.10.22/i18n/German.json'
             },
             pageLength: 10,
             stateSave: true,
             order: [[1, 'desc']] // Nach Datum (zweite Spalte) absteigend sortieren
+        });
+
+        // Bei Seitenwechsel nach oben scrollen
+        table.on('page.dt', function() {
+            $('html, body').animate({
+                scrollTop: 0
+            }, 200);
         });
     });
 </script>
