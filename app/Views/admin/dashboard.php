@@ -352,10 +352,10 @@
         });
 
         // Bei Seitenwechsel nach oben scrollen
-        table.on('page.dt', function() {
-            $('html, body').animate({
-                scrollTop: 0
-            }, 200);
+        $(document).on('click', '.dataTables_paginate a', function() {
+            setTimeout(function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
         });
     });
 </script>

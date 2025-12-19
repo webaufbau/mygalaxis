@@ -491,6 +491,10 @@ $pendingCount = (new \App\Models\OfferModel())
                     <i class="bi bi-trash"></i>
                     <span class="nav-text">Papierkorb</span>
                 </a>
+                <a class="nav-link <?= $segment2 === 'import-export' ? 'active' : '' ?>" href="/admin/import-export">
+                    <i class="bi bi-arrow-down-up"></i>
+                    <span class="nav-text">Import/Export</span>
+                </a>
             </div>
         </nav>
 

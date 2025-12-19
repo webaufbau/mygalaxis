@@ -694,7 +694,7 @@ class OfferPriceCalculator
                         $additionalPrice = $category['options'][$aKey]['price'] ?? 0;
 
                         // Wenn Step2-Arbeiten gewählt wurden, ziehen wir die Basis ab
-                        if (in_array($aKey, ['neue_waermepumpe','neue_gasheizung','neue_oelheizung','neue_erdwaerme'])) {
+                        if (in_array($aKey, ['neue_el__waermepumpe','neue_gasheizung','neue___l_heizung','neue_erdwaermheizung'])) {
                             foreach ($selectedStep2 as $step2Key) {
                                 $additionalPrice -= $category['options'][$step2Key]['price'] ?? 0;
                             }

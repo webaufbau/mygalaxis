@@ -377,4 +377,9 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('email-log/offer/(:num)', 'Admin\EmailLog::byOffer/$1');
     $routes->get('email-log/company/(:num)', 'Admin\EmailLog::byCompany/$1');
 
+    // Import/Export
+    $routes->get('import-export', 'Admin\ImportExport::index');
+    $routes->post('import-export/export', 'Admin\ImportExport::export');
+    $routes->post('import-export/import', 'Admin\ImportExport::import');
+
 });
