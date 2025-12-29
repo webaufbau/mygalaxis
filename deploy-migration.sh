@@ -49,9 +49,9 @@ run_migration() {
     local command="cd ${project_path}"
 
     if [ "$need_git_pull" = "yes" ]; then
-        echo -e "${BLUE}🔄 Git Pull wird ausgeführt...${NC}"
-        # Git Pull separat ausführen, damit wir die Ausgabe sehen
-        ssh -p "${ssh_port}" "${ssh_user_host}" "cd ${project_path} && git pull"
+        echo -e "${BLUE}🔄 Git Stash & Pull wird ausgeführt...${NC}"
+        # Zuerst stash um lokale Änderungen zu sichern, dann pull
+        ssh -p "${ssh_port}" "${ssh_user_host}" "cd ${project_path} && git stash && git pull && git stash pop 2>/dev/null || true"
     fi
 
     # Writable-Verzeichnisse erstellen und Rechte setzen
