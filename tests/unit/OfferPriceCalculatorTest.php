@@ -403,9 +403,8 @@ final class OfferPriceCalculatorTest extends CIUnitTestCase
             'arbeiten_heizung' => ['Neubau', 'neue_waermepumpe']
         ], []);
 
-        // Neubau (59) + Wärmepumpe (69-59=10) + Haus (29) = 98
-        // Die Wärmepumpe wird um den Neubau-Preis reduziert
-        $this->assertEquals(98, $price, 'Bei Neubau+Wärmepumpe wird Neubau von Wärmepumpe abgezogen');
+        // Neubau (59) + Wärmepumpe (69) + Haus (29) = 157
+        $this->assertEquals(157, $price, 'Neubau + Wärmepumpe + Haus werden addiert');
     }
 
     // ========================================
