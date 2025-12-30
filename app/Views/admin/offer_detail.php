@@ -173,6 +173,34 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                         <td><strong>Typ:</strong></td>
                         <td><?= esc(lang('Offers.type.' . $offer['type'])) ?></td>
                     </tr>
+                    <tr>
+                        <td><strong>Termin:</strong></td>
+                        <td>
+                            <?php
+                            if (!empty($offer['work_start_date'])) {
+                                $workDate = new DateTime($offer['work_start_date']);
+                                echo $workDate->format('d.m.Y');
+                            } else {
+                                echo '<span class="text-muted">-</span>';
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Flexibel:</strong></td>
+                        <td>
+                            <?php
+                            $zeitFlexibel = $formFields['zeit_flexibel'] ?? '';
+                            if (!empty($zeitFlexibel)) {
+                                // Entferne "Ja, " am Anfang falls vorhanden
+                                $displayText = preg_replace('/^Ja,\s*/i', '', $zeitFlexibel);
+                                echo esc($displayText);
+                            } else {
+                                echo '<span class="text-muted">-</span>';
+                            }
+                            ?>
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>

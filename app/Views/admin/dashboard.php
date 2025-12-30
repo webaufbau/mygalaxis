@@ -174,6 +174,8 @@
     <tr>
         <th>ID</th>
         <th>Datum</th>
+        <th>Termin</th>
+        <th>Flexibel</th>
         <th>Typ</th>
         <th>PLZ</th>
         <th>Ort</th>
@@ -250,6 +252,33 @@
         ?>
         <td data-order="<?= $date->format('Y-m-d-H-i-s') ?>">
             <?= $date->format('d.m.Y H:i') ?>
+        </td>
+        <td>
+            <?php
+            if (!empty($o['work_start_date'])) {
+                $workDate = new DateTime($o['work_start_date']);
+                echo $workDate->format('d.m.Y');
+            } else {
+                echo '<span class="text-muted">-</span>';
+            }
+            ?>
+        </td>
+        <td>
+            <?php
+            $zeitFlexibel = $formFields['zeit_flexibel'] ?? '';
+            if (!empty($zeitFlexibel)) {
+                // Entferne "Ja, " am Anfang falls vorhanden
+                $displayText = preg_replace('/^Ja,\s*/i', '', $zeitFlexibel);
+                // Kürze lange Texte
+                $shortText = $displayText;
+                if (mb_strlen($displayText) > 15) {
+                    $shortText = mb_substr($displayText, 0, 12) . '...';
+                }
+                echo '<span title="' . esc($displayText) . '">' . esc($shortText) . '</span>';
+            } else {
+                echo '<span class="text-muted">-</span>';
+            }
+            ?>
         </td>
         <td><?= esc(lang('Offers.type.' . $o['type']) ?? $o['type']) ?></td>
         <td><?= esc($o['zip']) ?></td>
