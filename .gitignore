@@ -86,6 +86,8 @@ writable/Language/*
 
 writable/missing_translations.txt
 
+writable/data/email_field_translations.json
+
 php_errors.log
 
 #-------------------------
