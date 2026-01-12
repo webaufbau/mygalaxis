@@ -114,14 +114,15 @@ class Projects extends AdminBase
 
     public function updateOrder()
     {
-        $order = $this->request->getPost('order');
+        $json = $this->request->getJSON(true);
+        $order = $json['order'] ?? null;
 
         if (!is_array($order)) {
-            return $this->response->setJSON(['success' => false]);
+            return $this->response->setJSON(['success' => false, 'error' => 'Invalid order data']);
         }
 
         foreach ($order as $position => $id) {
-            $this->projectModel->update($id, ['sort_order' => $position]);
+            $this->projectModel->update($id, ['sort_order' => $position + 1]);
         }
 
         return $this->response->setJSON(['success' => true]);
