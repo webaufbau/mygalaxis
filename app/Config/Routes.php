@@ -129,6 +129,10 @@ $routes->get('test/verification/(:any)', '\App\Controllers\Test::testVerificatio
 // ----------------------------
 $routes->get('request/start', 'Request::start');
 $routes->post('request/submit', 'Request::submit');
+$routes->get('request/next', 'Request::next');
+$routes->get('request/finalize', 'Request::finalize');
+$routes->post('request/save-finalize', 'Request::saveFinalize');
+$routes->get('request/complete', 'Request::complete');
 $routes->get('request/debug/(:any)', 'Request::debug/$1');
 
 
