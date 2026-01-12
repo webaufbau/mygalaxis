@@ -45,7 +45,7 @@ $categoryTypes = $categoryOptions->categoryTypes;
                     <?php if (!empty($project['category_type']) && isset($categoryTypes[$project['category_type']])): ?>
                         <span class="badge bg-primary"><?= esc($categoryTypes[$project['category_type']]) ?></span>
                     <?php else: ?>
-                        <span class="text-muted">-</span>
+                        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Nicht gesetzt</span>
                     <?php endif; ?>
                 </td>
                 <td><?= esc($project['sort_order']) ?></td>
