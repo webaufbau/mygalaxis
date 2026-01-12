@@ -41,6 +41,7 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'company_email',
             'company_phone',
             'filter_categories',
+            'filter_projects',
             'filter_cantons',
             'filter_regions',
             'filter_languages',

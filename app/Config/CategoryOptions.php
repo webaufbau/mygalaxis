@@ -7,16 +7,28 @@ class CategoryOptions extends BaseConfig
 {
     // Die festen Typen
     public array $categoryTypes = [
-        'move'           => 'Umzug',
-        'move_cleaning'  => 'Umzug + Reinigung',
-        'cleaning'       => 'Reinigung',
-        'painting'       => 'Maler',
-        'gardening'      => 'Gartenpflege',
-        'plumbing'       => 'Sanitär',
-        'electrician'    => 'Elektriker',
-        'flooring'       => 'Boden',
-        'heating'        => 'Heizung',
-        'tiling'         => 'Platten',
+        'move'              => 'Umzug',
+        'move_cleaning'     => 'Umzug + Reinigung',
+        'cleaning'          => 'Reinigung',
+        'painting'          => 'Maler',
+        'gardening'         => 'Gartenpflege',
+        'plumbing'          => 'Sanitär',
+        'electrician'       => 'Elektriker',
+        'flooring'          => 'Boden',
+        'heating'           => 'Heizung',
+        'tiling'            => 'Platten',
+        // Neue Branchen (Januar 2026)
+        'mason'             => 'Baumeister/Maurer',
+        'carpenter'         => 'Schreiner/Möbel',
+        'carpenter_wood'    => 'Zimmermann',
+        'roofer_sheet_metal'=> 'Spengler',
+        'locksmith'         => 'Schlosser/Metall',
+        'kitchen_builder'   => 'Küchenbauer',
+        'stair_builder'     => 'Treppenbauer',
+        'roofer'            => 'Dachdecker',
+        'scaffolding'       => 'Gerüstbauer',
+        'windows_doors'     => 'Fenster/Türen',
+        'architect'         => 'Architekt',
     ];
 
     // Alle möglichen Optionen je Kategorie (Labels fix)

@@ -2,12 +2,15 @@
 
 return [
     'title' => 'Définir Secteurs/Régions',
+    'subtitle' => 'Vous pouvez sélectionner un nombre illimité de secteurs/projets et vous inscrire dans plusieurs cantons/régions.',
     'categories' => 'Secteurs',
+    'projects' => 'Projets',
     'cantonsRegions' => 'Cantons / Régions',
     'customZip' => 'NPA personnalisé',
     'customZipPlaceholder' => 'par ex. 3000, 3012',
     'saveButton' => 'Enregistrer les filtres',
 
+    // Secteurs existants
     'move' => 'Déménagement',
     'move_cleaning' => 'Déménagement + Nettoyage',
     'cleaning' => 'Nettoyage',
@@ -19,11 +22,51 @@ return [
     'heating' => 'Chauffage',
     'tiling' => 'Carrelage',
 
+    // Nouveaux secteurs (Janvier 2026)
+    'mason' => 'Maçon',
+    'carpenter' => 'Menuisier/Ébéniste',
+    'carpenter_wood' => 'Charpentier',
+    'roofer_sheet_metal' => 'Ferblantier',
+    'locksmith' => 'Serrurier/Métallier',
+    'kitchen_builder' => 'Cuisiniste',
+    'stair_builder' => 'Fabricant d\'escaliers',
+    'roofer' => 'Couvreur',
+    'scaffolding' => 'Échafaudeur',
+    'windows_doors' => 'Fenêtres/Portes',
+    'architect' => 'Architecte/Gestion de projet',
+
+    // Projets
+    'project_new_build' => 'Construction neuve',
+    'project_renovation' => 'Rénovation',
+    'project_bathroom' => 'Rénovation salle de bain',
+    'project_sauna' => 'Sauna',
+    'project_hvac' => 'Système CVC',
+    'project_stairs' => 'Escalier/Garde-corps',
+    'project_alarm' => 'Système d\'alarme',
+    'project_ev_charger' => 'Borne de recharge',
+    'project_smart_home' => 'Système domotique',
+    'project_solar' => 'Installation solaire',
+    'project_doors' => 'Portes intérieures/extérieures',
+    'project_blinds' => 'Stores/Volets',
+    'project_shading' => 'Protection solaire',
+    'project_insect_screen' => 'Moustiquaire',
+    'project_winter_garden' => 'Jardin d\'hiver',
+    'project_pool' => 'Piscine',
+    'project_mold' => 'Élimination des moisissures',
+    'project_locks' => 'Serrures/Systèmes de sécurité',
+    'project_carport' => 'Carport',
+    'project_garage' => 'Box garage',
+    'project_insulation' => 'Isolation',
+    'project_facade' => 'Façade',
+    'project_roof_renovation' => 'Rénovation de toiture',
+    'project_balcony' => 'Extension balcon',
+    'project_real_estate' => 'Agent immobilier/Estimation',
+
     'packing' => 'Emballer les effets personnels',
     'unpacking' => 'Déballer les effets personnels',
     'furniture_assembly' => 'Montage de meubles',
     'lamp_disassembly' => 'Démontage des lampes',
 
-    // Benachrichtigungen
+    // Notifications
     'messageFilterSaved' => 'Les filtres ont été enregistrés.',
 ];

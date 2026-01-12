@@ -2,22 +2,59 @@
 <?= $this->section('content') ?>
 
 <h2 class="my-4"><?= esc(lang('Filter.title')) ?></h2>
+<p class="text-muted mb-4"><?= esc(lang('Filter.subtitle')) ?></p>
 
 <form method="post" action="<?= site_url('/filter/save') ?>" class="needs-validation" novalidate>
     <?= csrf_field() ?>
 
-    <div class="mb-4">
-        <label class="form-label"><?= esc(lang('Filter.categories')) ?></label>
-        <?php foreach ($types as $type_id => $cat): ?>
-            <?php
-            $id = 'cat_' . strtolower(str_replace([' ', '+'], ['_', 'plus'], $cat));
-            $checked = in_array($type_id, $user_filters['filter_categories'] ?? []) ? 'checked' : '';
-            ?>
-            <div class="form-check">
-                <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="<?= esc($type_id) ?>" id="<?= esc($id) ?>" <?= $checked ?>>
-                <label class="form-check-label" for="<?= esc($id) ?>"><?= esc($cat); ?></label>
+    <div class="row">
+        <!-- Branchen -->
+        <div class="col-md-6 mb-4">
+            <label class="form-label fw-bold"><?= esc(lang('Filter.categories')) ?></label>
+            <div class="row">
+                <?php foreach ($types as $type_id => $cat): ?>
+                    <?php
+                    $id = 'cat_' . strtolower(str_replace([' ', '+', '/'], ['_', 'plus', '_'], $cat));
+                    $checked = in_array($type_id, $user_filters['filter_categories'] ?? []) ? 'checked' : '';
+                    ?>
+                    <div class="col-6">
+                        <div class="form-check">
+                            <input class="form-check-input p-0" type="checkbox" name="filter_categories[]" value="<?= esc($type_id) ?>" id="<?= esc($id) ?>" <?= $checked ?>>
+                            <label class="form-check-label" for="<?= esc($id) ?>"><?= esc($cat); ?></label>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
-        <?php endforeach; ?>
+        </div>
+
+        <!-- Projekte -->
+        <div class="col-md-6 mb-4">
+            <label class="form-label fw-bold"><?= esc(lang('Filter.projects')) ?></label>
+            <?php if (!empty($projects)): ?>
+                <div class="row">
+                    <?php foreach ($projects as $project): ?>
+                        <?php
+                        $projectId = 'proj_' . $project['slug'];
+                        $projectChecked = in_array($project['slug'], $user_filters['filter_projects'] ?? []) ? 'checked' : '';
+                        $projectColor = $project['color'] ?? '#6c757d';
+                        ?>
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input p-0" type="checkbox" name="filter_projects[]" value="<?= esc($project['slug']) ?>" id="<?= esc($projectId) ?>" <?= $projectChecked ?>>
+                                <label class="form-check-label" for="<?= esc($projectId) ?>">
+                                    <?php if ($projectColor !== '#6c757d'): ?>
+                                        <span class="badge" style="background-color: <?= esc($projectColor) ?>; width: 10px; height: 10px; padding: 0; margin-right: 4px; display: inline-block; border-radius: 50%;"></span>
+                                    <?php endif; ?>
+                                    <?= esc($project['name']) ?>
+                                </label>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p class="text-muted small"><em>Noch keine Projekte verfügbar.</em></p>
+            <?php endif; ?>
+        </div>
     </div>
 
     <div class="mb-4">
@@ -124,6 +161,11 @@
 
         // Kategorien sofort speichern
         $('input[name="filter_categories[]"]').on('change', function () {
+            saveFilters();
+        });
+
+        // Projekte sofort speichern
+        $('input[name="filter_projects[]"]').on('change', function () {
             saveFilters();
         });
 

@@ -66,16 +66,29 @@ class Filters extends Controller
         // Übersetze Branchen-Namen in die aktuelle Sprache
         $translatedTypes = [];
         foreach ($categoryOptions->categoryTypes as $typeKey => $typeName) {
-            $translatedTypes[$typeKey] = lang('Offers.type.' . $typeKey);
+            $translatedTypes[$typeKey] = lang('Filter.' . $typeKey) ?: lang('Offers.type.' . $typeKey);
+        }
+
+        // Projekte laden
+        $projectModel = new \App\Models\ProjectModel();
+        $projects = $projectModel->getActiveProjectsWithNames();
+
+        // User's filter_projects als Array
+        $userFilterProjects = [];
+        if (!empty($user->filter_projects)) {
+            $decoded = json_decode($user->filter_projects, true);
+            $userFilterProjects = is_array($decoded) ? $decoded : explode(',', $user->filter_projects);
         }
 
         $data = [
             'cantons' => $cantons,
             'categories' => $translatedTypes,
             'types' => $translatedTypes,
+            'projects' => $projects,
             'languages' => $appConfig->supportedLocales,
             'user_filters' => [
                 'filter_categories' => explode(',', $user->filter_categories ?? ''),
+                'filter_projects' => $userFilterProjects,
                 'filter_cantons' => explode(',', $user->filter_cantons ?? ''),
                 'filter_regions' => explode(',', $user->filter_regions ?? ''),
                 'min_rooms' => $user->min_rooms,
@@ -102,6 +115,7 @@ class Filters extends Controller
         $data = [
             'id' => $userId,
             'filter_categories' => isset($postData['filter_categories']) ? implode(',', $postData['filter_categories']) : '',
+            'filter_projects' => isset($postData['filter_projects']) ? json_encode($postData['filter_projects']) : '[]',
             'filter_cantons' => isset($postData['cantons']) ? implode(',', $postData['cantons']) : '',
             'filter_regions' => isset($postData['regions']) ? implode(',', $postData['regions']) : '',
             'filter_custom_zip' => $postData['custom_zip'] ?? '',

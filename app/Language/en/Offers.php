@@ -71,7 +71,20 @@ return [
         'heating'           => 'Heating',
         'tiling'            => 'Tiling',
         'furniture_assembly'=> 'Furniture assembly',
+        // New industries (January 2026)
+        'mason'             => 'Mason/Bricklayer',
+        'carpenter'         => 'Carpenter/Furniture',
+        'carpenter_wood'    => 'Carpenter (Wood)',
+        'roofer_sheet_metal'=> 'Sheet Metal Worker',
+        'locksmith'         => 'Locksmith/Metalworker',
+        'kitchen_builder'   => 'Kitchen Builder',
+        'stair_builder'     => 'Stair Builder',
+        'roofer'            => 'Roofer',
+        'scaffolding'       => 'Scaffolding',
+        'windows_doors'     => 'Windows/Doors',
+        'architect'         => 'Architect/Project Management',
         'other'             => 'Other',
+        'unknown'           => 'Unknown',
     ],
 
     'credit_type' => [

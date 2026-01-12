@@ -70,7 +70,20 @@ return [
         'heating'            => 'Chauffage',
         'tiling'             => 'Carrelage',
         'furniture_assembly' => 'Montage de meubles',
+        // Nouveaux secteurs (Janvier 2026)
+        'mason'              => 'Maçon',
+        'carpenter'          => 'Menuisier/Ébéniste',
+        'carpenter_wood'     => 'Charpentier',
+        'roofer_sheet_metal' => 'Ferblantier',
+        'locksmith'          => 'Serrurier/Métallier',
+        'kitchen_builder'    => 'Cuisiniste',
+        'stair_builder'      => 'Fabricant d\'escaliers',
+        'roofer'             => 'Couvreur',
+        'scaffolding'        => 'Échafaudeur',
+        'windows_doors'      => 'Fenêtres/Portes',
+        'architect'          => 'Architecte/Gestion de projet',
         'other'              => 'Autres',
+        'unknown'            => 'Inconnu',
     ],
 
     'credit_type' => [
