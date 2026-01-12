@@ -52,14 +52,20 @@
                     <div class="row">
                         <div class="col-6">
                             <?php for ($i = 0; $i < $half; $i++): ?>
-                                <?php $form = $allForms[$i]; ?>
+                                <?php
+                                $form = $allForms[$i];
+                                $isInitial = ($initial === $form['form_id']);
+                                ?>
                                 <div class="form-check mb-2">
+                                    <?php if ($isInitial): ?>
+                                    <input type="hidden" name="forms[]" value="<?= esc($form['form_id']) ?>">
+                                    <?php endif; ?>
                                     <input class="form-check-input"
                                            type="checkbox"
-                                           name="forms[]"
+                                           <?= $isInitial ? '' : 'name="forms[]"' ?>
                                            value="<?= esc($form['form_id']) ?>"
                                            id="form_<?= esc($form['form_id']) ?>"
-                                           <?= ($initial === $form['form_id']) ? 'checked' : '' ?>
+                                           <?= $isInitial ? 'checked disabled' : '' ?>
                                            style="width: 1.2em; height: 1.2em;">
                                     <label class="form-check-label ms-2" for="form_<?= esc($form['form_id']) ?>">
                                         <?= esc($form['name']) ?>
@@ -69,14 +75,20 @@
                         </div>
                         <div class="col-6">
                             <?php for ($i = $half; $i < $total; $i++): ?>
-                                <?php $form = $allForms[$i]; ?>
+                                <?php
+                                $form = $allForms[$i];
+                                $isInitial = ($initial === $form['form_id']);
+                                ?>
                                 <div class="form-check mb-2">
+                                    <?php if ($isInitial): ?>
+                                    <input type="hidden" name="forms[]" value="<?= esc($form['form_id']) ?>">
+                                    <?php endif; ?>
                                     <input class="form-check-input"
                                            type="checkbox"
-                                           name="forms[]"
+                                           <?= $isInitial ? '' : 'name="forms[]"' ?>
                                            value="<?= esc($form['form_id']) ?>"
                                            id="form_<?= esc($form['form_id']) ?>"
-                                           <?= ($initial === $form['form_id']) ? 'checked' : '' ?>
+                                           <?= $isInitial ? 'checked disabled' : '' ?>
                                            style="width: 1.2em; height: 1.2em;">
                                     <label class="form-check-label ms-2" for="form_<?= esc($form['form_id']) ?>">
                                         <?= esc($form['name']) ?>
