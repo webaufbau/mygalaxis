@@ -80,6 +80,7 @@ class Projects extends AdminBase
         }
 
         $data = [
+            'id' => $id, // Wichtig für {id} Platzhalter in Validierung
             'slug' => $this->request->getPost('slug'),
             'name_de' => $this->request->getPost('name_de'),
             'name_en' => $this->request->getPost('name_en'),
@@ -94,7 +95,10 @@ class Projects extends AdminBase
             return redirect()->to('/admin/projects')->with('message', 'Projekt erfolgreich aktualisiert.');
         }
 
-        return redirect()->back()->withInput()->with('error', 'Fehler beim Aktualisieren.');
+        // Validation errors anzeigen
+        $errors = $this->projectModel->errors();
+        $errorMsg = !empty($errors) ? implode(', ', $errors) : 'Fehler beim Aktualisieren.';
+        return redirect()->back()->withInput()->with('error', $errorMsg);
     }
 
     public function delete($id)
