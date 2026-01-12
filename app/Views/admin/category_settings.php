@@ -30,6 +30,7 @@ function makeOptionKey(string $label, array $existingKeys): string
         <tr>
             <th>Typ (fix)</th>
             <th>Bezeichnung</th>
+            <th>Formular-Link / Farbe</th>
             <th>Preis (CHF)</th>
         </tr>
         </thead>
@@ -39,6 +40,28 @@ function makeOptionKey(string $label, array $existingKeys): string
                 <td><?= esc($key) ?></td>
                 <td>
                     <input type="text" name="categories[<?= esc($key) ?>][name]" value="<?= esc($cat['name']) ?>" class="form-control" readonly disabled>
+                </td>
+
+                <td>
+                    <div class="mb-2">
+                        <label class="small text-muted">Formular-Link:</label>
+                        <input type="url"
+                               name="categories[<?= esc($key) ?>][form_link]"
+                               value="<?= esc($cat['form_link'] ?? '') ?>"
+                               class="form-control form-control-sm"
+                               placeholder="https://...">
+                    </div>
+                    <div class="mb-2">
+                        <label class="small text-muted">Farbe:</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="color"
+                                   name="categories[<?= esc($key) ?>][color]"
+                                   value="<?= esc($cat['color'] ?? '#6c757d') ?>"
+                                   class="form-control form-control-color"
+                                   style="width: 50px; height: 32px;">
+                            <span class="small text-muted"><?= esc($cat['color'] ?? '#6c757d') ?></span>
+                        </div>
+                    </div>
                 </td>
 
                 <td>

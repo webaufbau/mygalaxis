@@ -382,4 +382,13 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->post('import-export/export', 'Admin\ImportExport::export');
     $routes->post('import-export/import', 'Admin\ImportExport::import');
 
+    // Projects (Projekte verwalten)
+    $routes->get('projects', 'Admin\Projects::index');
+    $routes->get('projects/create', 'Admin\Projects::create');
+    $routes->post('projects/store', 'Admin\Projects::store');
+    $routes->get('projects/edit/(:num)', 'Admin\Projects::edit/$1');
+    $routes->post('projects/update/(:num)', 'Admin\Projects::update/$1');
+    $routes->post('projects/delete/(:num)', 'Admin\Projects::delete/$1');
+    $routes->post('projects/update-order', 'Admin\Projects::updateOrder');
+
 });

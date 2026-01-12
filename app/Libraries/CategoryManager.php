@@ -48,6 +48,8 @@ class CategoryManager
                 'max' => $values['categories'][$catKey]['max'] ?? null,
                 'review_email_days' => $values['categories'][$catKey]['review_email_days'] ?? 5,
                 'review_reminder_days' => $values['categories'][$catKey]['review_reminder_days'] ?? 10,
+                'form_link' => $values['categories'][$catKey]['form_link'] ?? '',
+                'color' => $values['categories'][$catKey]['color'] ?? '#6c757d',
                 'options' => $options
             ];
         }
@@ -88,6 +90,8 @@ class CategoryManager
                     'review_reminder_days' => isset($categories[$catKey]['review_reminder_days']) && $categories[$catKey]['review_reminder_days'] !== ''
                         ? intval($categories[$catKey]['review_reminder_days'])
                         : 10,
+                    'form_link' => $categories[$catKey]['form_link'] ?? '',
+                    'color' => $categories[$catKey]['color'] ?? '#6c757d',
                     'options' => $options
                 ];
             }
