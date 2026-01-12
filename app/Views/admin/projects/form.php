@@ -35,9 +35,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="category_type" class="form-label">Branche *</label>
+                        <label for="category_type" class="form-label">Ziel-Branche *</label>
                         <select name="category_type" id="category_type" class="form-select" required>
-                            <option value="">-- Branche wählen --</option>
+                            <option value="">-- Ziel-Branche wählen --</option>
                             <?php
                             $categoryOptions = config('CategoryOptions');
                             $currentCategory = old('category_type', $project['category_type'] ?? '');

@@ -27,7 +27,7 @@ $categoryTypes = $categoryOptions->categoryTypes;
             <th style="width: 40px;"></th>
             <th>Slug</th>
             <th>Name (DE)</th>
-            <th>Branche</th>
+            <th>Ziel-Branche</th>
             <th>Sortierung</th>
             <th>Status</th>
             <th>Aktionen</th>
