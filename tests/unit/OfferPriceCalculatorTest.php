@@ -389,7 +389,7 @@ final class OfferPriceCalculatorTest extends CIUnitTestCase
     {
         $price = $this->calculator->calculatePrice('heating', 'heizung', [
             'art_objekt' => 'Haus',
-            'arbeiten_heizung' => ['neue_waermepumpe']
+            'arbeiten_heizung' => ['Neue el. Wärmepumpe']
         ], []);
 
         // Wärmepumpe (69) + Haus (29) = 98
@@ -400,11 +400,12 @@ final class OfferPriceCalculatorTest extends CIUnitTestCase
     {
         $price = $this->calculator->calculatePrice('heating', 'heizung', [
             'art_objekt' => 'Haus',
-            'arbeiten_heizung' => ['Neubau', 'neue_waermepumpe']
+            'arbeiten_heizung' => ['Neubau', 'Neue el. Wärmepumpe']
         ], []);
 
-        // Neubau (59) + Wärmepumpe (69) + Haus (29) = 157
-        $this->assertEquals(157, $price, 'Neubau + Wärmepumpe + Haus werden addiert');
+        // Neubau (59) + Wärmepumpe (69-59=10) + Haus (29) = 98
+        // Bei neuen Heizanlagen wird Neubau-Basis abgezogen
+        $this->assertEquals(98, $price, 'Neubau + Wärmepumpe (minus Basis) + Haus');
     }
 
     // ========================================
