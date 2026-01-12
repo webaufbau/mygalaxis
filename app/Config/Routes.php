@@ -124,6 +124,12 @@ $routes->get('api/offers', '\App\Controllers\Api\Offers::index');
 $routes->get('test/testtwilio', '\App\Controllers\Test::testtwilio');
 $routes->get('test/verification/(:any)', '\App\Controllers\Test::testVerification/$1');
 
+// ----------------------------
+// Öffentliches Anfrage-Formular (Request)
+// ----------------------------
+$routes->get('request/start', 'Request::start');
+$routes->post('request/submit', 'Request::submit');
+$routes->get('request/debug/(:any)', 'Request::debug/$1');
 
 
 // ----------------------------

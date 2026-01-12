@@ -105,7 +105,7 @@ Um den neuen Flow umzusetzen, schlage ich folgende Aufteilung vor:
 1. Kunde besucht z.B. **offertenschweiz.ch/elektriker/**
 2. WordPress zeigt die Landingpage mit Informationen zum Elektriker-Service
 3. Kunde klickt auf **"Jetzt Offerte anfordern"**
-4. Der Button leitet weiter zu: **my.offertenschweiz.ch/anfrage/start?initial=electrician**
+4. Der Button leitet weiter zu: **my.offertenschweiz.ch/request/start?initial=electrician**
 
 ### Schritt 3-4: Start-Screen (MY Umgebung)
 
@@ -127,7 +127,7 @@ Um den neuen Flow umzusetzen, schlage ich folgende Aufteilung vor:
 17. Nächste Branche ist "Boden" → Weiterleitung zu: **offertenschweiz.ch/bodenleger/offerte-bodenleger/?session=abc123&mode=multi**
 18. Gleiches Spiel für Boden-Formular
 19. Dann Heizung-Formular
-20. Nach dem letzten Branchen-Formular: Weiterleitung zu **my.offertenschweiz.ch/anfrage/abschluss?session=abc123**
+20. Nach dem letzten Branchen-Formular: Weiterleitung zu **my.offertenschweiz.ch/request/finish?session=abc123**
 
 ### Schritt 10-14: Abschluss (MY Umgebung)
 
@@ -174,7 +174,7 @@ Um den neuen Flow umzusetzen, schlage ich folgende Aufteilung vor:
 Ich werde folgende neue Komponenten in der MY Umgebung (my.offertenschweiz.ch) erstellen:
 
 **1. Start-Screen (Branchen/Projekt-Auswahl)**
-- Neue Seite unter: my.offertenschweiz.ch/anfrage/start
+- Neue Seite unter: my.offertenschweiz.ch/request/start
 - Zeigt alle verfügbaren Branchen als Checkboxen
 - Zeigt alle verfügbaren Projekte als Checkboxen (aus der Admin-Verwaltung)
 - Die Branche aus der URL (z.B. `?initial=electrician`) ist bereits vorausgewählt
@@ -331,7 +331,7 @@ User füllt das Maurer-Formular aus (wie bei normaler Branche)
 **Der "Jetzt Offerte anfordern"-Button muss zu einer neuen URL führen:**
 
 Statt: Direkt zum WordPress-Formular
-Neu: **my.offertenschweiz.ch/anfrage/start?initial=electrician**
+Neu: **my.offertenschweiz.ch/request/start?initial=electrician**
 
 Der Parameter `initial` gibt an, welche Branche vorausgewählt sein soll:
 - Elektriker-Seite: `?initial=electrician`
@@ -348,7 +348,7 @@ User öffnet: offertenschweiz.ch/elektriker/offerte-elektriker/
     ↓
 WordPress prüft: Ist "session" in der URL?
     ↓
-NEIN → Automatische Weiterleitung zu: my.offertenschweiz.ch/anfrage/start?initial=electrician
+NEIN → Automatische Weiterleitung zu: my.offertenschweiz.ch/request/start?initial=electrician
     ↓
 JA  → Formular wird normal angezeigt (User kommt vom Start-Screen)
 ```
@@ -405,7 +405,7 @@ Plugin prüft: Session-Parameter vorhanden?
     → NEIN
     ↓
 Plugin leitet um zu:
-    my.offertenschweiz.ch/anfrage/start?initial=electrician&lang=de
+    my.offertenschweiz.ch/request/start?initial=electrician&lang=de
 ```
 
 **Beispiele:**
