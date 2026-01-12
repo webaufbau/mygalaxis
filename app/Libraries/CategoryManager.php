@@ -50,6 +50,7 @@ class CategoryManager
                 'review_reminder_days' => $values['categories'][$catKey]['review_reminder_days'] ?? 10,
                 'form_link' => $values['categories'][$catKey]['form_link'] ?? '',
                 'color' => $values['categories'][$catKey]['color'] ?? '#6c757d',
+                'subcategories' => $values['categories'][$catKey]['subcategories'] ?? [],
                 'options' => $options
             ];
         }
@@ -80,6 +81,18 @@ class CategoryManager
                     ];
                 }
 
+                // Subcategories verarbeiten
+                $subcategories = [];
+                $rawSubcats = $categories[$catKey]['subcategories'] ?? [];
+                foreach ($rawSubcats as $subcat) {
+                    if (!empty($subcat['name'])) {
+                        $subcategories[] = [
+                            'name' => $subcat['name'],
+                            'form_link' => $subcat['form_link'] ?? '',
+                        ];
+                    }
+                }
+
                 $filteredCategories[$catKey] = [
                     'name'    => $categories[$catKey]['name'] ?? $defaultName,
                     'max' => (isset($categories[$catKey]['max']) && $categories[$catKey]['max'] !== '')
@@ -93,6 +106,7 @@ class CategoryManager
                         : 10,
                     'form_link' => $categories[$catKey]['form_link'] ?? '',
                     'color' => $categories[$catKey]['color'] ?? '#6c757d',
+                    'subcategories' => $subcategories,
                     'options' => $options
                 ];
             }

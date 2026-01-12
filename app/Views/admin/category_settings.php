@@ -37,15 +37,44 @@
                             <div class="col-md-5">
                                 <h6 class="text-muted mb-3"><i class="bi bi-gear"></i> Einstellungen</h6>
 
-                                <!-- Formular-Link -->
+                                <!-- Formular-Link (Haupt) -->
                                 <div class="mb-3">
-                                    <label class="form-label small fw-bold">Formular-Link</label>
+                                    <label class="form-label small fw-bold">Formular-Link (Haupt)</label>
                                     <input type="url"
                                            name="categories[<?= esc($key) ?>][form_link]"
                                            value="<?= esc($cat['form_link'] ?? '') ?>"
                                            class="form-control"
                                            placeholder="https://...">
-                                    <small class="text-muted">Link zum Offerten-Formular für diese Branche</small>
+                                    <small class="text-muted">Standard-Link für diese Branche</small>
+                                </div>
+
+                                <!-- Unterkategorien -->
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Unterkategorien</label>
+                                    <div class="subcategories-container" data-category="<?= esc($key) ?>">
+                                        <?php $subcats = $cat['subcategories'] ?? []; ?>
+                                        <?php foreach ($subcats as $si => $subcat): ?>
+                                        <div class="subcategory-row d-flex gap-2 mb-2 align-items-center">
+                                            <input type="text"
+                                                   name="categories[<?= esc($key) ?>][subcategories][<?= $si ?>][name]"
+                                                   value="<?= esc($subcat['name'] ?? '') ?>"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Name"
+                                                   style="width: 120px;">
+                                            <input type="url"
+                                                   name="categories[<?= esc($key) ?>][subcategories][<?= $si ?>][form_link]"
+                                                   value="<?= esc($subcat['form_link'] ?? '') ?>"
+                                                   class="form-control form-control-sm"
+                                                   placeholder="Formular-Link">
+                                            <button type="button" class="btn btn-outline-danger btn-sm remove-subcategory">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm add-subcategory" data-category="<?= esc($key) ?>">
+                                        <i class="bi bi-plus"></i> Unterkategorie
+                                    </button>
                                 </div>
 
                                 <!-- Farbe -->
@@ -230,6 +259,39 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     updateAddButtonState();
+
+    // Subcategories handling
+    document.querySelectorAll('.add-subcategory').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const category = this.dataset.category;
+            const container = document.querySelector(`.subcategories-container[data-category="${category}"]`);
+            const index = container.querySelectorAll('.subcategory-row').length;
+
+            const row = document.createElement('div');
+            row.className = 'subcategory-row d-flex gap-2 mb-2 align-items-center';
+            row.innerHTML = `
+                <input type="text"
+                       name="categories[${category}][subcategories][${index}][name]"
+                       class="form-control form-control-sm"
+                       placeholder="Name"
+                       style="width: 120px;">
+                <input type="url"
+                       name="categories[${category}][subcategories][${index}][form_link]"
+                       class="form-control form-control-sm"
+                       placeholder="Formular-Link">
+                <button type="button" class="btn btn-outline-danger btn-sm remove-subcategory">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            container.appendChild(row);
+        });
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.classList.contains('remove-subcategory') || e.target.closest('.remove-subcategory'))) {
+            e.target.closest('.subcategory-row').remove();
+        }
+    });
 });
 
 function toggleMaxField(key) {
