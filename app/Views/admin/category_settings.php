@@ -72,7 +72,7 @@
                                                value="1"
                                                <?= empty($cat['max']) ? 'checked' : '' ?>
                                                onclick="toggleMaxField('<?= esc($key) ?>')">
-                                        <label class="form-check-label" for="max_unlimited_<?= esc($key) ?>">
+                                        <label class="form-check-label ms-1" for="max_unlimited_<?= esc($key) ?>">
                                             Kein Maximum (∞)
                                         </label>
                                     </div>
