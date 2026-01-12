@@ -27,6 +27,7 @@ class ProjectModel extends Model
     protected $updatedField = 'updated_at';
 
     protected $validationRules = [
+        'id' => 'permit_empty|is_natural_no_zero',
         'slug' => 'required|alpha_dash|max_length[50]|is_unique[projects.slug,id,{id}]',
         'name_de' => 'required|max_length[100]',
     ];
