@@ -71,10 +71,11 @@ class CategoryManager
         foreach ($this->types as $catKey => $defaultName) {
             if (isset($categories[$catKey])) {
                 $options = [];
-                foreach ($categories[$catKey]['options'] as $optKey => $opt) {
+                $categoryOptions = $categories[$catKey]['options'] ?? [];
+                foreach ($categoryOptions as $optKey => $opt) {
                     $options[$optKey] = [
                         'key' => $optKey,
-                        'label' => $opt['label'], // Label fix
+                        'label' => $opt['label'] ?? '',
                         'price' => floatval($opt['price'] ?? 0)
                     ];
                 }
