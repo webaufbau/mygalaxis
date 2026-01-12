@@ -124,18 +124,20 @@
                 <?php endif; ?>
 
                 <?php
-                // Prüfen ob es Projekte ohne gültiges Formular gibt
-                $invalidProjects = array_filter($projects, function($p) use ($categoryManager, $lang) {
-                    if (empty($p['form_id'])) return true;
-                    $form = $categoryManager->getFormById($p['form_id'], $lang);
-                    return $form === null;
-                });
-                if (!empty($invalidProjects)):
+                // Prüfen ob es Projekte ohne gültiges Formular gibt (nur für Admins anzeigen)
+                $isAdmin = session()->get('isLoggedIn') && isset(session()->get('user')['role']) && session()->get('user')['role'] === 'admin';
+                if ($isAdmin):
+                    $invalidProjects = array_filter($projects, function($p) use ($categoryManager, $lang) {
+                        if (empty($p['form_id'])) return true;
+                        $form = $categoryManager->getFormById($p['form_id'], $lang);
+                        return $form === null;
+                    });
+                    if (!empty($invalidProjects)):
                 ?>
                 <div class="mt-3 p-2 bg-light rounded small text-muted">
                     <strong><?= count($invalidProjects) ?> Projekte</strong> sind ausgeblendet (kein Formular zugewiesen)
                 </div>
-                <?php endif; ?>
+                <?php endif; endif; ?>
             </div>
         </div>
 
