@@ -36,7 +36,6 @@
                                <?= $checked ?>
                                style="width: 1.2em; height: 1.2em;">
                         <label class="form-check-label ms-2" for="cat_<?= esc($key) ?>">
-                            <span class="d-inline-block rounded-circle me-1" style="background-color: <?= esc($color) ?>; width: 12px; height: 12px;"></span>
                             <?= esc($cat['name']) ?>
                         </label>
                     </div>
