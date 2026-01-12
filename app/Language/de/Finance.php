@@ -111,9 +111,10 @@ return [
     'availablePaymentMethods' => '<strong>Verfügbar:</strong> Kreditkarte (Visa, Mastercard) oder TWINT. Sie können auch beim ersten Guthaben-Aufladen ein Zahlungsmittel hinterlegen.',
 
     // Sofortkauf & Automatischer Kauf
-    'instantAutoPurchase' => 'Sofortkauf & Automatischer Kauf',
-    'getRequestsInstantly' => 'Anfragen sofort erhalten – ohne manuellen Kauf!',
-    'instantPurchaseDescription' => 'Beim <strong>Sofortkauf</strong> erhalten Sie passende Anfragen <strong>sofort nach dem Eingang im System</strong>, ohne diese vorher anschauen zu müssen. Somit sichern Sie sich zu <strong>100% die Anfragen</strong> – auch wenn Sie unterwegs oder anderweitig beschäftigt sind.',
+    'instantAutoPurchase' => 'Sofortkauf / Automatischer Kauf',
+    'getRequestsInstantly' => 'Anfragen sofort erhalten – ohne manuellen Kauf',
+    'instantPurchaseDescription' => 'Die Anfragen werden nur an <strong>3 Firmen</strong> verkauft, d.h. der Verkauf ist begrenzt und daher schnell ausverkauft. Deswegen bieten wir einen <strong>Sofortkauf</strong> der Anfragen an, ohne diese vorher anschauen zu müssen. Somit sichern Sie sich zu <strong>100% die Anfrage</strong>, ohne ständig die Mails lesen zu müssen.',
+    'pauseWarning' => 'Diese Funktion kann jederzeit auch pausiert/ausgeschaltet werden. Dabei kommen Sie aber in die Warteschlange und können später eventuell nicht sofort die Funktion wieder aktivieren.',
     'maxCompaniesNote' => '<strong>Hinweis:</strong> Pro Anfrage können maximal 3 Firmen kaufen. Wenn Sie den automatischen Kauf aktivieren, werden Sie nach dem <strong>Aktivierungsdatum</strong> berücksichtigt. Die ersten 3 Firmen (nach Aktivierungsdatum sortiert) mit gültigem Zahlungsmittel erhalten die Anfrage automatisch.',
     'howItWorks' => 'So funktioniert\'s',
     'step1' => '<strong>Aktivieren Sie unten</strong> den automatischen Kauf',
@@ -125,7 +126,7 @@ return [
 
     // Kaufeinstellungen
     'purchaseSettings' => 'Kaufeinstellungen',
-    'enableAutoPurchase' => 'Automatischer Kauf aktivieren',
+    'enableAutoPurchase' => 'Sofortkauf aktivieren',
     'activatedSince' => 'Aktiviert seit',
     'clock' => 'Uhr',
     'queueInfo' => 'Sie befinden sich in der Warteschlange für automatische Käufe. Die Priorität wird nach diesem Datum bestimmt.',
@@ -133,6 +134,19 @@ return [
     'activationDateMissing' => '<strong>Hinweis:</strong> Aktivierungsdatum fehlt. Bitte speichern Sie die Einstellungen erneut.',
     'autoPurchaseInfo' => 'Wenn aktiviert, werden passende Anfragen automatisch für Sie gekauft. Die Bezahlung erfolgt entweder von Ihrem Guthaben oder direkt von Ihrer gespeicherten Karte.',
     'saveSettings' => 'Einstellungen speichern',
+    'settingsSaved' => 'Einstellungen erfolgreich gespeichert',
+    'pleaseSaveSettings' => 'Bitte speichern Sie die Einstellung',
+
+    // Warteliste
+    'waitlistTitle' => 'Auf Warteliste setzen',
+    'waitlistInfo' => 'Falls Sie den Sofortkauf nicht aktivieren können, können Sie sich auf die Warteliste setzen.',
+    'waitlistFull' => 'Momentan sind bereits 3 Firmen für den Sofortkauf registriert.',
+    'joinWaitlist' => 'Auf Warteliste setzen',
+    'onWaitlist' => 'Sie sind auf der Warteliste',
+    'waitlistPosition' => 'Ihre Position auf der Warteliste',
+
+    // Ansicht Button
+    'viewOffer' => 'Ansicht',
 
     // Tabellen
     'purchasedRequests' => 'Gekaufte Anfragen',
@@ -154,6 +168,7 @@ return [
     'referralAndCredit' => 'Weiterempfehlung & Guthaben erhalten',
     'referralReward' => 'Für jede erfolgreich vermittelte Firma erhalten Sie 50 CHF Gutschrift!',
     'referralInfo' => 'Teilen Sie Ihren persönlichen Affiliate-Link und erhalten Sie eine Gutschrift, sobald sich eine neue Firma über Ihren Link registriert und vom Admin genehmigt wird.',
+    'referralShareInfo' => 'Sie können den Link-Code der empfohlenen Firma per SMS (Foto) oder per Mail weiter leiten.',
     'yourAffiliateLink' => 'Ihr persönlicher Affiliate-Link',
     'copy' => 'Kopieren',
     'copied' => 'Kopiert',

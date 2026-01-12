@@ -13,6 +13,7 @@ return [
     'mapPreview'         => 'Anteprima posizione (Google Maps)',
     'website'            => 'Sito web',
     'memberSince'        => 'Membro dal',
+    'registeredVia'      => 'Registrato tramite piattaforma',
     'companyEmail'       => 'E-mail (azienda)',
     'companyEmailHelp'   => 'Questa email viene mostrata ai clienti (ad es. quando acquistano offerte, sulle fatture). Puoi inserire un\'altra email qui se desideri che i clienti vedano un\'email diversa. La tua email di login rimane privata.',
     'phone'              => 'Telefono',

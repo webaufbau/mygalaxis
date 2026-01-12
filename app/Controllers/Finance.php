@@ -161,6 +161,17 @@ class Finance extends BaseController
         $affiliateCode = $user->affiliate_code;
         $affiliateLink = site_url('register?ref=' . $affiliateCode);
 
+        // Zähle wie viele Firmen Sofortkauf aktiv haben (für Warteliste-Logik)
+        $db = \Config\Database::connect();
+        $autoPurchaseCount = $db->table('users')
+            ->where('auto_purchase', 1)
+            ->where('status', 'active')
+            ->countAllResults();
+
+        // Maximale Anzahl Firmen für Sofortkauf (kann später per Config angepasst werden)
+        $maxAutoPurchaseCompanies = 3;
+        $canActivateAutoPurchase = ($autoPurchaseCount < $maxAutoPurchaseCompanies) || !empty($user->auto_purchase);
+
         return view('account/finance', [
             'title' => 'Finanzen',
             'user' => $user,
@@ -184,6 +195,9 @@ class Finance extends BaseController
             'affiliateCode' => $affiliateCode,
             'affiliateLink' => $affiliateLink,
             'cardMasked' => $cardMasked,
+            'autoPurchaseCount' => $autoPurchaseCount,
+            'maxAutoPurchaseCompanies' => $maxAutoPurchaseCompanies,
+            'canActivateAutoPurchase' => $canActivateAutoPurchase,
         ]);
     }
 
@@ -1302,16 +1316,33 @@ class Finance extends BaseController
     {
         $user = auth()->user();
         $autoPurchase = $this->request->getPost('auto_purchase') ? 1 : 0;
+        $waitlist = $this->request->getPost('waitlist') ? 1 : 0;
 
         // Hole aktuellen Status
         $db = \Config\Database::connect();
         $currentUser = $db->table('users')->where('id', $user->id)->get()->getRow();
 
+        // Zähle aktive Sofortkauf-Firmen
+        $autoPurchaseCount = $db->table('users')
+            ->where('auto_purchase', 1)
+            ->where('status', 'active')
+            ->countAllResults();
+
+        $maxAutoPurchaseCompanies = 3;
+        $canActivate = ($autoPurchaseCount < $maxAutoPurchaseCompanies) || !empty($currentUser->auto_purchase);
+
+        // Wenn Auto-Purchase aktiviert werden soll aber nicht möglich ist
+        if ($autoPurchase == 1 && !$canActivate) {
+            return redirect()->to('/finance')->with('error', lang('Finance.waitlistFull'));
+        }
+
         // Wenn Auto-Purchase aktiviert wird und noch kein Aktivierungsdatum gesetzt ist
         if ($autoPurchase == 1 && empty($currentUser->auto_purchase_activated_at)) {
             $db->table('users')->where('id', $user->id)->update([
                 'auto_purchase' => 1,
-                'auto_purchase_activated_at' => date('Y-m-d H:i:s')
+                'auto_purchase_activated_at' => date('Y-m-d H:i:s'),
+                'on_waitlist' => 0, // Von Warteliste entfernen wenn aktiviert
+                'waitlist_joined_at' => null
             ]);
         }
         // Wenn Auto-Purchase deaktiviert wird
@@ -1328,7 +1359,22 @@ class Finance extends BaseController
             ]);
         }
 
-        return redirect()->to('/finance')->with('success', 'Einstellungen erfolgreich gespeichert');
+        // Warteliste-Status aktualisieren (nur wenn Sofortkauf nicht aktiv)
+        if ($autoPurchase == 0) {
+            if ($waitlist == 1 && empty($currentUser->waitlist_joined_at)) {
+                $db->table('users')->where('id', $user->id)->update([
+                    'on_waitlist' => 1,
+                    'waitlist_joined_at' => date('Y-m-d H:i:s')
+                ]);
+            } elseif ($waitlist == 0) {
+                $db->table('users')->where('id', $user->id)->update([
+                    'on_waitlist' => 0,
+                    'waitlist_joined_at' => null
+                ]);
+            }
+        }
+
+        return redirect()->to('/finance')->with('success', lang('Finance.settingsSaved') ?? 'Einstellungen erfolgreich gespeichert');
     }
 
     /**

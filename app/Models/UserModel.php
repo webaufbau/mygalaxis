@@ -57,6 +57,8 @@ class UserModel extends \CodeIgniter\Shield\Models\UserModel {
             'stats_always_open',
             'is_blocked',
             'is_test',
+            'on_waitlist',
+            'waitlist_joined_at',
         ];
     }
 

@@ -237,10 +237,10 @@
                     <?= lang('Finance.instantPurchaseDescription') ?>
                 </p>
 
-                <div class="alert alert-warning mb-3">
+                <div class="alert alert-secondary mb-3">
                     <small>
-                        <i class="bi bi-people-fill me-1"></i>
-                        <?= lang('Finance.maxCompaniesNote') ?>
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <?= lang('Finance.pauseWarning') ?>
                     </small>
                 </div>
 
@@ -289,48 +289,114 @@
                 <form action="<?= site_url('finance/update-settings') ?>" method="post">
                     <?= csrf_field() ?>
 
-                    <div class="form-check form-switch mb-3">
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="auto_purchase"
-                            name="auto_purchase"
-                            value="1"
-                            <?= !empty($user->auto_purchase) ? 'checked' : '' ?>
-                        >
-                        <label class="form-check-label" for="auto_purchase">
-                            <strong><?= esc(lang('Finance.enableAutoPurchase')) ?></strong>
-                        </label>
-                    </div>
+                    <?php if ($canActivateAutoPurchase): ?>
+                        <!-- Sofortkauf aktivierbar -->
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-3 bg-light rounded">
+                            <div>
+                                <strong class="fs-5"><?= esc(lang('Finance.enableAutoPurchase')) ?></strong>
+                            </div>
+                            <div class="form-check form-switch form-switch-lg mb-0">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="auto_purchase"
+                                    name="auto_purchase"
+                                    value="1"
+                                    style="width: 3.5rem; height: 1.75rem;"
+                                    <?= !empty($user->auto_purchase) ? 'checked' : '' ?>
+                                >
+                            </div>
+                        </div>
 
-                    <?php if (!empty($user->auto_purchase) && !empty($user->auto_purchase_activated_at)): ?>
-                        <div class="alert alert-success mb-3">
-                            <i class="bi bi-calendar-check me-1"></i>
-                            <small>
-                                <strong><?= esc(lang('Finance.activatedSince')) ?>:</strong>
-                                <?= date('d.m.Y H:i', strtotime($user->auto_purchase_activated_at)) ?> Uhr
-                            </small>
-                            <br>
-                            <small class="text-muted">
-                                <i class="bi bi-info-circle me-1"></i>
-                                <?= esc(lang('Finance.queueInfoShort')) ?>
-                            </small>
+                        <?php if (!empty($user->auto_purchase) && !empty($user->auto_purchase_activated_at)): ?>
+                            <div class="alert alert-success mb-3">
+                                <i class="bi bi-calendar-check me-1"></i>
+                                <small>
+                                    <strong><?= esc(lang('Finance.activatedSince')) ?>:</strong>
+                                    <?= date('d.m.Y H:i', strtotime($user->auto_purchase_activated_at)) ?> Uhr
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <?= esc(lang('Finance.queueInfoShort')) ?>
+                                </small>
+                            </div>
+                        <?php elseif (!empty($user->auto_purchase)): ?>
+                            <div class="alert alert-warning mb-3">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <small>
+                                    <?= lang('Finance.activationDateMissing') ?>
+                                </small>
+                            </div>
+                        <?php endif; ?>
+
+                        <p class="small text-muted mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <?= esc(lang('Finance.autoPurchaseInfo')) ?>
+                        </p>
+                    <?php else: ?>
+                        <!-- Sofortkauf NICHT aktivierbar - 3 Plätze belegt -->
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-3 bg-light rounded opacity-50">
+                            <div>
+                                <strong class="fs-5"><?= esc(lang('Finance.enableAutoPurchase')) ?></strong>
+                            </div>
+                            <div class="form-check form-switch form-switch-lg mb-0">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="auto_purchase"
+                                    name="auto_purchase"
+                                    value="1"
+                                    style="width: 3.5rem; height: 1.75rem;"
+                                    disabled
+                                >
+                            </div>
                         </div>
-                    <?php elseif (!empty($user->auto_purchase)): ?>
-                        <div class="alert alert-warning mb-3">
+
+                        <div class="alert alert-danger mb-3">
                             <i class="bi bi-exclamation-triangle me-1"></i>
-                            <small>
-                                <?= lang('Finance.activationDateMissing') ?>
-                            </small>
+                            <strong><?= lang('Finance.waitlistFull') ?></strong>
                         </div>
+
+                        <!-- Warteliste Option -->
+                        <div class="alert alert-warning mb-3">
+                            <i class="bi bi-hourglass-split me-1"></i>
+                            <small><?= lang('Finance.waitlistInfo') ?></small>
+                            <div class="d-flex align-items-center justify-content-between mt-2 p-2 bg-white rounded">
+                                <span><strong><?= esc(lang('Finance.joinWaitlist')) ?></strong></span>
+                                <div class="form-check form-switch mb-0">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        id="waitlist"
+                                        name="waitlist"
+                                        value="1"
+                                        style="width: 3rem; height: 1.5rem;"
+                                        <?= !empty($user->on_waitlist) ? 'checked' : '' ?>
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($user->on_waitlist)): ?>
+                            <div class="alert alert-info mb-3">
+                                <i class="bi bi-clock me-1"></i>
+                                <small>
+                                    <strong><?= esc(lang('Finance.onWaitlist')) ?></strong>
+                                    <?php if (!empty($user->waitlist_joined_at)): ?>
+                                        (<?= date('d.m.Y H:i', strtotime($user->waitlist_joined_at)) ?>)
+                                    <?php endif; ?>
+                                </small>
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
 
-                    <p class="small text-muted mb-3">
-                        <i class="bi bi-info-circle me-1"></i>
-                        <?= esc(lang('Finance.autoPurchaseInfo')) ?>
+                    <p class="small text-primary mb-3">
+                        <i class="bi bi-arrow-right-circle me-1"></i>
+                        <strong><?= esc(lang('Finance.pleaseSaveSettings')) ?></strong>
                     </p>
 
-                    <button type="submit" class="btn btn-secondary w-100">
+                    <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-check-lg me-1"></i><?= esc(lang('Finance.saveSettings')) ?>
                     </button>
                 </form>
@@ -420,7 +486,7 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
                         <th><?= esc(lang('Finance.description')) ?></th>
                         <th class="text-end"><?= esc(lang('Finance.cardPayment')) ?></th>
                         <th class="text-end"><?= esc(lang('Finance.balanceChange')) ?></th>
-                        <th><?= esc(lang('Finance.invoice')) ?></th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -448,10 +514,14 @@ document.querySelectorAll('.topup-quick-btn').forEach(btn => {
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="<?= site_url('finance/invoice/'.$entry['id']) ?>"
-                                   class="btn btn-sm btn-secondary">
-                                    <i class="bi bi-file-earmark-pdf"></i> RE<?=strtoupper(siteconfig()->siteCountry);?><?=$entry['id'];?>
-                                </a>
+                                <?php if (!empty($entry['reference_id']) && $entry['type'] === 'offer_purchase'): ?>
+                                    <a href="<?= site_url('offers/' . $entry['reference_id']) ?>"
+                                       class="btn btn-sm btn-primary">
+                                        <?= esc(lang('Finance.viewOffer')) ?>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -654,7 +724,8 @@ $(document).ready(function() {
     <div class="card-body">
         <div class="alert alert-success">
             <h5><i class="bi bi-gift me-2"></i><?= esc(lang('Finance.referralReward')) ?></h5>
-            <p class="mb-0"><?= esc(lang('Finance.referralInfo')) ?></p>
+            <p class="mb-2"><?= esc(lang('Finance.referralInfo')) ?></p>
+            <p class="mb-0"><small><i class="bi bi-share me-1"></i><?= esc(lang('Finance.referralShareInfo')) ?></small></p>
         </div>
 
         <!-- Affiliate Link -->

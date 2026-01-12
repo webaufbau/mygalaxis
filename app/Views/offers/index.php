@@ -8,70 +8,6 @@
     <strong><?= lang('General.note') ?? 'Note' ?>:</strong> <?= lang('Offers.info_text') ?>
 </div>
 
-<form method="get" class="mb-4">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <i class="bi bi-funnel me-2"></i><strong><?= lang('Offers.filter_title') ?></strong>
-        </div>
-        <div class="card-body">
-            <!-- Branchen-Filter (Mehrfachauswahl als Buttons) -->
-            <div class="mb-3">
-                <label class="form-label fw-bold"><?= lang('Offers.filter_categories_label') ?></label>
-                <?php if (empty($categoryTypes)): ?>
-                    <div class="alert alert-warning mb-0">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <?= lang('Offers.filter_no_categories') ?>
-                        <a href="<?= site_url('filter') ?>" class="alert-link"><?= lang('Offers.filter_no_categories_link') ?></a>,
-                        <?= lang('Offers.filter_no_categories_suffix') ?>
-                    </div>
-                <?php else: ?>
-                    <div class="d-flex flex-wrap gap-2">
-                        <?php foreach ($categoryTypes as $typeKey => $typeName): ?>
-                            <?php $isSelected = in_array($typeKey, $selectedTypes); ?>
-                            <div>
-                                <input
-                                    type="checkbox"
-                                    class="btn-check"
-                                    name="types[]"
-                                    value="<?= esc($typeKey) ?>"
-                                    id="type_<?= esc($typeKey) ?>"
-                                    autocomplete="off"
-                                    <?= $isSelected ? 'checked' : '' ?>
-                                >
-                                <label class="btn btn-outline-primary" for="type_<?= esc($typeKey) ?>">
-                                    <i class="bi bi-tag me-1"></i><?= esc($typeName) ?>
-                                </label>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <small class="text-muted d-block mt-2">
-                        <i class="bi bi-info-circle me-1"></i><?= lang('Offers.filter_categories_info') ?> <a href="<?= site_url('filter') ?>"><?= lang('Offers.filter_no_categories_link') ?></a> <?= lang('Offers.filter_categories_info_suffix') ?>
-                    </small>
-                <?php endif; ?>
-            </div>
-
-            <!-- Status-Filter -->
-            <div class="mb-3">
-                <label class="form-label fw-bold"><?= lang('Offers.filter_status_label') ?></label>
-                <select name="filter" class="form-select">
-                    <option value=""><?= lang('Offers.allStatuses') ?></option>
-                    <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.filterAvailable') ?></option>
-                    <option value="purchased" <?= ($filter === 'purchased') ? 'selected' : '' ?>><?= lang('Offers.filterPurchased') ?></option>
-                </select>
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search me-1"></i><?= lang('Offers.filterButton') ?>
-                </button>
-                <a href="<?= site_url('offers') ?>" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle me-1"></i><?= lang('Offers.filter_reset') ?>
-                </a>
-            </div>
-        </div>
-    </div>
-</form>
-
 <!-- Statistiken -->
 <div class="card mb-4">
     <div class="card-header bg-info text-white" data-bs-toggle="collapse" data-bs-target="#statsCollapse" style="cursor: pointer;">
@@ -235,6 +171,71 @@
     </div>
 </div>
 
+<!-- Filter -->
+<form method="get" class="mb-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-funnel me-2"></i><strong><?= lang('Offers.filter_title') ?></strong>
+        </div>
+        <div class="card-body">
+            <!-- Branchen-Filter (Mehrfachauswahl als Buttons) -->
+            <div class="mb-3">
+                <label class="form-label fw-bold"><?= lang('Offers.filter_categories_label') ?></label>
+                <?php if (empty($categoryTypes)): ?>
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <?= lang('Offers.filter_no_categories') ?>
+                        <a href="<?= site_url('filter') ?>" class="alert-link"><?= lang('Offers.filter_no_categories_link') ?></a>,
+                        <?= lang('Offers.filter_no_categories_suffix') ?>
+                    </div>
+                <?php else: ?>
+                    <div class="d-flex flex-wrap gap-2">
+                        <?php foreach ($categoryTypes as $typeKey => $typeName): ?>
+                            <?php $isSelected = in_array($typeKey, $selectedTypes); ?>
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    class="btn-check"
+                                    name="types[]"
+                                    value="<?= esc($typeKey) ?>"
+                                    id="type_<?= esc($typeKey) ?>"
+                                    autocomplete="off"
+                                    <?= $isSelected ? 'checked' : '' ?>
+                                >
+                                <label class="btn btn-outline-primary" for="type_<?= esc($typeKey) ?>">
+                                    <i class="bi bi-tag me-1"></i><?= esc($typeName) ?>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-info-circle me-1"></i><?= lang('Offers.filter_categories_info') ?> <a href="<?= site_url('filter') ?>"><?= lang('Offers.filter_no_categories_link') ?></a> <?= lang('Offers.filter_categories_info_suffix') ?>
+                    </small>
+                <?php endif; ?>
+            </div>
+
+            <!-- Status-Filter -->
+            <div class="mb-3">
+                <label class="form-label fw-bold"><?= lang('Offers.filter_status_label') ?></label>
+                <select name="filter" class="form-select">
+                    <option value=""><?= lang('Offers.allStatuses') ?></option>
+                    <option value="available" <?= ($filter === 'available') ? 'selected' : '' ?>><?= lang('Offers.filterAvailable') ?></option>
+                    <option value="purchased" <?= ($filter === 'purchased') ? 'selected' : '' ?>><?= lang('Offers.filterPurchased') ?></option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i><?= lang('Offers.filterButton') ?>
+                </button>
+                <a href="<?= site_url('offers') ?>" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i><?= lang('Offers.filter_reset') ?>
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
 <?php if (empty($offers)): ?>
     <div class="alert alert-info">
         <?= lang('Offers.noOffersFound') ?> <a href="/filter" class="alert-link"><?= lang('Offers.expandFilters') ?></a>.
@@ -267,10 +268,32 @@
                             <?= esc($offer['dynamic_title'] ?? $offer['title']) ?>
                         </span>
                         <small class="text-muted">
-                            <?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?> ·
+                            <?= lang('Offers.labels.created_at') ?? 'Anfrage erstellt' ?>: <?= date('d.m.Y - H:i', strtotime($offer['created_at'])) ?><?= !empty(lang('Offers.time_suffix')) ? ' ' . lang('Offers.time_suffix') : '' ?> ·
                             <span class="badge bg-secondary"><?= lang('Offers.order_number') ?> #<?= $offer['id'] ?></span>
                         </small>
                         <br>
+                        <?php
+                        // Ausführungsdatum und Flexibilität
+                        $formFields = json_decode($offer['form_fields'] ?? '', true) ?? [];
+                        $workStartDate = $offer['work_start_date'] ?? null;
+                        $zeitFlexibel = $formFields['zeit_flexibel'] ?? '';
+                        ?>
+                        <?php if (!empty($workStartDate) || !empty($zeitFlexibel)): ?>
+                        <small class="text-muted">
+                            <?php if (!empty($workStartDate)): ?>
+                                <?= lang('Offers.labels.execution_date') ?? 'Ausführung am' ?>: <?= date('d.m.Y', strtotime($workStartDate)) ?>
+                                <?php if (!empty($zeitFlexibel)): ?> · <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if (!empty($zeitFlexibel)): ?>
+                                <?php
+                                // Entferne "Ja, " am Anfang falls vorhanden und kürze
+                                $displayFlexibility = preg_replace('/^Ja,\s*/i', '', $zeitFlexibel);
+                                ?>
+                                <?= lang('Offers.labels.flexibility') ?? 'Zeitliche Flexibilität' ?>: <?= esc($displayFlexibility) ?>
+                            <?php endif; ?>
+                        </small>
+                        <br>
+                        <?php endif; ?>
 
                         <?php if ($status == 'available' || $isPurchased): ?>
                             <a data-bs-toggle="collapse" href="#details-<?= $offer['id'] ?>" role="button" aria-expanded="false" aria-controls="details-<?= $offer['id'] ?>" data-toggle-icon="#toggleIcon-<?= $offer['id'] ?>">

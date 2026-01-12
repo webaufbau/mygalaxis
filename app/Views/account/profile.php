@@ -80,22 +80,36 @@ elseif($siteConfig->phoneCheck == 'de') {
             <p class="mb-2"><strong><?= esc(lang('Profile.companyName')) ?>:</strong><br><?= esc($user->company_name) ?></p>
             <p class="mb-2"><strong><?= esc(lang('Profile.contactPerson')) ?>:</strong><br><?= esc($user->contact_person) ?></p>
             <p class="mb-2"><strong><?= esc(lang('Profile.companyEmail')) ?>:</strong><br><?= esc($user->company_email) ?></p>
-            <p class="mb-0"><strong><?= esc(lang('Profile.phone')) ?>:</strong><br><?= esc($user->company_phone) ?></p>
-        </div>
-        <div class="col-md-6">
-            <p class="mb-2">
+            <p class="mb-2"><strong><?= esc(lang('Profile.phone')) ?>:</strong><br><?= esc($user->company_phone) ?></p>
+            <p class="mb-0">
                 <strong><?= esc(lang('Profile.loginEmail')) ?>:</strong><br>
                 <?= esc($authUser->email) ?><br>
                 <small class="text-muted"><i class="bi bi-envelope"></i> <?= esc(lang('Profile.loginEmailReceivesNotifications')) ?></small>
             </p>
+        </div>
+        <div class="col-md-6">
             <p class="mb-2"><strong><?= esc(lang('Profile.street')) ?>:</strong><br><?= esc($user->company_street) ?></p>
             <p class="mb-2"><strong><?= esc(lang('Profile.zip')) ?> / <?= esc(lang('Profile.city')) ?>:</strong><br><?= esc($user->company_zip) ?> <?= esc($user->company_city) ?></p>
             <?php if(!empty($user->company_website)): ?>
             <p class="mb-2"><strong><?= esc(lang('Profile.website')) ?>:</strong><br><?= esc($user->company_website) ?></p>
             <?php endif; ?>
-            <p class="mb-0"><strong><?= esc(lang('Profile.memberSince')) ?>:</strong><br>
+            <p class="mb-2"><strong><?= esc(lang('Profile.memberSince')) ?>:</strong><br>
                 <?= \CodeIgniter\I18n\Time::parse($authUser->created_at)->setTimezone(app_timezone())->format('d.m.Y') ?>
             </p>
+            <?php if(!empty($user->platform)): ?>
+            <p class="mb-0"><strong><?= esc(lang('Profile.registeredVia')) ?>:</strong><br>
+                <?php
+                $platformNames = [
+                    'my_offertenschweiz_ch' => 'Offertenschweiz',
+                    'my_offertenheld_ch' => 'Offertenheld',
+                    'my_renovo_ch' => 'Renovo',
+                    'my_offertenitalia_it' => 'Offerte Italia',
+                    'my_offernow_ch' => 'OfferNow',
+                ];
+                echo esc($platformNames[$user->platform] ?? ucfirst($user->platform));
+                ?>
+            </p>
+            <?php endif; ?>
         </div>
     </div>
     <hr class="my-3">

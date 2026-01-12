@@ -13,6 +13,7 @@ return [
     'mapPreview'           => 'Location Preview (Google Maps)',
     'website'              => 'Website',
     'memberSince'          => 'Member since',
+    'registeredVia'        => 'Registered via platform',
     'companyEmail'         => 'Email (Company)',
     'companyEmailHelp'     => 'This email is shown to customers (e.g., when purchasing offers, on invoices). You can enter a different email here if you want customers to see a different email. Your login email remains private.',
     'phone'                => 'Phone',
