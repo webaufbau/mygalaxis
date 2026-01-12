@@ -17,17 +17,13 @@
 
 <p class="text-muted mb-3">Ziehen Sie die Zeilen, um die Sortierung zu ändern. Die Reihenfolge wird automatisch gespeichert.</p>
 
-<?php
-$categoryOptions = config('CategoryOptions');
-$categoryTypes = $categoryOptions->categoryTypes;
-?>
 <table class="table table-hover" id="projects-table">
     <thead>
         <tr>
             <th style="width: 40px;"></th>
             <th>Slug</th>
             <th>Name (DE)</th>
-            <th>Ziel-Branche</th>
+            <th>Ziel-Formular</th>
             <th>Sortierung</th>
             <th>Status</th>
             <th>Aktionen</th>
@@ -35,6 +31,13 @@ $categoryTypes = $categoryOptions->categoryTypes;
     </thead>
     <tbody id="sortable-projects">
         <?php foreach ($projects as $project): ?>
+            <?php
+            // Formular-Info holen
+            $form = null;
+            if (!empty($project['form_id'])) {
+                $form = $categoryManager->getFormById($project['form_id'], 'de');
+            }
+            ?>
             <tr data-id="<?= esc($project['id']) ?>">
                 <td class="drag-handle" style="cursor: grab;">
                     <i class="bi bi-grip-vertical"></i>
@@ -42,8 +45,10 @@ $categoryTypes = $categoryOptions->categoryTypes;
                 <td><code><?= esc($project['slug']) ?></code></td>
                 <td><?= esc($project['name_de']) ?></td>
                 <td>
-                    <?php if (!empty($project['category_type']) && isset($categoryTypes[$project['category_type']])): ?>
-                        <span class="badge bg-primary"><?= esc($categoryTypes[$project['category_type']]) ?></span>
+                    <?php if ($form): ?>
+                        <span class="badge" style="background-color: <?= esc($form['category_color']) ?>;">
+                            <?= esc($form['name']) ?>
+                        </span>
                     <?php else: ?>
                         <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Nicht gesetzt</span>
                     <?php endif; ?>

@@ -4,13 +4,30 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Branchen verwalten</h2>
+    <div class="d-flex gap-2">
+        <a href="/admin/category/export" class="btn btn-outline-secondary">
+            <i class="bi bi-download"></i> Export
+        </a>
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="bi bi-upload"></i> Import
+        </button>
+    </div>
 </div>
+
+<?php if (session()->getFlashdata('message')): ?>
+    <div class="alert alert-success"><?= esc(session()->getFlashdata('message')) ?></div>
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger"><?= esc(session()->getFlashdata('error')) ?></div>
+<?php endif; ?>
 
 <form method="post">
     <?= csrf_field() ?>
 
     <div class="accordion" id="categoriesAccordion">
         <?php $index = 0; foreach ($categories as $key => $cat): ?>
+            <?php $forms = $cat['forms'] ?? []; ?>
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button <?= $index > 0 ? 'collapsed' : '' ?>" type="button"
@@ -19,10 +36,10 @@
                             <span class="badge rounded-circle" style="background-color: <?= esc($cat['color'] ?? '#6c757d') ?>; width: 12px; height: 12px;"></span>
                             <strong><?= esc($cat['name']) ?></strong>
                             <code class="text-muted small ms-2"><?= esc($key) ?></code>
-                            <?php if (!empty($cat['form_link'])): ?>
-                                <i class="bi bi-link-45deg text-success ms-auto me-3" title="Formular-Link gesetzt"></i>
+                            <?php if (!empty($forms)): ?>
+                                <span class="badge bg-success ms-auto me-3"><?= count($forms) ?> Formular<?= count($forms) > 1 ? 'e' : '' ?></span>
                             <?php else: ?>
-                                <i class="bi bi-link-45deg text-muted ms-auto me-3" title="Kein Formular-Link"></i>
+                                <span class="badge bg-secondary ms-auto me-3">Keine Formulare</span>
                             <?php endif; ?>
                         </span>
                     </button>
@@ -33,49 +50,117 @@
                         <input type="hidden" name="categories[<?= esc($key) ?>][name]" value="<?= esc($cat['name']) ?>">
 
                         <div class="row">
-                            <!-- Linke Spalte: Formular, Farbe, Max -->
-                            <div class="col-md-5">
-                                <h6 class="text-muted mb-3"><i class="bi bi-gear"></i> Einstellungen</h6>
+                            <!-- Linke Spalte: Formulare und Einstellungen -->
+                            <div class="col-md-6">
+                                <!-- Formulare -->
+                                <div class="mb-4">
+                                    <h6 class="text-muted mb-3"><i class="bi bi-file-earmark-text"></i> Formulare</h6>
+                                    <p class="small text-muted mb-3">
+                                        Definiere hier die Formulare für diese Branche. Jedes Formular erscheint separat im Frontend.
+                                    </p>
 
-                                <!-- Formular-Link (Haupt) -->
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">Formular-Link (Haupt)</label>
-                                    <input type="url"
-                                           name="categories[<?= esc($key) ?>][form_link]"
-                                           value="<?= esc($cat['form_link'] ?? '') ?>"
-                                           class="form-control"
-                                           placeholder="https://...">
-                                    <small class="text-muted">Standard-Link für diese Branche</small>
-                                </div>
-
-                                <!-- Unterkategorien -->
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold">Unterkategorien</label>
-                                    <div class="subcategories-container" data-category="<?= esc($key) ?>">
-                                        <?php $subcats = $cat['subcategories'] ?? []; ?>
-                                        <?php foreach ($subcats as $si => $subcat): ?>
-                                        <div class="subcategory-row d-flex gap-2 mb-2 align-items-center">
-                                            <input type="text"
-                                                   name="categories[<?= esc($key) ?>][subcategories][<?= $si ?>][name]"
-                                                   value="<?= esc($subcat['name'] ?? '') ?>"
-                                                   class="form-control form-control-sm"
-                                                   placeholder="Name"
-                                                   style="width: 120px;">
-                                            <input type="url"
-                                                   name="categories[<?= esc($key) ?>][subcategories][<?= $si ?>][form_link]"
-                                                   value="<?= esc($subcat['form_link'] ?? '') ?>"
-                                                   class="form-control form-control-sm"
-                                                   placeholder="Formular-Link">
-                                            <button type="button" class="btn btn-outline-danger btn-sm remove-subcategory">
-                                                <i class="bi bi-x"></i>
-                                            </button>
+                                    <div class="forms-container" data-category="<?= esc($key) ?>">
+                                        <?php foreach ($forms as $fi => $form): ?>
+                                        <div class="form-entry card mb-3">
+                                            <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                                <span class="small fw-bold">Formular <?= $fi + 1 ?></span>
+                                                <button type="button" class="btn btn-outline-danger btn-sm remove-form">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                            <div class="card-body py-2">
+                                                <!-- DE -->
+                                                <div class="row g-2 mb-2">
+                                                    <div class="col-4">
+                                                        <label class="form-label small">Name (DE) *</label>
+                                                        <input type="text"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][name_de]"
+                                                               value="<?= esc($form['name_de'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="z.B. Privat-Umzug"
+                                                               required>
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <label class="form-label small">Link (DE) *</label>
+                                                        <input type="url"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][form_link_de]"
+                                                               value="<?= esc($form['form_link_de'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="https://..."
+                                                               required>
+                                                    </div>
+                                                </div>
+                                                <!-- EN -->
+                                                <div class="row g-2 mb-2">
+                                                    <div class="col-4">
+                                                        <label class="form-label small">Name (EN)</label>
+                                                        <input type="text"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][name_en]"
+                                                               value="<?= esc($form['name_en'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="Private Move">
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <label class="form-label small">Link (EN)</label>
+                                                        <input type="url"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][form_link_en]"
+                                                               value="<?= esc($form['form_link_en'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="https://...">
+                                                    </div>
+                                                </div>
+                                                <!-- FR -->
+                                                <div class="row g-2 mb-2">
+                                                    <div class="col-4">
+                                                        <label class="form-label small">Name (FR)</label>
+                                                        <input type="text"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][name_fr]"
+                                                               value="<?= esc($form['name_fr'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="Déménagement privé">
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <label class="form-label small">Link (FR)</label>
+                                                        <input type="url"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][form_link_fr]"
+                                                               value="<?= esc($form['form_link_fr'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="https://...">
+                                                    </div>
+                                                </div>
+                                                <!-- IT -->
+                                                <div class="row g-2">
+                                                    <div class="col-4">
+                                                        <label class="form-label small">Name (IT)</label>
+                                                        <input type="text"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][name_it]"
+                                                               value="<?= esc($form['name_it'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="Trasloco privato">
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <label class="form-label small">Link (IT)</label>
+                                                        <input type="url"
+                                                               name="categories[<?= esc($key) ?>][forms][<?= $fi ?>][form_link_it]"
+                                                               value="<?= esc($form['form_link_it'] ?? '') ?>"
+                                                               class="form-control form-control-sm"
+                                                               placeholder="https://...">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <?php endforeach; ?>
                                     </div>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm add-subcategory" data-category="<?= esc($key) ?>">
-                                        <i class="bi bi-plus"></i> Unterkategorie
+
+                                    <button type="button" class="btn btn-outline-primary btn-sm add-form" data-category="<?= esc($key) ?>">
+                                        <i class="bi bi-plus"></i> Formular hinzufügen
                                     </button>
                                 </div>
+
+                                <hr>
+
+                                <!-- Weitere Einstellungen -->
+                                <h6 class="text-muted mb-3"><i class="bi bi-gear"></i> Einstellungen</h6>
 
                                 <!-- Farbe -->
                                 <div class="mb-3">
@@ -147,7 +232,7 @@
                             </div>
 
                             <!-- Rechte Spalte: Preise -->
-                            <div class="col-md-7">
+                            <div class="col-md-6">
                                 <h6 class="text-muted mb-3"><i class="bi bi-currency-dollar"></i> Preise (CHF)</h6>
 
                                 <div class="row g-2">
@@ -218,6 +303,64 @@
     </div>
 </form>
 
+<!-- Template für neues Formular -->
+<template id="form-template">
+    <div class="form-entry card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <span class="small fw-bold">Neues Formular</span>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-form">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+        <div class="card-body py-2">
+            <!-- DE -->
+            <div class="row g-2 mb-2">
+                <div class="col-4">
+                    <label class="form-label small">Name (DE) *</label>
+                    <input type="text" name="" class="form-control form-control-sm form-name-de" placeholder="z.B. Privat-Umzug" required>
+                </div>
+                <div class="col-8">
+                    <label class="form-label small">Link (DE) *</label>
+                    <input type="url" name="" class="form-control form-control-sm form-link-de" placeholder="https://..." required>
+                </div>
+            </div>
+            <!-- EN -->
+            <div class="row g-2 mb-2">
+                <div class="col-4">
+                    <label class="form-label small">Name (EN)</label>
+                    <input type="text" name="" class="form-control form-control-sm form-name-en" placeholder="Private Move">
+                </div>
+                <div class="col-8">
+                    <label class="form-label small">Link (EN)</label>
+                    <input type="url" name="" class="form-control form-control-sm form-link-en" placeholder="https://...">
+                </div>
+            </div>
+            <!-- FR -->
+            <div class="row g-2 mb-2">
+                <div class="col-4">
+                    <label class="form-label small">Name (FR)</label>
+                    <input type="text" name="" class="form-control form-control-sm form-name-fr" placeholder="Déménagement privé">
+                </div>
+                <div class="col-8">
+                    <label class="form-label small">Link (FR)</label>
+                    <input type="url" name="" class="form-control form-control-sm form-link-fr" placeholder="https://...">
+                </div>
+            </div>
+            <!-- IT -->
+            <div class="row g-2">
+                <div class="col-4">
+                    <label class="form-label small">Name (IT)</label>
+                    <input type="text" name="" class="form-control form-control-sm form-name-it" placeholder="Trasloco privato">
+                </div>
+                <div class="col-8">
+                    <label class="form-label small">Link (IT)</label>
+                    <input type="url" name="" class="form-control form-control-sm form-link-it" placeholder="https://...">
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     let table = document.getElementById("discount-rules-table").getElementsByTagName("tbody")[0];
@@ -260,36 +403,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
     updateAddButtonState();
 
-    // Subcategories handling
-    document.querySelectorAll('.add-subcategory').forEach(function(btn) {
+    // Formulare hinzufügen
+    document.querySelectorAll('.add-form').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const category = this.dataset.category;
-            const container = document.querySelector(`.subcategories-container[data-category="${category}"]`);
-            const index = container.querySelectorAll('.subcategory-row').length;
+            const container = document.querySelector(`.forms-container[data-category="${category}"]`);
+            const index = container.querySelectorAll('.form-entry').length;
 
-            const row = document.createElement('div');
-            row.className = 'subcategory-row d-flex gap-2 mb-2 align-items-center';
-            row.innerHTML = `
-                <input type="text"
-                       name="categories[${category}][subcategories][${index}][name]"
-                       class="form-control form-control-sm"
-                       placeholder="Name"
-                       style="width: 120px;">
-                <input type="url"
-                       name="categories[${category}][subcategories][${index}][form_link]"
-                       class="form-control form-control-sm"
-                       placeholder="Formular-Link">
-                <button type="button" class="btn btn-outline-danger btn-sm remove-subcategory">
-                    <i class="bi bi-x"></i>
-                </button>
-            `;
-            container.appendChild(row);
+            const template = document.getElementById('form-template');
+            const clone = template.content.cloneNode(true);
+
+            // Namen der Inputs setzen
+            clone.querySelector('.form-name-de').name = `categories[${category}][forms][${index}][name_de]`;
+            clone.querySelector('.form-name-en').name = `categories[${category}][forms][${index}][name_en]`;
+            clone.querySelector('.form-name-fr').name = `categories[${category}][forms][${index}][name_fr]`;
+            clone.querySelector('.form-name-it').name = `categories[${category}][forms][${index}][name_it]`;
+            clone.querySelector('.form-link-de').name = `categories[${category}][forms][${index}][form_link_de]`;
+            clone.querySelector('.form-link-en').name = `categories[${category}][forms][${index}][form_link_en]`;
+            clone.querySelector('.form-link-fr').name = `categories[${category}][forms][${index}][form_link_fr]`;
+            clone.querySelector('.form-link-it').name = `categories[${category}][forms][${index}][form_link_it]`;
+
+            container.appendChild(clone);
         });
     });
 
+    // Formulare entfernen
     document.addEventListener('click', function(e) {
-        if (e.target && (e.target.classList.contains('remove-subcategory') || e.target.closest('.remove-subcategory'))) {
-            e.target.closest('.subcategory-row').remove();
+        if (e.target && (e.target.classList.contains('remove-form') || e.target.closest('.remove-form'))) {
+            e.target.closest('.form-entry').remove();
         }
     });
 });
@@ -305,5 +446,43 @@ function toggleMaxField(key) {
     }
 }
 </script>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="/admin/category/import" method="post" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel"><i class="bi bi-upload"></i> Branchen importieren</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Achtung:</strong> Der Import überschreibt alle bestehenden Branchen-Einstellungen!
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="import_file" class="form-label">JSON-Datei auswählen</label>
+                        <input type="file"
+                               name="import_file"
+                               id="import_file"
+                               class="form-control"
+                               accept=".json,application/json"
+                               required>
+                        <small class="text-muted">Nur .json Dateien (vorher exportiert)</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Importieren
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <?= $this->endSection() ?>

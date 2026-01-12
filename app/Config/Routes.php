@@ -279,6 +279,8 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->get('user/json', 'Admin\User::json');
 
     $routes->match(['GET', 'POST'], 'category', 'Admin\Category::index');
+    $routes->get('category/export', 'Admin\Category::export');
+    $routes->post('category/import', 'Admin\Category::import');
     $routes->match(['GET', 'POST'], 'category/form', 'Admin\Category::form');
     $routes->match(['GET', 'POST'], 'category/form/(:num)', 'Admin\Category::form/$1');
     $routes->match(['GET', 'POST'], 'category/copy/(:num)', 'Admin\Category::copy/$1');

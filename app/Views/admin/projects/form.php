@@ -35,20 +35,36 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="category_type" class="form-label">Ziel-Branche *</label>
-                        <select name="category_type" id="category_type" class="form-select" required>
-                            <option value="">-- Ziel-Branche wählen --</option>
+                        <label for="form_id" class="form-label">Ziel-Formular *</label>
+                        <select name="form_id" id="form_id" class="form-select" required>
+                            <option value="">-- Formular wählen --</option>
                             <?php
-                            $categoryOptions = config('CategoryOptions');
-                            $currentCategory = old('category_type', $project['category_type'] ?? '');
-                            foreach ($categoryOptions->categoryTypes as $key => $name):
+                            $currentFormId = old('form_id', $project['form_id'] ?? '');
+
+                            // Formulare nach Branche gruppieren
+                            $groupedForms = [];
+                            foreach ($forms as $form) {
+                                $catKey = $form['category_key'];
+                                if (!isset($groupedForms[$catKey])) {
+                                    $groupedForms[$catKey] = [
+                                        'name' => $form['category_name'],
+                                        'forms' => [],
+                                    ];
+                                }
+                                $groupedForms[$catKey]['forms'][] = $form;
+                            }
                             ?>
-                                <option value="<?= esc($key) ?>" <?= $currentCategory === $key ? 'selected' : '' ?>>
-                                    <?= esc($name) ?>
-                                </option>
+                            <?php foreach ($groupedForms as $catKey => $group): ?>
+                                <optgroup label="<?= esc($group['name']) ?>">
+                                    <?php foreach ($group['forms'] as $form): ?>
+                                        <option value="<?= esc($form['form_id']) ?>" <?= $currentFormId === $form['form_id'] ? 'selected' : '' ?>>
+                                            <?= esc($form['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </optgroup>
                             <?php endforeach; ?>
                         </select>
-                        <small class="text-muted">Das Projekt verwendet den Formular-Link dieser Branche.</small>
+                        <small class="text-muted">Das Projekt verwendet den Link dieses Formulars.</small>
                     </div>
 
                     <div class="mb-3">

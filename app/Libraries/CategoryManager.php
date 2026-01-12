@@ -48,9 +48,8 @@ class CategoryManager
                 'max' => $values['categories'][$catKey]['max'] ?? null,
                 'review_email_days' => $values['categories'][$catKey]['review_email_days'] ?? 5,
                 'review_reminder_days' => $values['categories'][$catKey]['review_reminder_days'] ?? 10,
-                'form_link' => $values['categories'][$catKey]['form_link'] ?? '',
                 'color' => $values['categories'][$catKey]['color'] ?? '#6c757d',
-                'subcategories' => $values['categories'][$catKey]['subcategories'] ?? [],
+                'forms' => $values['categories'][$catKey]['forms'] ?? [],
                 'options' => $options
             ];
         }
@@ -81,14 +80,21 @@ class CategoryManager
                     ];
                 }
 
-                // Subcategories verarbeiten
-                $subcategories = [];
-                $rawSubcats = $categories[$catKey]['subcategories'] ?? [];
-                foreach ($rawSubcats as $subcat) {
-                    if (!empty($subcat['name'])) {
-                        $subcategories[] = [
-                            'name' => $subcat['name'],
-                            'form_link' => $subcat['form_link'] ?? '',
+                // Formulare verarbeiten (mehrsprachig)
+                $forms = [];
+                $rawForms = $categories[$catKey]['forms'] ?? [];
+                foreach ($rawForms as $form) {
+                    // Mindestens deutscher Name muss vorhanden sein
+                    if (!empty($form['name_de'])) {
+                        $forms[] = [
+                            'name_de' => $form['name_de'],
+                            'name_en' => $form['name_en'] ?? '',
+                            'name_fr' => $form['name_fr'] ?? '',
+                            'name_it' => $form['name_it'] ?? '',
+                            'form_link_de' => $form['form_link_de'] ?? '',
+                            'form_link_en' => $form['form_link_en'] ?? '',
+                            'form_link_fr' => $form['form_link_fr'] ?? '',
+                            'form_link_it' => $form['form_link_it'] ?? '',
                         ];
                     }
                 }
@@ -104,9 +110,8 @@ class CategoryManager
                     'review_reminder_days' => isset($categories[$catKey]['review_reminder_days']) && $categories[$catKey]['review_reminder_days'] !== ''
                         ? intval($categories[$catKey]['review_reminder_days'])
                         : 10,
-                    'form_link' => $categories[$catKey]['form_link'] ?? '',
                     'color' => $categories[$catKey]['color'] ?? '#6c757d',
-                    'subcategories' => $subcategories,
+                    'forms' => $forms,
                     'options' => $options
                 ];
             }
@@ -134,5 +139,66 @@ class CategoryManager
             ) !== false;
     }
 
+    /**
+     * Alle verfügbaren Formulare als flache Liste holen
+     * Jedes Formular hat: category_key, form_index, name (lokalisiert), form_link (lokalisiert)
+     */
+    public function getAllForms(?string $locale = null): array
+    {
+        $locale = $locale ?? service('request')->getLocale();
+        $data = $this->getAll();
+        $forms = [];
 
+        foreach ($data['categories'] as $catKey => $cat) {
+            $categoryForms = $cat['forms'] ?? [];
+
+            if (empty($categoryForms)) {
+                // Keine Formulare definiert = Branche ohne Formulare
+                continue;
+            }
+
+            foreach ($categoryForms as $index => $form) {
+                $nameField = "name_{$locale}";
+                $linkField = "form_link_{$locale}";
+
+                // Name mit Fallback zu DE
+                $name = !empty($form[$nameField]) ? $form[$nameField] : ($form['name_de'] ?? '');
+
+                // Link mit Fallback zu DE
+                $link = !empty($form[$linkField]) ? $form[$linkField] : ($form['form_link_de'] ?? '');
+
+                if (empty($link)) {
+                    continue; // Kein Link = nicht anzeigen
+                }
+
+                $forms[] = [
+                    'category_key' => $catKey,
+                    'category_name' => $cat['name'],
+                    'category_color' => $cat['color'] ?? '#6c757d',
+                    'form_index' => $index,
+                    'form_id' => $catKey . ':' . $index, // Eindeutige ID
+                    'name' => $name,
+                    'form_link' => $link,
+                ];
+            }
+        }
+
+        return $forms;
+    }
+
+    /**
+     * Ein spezifisches Formular nach ID holen (format: "category_key:form_index")
+     */
+    public function getFormById(string $formId, ?string $locale = null): ?array
+    {
+        $forms = $this->getAllForms($locale);
+
+        foreach ($forms as $form) {
+            if ($form['form_id'] === $formId) {
+                return $form;
+            }
+        }
+
+        return null;
+    }
 }

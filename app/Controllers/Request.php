@@ -9,36 +9,36 @@ class Request extends BaseController
 {
     public function start()
     {
-        // Branchen aus CategoryManager laden
+        // Formulare aus CategoryManager laden
         $categoryManager = new CategoryManager();
-        $categoryData = $categoryManager->getAll();
-        $categories = $categoryData['categories'] ?? [];
+        $locale = $this->request->getGet('lang') ?? service('request')->getLocale();
+        $forms = $categoryManager->getAllForms($locale);
 
         // Projekte aus DB laden
         $projectModel = new ProjectModel();
-        $projects = $projectModel->getActiveProjectsWithNames();
+        $projects = $projectModel->getActiveProjectsWithNames($locale);
 
-        // Initial ausgewählte Branche (aus URL-Parameter)
+        // Initial ausgewähltes Formular (aus URL-Parameter)
         $initial = $this->request->getGet('initial');
-        $lang = $this->request->getGet('lang') ?? service('request')->getLocale();
 
         return view('request/start', [
-            'categories' => $categories,
+            'forms' => $forms,
             'projects' => $projects,
             'initial' => $initial,
-            'lang' => $lang,
+            'lang' => $locale,
+            'categoryManager' => $categoryManager,
         ]);
     }
 
     public function submit()
     {
-        // Ausgewählte Branchen und Projekte
-        $selectedCategories = $this->request->getPost('categories') ?? [];
+        // Ausgewählte Formulare und Projekte
+        $selectedForms = $this->request->getPost('forms') ?? [];
         $selectedProjects = $this->request->getPost('projects') ?? [];
 
         // Validierung
-        if (empty($selectedCategories) && empty($selectedProjects)) {
-            return redirect()->back()->withInput()->with('error', 'Bitte wähle mindestens eine Branche oder ein Projekt aus.');
+        if (empty($selectedForms) && empty($selectedProjects)) {
+            return redirect()->back()->withInput()->with('error', 'Bitte wähle mindestens ein Formular oder ein Projekt aus.');
         }
 
         // Session erstellen
@@ -47,7 +47,7 @@ class Request extends BaseController
         // Daten in Session speichern
         $sessionData = [
             'id' => $sessionId,
-            'categories' => $selectedCategories,
+            'forms' => $selectedForms,
             'projects' => $selectedProjects,
             'current_index' => 0,
             'form_data' => [],
@@ -57,10 +57,11 @@ class Request extends BaseController
         session()->set('request_' . $sessionId, $sessionData);
 
         // Formular-Links zusammenstellen
-        $formLinks = $this->getFormLinks($selectedCategories, $selectedProjects);
+        $locale = service('request')->getLocale();
+        $formLinks = $this->getFormLinks($selectedForms, $selectedProjects, $locale);
 
         if (empty($formLinks)) {
-            return redirect()->back()->withInput()->with('error', 'Für die ausgewählten Branchen/Projekte sind keine Formular-Links hinterlegt.');
+            return redirect()->back()->withInput()->with('error', 'Für die ausgewählten Formulare/Projekte sind keine Links hinterlegt.');
         }
 
         // Session mit Formular-Links aktualisieren
@@ -75,63 +76,48 @@ class Request extends BaseController
     }
 
     /**
-     * Formular-Links für ausgewählte Branchen/Projekte zusammenstellen
+     * Formular-Links für ausgewählte Formulare/Projekte zusammenstellen
      */
-    protected function getFormLinks(array $categories, array $projects): array
+    protected function getFormLinks(array $formIds, array $projects, string $locale = 'de'): array
     {
         $categoryManager = new CategoryManager();
-        $categoryData = $categoryManager->getAll();
-        $allCategories = $categoryData['categories'] ?? [];
-
         $projectModel = new ProjectModel();
 
         $links = [];
+        $addedUrls = []; // Um Duplikate zu vermeiden
 
-        // Branchen-Links
-        foreach ($categories as $categoryKey) {
-            if (isset($allCategories[$categoryKey])) {
-                $cat = $allCategories[$categoryKey];
-                $formLink = $cat['form_link'] ?? '';
-
-                if (!empty($formLink)) {
+        // Formular-Links (direkt ausgewählt)
+        foreach ($formIds as $formId) {
+            $form = $categoryManager->getFormById($formId, $locale);
+            if ($form && !empty($form['form_link'])) {
+                if (!in_array($form['form_link'], $addedUrls)) {
                     $links[] = [
-                        'type' => 'category',
-                        'key' => $categoryKey,
-                        'name' => $cat['name'],
-                        'url' => $formLink,
+                        'type' => 'form',
+                        'form_id' => $formId,
+                        'name' => $form['name'],
+                        'category_key' => $form['category_key'],
+                        'url' => $form['form_link'],
                     ];
+                    $addedUrls[] = $form['form_link'];
                 }
             }
         }
 
-        // Projekt-Links (über zugewiesene Branche)
+        // Projekt-Links (über zugewiesenes Formular)
         foreach ($projects as $projectSlug) {
             $project = $projectModel->findBySlug($projectSlug);
-            if ($project && !empty($project['category_type'])) {
-                $categoryKey = $project['category_type'];
-                if (isset($allCategories[$categoryKey])) {
-                    $cat = $allCategories[$categoryKey];
-                    $formLink = $cat['form_link'] ?? '';
-
-                    if (!empty($formLink)) {
-                        // Prüfen ob dieser Link nicht schon hinzugefügt wurde
-                        $alreadyAdded = false;
-                        foreach ($links as $link) {
-                            if ($link['url'] === $formLink) {
-                                $alreadyAdded = true;
-                                break;
-                            }
-                        }
-
-                        if (!$alreadyAdded) {
-                            $links[] = [
-                                'type' => 'project',
-                                'key' => $projectSlug,
-                                'name' => $project['name_de'],
-                                'category' => $categoryKey,
-                                'url' => $formLink,
-                            ];
-                        }
+            if ($project && !empty($project['form_id'])) {
+                $form = $categoryManager->getFormById($project['form_id'], $locale);
+                if ($form && !empty($form['form_link'])) {
+                    if (!in_array($form['form_link'], $addedUrls)) {
+                        $links[] = [
+                            'type' => 'project',
+                            'key' => $projectSlug,
+                            'name' => $project['name_de'],
+                            'form_id' => $project['form_id'],
+                            'url' => $form['form_link'],
+                        ];
+                        $addedUrls[] = $form['form_link'];
                     }
                 }
             }

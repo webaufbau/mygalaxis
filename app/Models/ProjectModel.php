@@ -18,6 +18,7 @@ class ProjectModel extends Model
         'name_fr',
         'name_it',
         'category_type',
+        'form_id',
         'sort_order',
         'is_active',
     ];
