@@ -35,31 +35,20 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="form_link" class="form-label">Formular-Link</label>
-                        <input type="url"
-                               name="form_link"
-                               id="form_link"
-                               class="form-control"
-                               value="<?= esc(old('form_link', $project['form_link'] ?? '')) ?>"
-                               placeholder="https://...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="color" class="form-label">Farbe</label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="color"
-                                   name="color"
-                                   id="color"
-                                   class="form-control form-control-color"
-                                   value="<?= esc(old('color', $project['color'] ?? '#6c757d')) ?>"
-                                   style="width: 60px; height: 40px;">
-                            <input type="text"
-                                   id="color_text"
-                                   class="form-control"
-                                   value="<?= esc(old('color', $project['color'] ?? '#6c757d')) ?>"
-                                   style="width: 100px;"
-                                   readonly>
-                        </div>
+                        <label for="category_type" class="form-label">Branche *</label>
+                        <select name="category_type" id="category_type" class="form-select" required>
+                            <option value="">-- Branche wählen --</option>
+                            <?php
+                            $categoryOptions = config('CategoryOptions');
+                            $currentCategory = old('category_type', $project['category_type'] ?? '');
+                            foreach ($categoryOptions->categoryTypes as $key => $name):
+                            ?>
+                                <option value="<?= esc($key) ?>" <?= $currentCategory === $key ? 'selected' : '' ?>>
+                                    <?= esc($name) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-muted">Das Projekt verwendet den Formular-Link dieser Branche.</small>
                     </div>
 
                     <div class="mb-3">
@@ -142,11 +131,5 @@
         <a href="/admin/projects" class="btn btn-outline-secondary">Abbrechen</a>
     </div>
 </form>
-
-<script>
-document.getElementById('color').addEventListener('input', function() {
-    document.getElementById('color_text').value = this.value;
-});
-</script>
 
 <?= $this->endSection() ?>

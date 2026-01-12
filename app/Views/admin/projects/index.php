@@ -17,14 +17,17 @@
 
 <p class="text-muted mb-3">Ziehen Sie die Zeilen, um die Sortierung zu ändern. Die Reihenfolge wird automatisch gespeichert.</p>
 
+<?php
+$categoryOptions = config('CategoryOptions');
+$categoryTypes = $categoryOptions->categoryTypes;
+?>
 <table class="table table-hover" id="projects-table">
     <thead>
         <tr>
             <th style="width: 40px;"></th>
             <th>Slug</th>
             <th>Name (DE)</th>
-            <th>Formular-Link</th>
-            <th>Farbe</th>
+            <th>Branche</th>
             <th>Sortierung</th>
             <th>Status</th>
             <th>Aktionen</th>
@@ -39,17 +42,11 @@
                 <td><code><?= esc($project['slug']) ?></code></td>
                 <td><?= esc($project['name_de']) ?></td>
                 <td>
-                    <?php if (!empty($project['form_link'])): ?>
-                        <a href="<?= esc($project['form_link']) ?>" target="_blank" class="small">
-                            <?= esc(substr($project['form_link'], 0, 30)) ?>...
-                        </a>
+                    <?php if (!empty($project['category_type']) && isset($categoryTypes[$project['category_type']])): ?>
+                        <span class="badge bg-primary"><?= esc($categoryTypes[$project['category_type']]) ?></span>
                     <?php else: ?>
                         <span class="text-muted">-</span>
                     <?php endif; ?>
-                </td>
-                <td>
-                    <span class="badge" style="background-color: <?= esc($project['color']) ?>; width: 24px; height: 24px; display: inline-block;"></span>
-                    <span class="small text-muted"><?= esc($project['color']) ?></span>
                 </td>
                 <td><?= esc($project['sort_order']) ?></td>
                 <td>

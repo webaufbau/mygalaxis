@@ -45,8 +45,7 @@ class Projects extends AdminBase
             'name_en' => $this->request->getPost('name_en'),
             'name_fr' => $this->request->getPost('name_fr'),
             'name_it' => $this->request->getPost('name_it'),
-            'form_link' => $this->request->getPost('form_link'),
-            'color' => $this->request->getPost('color') ?: '#6c757d',
+            'category_type' => $this->request->getPost('category_type'),
             'sort_order' => (int) $this->request->getPost('sort_order'),
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
         ];
@@ -86,8 +85,7 @@ class Projects extends AdminBase
             'name_en' => $this->request->getPost('name_en'),
             'name_fr' => $this->request->getPost('name_fr'),
             'name_it' => $this->request->getPost('name_it'),
-            'form_link' => $this->request->getPost('form_link'),
-            'color' => $this->request->getPost('color') ?: '#6c757d',
+            'category_type' => $this->request->getPost('category_type'),
             'sort_order' => (int) $this->request->getPost('sort_order'),
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
         ];
