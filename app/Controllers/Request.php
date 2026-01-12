@@ -36,30 +36,9 @@ class Request extends BaseController
         $selectedCategories = $this->request->getPost('categories') ?? [];
         $selectedProjects = $this->request->getPost('projects') ?? [];
 
-        // Kontaktdaten
-        $contact = [
-            'firstname' => $this->request->getPost('firstname'),
-            'lastname' => $this->request->getPost('lastname'),
-            'email' => $this->request->getPost('email'),
-            'phone' => $this->request->getPost('phone'),
-            'street' => $this->request->getPost('street'),
-            'zip' => $this->request->getPost('zip'),
-            'city' => $this->request->getPost('city'),
-        ];
-
-        // Arbeitsbeginn
-        $workStart = [
-            'date' => $this->request->getPost('work_start_date'),
-            'flexibility' => $this->request->getPost('flexibility'),
-        ];
-
         // Validierung
         if (empty($selectedCategories) && empty($selectedProjects)) {
             return redirect()->back()->withInput()->with('error', 'Bitte wähle mindestens eine Branche oder ein Projekt aus.');
-        }
-
-        if (empty($contact['firstname']) || empty($contact['lastname']) || empty($contact['email']) || empty($contact['phone'])) {
-            return redirect()->back()->withInput()->with('error', 'Bitte fülle alle Kontaktfelder aus.');
         }
 
         // Session erstellen
@@ -70,8 +49,6 @@ class Request extends BaseController
             'id' => $sessionId,
             'categories' => $selectedCategories,
             'projects' => $selectedProjects,
-            'contact' => $contact,
-            'work_start' => $workStart,
             'current_index' => 0,
             'form_data' => [],
             'created_at' => time(),
