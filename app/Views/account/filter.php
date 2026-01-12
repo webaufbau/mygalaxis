@@ -36,17 +36,11 @@
                         <?php
                         $projectId = 'proj_' . $project['slug'];
                         $projectChecked = in_array($project['slug'], $user_filters['filter_projects'] ?? []) ? 'checked' : '';
-                        $projectColor = $project['color'] ?? '#6c757d';
                         ?>
                         <div class="col-6">
                             <div class="form-check">
                                 <input class="form-check-input p-0" type="checkbox" name="filter_projects[]" value="<?= esc($project['slug']) ?>" id="<?= esc($projectId) ?>" <?= $projectChecked ?>>
-                                <label class="form-check-label" for="<?= esc($projectId) ?>">
-                                    <?php if ($projectColor !== '#6c757d'): ?>
-                                        <span class="badge" style="background-color: <?= esc($projectColor) ?>; width: 10px; height: 10px; padding: 0; margin-right: 4px; display: inline-block; border-radius: 50%;"></span>
-                                    <?php endif; ?>
-                                    <?= esc($project['name']) ?>
-                                </label>
+                                <label class="form-check-label" for="<?= esc($projectId) ?>"><?= esc($project['name']) ?></label>
                             </div>
                         </div>
                     <?php endforeach; ?>
