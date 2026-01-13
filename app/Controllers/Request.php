@@ -144,11 +144,20 @@ class Request extends BaseController
         // SiteConfig für Logo und Header
         $siteConfig = siteconfig();
 
+        // Farbe des letzten Formulars ermitteln (für Header und Buttons)
+        $lastFormColor = null;
+        $formLinks = $sessionData['form_links'] ?? [];
+        if (!empty($formLinks)) {
+            $lastForm = end($formLinks);
+            $lastFormColor = $lastForm['category_color'] ?? null;
+        }
+
         return view('request/finalize', [
             'sessionId' => $sessionId,
             'sessionData' => $sessionData,
             'step' => $step,
             'siteConfig' => $siteConfig,
+            'lastFormColor' => $lastFormColor,
         ]);
     }
 
@@ -749,6 +758,7 @@ class Request extends BaseController
                         'form_id' => $formId,
                         'name' => $form['name'],
                         'category_key' => $form['category_key'],
+                        'category_color' => $form['category_color'] ?? '#6c757d',
                         'url' => $form['form_link'],
                     ];
 
@@ -775,6 +785,7 @@ class Request extends BaseController
                             'key' => $projectSlug,
                             'name' => $project['name_de'],
                             'form_id' => $project['form_id'],
+                            'category_color' => $form['category_color'] ?? '#6c757d',
                             'url' => $form['form_link'],
                         ];
                         $addedUrls[] = $form['form_link'];

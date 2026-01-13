@@ -248,8 +248,8 @@ if (!isset($translations[$lang])) {
 }
 $t = $translations[$lang];
 
-// Header-Konfiguration
-$headerBgColor = $siteConfig->headerBackgroundColor ?? '#6c757d';
+// Header-Konfiguration (nutze Farbe des letzten Formulars, Fallback auf SiteConfig)
+$headerBgColor = $lastFormColor ?? $siteConfig->headerBackgroundColor ?? '#6c757d';
 $logoUrl = $siteConfig->logoUrl;
 $logoHeight = $siteConfig->logoHeightPixel ?? '60';
 
