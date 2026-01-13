@@ -542,7 +542,6 @@ $languages = [
                                        class="form-control form-control-lg text-center"
                                        id="code"
                                        name="code"
-                                       placeholder="<?= $t['verify_code_placeholder'] ?>"
                                        maxlength="4"
                                        pattern="[0-9]{4}"
                                        inputmode="numeric"
