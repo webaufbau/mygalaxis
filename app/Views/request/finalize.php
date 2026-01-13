@@ -1,6 +1,8 @@
 <?= $this->extend('layout/minimal') ?>
 <?= $this->section('content') ?>
 
+<!-- DEBUG: lang from controller = <?= $lang ?? 'NOT SET' ?>, sessionData[lang] = <?= $sessionData['lang'] ?? 'NOT SET' ?> -->
+
 <?php
 // Übersetzungen
 $translations = [
