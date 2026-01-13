@@ -45,14 +45,14 @@ class EditToken extends BaseController
             return $this->failNotFound('Offerte nicht gefunden');
         }
 
-        // Details aus JSON dekodieren
-        $details = [];
-        if (!empty($offer['details'])) {
-            $details = json_decode($offer['details'], true) ?? [];
+        // Form-Felder aus JSON dekodieren (form_fields enthält alle Formularfelder)
+        $formFields = [];
+        if (!empty($offer['form_fields'])) {
+            $formFields = json_decode($offer['form_fields'], true) ?? [];
         }
 
         // Daten für Form-Pre-Fill aufbereiten
-        $formData = $this->prepareFormData($offer, $details);
+        $formData = $this->prepareFormData($offer, $formFields);
 
         return $this->respond([
             'success' => true,
@@ -70,43 +70,35 @@ class EditToken extends BaseController
      * Bereite Daten für Form Pre-Fill auf
      * Mapped interne Feldnamen auf FluentForm Feldnamen
      */
-    protected function prepareFormData(array $offer, array $details): array
+    protected function prepareFormData(array $offer, array $formFields): array
     {
         $formData = [];
 
-        // Basis-Felder aus offer Tabelle
+        // Basis-Felder aus offer Tabelle (DB-Spalten -> Form-Feldnamen)
         $directFields = [
-            'vorname' => 'first_name',
-            'nachname' => 'last_name',
+            'firstname' => 'vorname',
+            'lastname' => 'nachname',
             'email' => 'email',
-            'phone' => 'phone',
-            'strasse' => 'street',
-            'hausnummer' => 'house_number',
-            'plz' => 'zip',
-            'ort' => 'city',
+            'phone' => 'telefon',
+            'zip' => 'plz',
+            'city' => 'ort',
         ];
 
-        foreach ($directFields as $offerField => $formField) {
-            if (!empty($offer[$offerField])) {
-                $formData[$formField] = $offer[$offerField];
-                // Auch Original-Feldname für Kompatibilität
-                $formData[$offerField] = $offer[$offerField];
+        foreach ($directFields as $dbField => $formField) {
+            if (!empty($offer[$dbField])) {
+                $formData[$formField] = $offer[$dbField];
             }
         }
 
-        // Details (alle Formular-Felder aus dem JSON)
-        foreach ($details as $key => $value) {
+        // Alle Formular-Felder aus dem JSON (form_fields)
+        foreach ($formFields as $key => $value) {
             // Skip interne Felder
-            if (in_array($key, ['session', 'request_session_id', 'form_link'])) {
+            if (in_array($key, ['session', 'request_session_id', 'form_link', 'form_name', 'uuid', 'lang', 'group_id'])) {
                 continue;
             }
 
-            // Arrays zu String konvertieren (z.B. Checkboxen)
-            if (is_array($value)) {
-                $formData[$key] = implode(', ', $value);
-            } else {
-                $formData[$key] = $value;
-            }
+            // Arrays beibehalten (Checkboxen etc.)
+            $formData[$key] = $value;
         }
 
         return $formData;
