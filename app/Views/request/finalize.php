@@ -616,24 +616,74 @@ $languages = [
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var telefonInput = document.querySelector('#telefon');
-    // Nur initialisieren wenn Element existiert und noch nicht initialisiert wurde
+    var iti = null;
+
+    // intl-tel-input initialisieren
     if (telefonInput && !telefonInput.classList.contains('iti-initialized')) {
         telefonInput.classList.add('iti-initialized');
-        var iti = window.intlTelInput(telefonInput, {
+        iti = window.intlTelInput(telefonInput, {
             initialCountry: 'ch',
             onlyCountries: ['ch', 'de', 'at'],
             separateDialCode: true,
             utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js'
         });
+    }
 
-        // Vor dem Absenden die volle Nummer speichern
-        var form = telefonInput.closest('form');
-        if (form) {
-            form.addEventListener('submit', function() {
+    // === LocalStorage: Kontaktdaten laden ===
+    var contactFields = ['vorname', 'nachname', 'email', 'strasse', 'hausnummer', 'plz', 'ort'];
+    contactFields.forEach(function(field) {
+        var input = document.getElementById(field);
+        var stored = localStorage.getItem('contact_' + field);
+        // Nur laden wenn Feld leer ist (Session-Daten haben Priorität)
+        if (input && !input.value && stored) {
+            input.value = stored;
+        }
+    });
+
+    // Telefon separat behandeln (mit intl-tel-input)
+    var storedPhone = localStorage.getItem('contact_telefon');
+    if (telefonInput && !telefonInput.value && storedPhone) {
+        telefonInput.value = storedPhone;
+    }
+
+    // Erreichbarkeit laden
+    var storedErreichbar = localStorage.getItem('contact_erreichbar');
+    if (storedErreichbar) {
+        var radio = document.querySelector('input[name="erreichbar"][value="' + storedErreichbar + '"]');
+        if (radio && !document.querySelector('input[name="erreichbar"]:checked')) {
+            radio.checked = true;
+        }
+    }
+
+    // === LocalStorage: Kontaktdaten speichern beim Submit ===
+    var form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            // Volle Telefonnummer speichern
+            if (iti) {
                 var fullNumber = iti.getNumber();
                 document.getElementById('telefon_full').value = fullNumber;
+            }
+
+            // Alle Kontaktfelder in LocalStorage speichern
+            contactFields.forEach(function(field) {
+                var input = document.getElementById(field);
+                if (input && input.value) {
+                    localStorage.setItem('contact_' + field, input.value);
+                }
             });
-        }
+
+            // Telefon speichern (ohne Ländercode für einfachere Anzeige)
+            if (telefonInput && telefonInput.value) {
+                localStorage.setItem('contact_telefon', telefonInput.value);
+            }
+
+            // Erreichbarkeit speichern
+            var checkedErreichbar = document.querySelector('input[name="erreichbar"]:checked');
+            if (checkedErreichbar) {
+                localStorage.setItem('contact_erreichbar', checkedErreichbar.value);
+            }
+        });
     }
 });
 </script>
