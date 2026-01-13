@@ -337,7 +337,7 @@ $languages = [
                             <div class="row">
                                 <div class="col-md-5 mb-3">
                                     <label for="datum" class="form-label fw-bold"><?= $t['when_start'] ?> <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="datum" name="datum" min="<?= date('Y-m-d', strtotime('+1 day')) ?>" value="<?= esc($termin['datum'] ?? '') ?>" required>
+                                    <input type="text" class="form-control" id="datum" name="datum" value="<?= esc($termin['datum'] ?? '') ?>" required readonly style="cursor: pointer; background-color: #fff;">
                                 </div>
                                 <div class="col-md-7 mb-3">
                                     <label class="form-label fw-bold"><?= $t['time_flexible'] ?> <span class="text-danger">*</span></label>
@@ -585,6 +585,11 @@ $languages = [
 <!-- Bootstrap Icons CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+<?php if ($step === 'termin'): ?>
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<?php endif; ?>
+
 <?php if ($step === 'kontakt'): ?>
 <!-- intl-tel-input CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
@@ -685,6 +690,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+</script>
+<?php endif; ?>
+
+<?php if ($step === 'termin'): ?>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<?php if ($lang === 'de'): ?>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js"></script>
+<?php elseif ($lang === 'fr'): ?>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+<?php elseif ($lang === 'it'): ?>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/it.js"></script>
+<?php endif; ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    flatpickr('#datum', {
+        dateFormat: 'Y-m-d',
+        altInput: true,
+        altFormat: 'd.m.Y',
+        minDate: new Date().fp_incr(1),
+        locale: '<?= $lang === 'en' ? 'default' : $lang ?>',
+        disableMobile: false,
+        allowInput: false
+    });
 });
 </script>
 <?php endif; ?>
