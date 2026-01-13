@@ -42,8 +42,12 @@
             -moz-osx-font-smoothing: grayscale;
         }
         h1, h2, h3, h4, h5, h6 {
-            font-family: "Roboto", sans-serif;
-            font-weight: 600;
+            color: inherit;
+            font-family: inherit;
+            font-weight: 500;
+            line-height: 1.2;
+            margin-block-end: 1rem;
+            margin-block-start: .5rem;
         }
     </style>
 </head>
