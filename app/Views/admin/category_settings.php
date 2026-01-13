@@ -235,25 +235,42 @@
                             <div class="col-md-6">
                                 <h6 class="text-muted mb-3"><i class="bi bi-currency-dollar"></i> Preise (CHF)</h6>
 
-                                <div class="row g-2">
-                                    <?php foreach ($cat['options'] as $optKey => $opt): ?>
-                                        <div class="col-sm-6 col-lg-4">
-                                            <div class="input-group input-group-sm">
-                                                <span class="input-group-text text-truncate" style="max-width: 120px;" title="<?= esc($opt['label']) ?>">
-                                                    <?= esc($opt['label']) ?>
-                                                </span>
-                                                <input type="number"
-                                                       name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][price]"
-                                                       value="<?= esc($opt['price']) ?>"
-                                                       step="0.05" min="0"
-                                                       class="form-control">
-                                                <input type="hidden"
-                                                       name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][label]"
-                                                       value="<?= esc($opt['label']) ?>">
-                                            </div>
+                                <?php if (empty($cat['options'])): ?>
+                                    <!-- Einfacher Basispreis für Kategorien ohne Optionen -->
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">Basispreis</label>
+                                        <div class="input-group" style="max-width: 200px;">
+                                            <input type="number"
+                                                   name="categories[<?= esc($key) ?>][base_price]"
+                                                   value="<?= esc($cat['base_price'] ?? 29) ?>"
+                                                   step="0.05" min="0"
+                                                   class="form-control"
+                                                   placeholder="29">
+                                            <span class="input-group-text">CHF</span>
                                         </div>
-                                    <?php endforeach; ?>
-                                </div>
+                                        <small class="text-muted">Standardpreis für alle Anfragen dieser Branche</small>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="row g-2">
+                                        <?php foreach ($cat['options'] as $optKey => $opt): ?>
+                                            <div class="col-sm-6 col-lg-4">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text text-truncate" style="max-width: 120px;" title="<?= esc($opt['label']) ?>">
+                                                        <?= esc($opt['label']) ?>
+                                                    </span>
+                                                    <input type="number"
+                                                           name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][price]"
+                                                           value="<?= esc($opt['price']) ?>"
+                                                           step="0.05" min="0"
+                                                           class="form-control">
+                                                    <input type="hidden"
+                                                           name="categories[<?= esc($key) ?>][options][<?= esc($optKey) ?>][label]"
+                                                           value="<?= esc($opt['label']) ?>">
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

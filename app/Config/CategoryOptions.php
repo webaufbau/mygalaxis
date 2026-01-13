@@ -225,162 +225,39 @@ class CategoryOptions extends BaseConfig
             ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
         ],
 
-        // === Neue Branchen (Januar 2026) ===
+        // === Neue Branchen (Januar 2026) - nur Basispreis ===
+        // Diese Kategorien haben keine komplexen Optionen, nur einen einfachen Basispreis
+        // Der Basispreis wird in der JSON-Datei (category_settings.json) gespeichert
 
-        'mason' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
+        'mason' => [],
+        'carpenter' => [],
+        'carpenter_wood' => [],
+        'roofer_sheet_metal' => [],
+        'locksmith' => [],
+        'kitchen_builder' => [],
+        'stair_builder' => [],
+        'roofer' => [],
+        'scaffolding' => [],
+        'windows_doors' => [],
+        'architect' => [],
 
-        'carpenter' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
+    ];
 
-        'carpenter_wood' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'roofer_sheet_metal' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'locksmith' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'kitchen_builder' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'stair_builder' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'roofer' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'scaffolding' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'windows_doors' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
-        'architect' => [
-            // Art Objekt
-            ['key' => 'wohnung', 'label' => 'Wohnung', 'price' => 29],
-            ['key' => 'haus', 'label' => 'Haus', 'price' => 29],
-            ['key' => 'mehrfamilienhaus', 'label' => 'Mehrfamilienhaus', 'price' => 29],
-            ['key' => 'gewerbe', 'label' => 'Gewerbe', 'price' => 29],
-            ['key' => 'andere', 'label' => 'Andere', 'price' => 29],
-            // Arbeiten
-            ['key' => 'neubau', 'label' => 'Neubau', 'price' => 39],
-            ['key' => 'renovierung', 'label' => 'Renovierung', 'price' => 29],
-            ['key' => 'umbau', 'label' => 'Umbau', 'price' => 29],
-            ['key' => 'andere_arbeiten', 'label' => 'Andere', 'price' => 19],
-        ],
-
+    /**
+     * Standard-Basispreise für neue Kategorien ohne komplexe Optionen
+     */
+    public array $defaultBasePrices = [
+        'mason' => 29,
+        'carpenter' => 29,
+        'carpenter_wood' => 29,
+        'roofer_sheet_metal' => 29,
+        'locksmith' => 29,
+        'kitchen_builder' => 29,
+        'stair_builder' => 29,
+        'roofer' => 29,
+        'scaffolding' => 29,
+        'windows_doors' => 29,
+        'architect' => 29,
     ];
 
 

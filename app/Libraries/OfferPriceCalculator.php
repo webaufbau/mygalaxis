@@ -852,8 +852,43 @@ class OfferPriceCalculator
 
                 break;
 
+            // Neue Branchen mit einfachem Basispreis (ohne komplexe Optionen)
+            case 'mason':
+            case 'carpenter':
+            case 'carpenter_wood':
+            case 'roofer_sheet_metal':
+            case 'locksmith':
+            case 'kitchen_builder':
+            case 'stair_builder':
+            case 'roofer':
+            case 'scaffolding':
+            case 'windows_doors':
+            case 'architect':
+                // Verwende base_price aus category_settings.json oder Fallback auf Config
+                $basePrice = $category['base_price'] ?? null;
 
+                if ($basePrice === null) {
+                    // Fallback auf Config-Default
+                    $config = config('CategoryOptions');
+                    $basePrice = $config->defaultBasePrices[$type] ?? 29;
+                }
 
+                $price = (float) $basePrice;
+                $this->priceComponents[] = [
+                    'label' => 'Basispreis',
+                    'value' => $type,
+                    'price' => $price
+                ];
+
+                // --- Maximalpreis berücksichtigen ---
+                $maxPrice = $category['max'] ?? null;
+                if ($maxPrice !== null && $price > $maxPrice) {
+                    $this->priceBeforeCap = $price;
+                    $this->maxPriceCap = $maxPrice;
+                    $price = $maxPrice;
+                }
+
+                break;
 
         }
 
