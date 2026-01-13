@@ -174,15 +174,14 @@ class Request extends BaseController
             case 'termin':
                 $sessionData['termin'] = [
                     'datum' => $this->request->getPost('datum'),
-                    'zeit' => $this->request->getPost('zeit'),
-                    'flexibel' => $this->request->getPost('flexibel'),
+                    'zeit' => $this->request->getPost('zeit_flexibel'),
                 ];
                 session()->set('request_' . $sessionId, $sessionData);
                 return redirect()->to('/request/finalize?session=' . $sessionId . '&step=auftraggeber');
 
             case 'auftraggeber':
                 $sessionData['auftraggeber'] = [
-                    'typ' => $this->request->getPost('typ'), // privat/firma
+                    'typ' => $this->request->getPost('auftraggeber_typ'),
                     'firma' => $this->request->getPost('firma'),
                 ];
                 session()->set('request_' . $sessionId, $sessionData);
