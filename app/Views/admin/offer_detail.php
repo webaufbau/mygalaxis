@@ -192,8 +192,20 @@ $typeName = $typeMapping[$offer['type']] ?? ucfirst(str_replace('_', ' ', $offer
                             <?php
                             $zeitFlexibel = $formFields['zeit_flexibel'] ?? '';
                             if (!empty($zeitFlexibel)) {
-                                // Entferne "Ja, " am Anfang falls vorhanden
-                                $displayText = preg_replace('/^Ja,\s*/i', '', $zeitFlexibel);
+                                // Mapping von Schlüssel zu lesbarem Text
+                                $flexMapping = [
+                                    'no' => 'Nein',
+                                    '1_2_days' => '1 - 2 Tage',
+                                    '1_2_weeks' => '1 - 2 Wochen',
+                                    '1_month' => 'ca. 1 Monat',
+                                    'by_arrangement' => 'Nach Absprache',
+                                ];
+                                if (isset($flexMapping[$zeitFlexibel])) {
+                                    $displayText = $flexMapping[$zeitFlexibel];
+                                } else {
+                                    // Fallback: Entferne "Ja, " am Anfang falls vorhanden
+                                    $displayText = preg_replace('/^Ja,\s*/i', '', $zeitFlexibel);
+                                }
                                 echo esc($displayText);
                             } else {
                                 echo '<span class="text-muted">-</span>';
