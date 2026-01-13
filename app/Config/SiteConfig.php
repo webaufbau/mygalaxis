@@ -107,19 +107,22 @@ class SiteConfig extends BaseConfig
         // Erscheinungsbild
         'logoUrl' => [
             'type' => 'file',
-            'label' => 'Verfikationsprozess Logo',
+            'label' => 'Logo (Formular-Flow, Verifikation)',
+            'help' => 'Wird im Header des Anfrage-Flows und bei der Verifikation angezeigt.',
         ],
         'logoHeightPixel' => [
             'type' => 'text',
-            'label' => 'Verfikationsprozess Logo Höhe in Pixel',
+            'label' => 'Logo Höhe in Pixel',
+            'placeholder' => '40',
         ],
         'faviconUrl' => [
             'type' => 'file',
-            'label' => 'Favicon URL',
+            'label' => 'Favicon',
         ],
         'headerBackgroundColor' => [
             'type' => 'color',
-            'label' => 'Primärfarbe Website (Login, Register, Magic-Link, Verifikation)',
+            'label' => 'Primärfarbe (Fallback wenn keine Branchenfarbe)',
+            'help' => 'Wird verwendet wenn kein Formular vorausgewählt ist.',
         ],
 
         // E-Mail
