@@ -675,11 +675,13 @@ class Request extends BaseController
 
         $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
 
-        if (count($updatedOffers) === 1) {
-            // Einzelne Offer - normale E-Mail mit Template
-            $offer = $updatedOffers[0];
+        // Pro Offer eine separate E-Mail mit Template senden
+        $notifier = new \App\Libraries\OfferNotificationSender();
+
+        foreach ($updatedOffers as $offer) {
             $formFields = json_decode($offer['form_fields'], true) ?? [];
 
+            // Bestätigungs-E-Mail an Benutzer mit Template senden
             $templateSent = sendOfferNotificationWithTemplate($offer, $formFields, $offer['type'] ?? 'unknown');
 
             if ($templateSent) {
@@ -689,13 +691,8 @@ class Request extends BaseController
             }
 
             // Firmen benachrichtigen
-            $notifier = new \App\Libraries\OfferNotificationSender();
             $sentCount = $notifier->notifyMatchingUsers($offer);
             log_message('info', "[Request::sendVerificationEmails] {$sentCount} Firmen benachrichtigt für Offer ID {$offer['id']}");
-
-        } else {
-            // Mehrere Offers - gruppierte E-Mail
-            $this->sendGroupedOfferEmail($updatedOffers, $sessionData, $platformSiteConfig);
         }
 
         // confirmation_sent_at setzen
