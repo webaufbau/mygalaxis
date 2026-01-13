@@ -56,6 +56,7 @@ class OfferModel extends Model
         'verification_token',
         'form_name',
         'group_id',
+        'request_session_id',
         'access_hash',
         'is_test',
         'custom_price',

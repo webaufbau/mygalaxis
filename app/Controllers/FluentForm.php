@@ -547,6 +547,12 @@ class FluentForm extends BaseController
             log_message('debug', '[Webhook] Keine group_id vorhanden - einzelne Offerte');
         }
 
+        // Request Session ID aus GET-Parametern holen (für den neuen Request Flow)
+        $requestSessionId = $data['session'] ?? $data['request_session_id'] ?? null;
+        if (!empty($requestSessionId)) {
+            log_message('debug', '[Webhook] request_session_id: ' . $requestSessionId);
+        }
+
 
         $siteConfig = siteconfig();
 
@@ -589,6 +595,7 @@ class FluentForm extends BaseController
             'bought_by'     => json_encode([]),
             'from_campaign' => $isCampaign,
             'group_id'      => $groupId,
+            'request_session_id' => $requestSessionId,
             'type'          => $type,
             'country'       => $siteConfig->siteCountry ?? null,
         ], $enriched);

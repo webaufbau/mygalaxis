@@ -347,8 +347,15 @@ class Request extends BaseController
 
         $sessionData = session()->get('request_' . $sessionId);
 
+        if (!$sessionData) {
+            return redirect()->to('/request/start');
+        }
+
         // Sprache aus Session oder Fallback
         $lang = $sessionData['lang'] ?? service('request')->getLocale() ?? 'de';
+
+        // Alle Offers mit dieser request_session_id aktualisieren
+        $this->updateLinkedOffers($sessionId, $sessionData);
 
         // Danke-Seite URL aus SiteConfig holen
         $siteConfig = siteconfig();
@@ -361,6 +368,265 @@ class Request extends BaseController
         session()->remove('request_' . $sessionId);
 
         return redirect()->to($redirectUrl);
+    }
+
+    /**
+     * Aktualisiert alle Offers die zu dieser Request-Session gehören
+     * mit Kontaktdaten, Termin und Auftraggeber-Infos
+     */
+    protected function updateLinkedOffers(string $sessionId, array $sessionData): void
+    {
+        $offerModel = new \App\Models\OfferModel();
+
+        // Alle Offers mit dieser request_session_id finden
+        $offers = $offerModel->where('request_session_id', $sessionId)->findAll();
+
+        if (empty($offers)) {
+            log_message('warning', "[Request::complete] Keine Offers gefunden für request_session_id: {$sessionId}");
+            return;
+        }
+
+        log_message('info', "[Request::complete] " . count($offers) . " Offers gefunden für request_session_id: {$sessionId}");
+
+        // Kontaktdaten aus Session
+        $kontakt = $sessionData['kontakt'] ?? [];
+        $termin = $sessionData['termin'] ?? [];
+        $auftraggeber = $sessionData['auftraggeber'] ?? [];
+        $verifyMethod = $sessionData['verification_method'] ?? 'sms';
+
+        // Telefonnummer normalisieren
+        $phone = $kontakt['telefon'] ?? '';
+        $phone = $this->normalizePhone($phone);
+
+        // Daten für DB-Update vorbereiten
+        $updateData = [
+            'firstname' => $kontakt['vorname'] ?? null,
+            'lastname' => $kontakt['nachname'] ?? null,
+            'email' => $kontakt['email'] ?? null,
+            'phone' => $phone,
+            'city' => $kontakt['ort'] ?? null,
+            'zip' => $kontakt['plz'] ?? null,
+            'customer_type' => ($auftraggeber['typ'] ?? 'privat') === 'firma' ? 'firma' : 'privat',
+            'company' => $auftraggeber['firma'] ?? null,
+            'work_start_date' => $termin['datum'] ?? null,
+            'verified' => 1,
+            'verify_type' => $verifyMethod,
+        ];
+
+        // Alle Offers aktualisieren
+        foreach ($offers as $offer) {
+            // Bestehende form_fields aktualisieren
+            $formFields = json_decode($offer['form_fields'], true) ?? [];
+
+            // Kontaktdaten in form_fields einfügen
+            $formFields['vorname'] = $kontakt['vorname'] ?? $formFields['vorname'] ?? null;
+            $formFields['names'] = $kontakt['vorname'] ?? $formFields['names'] ?? null;
+            $formFields['nachname'] = $kontakt['nachname'] ?? $formFields['nachname'] ?? null;
+            $formFields['email'] = $kontakt['email'] ?? $formFields['email'] ?? null;
+            $formFields['phone'] = $phone ?: ($formFields['phone'] ?? null);
+            $formFields['erreichbar'] = $kontakt['erreichbar'] ?? $formFields['erreichbar'] ?? null;
+
+            // Adresse
+            $formFields['address_line_1'] = ($kontakt['strasse'] ?? '') . ' ' . ($kontakt['hausnummer'] ?? '');
+            $formFields['zip'] = $kontakt['plz'] ?? $formFields['zip'] ?? null;
+            $formFields['city'] = $kontakt['ort'] ?? $formFields['city'] ?? null;
+
+            // Auftraggeber
+            $formFields['auftraggeber_typ'] = $auftraggeber['typ'] ?? null;
+            $formFields['firma'] = $auftraggeber['firma'] ?? null;
+            $formFields['firmenname'] = $auftraggeber['firma'] ?? null;
+
+            // Termin
+            $formFields['datetime_1'] = $termin['datum'] ?? null;
+            $formFields['zeit_flexibel'] = $termin['zeit'] ?? null;
+
+            // Update Data für diese Offer
+            $offerUpdateData = array_merge($updateData, [
+                'form_fields' => json_encode($formFields, JSON_UNESCAPED_UNICODE),
+            ]);
+
+            $offerModel->update($offer['id'], $offerUpdateData);
+
+            log_message('info', "[Request::complete] Offer ID {$offer['id']} aktualisiert mit Kontaktdaten");
+        }
+
+        // Telefonnummer als verifiziert speichern
+        if ($phone && ($kontakt['email'] ?? null)) {
+            $verifiedPhoneModel = new \App\Models\VerifiedPhoneModel();
+            $platform = $offers[0]['platform'] ?? null;
+            $verifiedPhoneModel->addVerifiedPhone($phone, $kontakt['email'], $verifyMethod, $platform);
+            log_message('info', "[Request::complete] Telefonnummer {$phone} als verifiziert gespeichert");
+        }
+
+        // Preise berechnen falls nötig
+        $priceUpdater = new \App\Libraries\OfferPriceUpdater();
+        foreach ($offers as $offer) {
+            // Frisch laden nach Update
+            $updatedOffer = $offerModel->find($offer['id']);
+            if (empty($updatedOffer['price']) || $updatedOffer['price'] <= 0) {
+                $priceUpdater->updateOfferAndNotify($updatedOffer);
+            }
+        }
+
+        // E-Mails senden
+        $this->sendVerificationEmails($offers, $sessionData);
+    }
+
+    /**
+     * Sendet E-Mails nach erfolgreicher Verifikation
+     */
+    protected function sendVerificationEmails(array $offers, array $sessionData): void
+    {
+        $offerModel = new \App\Models\OfferModel();
+
+        // Offers neu laden mit aktualisierten Daten
+        $updatedOffers = [];
+        foreach ($offers as $offer) {
+            $updatedOffer = $offerModel->find($offer['id']);
+            if ($updatedOffer && !empty($updatedOffer['price']) && $updatedOffer['price'] > 0) {
+                $updatedOffers[] = $updatedOffer;
+            } else {
+                log_message('warning', "[Request::sendVerificationEmails] Offer ID {$offer['id']} übersprungen - Preis ist 0");
+            }
+        }
+
+        if (empty($updatedOffers)) {
+            log_message('warning', "[Request::sendVerificationEmails] Keine gültigen Offers zum E-Mail-Versand");
+            return;
+        }
+
+        helper(['text', 'email_template']);
+
+        // Erste Offer für allgemeine Daten
+        $firstOffer = $updatedOffers[0];
+        $platform = $firstOffer['platform'] ?? null;
+
+        if (empty($platform)) {
+            log_message('error', "[Request::sendVerificationEmails] Platform fehlt");
+            return;
+        }
+
+        $platformSiteConfig = \App\Libraries\SiteConfigLoader::loadForPlatform($platform);
+
+        if (count($updatedOffers) === 1) {
+            // Einzelne Offer - normale E-Mail mit Template
+            $offer = $updatedOffers[0];
+            $formFields = json_decode($offer['form_fields'], true) ?? [];
+
+            $templateSent = sendOfferNotificationWithTemplate($offer, $formFields, $offer['type'] ?? 'unknown');
+
+            if ($templateSent) {
+                log_message('info', "[Request::sendVerificationEmails] E-Mail mit Template gesendet für Offer ID {$offer['id']}");
+            } else {
+                log_message('warning', "[Request::sendVerificationEmails] Template-Email fehlgeschlagen für Offer ID {$offer['id']}");
+            }
+
+            // Firmen benachrichtigen
+            $notifier = new \App\Libraries\OfferNotificationSender();
+            $sentCount = $notifier->notifyMatchingUsers($offer);
+            log_message('info', "[Request::sendVerificationEmails] {$sentCount} Firmen benachrichtigt für Offer ID {$offer['id']}");
+
+        } else {
+            // Mehrere Offers - gruppierte E-Mail
+            $this->sendGroupedOfferEmail($updatedOffers, $sessionData, $platformSiteConfig);
+        }
+
+        // confirmation_sent_at setzen
+        $db = \Config\Database::connect();
+        $offerIds = array_column($updatedOffers, 'id');
+        $db->table('offers')
+            ->whereIn('id', $offerIds)
+            ->update(['confirmation_sent_at' => date('Y-m-d H:i:s')]);
+
+        log_message('info', "[Request::sendVerificationEmails] confirmation_sent_at gesetzt für Offer IDs: " . implode(', ', $offerIds));
+    }
+
+    /**
+     * Sendet gruppierte E-Mail für mehrere Offers
+     */
+    protected function sendGroupedOfferEmail(array $offers, array $sessionData, $platformSiteConfig): void
+    {
+        $kontakt = $sessionData['kontakt'] ?? [];
+        $userEmail = $kontakt['email'] ?? null;
+
+        if (!$userEmail) {
+            log_message('error', "[Request::sendGroupedOfferEmail] E-Mail-Adresse fehlt");
+            return;
+        }
+
+        // Sprache setzen
+        $language = $sessionData['lang'] ?? 'de';
+        service('language')->setLocale($language);
+
+        // Technische Felder filtern
+        $formFieldOptions = config('FormFieldOptions');
+        $excludedFieldsAlways = $formFieldOptions->excludedFieldsAlways ?? [];
+
+        $offersData = [];
+        foreach ($offers as $offer) {
+            $offerFields = json_decode($offer['form_fields'], true) ?? [];
+
+            $filteredFields = array_filter($offerFields, function ($key) use ($excludedFieldsAlways) {
+                $normalizedKey = strtolower(trim($key));
+                foreach ($excludedFieldsAlways as $excludedField) {
+                    if (strtolower($excludedField) === $normalizedKey) {
+                        return false;
+                    }
+                }
+                if (preg_match('/fluentform.*nonce/i', $key)) return false;
+                if ($normalizedKey === 'names') return false;
+                return true;
+            }, ARRAY_FILTER_USE_KEY);
+
+            $offersData[] = [
+                'uuid' => $offer['uuid'],
+                'type' => $offer['type'] ?? 'unknown',
+                'verifyType' => $offer['verify_type'] ?? null,
+                'filteredFields' => $filteredFields,
+                'data' => $offerFields,
+            ];
+        }
+
+        $firstOfferFields = json_decode($offers[0]['form_fields'], true) ?? [];
+
+        $emailData = [
+            'offers' => $offersData,
+            'isMultiple' => count($offersData) > 1,
+            'data' => $firstOfferFields,
+        ];
+
+        $message = view('emails/grouped_offer_notification', $emailData);
+
+        $view = \Config\Services::renderer();
+        $fullEmail = $view->setData([
+            'title' => lang('Email.offer_added_requests_title'),
+            'content' => $message,
+            'siteConfig' => siteconfig(),
+        ])->render('emails/layout');
+
+        $email = \Config\Services::email();
+        $email->setFrom($platformSiteConfig->email, $platformSiteConfig->name);
+        $email->setTo($userEmail);
+        $email->setBCC($platformSiteConfig->email);
+        $email->setSubject(lang('Email.offer_added_multiple_subject'));
+        $email->setMessage($fullEmail);
+        $email->setMailType('html');
+
+        date_default_timezone_set('Europe/Zurich');
+        $email->setHeader('Date', date('r'));
+
+        if (!$email->send()) {
+            log_message('error', '[Request::sendGroupedOfferEmail] Mail senden fehlgeschlagen');
+        } else {
+            log_message('info', "[Request::sendGroupedOfferEmail] Gruppierte E-Mail gesendet an {$userEmail} für " . count($offersData) . " Offers");
+
+            // Firmen für alle Offers benachrichtigen
+            $notifier = new \App\Libraries\OfferNotificationSender();
+            foreach ($offers as $offer) {
+                $sentCount = $notifier->notifyMatchingUsers($offer);
+                log_message('info', "[Request::sendGroupedOfferEmail] {$sentCount} Firmen benachrichtigt für Offer ID {$offer['id']}");
+            }
+        }
     }
 
     /**
