@@ -54,13 +54,14 @@ $translations = [
         'back' => 'Zurück',
         'next' => 'Weiter',
         'submit' => 'Anfrage absenden',
-        'verify_code_sent' => 'Wir haben einen Bestätigungscode an folgende Nummer gesendet:',
+        'verify_code_sent_sms' => 'Wir haben einen Bestätigungscode per SMS an folgende Nummer gesendet:',
+        'verify_code_sent_call' => 'Du erhältst gleich einen Anruf mit deinem Bestätigungscode an folgende Nummer:',
         'verify_enter_code' => 'Bitte gib den 4-stelligen Code ein:',
         'verify_code_placeholder' => 'Code eingeben',
-        'verify_resend' => 'Code erneut senden',
+        'verify_resend_sms' => 'SMS erneut senden',
+        'verify_resend_call' => 'Erneut anrufen',
         'verify_change_phone' => 'Telefonnummer ändern',
         'verify_wrong_code' => 'Der eingegebene Code ist falsch. Bitte versuche es erneut.',
-        'verify_code_resent' => 'Ein neuer Code wurde gesendet.',
     ],
     'en' => [
         'termin' => 'Schedule',
@@ -112,13 +113,14 @@ $translations = [
         'back' => 'Back',
         'next' => 'Next',
         'submit' => 'Submit request',
-        'verify_code_sent' => 'We have sent a verification code to the following number:',
+        'verify_code_sent_sms' => 'We have sent a verification code via SMS to the following number:',
+        'verify_code_sent_call' => 'You will receive a call with your verification code to the following number:',
         'verify_enter_code' => 'Please enter the 4-digit code:',
         'verify_code_placeholder' => 'Enter code',
-        'verify_resend' => 'Resend code',
+        'verify_resend_sms' => 'Resend SMS',
+        'verify_resend_call' => 'Call again',
         'verify_change_phone' => 'Change phone number',
         'verify_wrong_code' => 'The code entered is incorrect. Please try again.',
-        'verify_code_resent' => 'A new code has been sent.',
     ],
     'fr' => [
         'termin' => 'Date',
@@ -170,13 +172,14 @@ $translations = [
         'back' => 'Retour',
         'next' => 'Suivant',
         'submit' => 'Envoyer la demande',
-        'verify_code_sent' => 'Nous avons envoyé un code de vérification au numéro suivant:',
+        'verify_code_sent_sms' => 'Nous avons envoyé un code de vérification par SMS au numéro suivant:',
+        'verify_code_sent_call' => 'Vous allez recevoir un appel avec votre code de vérification au numéro suivant:',
         'verify_enter_code' => 'Veuillez entrer le code à 4 chiffres:',
         'verify_code_placeholder' => 'Entrer le code',
-        'verify_resend' => 'Renvoyer le code',
+        'verify_resend_sms' => 'Renvoyer le SMS',
+        'verify_resend_call' => 'Rappeler',
         'verify_change_phone' => 'Modifier le numéro',
         'verify_wrong_code' => 'Le code saisi est incorrect. Veuillez réessayer.',
-        'verify_code_resent' => 'Un nouveau code a été envoyé.',
     ],
     'it' => [
         'termin' => 'Data',
@@ -228,13 +231,14 @@ $translations = [
         'back' => 'Indietro',
         'next' => 'Avanti',
         'submit' => 'Invia richiesta',
-        'verify_code_sent' => 'Abbiamo inviato un codice di verifica al seguente numero:',
+        'verify_code_sent_sms' => 'Abbiamo inviato un codice di verifica via SMS al seguente numero:',
+        'verify_code_sent_call' => 'Riceverai una chiamata con il tuo codice di verifica al seguente numero:',
         'verify_enter_code' => 'Inserisci il codice a 4 cifre:',
         'verify_code_placeholder' => 'Inserisci codice',
-        'verify_resend' => 'Invia nuovo codice',
+        'verify_resend_sms' => 'Reinvia SMS',
+        'verify_resend_call' => 'Richiama',
         'verify_change_phone' => 'Cambia numero',
         'verify_wrong_code' => 'Il codice inserito non è corretto. Riprova.',
-        'verify_code_resent' => 'È stato inviato un nuovo codice.',
     ],
 ];
 
@@ -483,7 +487,11 @@ $languages = [
 
                 <?php elseif ($step === 'verify'): ?>
                     <!-- SCHRITT: Verifikation -->
-                    <?php $phone = $sessionData['kontakt']['telefon'] ?? ''; ?>
+                    <?php
+                    $phone = $sessionData['verification_phone'] ?? $sessionData['kontakt']['telefon'] ?? '';
+                    $method = $sessionData['verification_method'] ?? 'sms';
+                    $isSms = ($method === 'sms');
+                    ?>
                     <div class="card">
                         <div class="card-body">
                             <?php if (session()->getFlashdata('error')): ?>
@@ -506,7 +514,7 @@ $languages = [
 
                             <!-- Telefonnummer anzeigen -->
                             <p class="mb-3">
-                                <?= $t['verify_code_sent'] ?><br>
+                                <?= $isSms ? $t['verify_code_sent_sms'] : $t['verify_code_sent_call'] ?><br>
                                 <strong class="fs-5"><?= esc($phone) ?></strong>
                             </p>
 
@@ -529,7 +537,7 @@ $languages = [
                             <!-- Aktionen: Code erneut senden / Nummer ändern -->
                             <div class="d-flex flex-wrap gap-3 mb-3">
                                 <a href="<?= site_url('/request/resend-code?session=' . esc($sessionId)) ?>" class="text-decoration-none" style="color: <?= esc($headerBgColor) ?>;">
-                                    <i class="bi bi-arrow-repeat"></i> <?= $t['verify_resend'] ?>
+                                    <i class="bi bi-arrow-repeat"></i> <?= $isSms ? $t['verify_resend_sms'] : $t['verify_resend_call'] ?>
                                 </a>
                                 <a href="<?= site_url('/request/finalize?session=' . esc($sessionId) . '&step=kontakt') ?>" class="text-decoration-none text-secondary">
                                     <i class="bi bi-pencil"></i> <?= $t['verify_change_phone'] ?>
