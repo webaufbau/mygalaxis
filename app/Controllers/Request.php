@@ -139,10 +139,14 @@ class Request extends BaseController
         // Schritt aus URL oder Default
         $step = $this->request->getGet('step') ?? 'termin';
 
+        // SiteConfig für Logo und Header
+        $siteConfig = siteconfig();
+
         return view('request/finalize', [
             'sessionId' => $sessionId,
             'sessionData' => $sessionData,
             'step' => $step,
+            'siteConfig' => $siteConfig,
         ]);
     }
 
