@@ -226,8 +226,8 @@ $languages = [
         <hr class="my-4">
 
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary btn-lg">
-                Weiter <i class="bi bi-arrow-right"></i>
+            <button type="submit" class="btn btn-primary">
+                Weiter
             </button>
         </div>
     </form>

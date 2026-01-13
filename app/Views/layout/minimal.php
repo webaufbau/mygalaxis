@@ -49,6 +49,19 @@
             margin-block-end: 1rem;
             margin-block-start: .5rem;
         }
+        .btn-primary {
+            background-color: #7537d2;
+            border-color: #7537d2;
+            border-radius: 0;
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #5c2ba8;
+            border-color: #5c2ba8;
+        }
     </style>
 </head>
 <body>
