@@ -272,8 +272,17 @@ $languages = [
         <div class="d-flex align-items-center justify-content-center gap-4">
             <!-- Flaggen (Desktop) -->
             <div class="d-none d-md-flex gap-2">
-                <?php foreach ($languages as $code => $langInfo): ?>
-                <a href="#" title="<?= esc($langInfo['name']) ?>" class="<?= $code === $lang ? 'opacity-100' : 'opacity-75' ?>">
+                <?php
+                // Aktuelle URL mit neuem lang Parameter generieren
+                $currentUrl = current_url();
+                $queryString = $_SERVER['QUERY_STRING'] ?? '';
+                parse_str($queryString, $queryParams);
+                ?>
+                <?php foreach ($languages as $code => $langInfo):
+                    $queryParams['lang'] = $code;
+                    $langUrl = $currentUrl . '?' . http_build_query($queryParams);
+                ?>
+                <a href="<?= esc($langUrl) ?>" title="<?= esc($langInfo['name']) ?>" class="<?= $code === $lang ? 'opacity-100' : 'opacity-75' ?>">
                     <img src="<?= esc($langInfo['flag']) ?>" alt="<?= esc($langInfo['name']) ?>" width="24" height="16" style="border-radius: 2px;">
                 </a>
                 <?php endforeach; ?>
@@ -292,10 +301,13 @@ $languages = [
             </a>
             <?php endif; ?>
 
-            <!-- Flaggen (Desktop rechts) -->
+            <!-- Flaggen (Desktop rechts) - Platzhalter für zentriertes Layout -->
             <div class="d-none d-md-flex gap-2">
-                <?php foreach ($languages as $code => $langInfo): ?>
-                <a href="#" title="<?= esc($langInfo['name']) ?>" class="<?= $code === $lang ? 'opacity-100' : 'opacity-75' ?>" style="visibility: hidden;">
+                <?php foreach ($languages as $code => $langInfo):
+                    $queryParams['lang'] = $code;
+                    $langUrl = $currentUrl . '?' . http_build_query($queryParams);
+                ?>
+                <a href="<?= esc($langUrl) ?>" title="<?= esc($langInfo['name']) ?>" class="<?= $code === $lang ? 'opacity-100' : 'opacity-75' ?>" style="visibility: hidden;">
                     <img src="<?= esc($langInfo['flag']) ?>" alt="<?= esc($langInfo['name']) ?>" width="24" height="16" style="border-radius: 2px;">
                 </a>
                 <?php endforeach; ?>
