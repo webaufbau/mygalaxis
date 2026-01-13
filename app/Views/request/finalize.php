@@ -327,12 +327,13 @@ $languages = [
 
                 <?php if ($step === 'termin'): ?>
                     <!-- SCHRITT: Termin -->
+                    <?php $termin = $sessionData['termin'] ?? []; ?>
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-5 mb-3">
                                     <label for="datum" class="form-label fw-bold"><?= $t['when_start'] ?> <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="datum" name="datum" min="<?= date('Y-m-d', strtotime('+1 day')) ?>" required>
+                                    <input type="date" class="form-control" id="datum" name="datum" min="<?= date('Y-m-d', strtotime('+1 day')) ?>" value="<?= esc($termin['datum'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-7 mb-3">
                                     <label class="form-label fw-bold"><?= $t['time_flexible'] ?> <span class="text-danger">*</span></label>
@@ -345,10 +346,11 @@ $languages = [
                                             '1_month' => $t['flex_1_month'],
                                             'arrangement' => $t['flex_arrangement'],
                                         ];
+                                        $selectedFlex = $termin['zeit'] ?? '';
                                         foreach ($flexOptions as $value => $label):
                                         ?>
                                             <div class="form-check form-check-inline p-0 m-0">
-                                                <input type="radio" class="btn-check" name="zeit_flexibel" id="flex_<?= $value ?>" value="<?= $value ?>" autocomplete="off" required>
+                                                <input type="radio" class="btn-check" name="zeit_flexibel" id="flex_<?= $value ?>" value="<?= $value ?>" autocomplete="off" <?= $selectedFlex === $value ? 'checked' : '' ?> required>
                                                 <label class="btn btn-outline-dark" for="flex_<?= $value ?>"><?= $label ?></label>
                                             </div>
                                         <?php endforeach; ?>
@@ -360,6 +362,7 @@ $languages = [
 
                 <?php elseif ($step === 'auftraggeber'): ?>
                     <!-- SCHRITT: Auftraggeber -->
+                    <?php $auftraggeber = $sessionData['auftraggeber'] ?? []; ?>
                     <div class="card">
                         <div class="card-body">
                             <label class="form-label fw-bold"><?= $t['client_type'] ?> <span class="text-danger">*</span></label>
@@ -371,18 +374,19 @@ $languages = [
                                     'business' => $t['client_business'],
                                     'public' => $t['client_public'],
                                 ];
+                                $selectedTyp = $auftraggeber['typ'] ?? '';
                                 foreach ($clientTypes as $value => $label):
                                 ?>
                                     <div class="col-6 col-md-3">
-                                        <input type="radio" class="btn-check" name="auftraggeber_typ" id="typ_<?= $value ?>" value="<?= $value ?>" autocomplete="off" required>
+                                        <input type="radio" class="btn-check" name="auftraggeber_typ" id="typ_<?= $value ?>" value="<?= $value ?>" autocomplete="off" <?= $selectedTyp === $value ? 'checked' : '' ?> required>
                                         <label class="btn btn-outline-dark w-100 py-3" for="typ_<?= $value ?>"><?= $label ?></label>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
 
-                            <div id="firma_details" style="display: none;" class="mt-3">
+                            <div id="firma_details" style="display: <?= in_array($selectedTyp, ['business', 'public']) ? 'block' : 'none' ?>;" class="mt-3">
                                 <label for="firma" class="form-label"><?= $t['company_name'] ?></label>
-                                <input type="text" class="form-control" id="firma" name="firma" placeholder="<?= $t['company_name'] ?>">
+                                <input type="text" class="form-control" id="firma" name="firma" placeholder="<?= $t['company_name'] ?>" value="<?= esc($auftraggeber['firma'] ?? '') ?>">
                             </div>
                         </div>
                     </div>
@@ -543,13 +547,17 @@ $languages = [
                     </div>
                 <?php endif; ?>
 
+                <?php
+                // Explizite Zurück-Links für jeden Schritt
+                $backSteps = [
+                    'auftraggeber' => 'termin',
+                    'kontakt' => 'auftraggeber',
+                    'verify' => 'kontakt',
+                ];
+                ?>
                 <div class="d-flex justify-content-between mt-4">
-                    <?php if ($step === 'verify'): ?>
-                        <a href="<?= site_url('/request/finalize?session=' . esc($sessionId) . '&step=kontakt') ?>" class="btn text-white" style="background-color: <?= esc($headerBgColor) ?>;">
-                            <?= $t['back'] ?>
-                        </a>
-                    <?php elseif ($step !== 'termin'): ?>
-                        <a href="javascript:history.back()" class="btn text-white" style="background-color: <?= esc($headerBgColor) ?>;">
+                    <?php if (isset($backSteps[$step])): ?>
+                        <a href="<?= site_url('/request/finalize?session=' . esc($sessionId) . '&step=' . $backSteps[$step]) ?>" class="btn text-white" style="background-color: <?= esc($headerBgColor) ?>;">
                             <?= $t['back'] ?>
                         </a>
                     <?php else: ?>
