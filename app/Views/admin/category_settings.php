@@ -36,6 +36,11 @@
                             <span class="badge rounded-circle" style="background-color: <?= esc($cat['color'] ?? '#6c757d') ?>; width: 12px; height: 12px;"></span>
                             <strong><?= esc($cat['name']) ?></strong>
                             <code class="text-muted small ms-2"><?= esc($key) ?></code>
+                            <?php if (!empty($cat['hidden'])): ?>
+                                <span class="badge bg-warning text-dark" title="Diese Branche ist versteckt und erscheint nicht in der öffentlichen Auswahl">
+                                    <i class="bi bi-eye-slash"></i> Versteckt
+                                </span>
+                            <?php endif; ?>
                             <?php if (!empty($forms)): ?>
                                 <span class="badge bg-success ms-auto me-3"><?= count($forms) ?> Formular<?= count($forms) > 1 ? 'e' : '' ?></span>
                             <?php else: ?>
@@ -161,6 +166,22 @@
 
                                 <!-- Weitere Einstellungen -->
                                 <h6 class="text-muted mb-3"><i class="bi bi-gear"></i> Einstellungen</h6>
+
+                                <!-- Versteckt -->
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox"
+                                               class="form-check-input"
+                                               id="hidden_<?= esc($key) ?>"
+                                               name="categories[<?= esc($key) ?>][hidden]"
+                                               value="1"
+                                               <?= !empty($cat['hidden']) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="hidden_<?= esc($key) ?>">
+                                            <strong>Versteckt</strong>
+                                            <small class="text-muted d-block">Branche erscheint nicht in öffentlicher Auswahl, aber Preise funktionieren weiterhin</small>
+                                        </label>
+                                    </div>
+                                </div>
 
                                 <!-- Farbe -->
                                 <div class="mb-3">

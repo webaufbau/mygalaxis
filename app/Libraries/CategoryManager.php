@@ -46,6 +46,8 @@ class CategoryManager
             $values['categories'][$catKey] = [
                 'name'    => $values['categories'][$catKey]['name'] ?? $defaultName,
                 'max' => $values['categories'][$catKey]['max'] ?? null,
+                'hidden' => $values['categories'][$catKey]['hidden'] ?? false,
+                'base_price' => $values['categories'][$catKey]['base_price'] ?? null,
                 'review_email_days' => $values['categories'][$catKey]['review_email_days'] ?? 5,
                 'review_reminder_days' => $values['categories'][$catKey]['review_reminder_days'] ?? 10,
                 'color' => $values['categories'][$catKey]['color'] ?? '#6c757d',
@@ -104,6 +106,10 @@ class CategoryManager
                     'max' => (isset($categories[$catKey]['max']) && $categories[$catKey]['max'] !== '')
                         ? intval($categories[$catKey]['max'])
                         : null,
+                    'hidden' => !empty($categories[$catKey]['hidden']),
+                    'base_price' => (isset($categories[$catKey]['base_price']) && $categories[$catKey]['base_price'] !== '')
+                        ? floatval($categories[$catKey]['base_price'])
+                        : null,
                     'review_email_days' => isset($categories[$catKey]['review_email_days']) && $categories[$catKey]['review_email_days'] !== ''
                         ? intval($categories[$catKey]['review_email_days'])
                         : 5,
@@ -142,14 +148,22 @@ class CategoryManager
     /**
      * Alle verfügbaren Formulare als flache Liste holen
      * Jedes Formular hat: category_key, form_index, name (lokalisiert), form_link (lokalisiert)
+     *
+     * @param string|null $locale Sprache für Namen/Links
+     * @param bool $includeHidden Versteckte Kategorien einschließen (default: false)
      */
-    public function getAllForms(?string $locale = null): array
+    public function getAllForms(?string $locale = null, bool $includeHidden = false): array
     {
         $locale = $locale ?? service('request')->getLocale();
         $data = $this->getAll();
         $forms = [];
 
         foreach ($data['categories'] as $catKey => $cat) {
+            // Versteckte Kategorien überspringen (außer explizit angefordert)
+            if (!$includeHidden && !empty($cat['hidden'])) {
+                continue;
+            }
+
             $categoryForms = $cat['forms'] ?? [];
 
             if (empty($categoryForms)) {
@@ -188,10 +202,12 @@ class CategoryManager
 
     /**
      * Ein spezifisches Formular nach ID holen (format: "category_key:form_index")
+     * Inkludiert auch versteckte Kategorien (für Projekte, Email-Templates, etc.)
      */
     public function getFormById(string $formId, ?string $locale = null): ?array
     {
-        $forms = $this->getAllForms($locale);
+        // Inkludiere versteckte Kategorien, da wir ein spezifisches Formular suchen
+        $forms = $this->getAllForms($locale, true);
 
         foreach ($forms as $form) {
             if ($form['form_id'] === $formId) {
@@ -200,5 +216,47 @@ class CategoryManager
         }
 
         return null;
+    }
+
+    /**
+     * Alle Kategorie-Typen für Dropdowns holen (z.B. für Email-Templates)
+     * Inkludiert auch versteckte Kategorien
+     *
+     * @param bool $includeHidden Versteckte Kategorien einschließen (default: true für Admin)
+     * @return array [key => name]
+     */
+    public function getCategoryTypes(bool $includeHidden = true): array
+    {
+        $data = $this->getAll();
+        $types = [];
+
+        foreach ($data['categories'] as $catKey => $cat) {
+            // Versteckte Kategorien überspringen wenn nicht gewünscht
+            if (!$includeHidden && !empty($cat['hidden'])) {
+                continue;
+            }
+
+            $types[$catKey] = $cat['name'];
+        }
+
+        return $types;
+    }
+
+    /**
+     * Nur sichtbare (nicht versteckte) Kategorien holen
+     * Für öffentliche Anzeige (z.B. Branchenauswahl im Frontend)
+     */
+    public function getVisibleCategories(): array
+    {
+        $data = $this->getAll();
+        $visible = [];
+
+        foreach ($data['categories'] as $catKey => $cat) {
+            if (empty($cat['hidden'])) {
+                $visible[$catKey] = $cat;
+            }
+        }
+
+        return $visible;
     }
 }
