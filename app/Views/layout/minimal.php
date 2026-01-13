@@ -54,7 +54,7 @@
             background-color: rgba(149, 92, 233, 1);
             border: 1px solid rgba(149, 92, 233, 1);
             border-radius: 0;
-            padding: 15px 40px;
+            padding: .5rem 1rem;
             font-size: 1rem;
             font-weight: 400;
             transition: all .3s;
