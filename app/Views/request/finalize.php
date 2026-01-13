@@ -1,8 +1,6 @@
 <?= $this->extend('layout/minimal') ?>
 <?= $this->section('content') ?>
 
-<!-- DEBUG: lang from controller = <?= $lang ?? 'NOT SET' ?>, sessionData[lang] = <?= $sessionData['lang'] ?? 'NOT SET' ?> -->
-
 <?php
 // Übersetzungen
 $translations = [
@@ -340,7 +338,15 @@ $languages = [
             <div class="alert alert-light mb-4">
                 <strong><?= $t['selected_services'] ?>:</strong>
                 <?php foreach ($sessionData['form_links'] as $i => $link): ?>
-                    <span class="badge bg-secondary me-1"><?= esc($link['name']) ?></span>
+                    <?php
+                    // Übersetze den Namen basierend auf category_key
+                    $translatedName = lang('Filter.' . ($link['category_key'] ?? ''));
+                    // Fallback auf den ursprünglichen Namen wenn keine Übersetzung existiert
+                    $displayName = ($translatedName && $translatedName !== 'Filter.' . ($link['category_key'] ?? ''))
+                        ? $translatedName
+                        : $link['name'];
+                    ?>
+                    <span class="badge bg-secondary me-1"><?= esc($displayName) ?></span>
                 <?php endforeach; ?>
 
                 <?php if ($step === 'termin' && !empty($editUrls)): ?>
@@ -349,8 +355,15 @@ $languages = [
                         <i class="bi bi-pencil"></i> <?= $t['edit_form_data'] ?? 'Angaben bearbeiten:' ?>
                     </small>
                     <?php foreach ($editUrls as $editInfo): ?>
+                        <?php
+                        // Übersetze auch die Edit-Button-Namen
+                        $editTranslatedName = lang('Filter.' . ($editInfo['type'] ?? ''));
+                        $editDisplayName = ($editTranslatedName && $editTranslatedName !== 'Filter.' . ($editInfo['type'] ?? ''))
+                            ? $editTranslatedName
+                            : $editInfo['name'];
+                        ?>
                         <a href="<?= esc($editInfo['edit_url']) ?>" class="btn btn-sm btn-outline-secondary me-1 mb-1">
-                            <i class="bi bi-arrow-left"></i> <?= esc($editInfo['name']) ?>
+                            <i class="bi bi-arrow-left"></i> <?= esc($editDisplayName) ?>
                         </a>
                     <?php endforeach; ?>
                 </div>
