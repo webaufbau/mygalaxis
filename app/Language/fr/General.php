@@ -20,6 +20,9 @@ return [
 
     'note' => 'Note',
 
+    // Formulaire de demande
+    'noMoreServicesHint' => 'Si vous n\'avez pas besoin d\'autres services, veuillez cliquer sur le bouton "Continuer".',
+
     // Coordonnées
     'firstName' => 'Prénom',
     'lastName' => 'Nom',

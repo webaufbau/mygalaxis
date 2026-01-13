@@ -20,6 +20,9 @@ return [
 
     'note' => 'Hinweis',
 
+    // Request-Formular
+    'noMoreServicesHint' => 'Falls du keine weiteren Dienstleistungen benötigst, bitte Button "Weiter" klicken.',
+
     // Kontaktdaten
     'firstName' => 'Vorname',
     'lastName' => 'Nachname',

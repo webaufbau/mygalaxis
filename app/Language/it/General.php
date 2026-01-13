@@ -20,6 +20,9 @@ return [
 
     'note' => 'Nota',
 
+    // Modulo di richiesta
+    'noMoreServicesHint' => 'Se non hai bisogno di altri servizi, clicca sul pulsante "Continua".',
+
     // Dati di contatto
     'firstName' => 'Nome',
     'lastName' => 'Cognome',

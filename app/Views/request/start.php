@@ -70,9 +70,12 @@ $languages = [
 
 <div class="container py-4">
     <h2 class="mb-3">Offerte anfordern</h2>
-    <p class="text-muted mb-4">
+    <p class="text-muted mb-2">
         Falls mehrere Dienstleistungen benötigt werden, kannst du unbegrenzt auswählen
         und wir leiten es den entsprechenden Firmen/Branchen weiter.
+    </p>
+    <p class="text-danger mb-4">
+        <?= lang('General.noMoreServicesHint') ?>
     </p>
 
     <?php if (session()->getFlashdata('error')): ?>
