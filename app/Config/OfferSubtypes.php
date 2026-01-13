@@ -54,6 +54,21 @@ class OfferSubtypes extends BaseConfig
         'heizung'      => 'heating',
         'plattenleger' => 'tiling',
         'bodenleger'   => 'flooring',
+
+        // Neue Branchen
+        'schreiner'    => 'carpenter',
+        'baumeister'   => 'mason',
+        'maurer'       => 'mason',
+        'zimmermann'   => 'carpenter_wood',
+        'spengler'     => 'roofer_sheet_metal',
+        'schlosser'    => 'locksmith',
+        'kuechenbauer' => 'kitchen_builder',
+        'treppenbauer' => 'stair_builder',
+        'dachdecker'   => 'roofer',
+        'geruestbauer' => 'scaffolding',
+        'fenster'      => 'windows_doors',
+        'tueren'       => 'windows_doors',
+        'architekt'    => 'architect',
     ];
 
     /**
@@ -136,6 +151,21 @@ class OfferSubtypes extends BaseConfig
             'heizung'      => 'Heizung',
             'plattenleger' => 'Plattenleger',
             'bodenleger'   => 'Bodenleger',
+
+            // Neue Branchen
+            'schreiner'    => 'Schreiner',
+            'baumeister'   => 'Baumeister',
+            'maurer'       => 'Maurer',
+            'zimmermann'   => 'Zimmermann',
+            'spengler'     => 'Spengler',
+            'schlosser'    => 'Schlosser',
+            'kuechenbauer' => 'Küchenbauer',
+            'treppenbauer' => 'Treppenbauer',
+            'dachdecker'   => 'Dachdecker',
+            'geruestbauer' => 'Gerüstbauer',
+            'fenster'      => 'Fenster',
+            'tueren'       => 'Türen',
+            'architekt'    => 'Architekt',
         ];
     }
 }
