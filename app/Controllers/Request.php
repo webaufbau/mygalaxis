@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\CategoryManager;
+use App\Libraries\InfobipService;
 use App\Models\ProjectModel;
 
 class Request extends BaseController
@@ -188,26 +189,107 @@ class Request extends BaseController
                 return redirect()->to('/request/finalize?session=' . $sessionId . '&step=kontakt');
 
             case 'kontakt':
+                $telefon = $this->request->getPost('telefon_full') ?: $this->request->getPost('telefon');
                 $sessionData['kontakt'] = [
                     'vorname' => $this->request->getPost('vorname'),
                     'nachname' => $this->request->getPost('nachname'),
                     'email' => $this->request->getPost('email'),
-                    'telefon' => $this->request->getPost('telefon'),
+                    'telefon' => $telefon,
                     'strasse' => $this->request->getPost('strasse'),
+                    'hausnummer' => $this->request->getPost('hausnummer'),
                     'plz' => $this->request->getPost('plz'),
                     'ort' => $this->request->getPost('ort'),
+                    'erreichbar' => $this->request->getPost('erreichbar'),
                 ];
                 session()->set('request_' . $sessionId, $sessionData);
-                return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify');
+
+                // SMS Verifikationscode senden
+                return $this->sendVerificationCode($sessionId, $sessionData);
 
             case 'verify':
-                // TODO: Verifikation durchführen (SMS/Email)
+                $inputCode = $this->request->getPost('code');
+                $storedCode = $sessionData['verification_code'] ?? null;
+
+                if (!$storedCode || $inputCode != $storedCode) {
+                    return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify')
+                        ->with('error', 'Der eingegebene Code ist falsch. Bitte versuche es erneut.');
+                }
+
+                // Verifikation erfolgreich
                 $sessionData['verified'] = true;
+                $sessionData['verified_at'] = date('Y-m-d H:i:s');
                 session()->set('request_' . $sessionId, $sessionData);
                 return redirect()->to('/request/complete?session=' . $sessionId);
         }
 
         return redirect()->to('/request/finalize?session=' . $sessionId);
+    }
+
+    /**
+     * SMS Verifikationscode senden
+     */
+    protected function sendVerificationCode(string $sessionId, array $sessionData, bool $isResend = false)
+    {
+        $phone = $sessionData['kontakt']['telefon'] ?? '';
+
+        if (!$phone) {
+            return redirect()->to('/request/finalize?session=' . $sessionId . '&step=kontakt')
+                ->with('error', 'Telefonnummer fehlt.');
+        }
+
+        // Code generieren (4-stellig)
+        $code = rand(1000, 9999);
+        $sessionData['verification_code'] = $code;
+        $sessionData['verification_sent_at'] = date('Y-m-d H:i:s');
+        session()->set('request_' . $sessionId, $sessionData);
+
+        // SMS senden
+        try {
+            $infobip = new InfobipService();
+            $siteName = siteconfig()->name ?? 'Offerten';
+            $message = "Dein Bestätigungscode für {$siteName}: {$code}";
+            $result = $infobip->sendSms($phone, $message);
+
+            if (!$result['success']) {
+                log_message('error', 'SMS Versand fehlgeschlagen: ' . ($result['error'] ?? 'Unknown'));
+                return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify')
+                    ->with('warning', 'SMS konnte nicht gesendet werden. Bitte prüfe die Telefonnummer.');
+            }
+
+            log_message('info', "Verification SMS sent to {$phone}, code: {$code}");
+        } catch (\Exception $e) {
+            log_message('error', 'SMS Exception: ' . $e->getMessage());
+            return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify')
+                ->with('warning', 'SMS-Dienst momentan nicht verfügbar.');
+        }
+
+        // Bei Resend Erfolgsmeldung anzeigen
+        if ($isResend) {
+            return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify')
+                ->with('success', 'Ein neuer Code wurde gesendet.');
+        }
+
+        return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify');
+    }
+
+    /**
+     * Verifikationscode erneut senden
+     */
+    public function resendCode()
+    {
+        $sessionId = $this->request->getGet('session');
+
+        if (!$sessionId) {
+            return redirect()->to('/request/start')->with('error', 'Keine Session gefunden.');
+        }
+
+        $sessionData = session()->get('request_' . $sessionId);
+
+        if (!$sessionData || empty($sessionData['kontakt'])) {
+            return redirect()->to('/request/start')->with('error', 'Session abgelaufen.');
+        }
+
+        return $this->sendVerificationCode($sessionId, $sessionData, true);
     }
 
     /**

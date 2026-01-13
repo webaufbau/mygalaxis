@@ -54,6 +54,13 @@ $translations = [
         'back' => 'Zurück',
         'next' => 'Weiter',
         'submit' => 'Anfrage absenden',
+        'verify_code_sent' => 'Wir haben einen Bestätigungscode an folgende Nummer gesendet:',
+        'verify_enter_code' => 'Bitte gib den 4-stelligen Code ein:',
+        'verify_code_placeholder' => 'Code eingeben',
+        'verify_resend' => 'Code erneut senden',
+        'verify_change_phone' => 'Telefonnummer ändern',
+        'verify_wrong_code' => 'Der eingegebene Code ist falsch. Bitte versuche es erneut.',
+        'verify_code_resent' => 'Ein neuer Code wurde gesendet.',
     ],
     'en' => [
         'termin' => 'Schedule',
@@ -105,6 +112,13 @@ $translations = [
         'back' => 'Back',
         'next' => 'Next',
         'submit' => 'Submit request',
+        'verify_code_sent' => 'We have sent a verification code to the following number:',
+        'verify_enter_code' => 'Please enter the 4-digit code:',
+        'verify_code_placeholder' => 'Enter code',
+        'verify_resend' => 'Resend code',
+        'verify_change_phone' => 'Change phone number',
+        'verify_wrong_code' => 'The code entered is incorrect. Please try again.',
+        'verify_code_resent' => 'A new code has been sent.',
     ],
     'fr' => [
         'termin' => 'Date',
@@ -156,6 +170,13 @@ $translations = [
         'back' => 'Retour',
         'next' => 'Suivant',
         'submit' => 'Envoyer la demande',
+        'verify_code_sent' => 'Nous avons envoyé un code de vérification au numéro suivant:',
+        'verify_enter_code' => 'Veuillez entrer le code à 4 chiffres:',
+        'verify_code_placeholder' => 'Entrer le code',
+        'verify_resend' => 'Renvoyer le code',
+        'verify_change_phone' => 'Modifier le numéro',
+        'verify_wrong_code' => 'Le code saisi est incorrect. Veuillez réessayer.',
+        'verify_code_resent' => 'Un nouveau code a été envoyé.',
     ],
     'it' => [
         'termin' => 'Data',
@@ -207,6 +228,13 @@ $translations = [
         'back' => 'Indietro',
         'next' => 'Avanti',
         'submit' => 'Invia richiesta',
+        'verify_code_sent' => 'Abbiamo inviato un codice di verifica al seguente numero:',
+        'verify_enter_code' => 'Inserisci il codice a 4 cifre:',
+        'verify_code_placeholder' => 'Inserisci codice',
+        'verify_resend' => 'Invia nuovo codice',
+        'verify_change_phone' => 'Cambia numero',
+        'verify_wrong_code' => 'Il codice inserito non è corretto. Riprova.',
+        'verify_code_resent' => 'È stato inviato un nuovo codice.',
     ],
 ];
 
@@ -449,30 +477,60 @@ $languages = [
 
                 <?php elseif ($step === 'verify'): ?>
                     <!-- SCHRITT: Verifikation -->
+                    <?php $phone = $sessionData['kontakt']['telefon'] ?? ''; ?>
                     <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><?= $t['confirm_request'] ?></h5>
-                        </div>
                         <div class="card-body">
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle"></i>
-                                <?= $t['confirm_info'] ?>
+                            <?php if (session()->getFlashdata('error')): ?>
+                                <div class="alert alert-danger">
+                                    <?= session()->getFlashdata('error') ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (session()->getFlashdata('warning')): ?>
+                                <div class="alert alert-warning">
+                                    <?= session()->getFlashdata('warning') ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (session()->getFlashdata('success')): ?>
+                                <div class="alert alert-success">
+                                    <?= session()->getFlashdata('success') ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Telefonnummer anzeigen -->
+                            <p class="mb-3">
+                                <?= $t['verify_code_sent'] ?><br>
+                                <strong class="fs-5"><?= esc($phone) ?></strong>
+                            </p>
+
+                            <!-- Code Eingabe -->
+                            <div class="mb-4">
+                                <label for="code" class="form-label fw-bold"><?= $t['verify_enter_code'] ?></label>
+                                <input type="text"
+                                       class="form-control form-control-lg text-center"
+                                       id="code"
+                                       name="code"
+                                       placeholder="<?= $t['verify_code_placeholder'] ?>"
+                                       maxlength="4"
+                                       pattern="[0-9]{4}"
+                                       inputmode="numeric"
+                                       autocomplete="one-time-code"
+                                       style="max-width: 200px; font-size: 1.5rem; letter-spacing: 0.5rem;"
+                                       required>
                             </div>
 
-                            <!-- Zusammenfassung -->
-                            <h6><?= $t['summary'] ?>:</h6>
-                            <ul class="list-unstyled">
-                                <li><strong><?= $t['services'] ?>:</strong>
-                                    <?php foreach ($sessionData['form_links'] as $link): ?>
-                                        <?= esc($link['name']) ?><?= $link !== end($sessionData['form_links']) ? ', ' : '' ?>
-                                    <?php endforeach; ?>
-                                </li>
-                                <?php if (!empty($sessionData['kontakt'])): ?>
-                                <li><strong><?= $t['contact'] ?>:</strong> <?= esc($sessionData['kontakt']['vorname'] . ' ' . $sessionData['kontakt']['nachname']) ?></li>
-                                <li><strong><?= $t['address'] ?>:</strong> <?= esc($sessionData['kontakt']['strasse'] . ', ' . $sessionData['kontakt']['plz'] . ' ' . $sessionData['kontakt']['ort']) ?></li>
-                                <?php endif; ?>
-                            </ul>
+                            <!-- Aktionen: Code erneut senden / Nummer ändern -->
+                            <div class="d-flex flex-wrap gap-3 mb-3">
+                                <a href="<?= site_url('/request/resend-code?session=' . esc($sessionId)) ?>" class="text-decoration-none" style="color: <?= esc($headerBgColor) ?>;">
+                                    <i class="bi bi-arrow-repeat"></i> <?= $t['verify_resend'] ?>
+                                </a>
+                                <a href="<?= site_url('/request/finalize?session=' . esc($sessionId) . '&step=kontakt') ?>" class="text-decoration-none text-secondary">
+                                    <i class="bi bi-pencil"></i> <?= $t['verify_change_phone'] ?>
+                                </a>
+                            </div>
 
+                            <!-- AGB -->
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="agb" required>
                                 <label class="form-check-label" for="agb">
@@ -484,7 +542,11 @@ $languages = [
                 <?php endif; ?>
 
                 <div class="d-flex justify-content-between mt-4">
-                    <?php if ($step !== 'termin'): ?>
+                    <?php if ($step === 'verify'): ?>
+                        <a href="<?= site_url('/request/finalize?session=' . esc($sessionId) . '&step=kontakt') ?>" class="btn text-white" style="background-color: <?= esc($headerBgColor) ?>;">
+                            <?= $t['back'] ?>
+                        </a>
+                    <?php elseif ($step !== 'termin'): ?>
                         <a href="javascript:history.back()" class="btn text-white" style="background-color: <?= esc($headerBgColor) ?>;">
                             <?= $t['back'] ?>
                         </a>
@@ -502,8 +564,13 @@ $languages = [
     </div>
 </div>
 
+<!-- Bootstrap Icons CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<?php if ($step === 'kontakt'): ?>
 <!-- intl-tel-input CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+<?php endif; ?>
 
 <style>
 /* Ausgewählte Radio-Buttons bekommen Header-Farbe */
@@ -525,16 +592,18 @@ $languages = [
 }
 </style>
 
+<?php if ($step === 'kontakt'): ?>
 <!-- intl-tel-input JS -->
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var telefonInput = document.querySelector('#telefon');
-    if (telefonInput) {
+    // Nur initialisieren wenn Element existiert und noch nicht initialisiert wurde
+    if (telefonInput && !telefonInput.classList.contains('iti-initialized')) {
+        telefonInput.classList.add('iti-initialized');
         var iti = window.intlTelInput(telefonInput, {
             initialCountry: 'ch',
             onlyCountries: ['ch', 'de', 'at'],
-            preferredCountries: ['ch', 'de', 'at'],
             separateDialCode: true,
             utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js'
         });
@@ -550,5 +619,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<?php endif; ?>
 
 <?= $this->endSection() ?>
