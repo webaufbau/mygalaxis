@@ -272,39 +272,17 @@ $languages = [
     <div class="row justify-content-center">
         <div class="col-lg-8">
 
-            <!-- Fortschrittsanzeige -->
-            <div class="mb-4">
-                <div class="d-flex justify-content-between mb-2">
-                    <?php
-                    $steps = [
-                        'termin' => $t['termin'],
-                        'auftraggeber' => $t['auftraggeber'],
-                        'kontakt' => $t['kontakt'],
-                        'verify' => $t['verify']
-                    ];
-                    $stepKeys = array_keys($steps);
-                    $currentStepIndex = array_search($step, $stepKeys);
-                    ?>
-                    <?php foreach ($steps as $key => $label): ?>
-                        <?php
-                        $stepIndex = array_search($key, $stepKeys);
-                        $isActive = ($key === $step);
-                        $isDone = $stepIndex < $currentStepIndex;
-                        ?>
-                        <div class="text-center flex-fill">
-                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-1
-                                <?= $isActive ? 'bg-primary text-white' : ($isDone ? 'bg-success text-white' : 'bg-light text-muted') ?>"
-                                 style="width: 32px; height: 32px;">
-                                <?= $isDone ? '<i class="bi bi-check"></i>' : ($stepIndex + 1) ?>
-                            </div>
-                            <div class="small <?= $isActive ? 'fw-bold' : 'text-muted' ?>"><?= $label ?></div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-                <div class="progress" style="height: 4px;">
-                    <div class="progress-bar" style="width: <?= (($currentStepIndex + 1) / count($steps)) * 100 ?>%"></div>
-                </div>
-            </div>
+            <?php
+            $steps = [
+                'termin' => $t['termin'],
+                'auftraggeber' => $t['auftraggeber'],
+                'kontakt' => $t['kontakt'],
+                'verify' => $t['verify']
+            ];
+            ?>
+
+            <!-- Titel -->
+            <h2 class="mb-3"><?= $steps[$step] ?? $t['termin'] ?></h2>
 
             <!-- Zusammenfassung der gewählten Dienstleistungen -->
             <div class="alert alert-light mb-4">
