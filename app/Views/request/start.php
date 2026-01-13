@@ -7,12 +7,39 @@ $headerBgColor = $initialCategoryColor ?? ($siteConfig->headerBackgroundColor ??
 // Logo-URL in Variable speichern (empty() funktioniert nicht mit Magic Getters)
 $logoUrl = $siteConfig->logoUrl;
 $logoHeight = $siteConfig->logoHeightPixel ?? '60';
+
+// Sprachwechsel-URLs
+$currentLocale = service('request')->getLocale();
+$currentUri = current_url();
+$queryString = $_SERVER['QUERY_STRING'] ?? '';
+
+// Sprachen mit Flaggen-URLs
+$languages = [
+    'de' => ['name' => 'Deutsch', 'flag' => 'https://offertenschweiz.ch/wp-content/plugins/sitepress-multilingual-cms/res/flags/de.svg'],
+    'en' => ['name' => 'English', 'flag' => 'https://offertenschweiz.ch/wp-content/plugins/sitepress-multilingual-cms/res/flags/en.svg'],
+    'fr' => ['name' => 'Français', 'flag' => 'https://offertenschweiz.ch/wp-content/plugins/sitepress-multilingual-cms/res/flags/fr.svg'],
+    'it' => ['name' => 'Italiano', 'flag' => 'https://offertenschweiz.ch/wp-content/plugins/sitepress-multilingual-cms/res/flags/it.svg'],
+];
 ?>
 
-<!-- Header mit Logo und Branchenfarbe -->
+<!-- Header mit Logo, Flaggen und Branchenfarbe -->
 <header class="py-3 mb-4" style="background-color: <?= esc($headerBgColor) ?>;">
     <div class="container">
-        <div class="text-center">
+        <div class="d-flex align-items-center justify-content-center gap-4">
+            <!-- Flaggen (Desktop) -->
+            <div class="d-none d-md-flex gap-2">
+                <?php foreach ($languages as $code => $langInfo): ?>
+                <?php
+                    $langUrl = site_url($code . '/request/start');
+                    if ($queryString) $langUrl .= '?' . $queryString;
+                ?>
+                <a href="<?= esc($langUrl) ?>" title="<?= esc($langInfo['name']) ?>" class="<?= $code === $currentLocale ? 'opacity-100' : 'opacity-75' ?>">
+                    <img src="<?= esc($langInfo['flag']) ?>" alt="<?= esc($langInfo['name']) ?>" width="24" height="16" style="border-radius: 2px;">
+                </a>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Logo -->
             <?php if ($logoUrl): ?>
             <a href="<?= esc($siteConfig->frontendUrl) ?>">
                 <img src="<?= esc($logoUrl) ?>"
@@ -24,6 +51,19 @@ $logoHeight = $siteConfig->logoHeightPixel ?? '60';
                 <?= esc($siteConfig->name) ?>
             </a>
             <?php endif; ?>
+
+            <!-- Dropdown (Mobile) -->
+            <div class="d-md-none">
+                <select onchange="location.href=this.value;" class="form-select form-select-sm" style="width: auto; background-color: transparent; color: white; border-color: rgba(255,255,255,0.3);">
+                    <?php foreach ($languages as $code => $langInfo): ?>
+                    <?php
+                        $langUrl = site_url($code . '/request/start');
+                        if ($queryString) $langUrl .= '?' . $queryString;
+                    ?>
+                    <option value="<?= esc($langUrl) ?>" <?= $code === $currentLocale ? 'selected' : '' ?>><?= strtoupper($code) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
         </div>
     </div>
 </header>
