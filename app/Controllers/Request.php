@@ -335,7 +335,7 @@ class Request extends BaseController
     }
 
     /**
-     * Anfrage abgeschlossen
+     * Anfrage abgeschlossen - Weiterleitung zur Danke-Seite
      */
     public function complete()
     {
@@ -347,10 +347,20 @@ class Request extends BaseController
 
         $sessionData = session()->get('request_' . $sessionId);
 
-        return view('request/complete', [
-            'sessionId' => $sessionId,
-            'sessionData' => $sessionData,
-        ]);
+        // Sprache aus Session oder Fallback
+        $lang = $sessionData['lang'] ?? service('request')->getLocale() ?? 'de';
+
+        // Danke-Seite URL aus SiteConfig holen
+        $siteConfig = siteconfig();
+        $thankYouUrls = $siteConfig->thankYouUrl ?? [];
+
+        // URL für aktuelle Sprache oder Fallback auf 'de'
+        $redirectUrl = $thankYouUrls[$lang] ?? $thankYouUrls['de'] ?? $siteConfig->frontendUrl ?? '/';
+
+        // Session aufräumen
+        session()->remove('request_' . $sessionId);
+
+        return redirect()->to($redirectUrl);
     }
 
     /**
