@@ -4,17 +4,20 @@
 <?php
 // Header-Hintergrundfarbe: Branchenfarbe wenn initial vorhanden, sonst Standard aus SiteConfig
 $headerBgColor = $initialCategoryColor ?? ($siteConfig->headerBackgroundColor ?? '#6c757d');
+// Logo-URL in Variable speichern (empty() funktioniert nicht mit Magic Getters)
+$logoUrl = $siteConfig->logoUrl;
+$logoHeight = $siteConfig->logoHeightPixel ?? '60';
 ?>
 
 <!-- Header mit Logo und Branchenfarbe -->
 <header class="py-3 mb-4" style="background-color: <?= esc($headerBgColor) ?>;">
     <div class="container">
         <div class="text-center">
-            <?php if (!empty($siteConfig->logoUrl)): ?>
+            <?php if ($logoUrl): ?>
             <a href="<?= esc($siteConfig->frontendUrl) ?>">
-                <img src="<?= esc($siteConfig->logoUrl) ?>"
+                <img src="<?= esc($logoUrl) ?>"
                      alt="<?= esc($siteConfig->name) ?>"
-                     style="max-height: <?= esc($siteConfig->logoHeightPixel ?? '60') ?>px; max-width: 100%;">
+                     style="max-height: <?= esc($logoHeight) ?>px; max-width: 100%;">
             </a>
             <?php else: ?>
             <a href="<?= esc($siteConfig->frontendUrl) ?>" class="text-white text-decoration-none fs-4 fw-bold">
