@@ -413,11 +413,9 @@ $languages = [
                                     <input type="email" class="form-control" id="email" name="email" placeholder="E-Mail-Adresse" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="telefon" class="form-label fw-bold">Telefonnummer <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">🇨🇭</span>
-                                        <input type="tel" class="form-control" id="telefon" name="telefon" placeholder="Telefonnummer" required>
-                                    </div>
+                                    <label for="telefon" class="form-label fw-bold"><?= $t['phone'] ?> <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" id="telefon" name="telefon" placeholder="Telefonnummer" required>
+                                    <input type="hidden" id="telefon_full" name="telefon_full">
                                     <small class="text-danger"><?= $t['phone_hint'] ?></small>
                                 </div>
                             </div>
@@ -526,6 +524,9 @@ $languages = [
     </div>
 </div>
 
+<!-- intl-tel-input CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+
 <style>
 /* Ausgewählte Radio-Buttons bekommen Header-Farbe */
 .btn-check:checked + .btn-outline-dark {
@@ -537,6 +538,39 @@ $languages = [
     background-color: <?= esc($headerBgColor) ?> !important;
     border-color: <?= esc($headerBgColor) ?> !important;
 }
+/* intl-tel-input Anpassungen */
+.iti {
+    width: 100%;
+}
+.iti__flag-container {
+    z-index: 1000;
+}
 </style>
+
+<!-- intl-tel-input JS -->
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var telefonInput = document.querySelector('#telefon');
+    if (telefonInput) {
+        var iti = window.intlTelInput(telefonInput, {
+            initialCountry: 'ch',
+            onlyCountries: ['ch', 'de', 'at'],
+            preferredCountries: ['ch', 'de', 'at'],
+            separateDialCode: true,
+            utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js'
+        });
+
+        // Vor dem Absenden die volle Nummer speichern
+        var form = telefonInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                var fullNumber = iti.getNumber();
+                document.getElementById('telefon_full').value = fullNumber;
+            });
+        }
+    }
+});
+</script>
 
 <?= $this->endSection() ?>
