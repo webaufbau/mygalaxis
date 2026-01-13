@@ -138,6 +138,16 @@ class Request extends BaseController
             return redirect()->to('/request/start')->with('error', 'Session abgelaufen.');
         }
 
+        // Sprache aus URL oder Session oder Default
+        $lang = $this->request->getGet('lang') ?? $sessionData['lang'] ?? 'de';
+        service('language')->setLocale($lang);
+
+        // Sprache in Session aktualisieren wenn geändert
+        if ($lang !== ($sessionData['lang'] ?? 'de')) {
+            $sessionData['lang'] = $lang;
+            session()->set('request_' . $sessionId, $sessionData);
+        }
+
         // Schritt aus URL oder Default
         $step = $this->request->getGet('step') ?? 'termin';
 
@@ -165,6 +175,7 @@ class Request extends BaseController
             'siteConfig' => $siteConfig,
             'lastFormColor' => $lastFormColor,
             'editUrls' => $editUrls,
+            'lang' => $lang,
         ]);
     }
 

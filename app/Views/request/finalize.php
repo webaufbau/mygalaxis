@@ -246,7 +246,9 @@ $translations = [
     ],
 ];
 
-$lang = $sessionData['lang'] ?? 'de';
+// $lang kommt vom Controller (berücksichtigt bereits URL-Parameter und Session)
+// Fallback falls nicht gesetzt
+$lang = $lang ?? $sessionData['lang'] ?? 'de';
 if (!isset($translations[$lang])) {
     $lang = 'de';
 }
