@@ -509,14 +509,14 @@ $languages = [
 
                 <div class="d-flex justify-content-between mt-4">
                     <?php if ($step !== 'termin'): ?>
-                        <a href="javascript:history.back()" class="btn btn-warning">
+                        <a href="javascript:history.back()" class="btn text-white" style="background-color: <?= esc($headerBgColor) ?>;">
                             <?= $t['back'] ?>
                         </a>
                     <?php else: ?>
                         <div></div>
                     <?php endif; ?>
 
-                    <button type="submit" class="btn btn-warning btn-lg">
+                    <button type="submit" class="btn btn-lg text-white" style="background-color: <?= esc($headerBgColor) ?>;">
                         <?= $step === 'verify' ? $t['submit'] : $t['next'] ?>
                     </button>
                 </div>
