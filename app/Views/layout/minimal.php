@@ -50,17 +50,19 @@
             margin-block-start: .5rem;
         }
         .btn-primary {
-            background-color: #7537d2;
-            border-color: #7537d2;
+            color: rgba(249, 244, 255, 1);
+            background-color: rgba(149, 92, 233, 1);
+            border: 1px solid rgba(149, 92, 233, 1);
             border-radius: 0;
             padding: 15px 40px;
             font-size: 1rem;
             font-weight: 400;
-            letter-spacing: 0.5px;
+            transition: all .3s;
         }
         .btn-primary:hover, .btn-primary:focus {
-            background-color: #5c2ba8;
-            border-color: #5c2ba8;
+            color: rgba(149, 92, 233, 1);
+            background-color: rgba(249, 244, 255, 1);
+            border: 1px solid rgba(149, 92, 233, 1);
         }
     </style>
 </head>
