@@ -343,6 +343,10 @@ class Request extends BaseController
                 ->with('error', 'Telefonnummer fehlt.');
         }
 
+        // Sprache aus Session setzen für korrekte Übersetzung
+        $lang = $sessionData['lang'] ?? 'de';
+        service('language')->setLocale($lang);
+
         // Nummer normalisieren
         $phone = $this->normalizePhone($phone);
 
@@ -364,9 +368,9 @@ class Request extends BaseController
 
         try {
             if ($method === 'sms') {
-                // SMS über Infobip
+                // SMS über Infobip - übersetzte Nachricht
                 $infobip = new InfobipService();
-                $message = "Dein Bestätigungscode für {$siteName}: {$code}";
+                $message = lang('Verification.smsVerificationCode', ['sitename' => $siteName, 'code' => $code]);
                 $result = $infobip->sendSms($phone, $message);
                 $success = $result['success'] ?? false;
                 $messageId = $result['message_id'] ?? null;
