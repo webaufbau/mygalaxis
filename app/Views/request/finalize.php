@@ -62,6 +62,7 @@ $translations = [
         'verify_resend_call' => 'Erneut anrufen',
         'verify_change_phone' => 'Telefonnummer ändern',
         'verify_wrong_code' => 'Der eingegebene Code ist falsch. Bitte versuche es erneut.',
+        'edit_form_data' => 'Angaben bearbeiten:',
     ],
     'en' => [
         'termin' => 'Schedule',
@@ -121,6 +122,7 @@ $translations = [
         'verify_resend_call' => 'Call again',
         'verify_change_phone' => 'Change phone number',
         'verify_wrong_code' => 'The code entered is incorrect. Please try again.',
+        'edit_form_data' => 'Edit your information:',
     ],
     'fr' => [
         'termin' => 'Date',
@@ -180,6 +182,7 @@ $translations = [
         'verify_resend_call' => 'Rappeler',
         'verify_change_phone' => 'Modifier le numéro',
         'verify_wrong_code' => 'Le code saisi est incorrect. Veuillez réessayer.',
+        'edit_form_data' => 'Modifier vos informations:',
     ],
     'it' => [
         'termin' => 'Data',
@@ -239,6 +242,7 @@ $translations = [
         'verify_resend_call' => 'Richiama',
         'verify_change_phone' => 'Cambia numero',
         'verify_wrong_code' => 'Il codice inserito non è corretto. Riprova.',
+        'edit_form_data' => 'Modifica i tuoi dati:',
     ],
 ];
 
@@ -322,6 +326,19 @@ $languages = [
                 <?php foreach ($sessionData['form_links'] as $i => $link): ?>
                     <span class="badge bg-secondary me-1"><?= esc($link['name']) ?></span>
                 <?php endforeach; ?>
+
+                <?php if ($step === 'termin' && !empty($editUrls)): ?>
+                <div class="mt-3 pt-2 border-top">
+                    <small class="text-muted d-block mb-2">
+                        <i class="bi bi-pencil"></i> <?= $t['edit_form_data'] ?? 'Angaben bearbeiten:' ?>
+                    </small>
+                    <?php foreach ($editUrls as $editInfo): ?>
+                        <a href="<?= esc($editInfo['edit_url']) ?>" class="btn btn-sm btn-outline-secondary me-1 mb-1">
+                            <i class="bi bi-arrow-left"></i> <?= esc($editInfo['name']) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
             </div>
 
             <form method="post" action="<?= site_url('/request/save-finalize') ?>">

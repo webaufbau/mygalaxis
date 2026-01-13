@@ -152,13 +152,80 @@ class Request extends BaseController
             $lastFormColor = $lastForm['category_color'] ?? null;
         }
 
+        // Edit-URLs für Zurück-Button generieren (nur im ersten Schritt)
+        $editUrls = [];
+        if ($step === 'termin') {
+            $editUrls = $this->generateEditUrlsForSession($sessionId, $formLinks);
+        }
+
         return view('request/finalize', [
             'sessionId' => $sessionId,
             'sessionData' => $sessionData,
             'step' => $step,
             'siteConfig' => $siteConfig,
             'lastFormColor' => $lastFormColor,
+            'editUrls' => $editUrls,
         ]);
+    }
+
+    /**
+     * Generiere Edit-URLs für alle Offers einer Session
+     */
+    protected function generateEditUrlsForSession(string $sessionId, array $formLinks): array
+    {
+        $offerModel = new \App\Models\OfferModel();
+        $editTokenModel = new \App\Models\EditTokenModel();
+
+        // Alle Offers dieser Session finden
+        $offers = $offerModel->where('request_session_id', $sessionId)->findAll();
+
+        if (empty($offers)) {
+            return [];
+        }
+
+        $editUrls = [];
+
+        foreach ($offers as $offer) {
+            // Versuche die passende Form-URL zu finden
+            $formUrl = null;
+            $formName = null;
+
+            // Details parsen um form_link zu finden
+            $details = json_decode($offer['details'] ?? '{}', true);
+            if (!empty($details['form_link'])) {
+                $formUrl = $details['form_link'];
+            }
+
+            // Fallback: erste passende Form-URL aus formLinks nehmen
+            if (!$formUrl && !empty($formLinks)) {
+                foreach ($formLinks as $link) {
+                    // Prüfe ob der Typ/Kategorie passt
+                    if (!empty($link['category_key']) && $link['category_key'] === $offer['type']) {
+                        $formUrl = $link['url'];
+                        $formName = $link['name'];
+                        break;
+                    }
+                }
+                // Wenn nichts passt, nimm die letzte URL
+                if (!$formUrl) {
+                    $lastLink = end($formLinks);
+                    $formUrl = $lastLink['url'];
+                    $formName = $lastLink['name'];
+                }
+            }
+
+            if ($formUrl) {
+                $editUrl = $editTokenModel->generateEditUrl((int)$offer['id'], $formUrl, 'user');
+                $editUrls[] = [
+                    'offer_id' => $offer['id'],
+                    'type' => $offer['type'],
+                    'name' => $formName ?? $offer['type'],
+                    'edit_url' => $editUrl,
+                ];
+            }
+        }
+
+        return $editUrls;
     }
 
     /**

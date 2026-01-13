@@ -704,13 +704,40 @@ class FluentForm extends BaseController
 
         log_message('debug', 'insertdata: ' . print_r($insertData, true));
 
+        // Edit Token Handling - Update statt Insert wenn Token vorhanden
+        $editToken = $data['edit_token'] ?? null;
+        $isUpdate = false;
+        $offerId = null;
 
-        // Speichern
-        if (!$offerModel->insert($insertData)) {
-            log_message('error', 'Offer insert failed: ' . print_r($offerModel->errors(), true));
+        if ($editToken) {
+            $editTokenModel = new \App\Models\EditTokenModel();
+            $tokenData = $editTokenModel->validateToken($editToken);
+
+            if ($tokenData) {
+                $offerId = $tokenData['offer_id'];
+                $isUpdate = true;
+                log_message('info', '[Webhook] Edit token valid - updating offer #' . $offerId);
+
+                // Update statt Insert
+                if (!$offerModel->update($offerId, $insertData)) {
+                    log_message('error', 'Offer update failed: ' . print_r($offerModel->errors(), true));
+                }
+
+                // Token als verwendet markieren
+                $editTokenModel->markAsUsed($editToken);
+            } else {
+                log_message('warning', '[Webhook] Edit token invalid or expired: ' . $editToken);
+            }
         }
 
-        $offerId = $offerModel->getInsertID();
+        // Speichern (nur wenn kein Update)
+        if (!$isUpdate) {
+            if (!$offerModel->insert($insertData)) {
+                log_message('error', 'Offer insert failed: ' . print_r($offerModel->errors(), true));
+            }
+            $offerId = $offerModel->getInsertID();
+        }
+
         $formFields = $data;
 
         // Titel generieren nach dem Insert (damit wir die ID haben)
@@ -762,7 +789,17 @@ class FluentForm extends BaseController
                 }
             }
 
-            $typeModel->insert($typeData);
+            // Bei Update: bestehenden Eintrag aktualisieren, sonst neuen erstellen
+            if ($isUpdate) {
+                $existingTypeData = $typeModel->where('offer_id', $offerId)->first();
+                if ($existingTypeData) {
+                    $typeModel->where('offer_id', $offerId)->set($typeData)->update();
+                } else {
+                    $typeModel->insert($typeData);
+                }
+            } else {
+                $typeModel->insert($typeData);
+            }
         }
 
         //$this->sendOfferNotificationEmail($data, $type, $uuid, $verifyType); später senden erst nach Verifikation
