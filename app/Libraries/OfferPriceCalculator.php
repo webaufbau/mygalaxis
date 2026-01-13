@@ -76,11 +76,28 @@ class OfferPriceCalculator
             $typeMapping = [
                 'sanitaer' => 'plumbing',
                 'elektrik' => 'electrician',
+                'elektriker' => 'electrician',
                 'heizung' => 'heating',
                 'boden' => 'flooring',
+                'bodenleger' => 'flooring',
                 'platten' => 'tiling',
+                'plattenleger' => 'tiling',
                 'maler' => 'painting',
                 'garten' => 'gardening',
+                // Neue Branchen
+                'schreiner' => 'carpenter',
+                'baumeister' => 'mason',
+                'maurer' => 'mason',
+                'zimmermann' => 'carpenter_wood',
+                'spengler' => 'roofer_sheet_metal',
+                'schlosser' => 'locksmith',
+                'kuechenbauer' => 'kitchen_builder',
+                'treppenbauer' => 'stair_builder',
+                'dachdecker' => 'roofer',
+                'geruestbauer' => 'scaffolding',
+                'fenster' => 'windows_doors',
+                'tueren' => 'windows_doors',
+                'architekt' => 'architect',
             ];
 
             $mappedType = $typeMapping[$originalType] ?? $originalType;
