@@ -526,4 +526,17 @@ $languages = [
     </div>
 </div>
 
+<style>
+/* Ausgewählte Radio-Buttons bekommen Header-Farbe */
+.btn-check:checked + .btn-outline-dark {
+    background-color: <?= esc($headerBgColor) ?> !important;
+    border-color: <?= esc($headerBgColor) ?> !important;
+    color: white !important;
+}
+.btn-check:checked + .btn-outline-dark:hover {
+    background-color: <?= esc($headerBgColor) ?> !important;
+    border-color: <?= esc($headerBgColor) ?> !important;
+}
+</style>
+
 <?= $this->endSection() ?>
