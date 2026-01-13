@@ -47,4 +47,8 @@ return [
     // Optional für Weiterleitungen etc.
     'verificationSuccess' => '✅ Ihre Telefonnummer wurde erfolgreich verifiziert!',
 
+    // Resend-Meldungen
+    'newCodeSentSms' => 'Ein neuer Code wurde per SMS gesendet.',
+    'newCodeSentCall' => 'Ein neuer Anruf wurde gestartet.',
+
 ];

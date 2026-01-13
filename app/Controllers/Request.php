@@ -406,10 +406,13 @@ class Request extends BaseController
                     : 'Anruf konnte nicht gestartet werden. Bitte prüfe die Telefonnummer.');
         }
 
-        // Bei Resend Erfolgsmeldung anzeigen
+        // Bei Resend Erfolgsmeldung anzeigen (übersetzt)
         if ($isResend) {
+            $successMsg = $method === 'sms'
+                ? lang('Verification.newCodeSentSms')
+                : lang('Verification.newCodeSentCall');
             return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify')
-                ->with('success', $method === 'sms' ? 'Ein neuer Code wurde per SMS gesendet.' : 'Ein neuer Anruf wurde gestartet.');
+                ->with('success', $successMsg);
         }
 
         return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify');
