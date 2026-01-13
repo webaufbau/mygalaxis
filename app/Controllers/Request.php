@@ -21,10 +21,24 @@ class Request extends BaseController
         // Initial ausgewähltes Formular (aus URL-Parameter)
         $initial = $this->request->getGet('initial');
 
+        // Kategorie-Farbe für initial-Formular ermitteln
+        $initialCategoryColor = null;
+        if ($initial) {
+            $initialForm = $categoryManager->getFormById($initial, $locale);
+            if ($initialForm) {
+                $initialCategoryColor = $initialForm['category_color'] ?? null;
+            }
+        }
+
+        // SiteConfig für Logo und Header
+        $siteConfig = siteconfig();
+
         return view('request/start', [
             'forms' => $forms,
             'projects' => $projects,
             'initial' => $initial,
+            'initialCategoryColor' => $initialCategoryColor,
+            'siteConfig' => $siteConfig,
             'lang' => $locale,
             'categoryManager' => $categoryManager,
         ]);
@@ -35,6 +49,7 @@ class Request extends BaseController
         // Ausgewählte Formulare und Projekte
         $selectedForms = $this->request->getPost('forms') ?? [];
         $selectedProjects = $this->request->getPost('projects') ?? [];
+        $initialForm = $this->request->getPost('initial');
 
         // Validierung
         if (empty($selectedForms) && empty($selectedProjects)) {
@@ -44,9 +59,9 @@ class Request extends BaseController
         // Session erstellen
         $sessionId = bin2hex(random_bytes(16));
 
-        // Formular-Links zusammenstellen
+        // Formular-Links zusammenstellen (initial-Formular wird priorisiert)
         $locale = service('request')->getLocale();
-        $formLinks = $this->getFormLinks($selectedForms, $selectedProjects, $locale);
+        $formLinks = $this->getFormLinks($selectedForms, $selectedProjects, $locale, $initialForm);
 
         if (empty($formLinks)) {
             return redirect()->back()->withInput()->with('error', 'Für die ausgewählten Formulare/Projekte sind keine Links hinterlegt.');
@@ -233,13 +248,15 @@ class Request extends BaseController
 
     /**
      * Formular-Links für ausgewählte Formulare/Projekte zusammenstellen
+     * Das initial-Formular wird immer an den Anfang gestellt
      */
-    protected function getFormLinks(array $formIds, array $projects, string $locale = 'de'): array
+    protected function getFormLinks(array $formIds, array $projects, string $locale = 'de', ?string $initialFormId = null): array
     {
         $categoryManager = new CategoryManager();
         $projectModel = new ProjectModel();
 
         $links = [];
+        $initialLink = null;
         $addedUrls = []; // Um Duplikate zu vermeiden
 
         // Formular-Links (direkt ausgewählt)
@@ -247,13 +264,20 @@ class Request extends BaseController
             $form = $categoryManager->getFormById($formId, $locale);
             if ($form && !empty($form['form_link'])) {
                 if (!in_array($form['form_link'], $addedUrls)) {
-                    $links[] = [
+                    $linkData = [
                         'type' => 'form',
                         'form_id' => $formId,
                         'name' => $form['name'],
                         'category_key' => $form['category_key'],
                         'url' => $form['form_link'],
                     ];
+
+                    // Initial-Formular separat speichern
+                    if ($initialFormId && $formId === $initialFormId) {
+                        $initialLink = $linkData;
+                    } else {
+                        $links[] = $linkData;
+                    }
                     $addedUrls[] = $form['form_link'];
                 }
             }
@@ -277,6 +301,11 @@ class Request extends BaseController
                     }
                 }
             }
+        }
+
+        // Initial-Formular an den Anfang stellen
+        if ($initialLink) {
+            array_unshift($links, $initialLink);
         }
 
         return $links;

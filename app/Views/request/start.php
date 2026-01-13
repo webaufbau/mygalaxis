@@ -1,6 +1,30 @@
 <?= $this->extend('layout/minimal') ?>
 <?= $this->section('content') ?>
 
+<?php
+// Header-Hintergrundfarbe: Branchenfarbe wenn initial vorhanden, sonst Standard aus SiteConfig
+$headerBgColor = $initialCategoryColor ?? ($siteConfig->headerBackgroundColor ?? '#6c757d');
+?>
+
+<!-- Header mit Logo und Branchenfarbe -->
+<header class="py-3 mb-4" style="background-color: <?= esc($headerBgColor) ?>;">
+    <div class="container">
+        <div class="text-center">
+            <?php if (!empty($siteConfig->logoUrl)): ?>
+            <a href="<?= esc($siteConfig->frontendUrl) ?>">
+                <img src="<?= esc($siteConfig->logoUrl) ?>"
+                     alt="<?= esc($siteConfig->name) ?>"
+                     style="max-height: <?= esc($siteConfig->logoHeightPixel ?? '60') ?>px; max-width: 100%;">
+            </a>
+            <?php else: ?>
+            <a href="<?= esc($siteConfig->frontendUrl) ?>" class="text-white text-decoration-none fs-4 fw-bold">
+                <?= esc($siteConfig->name) ?>
+            </a>
+            <?php endif; ?>
+        </div>
+    </div>
+</header>
+
 <div class="container py-4">
     <h2 class="mb-3">Offerte anfordern</h2>
     <p class="text-muted mb-4">
@@ -14,6 +38,9 @@
 
     <form method="post" action="<?= site_url('/request/submit') ?>" class="needs-validation" novalidate>
         <?= csrf_field() ?>
+        <?php if ($initial): ?>
+        <input type="hidden" name="initial" value="<?= esc($initial) ?>">
+        <?php endif; ?>
 
         <!-- Formulare und Projekte -->
         <div class="row mb-4">
