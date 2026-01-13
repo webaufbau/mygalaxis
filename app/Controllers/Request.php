@@ -216,6 +216,21 @@ class Request extends BaseController
 
             if ($formUrl) {
                 $editUrl = $editTokenModel->generateEditUrl((int)$offer['id'], $formUrl, 'user');
+
+                // Session-Parameter hinzufügen für korrektes Routing nach Edit
+                $editUrl .= '&session=' . urlencode($sessionId);
+
+                // Index ermitteln (Position in formLinks)
+                $index = 0;
+                foreach ($formLinks as $i => $link) {
+                    if (!empty($link['category_key']) && $link['category_key'] === $offer['type']) {
+                        $index = $i;
+                        break;
+                    }
+                }
+                $editUrl .= '&index=' . $index;
+                $editUrl .= '&total=' . count($formLinks);
+
                 $editUrls[] = [
                     'offer_id' => $offer['id'],
                     'type' => $offer['type'],
