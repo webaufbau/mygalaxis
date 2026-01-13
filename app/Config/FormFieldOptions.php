@@ -136,6 +136,8 @@ class FormFieldOptions extends BaseConfig
         'skip_reinigung_umzug',
         'session',
         'request_session_id',
+        'edit_token',
+        'group_id',
 
         // HINWEIS: Gartenbau-Felder werden nun über FieldDisplayRules Config gehandhabt
         // und nicht mehr hier ausgeschlossen. Siehe: app/Config/FieldDisplayRules.php
