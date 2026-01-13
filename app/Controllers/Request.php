@@ -219,6 +219,10 @@ class Request extends BaseController
                 $sessionData['verified'] = true;
                 $sessionData['verified_at'] = date('Y-m-d H:i:s');
                 session()->set('request_' . $sessionId, $sessionData);
+
+                // SMS/Anruf-Historie als verifiziert markieren
+                $this->markVerificationHistoryAsVerified($sessionId, $storedCode);
+
                 return redirect()->to('/request/complete?session=' . $sessionId);
         }
 
@@ -254,6 +258,7 @@ class Request extends BaseController
 
         $siteName = siteconfig()->name ?? 'Offerten';
         $success = false;
+        $messageId = null;
 
         try {
             if ($method === 'sms') {
@@ -262,6 +267,7 @@ class Request extends BaseController
                 $message = "Dein Bestätigungscode für {$siteName}: {$code}";
                 $result = $infobip->sendSms($phone, $message);
                 $success = $result['success'] ?? false;
+                $messageId = $result['message_id'] ?? null;
 
                 if (!$success) {
                     log_message('error', 'SMS Versand fehlgeschlagen: ' . ($result['error'] ?? 'Unknown'));
@@ -284,6 +290,9 @@ class Request extends BaseController
             log_message('error', 'Verification Exception: ' . $e->getMessage());
         }
 
+        // SMS/Anruf-Historie für alle verknüpften Offers speichern
+        $this->logVerificationHistory($sessionId, $phone, $code, $method, $success, $messageId);
+
         if (!$success) {
             return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify')
                 ->with('warning', $method === 'sms'
@@ -298,6 +307,73 @@ class Request extends BaseController
         }
 
         return redirect()->to('/request/finalize?session=' . $sessionId . '&step=verify');
+    }
+
+    /**
+     * Speichert SMS/Anruf-Historie für alle verknüpften Offers
+     */
+    protected function logVerificationHistory(string $sessionId, string $phone, int $code, string $method, bool $success, ?string $messageId = null): void
+    {
+        $offerModel = new \App\Models\OfferModel();
+        $historyModel = new \App\Models\SmsVerificationHistoryModel();
+
+        // Alle Offers mit dieser request_session_id finden
+        $offers = $offerModel->where('request_session_id', $sessionId)->findAll();
+
+        if (empty($offers)) {
+            log_message('warning', "[Request::logVerificationHistory] Keine Offers gefunden für request_session_id: {$sessionId}");
+            return;
+        }
+
+        $status = $method === 'sms'
+            ? ($success ? 'sent' : 'failed')
+            : ($success ? 'call_initiated' : 'call_failed');
+
+        foreach ($offers as $offer) {
+            $historyModel->insert([
+                'offer_id' => $offer['id'],
+                'uuid' => $offer['uuid'] ?? null,
+                'phone' => $phone,
+                'verification_code' => $code,
+                'method' => $method,
+                'status' => $status,
+                'message_id' => $messageId,
+                'platform' => $offer['platform'] ?? null,
+                'verified' => 0,
+            ]);
+        }
+
+        log_message('info', "[Request::logVerificationHistory] Historie für " . count($offers) . " Offers gespeichert (method: {$method}, status: {$status})");
+    }
+
+    /**
+     * Markiert SMS/Anruf-Historie als verifiziert
+     */
+    protected function markVerificationHistoryAsVerified(string $sessionId, int $code): void
+    {
+        $offerModel = new \App\Models\OfferModel();
+        $historyModel = new \App\Models\SmsVerificationHistoryModel();
+
+        // Alle Offers mit dieser request_session_id finden
+        $offers = $offerModel->where('request_session_id', $sessionId)->findAll();
+
+        if (empty($offers)) {
+            return;
+        }
+
+        $offerIds = array_column($offers, 'id');
+
+        // Historie-Einträge mit diesem Code als verifiziert markieren
+        $db = \Config\Database::connect();
+        $db->table('sms_verification_history')
+            ->whereIn('offer_id', $offerIds)
+            ->where('verification_code', $code)
+            ->update([
+                'verified' => 1,
+                'verified_at' => date('Y-m-d H:i:s'),
+            ]);
+
+        log_message('info', "[Request::markVerificationHistoryAsVerified] Historie für " . count($offers) . " Offers als verifiziert markiert");
     }
 
     /**

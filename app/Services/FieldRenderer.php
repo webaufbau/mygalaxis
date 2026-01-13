@@ -262,7 +262,9 @@ class FieldRenderer
     protected function formatValue($value): string
     {
         if (is_array($value)) {
-            return implode(', ', array_map('esc', $value));
+            // Übersetze jeden Wert im Array
+            $translated = array_map(fn($v) => $this->translateValue($v), $value);
+            return implode(', ', array_map('esc', $translated));
         }
 
         if (is_string($value)) {
@@ -270,14 +272,56 @@ class FieldRenderer
             $decoded = json_decode($value, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 $filtered = array_filter($decoded, fn($v) => !in_array(strtolower((string)$v), ['nein', '', null], true));
-                return implode(', ', array_map('esc', $filtered));
+                $translated = array_map(fn($v) => $this->translateValue($v), $filtered);
+                return implode(', ', array_map('esc', $translated));
             }
 
+            // Übersetze bekannte Schlüsselwerte
+            $translated = $this->translateValue($value);
+
             // Auto-Datumsformatierung
-            return $this->autoFormatDate($value);
+            return $this->autoFormatDate($translated);
         }
 
         return (string) $value;
+    }
+
+    /**
+     * Übersetze bekannte Schlüsselwerte in lesbare Texte
+     */
+    protected function translateValue(string $value): string
+    {
+        // Mapping von Schlüssel zu lesbarem Text
+        static $valueTranslations = [
+            // Zeit-Flexibilität
+            'no' => 'Nein',
+            '1_2_days' => '1 - 2 Tage',
+            '1_2_weeks' => '1 - 2 Wochen',
+            '1_month' => 'ca. 1 Monat',
+            'by_arrangement' => 'Nach Absprache',
+
+            // Erreichbarkeit
+            '8_12' => '08:00 - 12:00 Uhr',
+            '12_14' => '12:00 - 14:00 Uhr',
+            '14_18' => '14:00 - 18:00 Uhr',
+            '18_20' => '18:00 - 20:00 Uhr',
+            'anytime' => 'Jederzeit',
+
+            // Auftraggeber-Typ
+            'owner' => 'Eigentümer',
+            'tenant' => 'Mieter',
+            'privat' => 'Privat',
+            'firma' => 'Firma',
+            'private' => 'Privat',
+            'business' => 'Geschäftlich',
+
+            // Allgemeine Werte
+            'yes' => 'Ja',
+            'ja' => 'Ja',
+            'nein' => 'Nein',
+        ];
+
+        return $valueTranslations[$value] ?? $value;
     }
 
     /**

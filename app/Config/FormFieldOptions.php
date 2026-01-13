@@ -134,6 +134,8 @@ class FormFieldOptions extends BaseConfig
         // Interne Steuerungsfelder
         'skip_kontakt',
         'skip_reinigung_umzug',
+        'session',
+        'request_session_id',
 
         // HINWEIS: Gartenbau-Felder werden nun über FieldDisplayRules Config gehandhabt
         // und nicht mehr hier ausgeschlossen. Siehe: app/Config/FieldDisplayRules.php
