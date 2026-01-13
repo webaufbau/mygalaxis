@@ -26,6 +26,16 @@ class FieldRenderer
     protected array $fieldsWithImages = [];
     protected string $imageBaseUrl = '';
 
+    // Felder die IMMER ausgeschlossen werden (technische/interne Felder)
+    protected array $alwaysExcludedFields = [
+        'edit_token',
+        'skip_kontakt',
+        'session',
+        'request_session_id',
+        '_fluentform_',
+        '__fluent_form_embded_post_id',
+    ];
+
     public function __construct()
     {
         $this->labels = lang('Offers.labels');
@@ -151,6 +161,18 @@ class FieldRenderer
             // Skip, wenn ausgeschlossen
             $normalizedKey = str_replace([' ', '-'], '_', strtolower($key));
             if (in_array($normalizedKey, $this->excludedFields)) {
+                continue;
+            }
+
+            // Skip, wenn in alwaysExcludedFields (technische/interne Felder)
+            $shouldSkip = false;
+            foreach ($this->alwaysExcludedFields as $excludePattern) {
+                if ($normalizedKey === $excludePattern || str_contains($normalizedKey, $excludePattern)) {
+                    $shouldSkip = true;
+                    break;
+                }
+            }
+            if ($shouldSkip) {
                 continue;
             }
 
