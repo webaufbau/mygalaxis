@@ -760,6 +760,7 @@ class Request extends BaseController
             'offers' => $offersData,
             'isMultiple' => count($offersData) > 1,
             'data' => $firstOfferFields,
+            'siteConfig' => $platformSiteConfig,
         ];
 
         $message = view('emails/grouped_offer_notification', $emailData);
