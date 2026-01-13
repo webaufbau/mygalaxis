@@ -398,17 +398,18 @@ $languages = [
 
                 <?php elseif ($step === 'kontakt'): ?>
                     <!-- SCHRITT: Kontaktdaten -->
+                    <?php $kontakt = $sessionData['kontakt'] ?? []; ?>
                     <div class="card">
                         <div class="card-body">
                             <!-- Name -->
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="vorname" class="form-label fw-bold"><?= $t['firstname'] ?> <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="vorname" name="vorname" placeholder="<?= $t['firstname'] ?>" required>
+                                    <input type="text" class="form-control" id="vorname" name="vorname" placeholder="<?= $t['firstname'] ?>" value="<?= esc($kontakt['vorname'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="nachname" class="form-label fw-bold"><?= $t['lastname'] ?> <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="nachname" name="nachname" placeholder="<?= $t['lastname'] ?>" required>
+                                    <input type="text" class="form-control" id="nachname" name="nachname" placeholder="<?= $t['lastname'] ?>" value="<?= esc($kontakt['nachname'] ?? '') ?>" required>
                                 </div>
                             </div>
 
@@ -416,12 +417,12 @@ $languages = [
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="email" class="form-label fw-bold"><?= $t['email'] ?> <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="email" name="email" placeholder="E-Mail-Adresse" required>
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="E-Mail-Adresse" value="<?= esc($kontakt['email'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="telefon" class="form-label fw-bold"><?= $t['phone'] ?> <span class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" id="telefon" name="telefon" placeholder="Telefonnummer" required>
-                                    <input type="hidden" id="telefon_full" name="telefon_full">
+                                    <input type="tel" class="form-control" id="telefon" name="telefon" placeholder="Telefonnummer" value="<?= esc($kontakt['telefon'] ?? '') ?>" required>
+                                    <input type="hidden" id="telefon_full" name="telefon_full" value="<?= esc($kontakt['telefon'] ?? '') ?>">
                                     <small class="text-danger"><?= $t['phone_hint'] ?></small>
                                 </div>
                             </div>
@@ -430,11 +431,11 @@ $languages = [
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="strasse" class="form-label fw-bold"><?= $t['street'] ?> <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="strasse" name="strasse" placeholder="Musterstrasse" required>
+                                    <input type="text" class="form-control" id="strasse" name="strasse" placeholder="Musterstrasse" value="<?= esc($kontakt['strasse'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="hausnummer" class="form-label fw-bold"><?= $t['house_number'] ?> <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="hausnummer" name="hausnummer" placeholder="10" required>
+                                    <input type="text" class="form-control" id="hausnummer" name="hausnummer" placeholder="10" value="<?= esc($kontakt['hausnummer'] ?? '') ?>" required>
                                 </div>
                             </div>
 
@@ -442,11 +443,11 @@ $languages = [
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="plz" class="form-label fw-bold"><?= $t['zip'] ?> <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="plz" name="plz" placeholder="4000" required>
+                                    <input type="text" class="form-control" id="plz" name="plz" placeholder="4000" value="<?= esc($kontakt['plz'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="ort" class="form-label fw-bold"><?= $t['city'] ?> <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="ort" name="ort" placeholder="Basel" required>
+                                    <input type="text" class="form-control" id="ort" name="ort" placeholder="Basel" value="<?= esc($kontakt['ort'] ?? '') ?>" required>
                                 </div>
                             </div>
 
@@ -463,10 +464,11 @@ $languages = [
                                         '14_18' => $t['reachable_14_18'],
                                         '18_20' => $t['reachable_18_20'],
                                     ];
+                                    $selectedErreichbar = $kontakt['erreichbar'] ?? '';
                                     foreach ($reachableOptions as $value => $label):
                                     ?>
                                         <div class="col-6 col-md-4">
-                                            <input type="radio" class="btn-check" name="erreichbar" id="erreichbar_<?= $value ?>" value="<?= $value ?>" autocomplete="off" required>
+                                            <input type="radio" class="btn-check" name="erreichbar" id="erreichbar_<?= $value ?>" value="<?= $value ?>" autocomplete="off" <?= $selectedErreichbar === $value ? 'checked' : '' ?> required>
                                             <label class="btn btn-outline-dark w-100" for="erreichbar_<?= $value ?>"><?= $label ?></label>
                                         </div>
                                     <?php endforeach; ?>
