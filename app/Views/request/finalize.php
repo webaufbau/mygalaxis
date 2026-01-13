@@ -326,7 +326,7 @@ $languages = [
                             <div class="row">
                                 <div class="col-md-5 mb-3">
                                     <label for="datum" class="form-label fw-bold"><?= $t['when_start'] ?> <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="datum" name="datum" required>
+                                    <input type="date" class="form-control" id="datum" name="datum" min="<?= date('Y-m-d', strtotime('+1 day')) ?>" required>
                                 </div>
                                 <div class="col-md-7 mb-3">
                                     <label class="form-label fw-bold"><?= $t['time_flexible'] ?> <span class="text-danger">*</span></label>
