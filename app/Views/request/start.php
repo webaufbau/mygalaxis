@@ -74,9 +74,11 @@ $languages = [
         Falls mehrere Dienstleistungen benötigt werden, kannst du unbegrenzt auswählen
         und wir leiten es den entsprechenden Firmen/Branchen weiter.
     </p>
+    <?php if ($initial): ?>
     <p class="text-danger mb-4">
         <?= lang('General.noMoreServicesHint') ?>
     </p>
+    <?php endif; ?>
 
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger"><?= esc(session()->getFlashdata('error')) ?></div>
