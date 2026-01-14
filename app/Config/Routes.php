@@ -124,6 +124,9 @@ $routes->get('api/offers', '\App\Controllers\Api\Offers::index');
 $routes->get('api/edit-token/(:segment)', '\App\Controllers\Api\EditToken::getOfferData/$1');
 $routes->post('api/edit-token/generate', '\App\Controllers\Api\EditToken::generate');
 
+// Form Mappings API (für WordPress Redirect)
+$routes->get('api/form-mappings', '\App\Controllers\Api\FormMappings::index');
+
 
 $routes->get('test/testtwilio', '\App\Controllers\Test::testtwilio');
 $routes->get('test/verification/(:any)', '\App\Controllers\Test::testVerification/$1');
