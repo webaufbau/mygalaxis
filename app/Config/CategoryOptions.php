@@ -8,7 +8,7 @@ class CategoryOptions extends BaseConfig
     // Die festen Typen
     public array $categoryTypes = [
         'move'              => 'Umzug',
-        'move_cleaning'     => 'Umzug + Reinigung',
+        'move_cleaning'     => 'Umzug + Reinigung', // hidden in JSON, wird automatisch erstellt
         'cleaning'          => 'Reinigung',
         'painting'          => 'Maler',
         'gardening'         => 'Gartenpflege',
@@ -43,6 +43,7 @@ class CategoryOptions extends BaseConfig
             ['key' => '6', 'label' => 'EFH', 'price' => 0],
         ],
 
+        // move_cleaning: hidden in JSON, Preise werden für automatische Kombination benötigt
         'move_cleaning' => [
             ['key' => '1', 'label' => '1Z', 'price' => 0],
             ['key' => '2', 'label' => '2Z', 'price' => 0],
