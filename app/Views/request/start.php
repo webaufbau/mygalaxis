@@ -199,7 +199,7 @@ $languages = [
                                            id="proj_<?= esc($project['slug']) ?>"
                                            style="width: 1.2em; height: 1.2em;">
                                     <label class="form-check-label ms-2" for="proj_<?= esc($project['slug']) ?>">
-                                        <?= esc($project['name']) ?>
+                                        <?= str_replace('/', '/<wbr>', esc($project['name'])) ?>
                                     </label>
                                 </div>
                             </div>
