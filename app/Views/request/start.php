@@ -190,7 +190,7 @@ $languages = [
                             $hasValidForm = $form !== null;
                             ?>
                             <?php if ($hasValidForm): ?>
-                            <div class="col-sm-6 mb-2">
+                            <div class="col-6 mb-2">
                                 <div class="form-check">
                                     <input class="form-check-input"
                                            type="checkbox"
