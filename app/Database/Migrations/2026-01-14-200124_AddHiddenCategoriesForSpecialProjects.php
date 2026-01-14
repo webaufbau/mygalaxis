@@ -91,7 +91,7 @@ class AddHiddenCategoriesForSpecialProjects extends Migration
                 'base_price' => $data['base_price'],
                 'options' => [],
                 'forms' => [],
-                'is_hidden' => true,
+                'hidden' => true,
                 'review_email_days' => 14,
                 'review_reminder_days' => 7,
             ];
