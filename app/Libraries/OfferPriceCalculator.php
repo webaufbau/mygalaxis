@@ -864,6 +864,12 @@ class OfferPriceCalculator
             case 'scaffolding':
             case 'windows_doors':
             case 'architect':
+            // Versteckte Branchen für spezielle Projekte
+            case 'blinds':
+            case 'shading':
+            case 'insect_screen':
+            case 'winter_garden':
+            case 'pool':
                 // Verwende base_price aus category_settings.json oder Fallback auf Config
                 $basePrice = $category['base_price'] ?? null;
 

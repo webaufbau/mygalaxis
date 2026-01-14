@@ -29,6 +29,12 @@ class CategoryOptions extends BaseConfig
         'scaffolding'       => 'Gerüstbauer',
         'windows_doors'     => 'Fenster/Türen',
         'architect'         => 'Architekt',
+        // Versteckte Branchen für spezielle Projekte (Januar 2026)
+        'blinds'            => 'Storen/Rolläden',
+        'shading'           => 'Beschattung',
+        'insect_screen'     => 'Fliegengitter/Insektenschutz',
+        'winter_garden'     => 'Wintergarten',
+        'pool'              => 'Poolanlage',
     ];
 
     // Alle möglichen Optionen je Kategorie (Labels fix)
@@ -242,6 +248,13 @@ class CategoryOptions extends BaseConfig
         'windows_doors' => [],
         'architect' => [],
 
+        // Versteckte Branchen für spezielle Projekte
+        'blinds' => [],
+        'shading' => [],
+        'insect_screen' => [],
+        'winter_garden' => [],
+        'pool' => [],
+
     ];
 
     /**
@@ -259,6 +272,12 @@ class CategoryOptions extends BaseConfig
         'scaffolding' => 29,
         'windows_doors' => 29,
         'architect' => 29,
+        // Versteckte Branchen
+        'blinds' => 29,
+        'shading' => 29,
+        'insect_screen' => 29,
+        'winter_garden' => 29,
+        'pool' => 29,
     ];
 
 
