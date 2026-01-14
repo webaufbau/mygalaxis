@@ -112,6 +112,15 @@ run_migration() {
         echo -e "${YELLOW}⚠ Warnung: Konnte writable-Verzeichnisse nicht erstellen${NC}"
     fi
 
+    # move_cleaning in category_settings.json auf hidden setzen und forms leeren
+    echo -e "${BLUE}🔧 Aktualisiere category_settings.json (move_cleaning hidden)...${NC}"
+    ssh -p "${ssh_port}" "${ssh_user_host}" "cd ${project_path} && \
+        if [ -f writable/config/category_settings.json ]; then \
+            php -r '\$f=\"writable/config/category_settings.json\"; \$d=json_decode(file_get_contents(\$f),true); if(isset(\$d[\"categories\"][\"move_cleaning\"])) { \$d[\"categories\"][\"move_cleaning\"][\"hidden\"]=true; \$d[\"categories\"][\"move_cleaning\"][\"forms\"]=[]; file_put_contents(\$f,json_encode(\$d,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)); echo \"move_cleaning updated\"; } else { echo \"move_cleaning not found\"; }'; \
+        else \
+            echo 'category_settings.json not found'; \
+        fi"
+
     # Migration separat ausführen mit besserer Fehlerbehandlung
     echo -e "${BLUE}🔄 Migration wird ausgeführt...${NC}"
     local migrate_output
