@@ -58,15 +58,13 @@ class Language extends AdminBase
         }
 
         // Daten für die View bereitstellen
-        $this->template->set([
+        return view('admin/language_editor', [
             'languages' => $languages,
             'selectedLanguage' => $selectedLanguage,
             'selectedFile' => $selectedFile,
             'translations' => $translations,
             'search_term' => $this->request->getGet('search_term'),
         ]);
-
-        return $this->template->load('admin/language_editor');
     }
 
     public function update()
@@ -165,13 +163,11 @@ class Language extends AdminBase
         $results = $this->searchInFiles($searchTerm, $languagePath);
 
         // Daten für die View bereitstellen
-        $this->template->set([
+        return view('admin/language_editor', [
             'languages' => $languages,
             'searchResults' => $results,
             'search_term' => $search_term,
         ]);
-
-        return $this->template->load('admin/language_editor');
     }
 
     private function searchInFiles($searchTerm, $directory) {

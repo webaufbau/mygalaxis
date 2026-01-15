@@ -1,3 +1,6 @@
+<?= $this->extend('layout/admin') ?>
+
+<?= $this->section('content') ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 mb-0">Formulare</h1>
     <a href="/admin/form/create" class="btn btn-primary">
@@ -119,3 +122,4 @@ $(document).ready(function() {
     }
 });
 </script>
+<?= $this->endSection() ?>

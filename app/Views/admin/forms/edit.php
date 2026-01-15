@@ -1,3 +1,6 @@
+<?= $this->extend('layout/admin') ?>
+
+<?= $this->section('content') ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <a href="/admin/form" class="text-muted text-decoration-none">
@@ -162,3 +165,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<?= $this->endSection() ?>

@@ -156,8 +156,9 @@ class Campaign extends Crud {
         }
 
         // Formular anzeigen
-        $this->template->set('page_title', 'Firmen CSV importieren');
-        $this->template->load('admin/import_csv_form'); // die View weiter unten
+        return view('admin/import_csv_form', [
+            'page_title' => 'Firmen CSV importieren',
+        ]);
     }
 
     // Verarbeitung des CSV-Uploads

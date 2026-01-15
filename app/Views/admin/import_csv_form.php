@@ -1,4 +1,6 @@
+<?= $this->extend('layout/admin') ?>
 
+<?= $this->section('content') ?>
 <h1><?= esc($page_title) ?></h1>
 
 <form action="<?= site_url('admin/campaign/import_csv_process') ?>" method="post" enctype="multipart/form-data">
@@ -12,3 +14,4 @@
     <button type="submit" class="btn btn-primary">Import starten</button>
     <a href="<?= site_url('admin/campaign/download-sample-csv') ?>" class="btn btn-outline-secondary">Vorlage herunterladen</a>
 </form>
+<?= $this->endSection() ?>

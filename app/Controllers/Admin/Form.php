@@ -57,11 +57,11 @@ class Form extends AdminBase
             return $a['form_index'] - $b['form_index'];
         });
 
-        $this->template->set('page_title', 'Formulare');
-        $this->template->set('forms', $forms);
-        $this->template->set('categories', $data['categories']);
-
-        $this->template->load('admin/forms/index');
+        return view('admin/forms/index', [
+            'page_title' => 'Formulare',
+            'forms' => $forms,
+            'categories' => $data['categories'],
+        ]);
     }
 
     public function edit(string $formId = '')
@@ -152,15 +152,15 @@ class Form extends AdminBase
             $formCounts[$key] = count($cat['forms'] ?? []);
         }
 
-        $this->template->set('page_title', 'Formular bearbeiten');
-        $this->template->set('form_id', $formId);
-        $this->template->set('form', $form);
-        $this->template->set('category', $category);
-        $this->template->set('category_key', $catKey);
-        $this->template->set('categories', $data['categories']);
-        $this->template->set('form_counts', $formCounts);
-
-        $this->template->load('admin/forms/edit');
+        return view('admin/forms/edit', [
+            'page_title' => 'Formular bearbeiten',
+            'form_id' => $formId,
+            'form' => $form,
+            'category' => $category,
+            'category_key' => $catKey,
+            'categories' => $data['categories'],
+            'form_counts' => $formCounts,
+        ]);
     }
 
     public function create()
@@ -204,10 +204,10 @@ class Form extends AdminBase
             }
         }
 
-        $this->template->set('page_title', 'Neues Formular');
-        $this->template->set('categories', $data['categories']);
-
-        $this->template->load('admin/forms/create');
+        return view('admin/forms/create', [
+            'page_title' => 'Neues Formular',
+            'categories' => $data['categories'],
+        ]);
     }
 
     public function delete(string $formId = '')
