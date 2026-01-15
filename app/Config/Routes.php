@@ -298,6 +298,14 @@ $routes->group('admin', ['filter' => 'admin-auth'], function ($routes) {
     $routes->match(['GET', 'POST'], 'category/copy/(:num)', 'Admin\Category::copy/$1');
     $routes->match(['GET', 'POST'], 'category/delete/(:num)', 'Admin\Category::delete/$1');
 
+    // Formulare (WordPress Form Links)
+    $routes->get('form', 'Admin\Form::index');
+    $routes->get('form/create', 'Admin\Form::create');
+    $routes->post('form/create', 'Admin\Form::create');
+    $routes->get('form/edit/(:segment)', 'Admin\Form::edit/$1');
+    $routes->post('form/edit/(:segment)', 'Admin\Form::edit/$1');
+    $routes->get('form/delete/(:segment)', 'Admin\Form::delete/$1');
+
     $routes->match(['GET', 'POST'], 'review', 'Admin\Review::index');
     $routes->match(['GET', 'POST'], 'review/form', 'Admin\Review::form');
     $routes->match(['GET', 'POST'], 'review/form/(:num)', 'Admin\Review::form/$1');

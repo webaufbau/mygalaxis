@@ -454,6 +454,10 @@ $pendingCount = (new \App\Models\OfferModel())
                     <i class="bi bi-tags"></i>
                     <span class="nav-text">Branchen</span>
                 </a>
+                <a class="nav-link <?= $segment2 === 'form' ? 'active' : '' ?>" href="/admin/form">
+                    <i class="bi bi-ui-checks"></i>
+                    <span class="nav-text">Formulare</span>
+                </a>
                 <a class="nav-link <?= $segment2 === 'projects' ? 'active' : '' ?>" href="/admin/projects">
                     <i class="bi bi-kanban"></i>
                     <span class="nav-text">Projekte</span>
