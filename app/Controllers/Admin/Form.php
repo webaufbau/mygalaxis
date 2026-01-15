@@ -100,9 +100,10 @@ class Form extends AdminBase
         // POST verarbeiten
         if ($this->request->getMethod() === 'post') {
             $postData = $this->request->getPost();
+            $newCatKey = $postData['category_key'] ?? $catKey;
 
-            // Formular aktualisieren
-            $forms[$formIndex] = [
+            // Formular-Daten
+            $formData = [
                 'name_de' => $postData['name_de'] ?? '',
                 'name_en' => $postData['name_en'] ?? '',
                 'name_fr' => $postData['name_fr'] ?? '',
@@ -113,16 +114,42 @@ class Form extends AdminBase
                 'form_link_it' => $postData['form_link_it'] ?? '',
             ];
 
-            // Zurück in Kategorie speichern
-            $data['categories'][$catKey]['forms'] = $forms;
+            // Prüfen ob Branche geändert wurde
+            if ($newCatKey !== $catKey) {
+                // Formular aus alter Kategorie entfernen
+                array_splice($forms, $formIndex, 1);
+                $data['categories'][$catKey]['forms'] = array_values($forms);
 
-            // Speichern
-            if ($this->categoryManager->save($data['categories'], $data['discountRules'] ?? [])) {
-                $this->setFlash('Formular gespeichert', 'success');
-                return redirect()->to('/admin/form');
+                // Formular zu neuer Kategorie hinzufügen
+                $data['categories'][$newCatKey]['forms'][] = $formData;
+
+                $newIndex = count($data['categories'][$newCatKey]['forms']) - 1;
+                $newFormId = $newCatKey . ':' . $newIndex;
+
+                if ($this->categoryManager->save($data['categories'], $data['discountRules'] ?? [])) {
+                    $this->setFlash("Formular in Branche '{$data['categories'][$newCatKey]['name']}' verschoben. Neue ID: {$newFormId}", 'success');
+                    return redirect()->to('/admin/form');
+                } else {
+                    $this->setFlash('Fehler beim Speichern', 'error');
+                }
             } else {
-                $this->setFlash('Fehler beim Speichern', 'error');
+                // Nur Formular aktualisieren (gleiche Kategorie)
+                $forms[$formIndex] = $formData;
+                $data['categories'][$catKey]['forms'] = $forms;
+
+                if ($this->categoryManager->save($data['categories'], $data['discountRules'] ?? [])) {
+                    $this->setFlash('Formular gespeichert', 'success');
+                    return redirect()->to('/admin/form');
+                } else {
+                    $this->setFlash('Fehler beim Speichern', 'error');
+                }
             }
+        }
+
+        // Formular-Anzahl pro Kategorie für JavaScript
+        $formCounts = [];
+        foreach ($data['categories'] as $key => $cat) {
+            $formCounts[$key] = count($cat['forms'] ?? []);
         }
 
         $this->template->set('page_title', 'Formular bearbeiten');
@@ -130,6 +157,8 @@ class Form extends AdminBase
         $this->template->set('form', $form);
         $this->template->set('category', $category);
         $this->template->set('category_key', $catKey);
+        $this->template->set('categories', $data['categories']);
+        $this->template->set('form_counts', $formCounts);
 
         $this->template->load('admin/forms/edit');
     }

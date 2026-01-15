@@ -5,19 +5,48 @@
         </a>
         <h1 class="h3 mb-0 mt-2">Formular bearbeiten</h1>
     </div>
-    <span class="badge fs-6" style="background-color: <?= esc($category['color'] ?? '#6c757d') ?>">
-        <?= esc($category['name']) ?>
-    </span>
 </div>
 
 <form method="post" action="/admin/form/edit/<?= esc($form_id) ?>">
     <?= csrf_field() ?>
 
     <div class="card mb-4">
-        <div class="card-header">
-            <strong>Formular-ID:</strong> <code><?= esc($form_id) ?></code>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <strong>Aktuelle ID:</strong> <code id="currentFormId"><?= esc($form_id) ?></code>
+            </div>
+            <span class="badge fs-6" id="categoryBadge" style="background-color: <?= esc($category['color'] ?? '#6c757d') ?>">
+                <?= esc($category['name']) ?>
+            </span>
         </div>
         <div class="card-body">
+            <!-- Branche ändern -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label for="category_key" class="form-label">Branche</label>
+                    <select class="form-select" id="category_key" name="category_key">
+                        <?php foreach ($categories as $key => $cat): ?>
+                        <option value="<?= esc($key) ?>"
+                                data-color="<?= esc($cat['color'] ?? '#6c757d') ?>"
+                                data-name="<?= esc($cat['name']) ?>"
+                                <?= $key === $category_key ? 'selected' : '' ?>>
+                            <?= esc($cat['name']) ?>
+                            <?= !empty($cat['hidden']) ? ' (versteckt)' : '' ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <div id="categoryChangeWarning" class="alert alert-warning mb-0 mt-4" style="display: none;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Achtung:</strong> Die Formular-ID ändert sich zu <code id="newFormId"></code>
+                        <br><small class="text-muted">Bestehende Verknüpfungen (z.B. Projekte) werden ungültig!</small>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
             <div class="row">
                 <div class="col-md-6">
                     <h5 class="mb-3"><img src="https://flagcdn.com/w20/de.png" alt="DE" class="me-2">Deutsch</h5>
@@ -101,3 +130,36 @@
         </button>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('category_key');
+    const warning = document.getElementById('categoryChangeWarning');
+    const newFormIdSpan = document.getElementById('newFormId');
+    const categoryBadge = document.getElementById('categoryBadge');
+    const originalCategory = '<?= esc($category_key) ?>';
+
+    // Zähle Formulare pro Kategorie für neue ID-Berechnung
+    const formCounts = <?= json_encode($form_counts ?? []) ?>;
+
+    categorySelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const newCategory = this.value;
+        const color = selectedOption.dataset.color;
+        const name = selectedOption.dataset.name;
+
+        // Badge aktualisieren
+        categoryBadge.style.backgroundColor = color;
+        categoryBadge.textContent = name;
+
+        if (newCategory !== originalCategory) {
+            // Neue ID berechnen (Index = Anzahl existierender Formulare in neuer Kategorie)
+            const newIndex = formCounts[newCategory] || 0;
+            newFormIdSpan.textContent = newCategory + ':' + newIndex;
+            warning.style.display = 'block';
+        } else {
+            warning.style.display = 'none';
+        }
+    });
+});
+</script>

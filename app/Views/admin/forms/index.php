@@ -38,8 +38,14 @@
                         <td><?= esc($form['name_de']) ?></td>
                         <td>
                             <?php if (!empty($form['form_link_de'])): ?>
-                                <a href="<?= esc($form['form_link_de']) ?>" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;" title="<?= esc($form['form_link_de']) ?>">
-                                    <?= esc($form['form_link_de']) ?>
+                                <?php
+                                // Nur Pfad nach Domain anzeigen
+                                $parsedUrl = parse_url($form['form_link_de']);
+                                $pathOnly = ($parsedUrl['path'] ?? '/') . (isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '');
+                                $pathOnly = ltrim($pathOnly, '/');
+                                ?>
+                                <a href="<?= esc($form['form_link_de']) ?>" target="_blank" class="text-truncate d-inline-block" style="max-width: 250px;" title="<?= esc($form['form_link_de']) ?>">
+                                    <?= esc($pathOnly) ?>
                                 </a>
                             <?php else: ?>
                                 <span class="text-muted">-</span>
