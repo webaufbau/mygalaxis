@@ -20,9 +20,8 @@
                 <select class="form-select" id="category_key" name="category_key" required>
                     <option value="">-- Bitte wählen --</option>
                     <?php foreach ($categories as $key => $cat): ?>
-                    <option value="<?= esc($key) ?>" data-color="<?= esc($cat['color'] ?? '#6c757d') ?>">
-                        <?= esc($cat['name']) ?>
-                        <?= !empty($cat['hidden']) ? ' (versteckt)' : '' ?>
+                    <option value="<?= esc($key) ?>" data-color="<?= esc($cat['color'] ?? '#6c757d') ?>"<?= !empty($cat['hidden']) ? ' class="text-muted"' : '' ?>>
+                        <?= esc($cat['name']) ?><?= !empty($cat['hidden']) ? ' (nur für Projekte)' : '' ?>
                     </option>
                     <?php endforeach; ?>
                 </select>

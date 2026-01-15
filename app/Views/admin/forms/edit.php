@@ -29,9 +29,8 @@
                         <option value="<?= esc($key) ?>"
                                 data-color="<?= esc($cat['color'] ?? '#6c757d') ?>"
                                 data-name="<?= esc($cat['name']) ?>"
-                                <?= $key === $category_key ? 'selected' : '' ?>>
-                            <?= esc($cat['name']) ?>
-                            <?= !empty($cat['hidden']) ? ' (versteckt)' : '' ?>
+                                <?= $key === $category_key ? 'selected' : '' ?><?= !empty($cat['hidden']) ? ' class="text-muted"' : '' ?>>
+                            <?= esc($cat['name']) ?><?= !empty($cat['hidden']) ? ' (nur für Projekte)' : '' ?>
                         </option>
                         <?php endforeach; ?>
                     </select>
